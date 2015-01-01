@@ -1,4 +1,109 @@
-sql-mvc
-=======
+# SQL-MVC
 
 Paradigm inversion - write web applications in SQL instead of JavaScript or other.
+
+-Super fast Development:	
+	* Write web applications with little more than a few SQL statements
+	* DRY (don't repeat yourself), Inheritance, Auto-Menus and more further reduces development time.
+	* Drop-in and plug-in modules allow easy use and customisation of common application functionality.
+	* Quick start with Platform + Framework + Themes + Modules + Demo's 
+	* Build easily reusable custom widgets from complex HTML/JS/JQ
+	* Consistently customise the look and feel of your application widgets.	
+	* Automatic hot code push during development (no reloading of pages with F5)
+	* i18n support and tools
+	* Security implied by design rather than explicit configuration.
+
+-Super fast Runtime:
+	* All database queries are amalgamated into a single database stored procedure call. 
+	* Almost no middle-ware processing.	
+	* Exchange only JSON data elements across the wire.	
+	* Single Page Applications using Nodejs, SocketStream and Hogan templates	
+	* The page displays/loads full visible content on first load - no partial view like waiting for multiple Ajax /ReST calls.
+	* Lazy loading of application client Hogan code from CDN while the user keys in his login information( if not cached already).
+	* Partial div(Divout) / records load/reload  on Navigating / Saving or refreshing content.
+	* Lazy loading of obscured views or obscured rows in large data sets
+	* Client side caching of large datasets in reusable/relocatable chunks
+	* Subscribe to events to do partial refreshes when changes are posted to database objects by other users.
+
+- Other features
+	* Database drivers available for Firebird SQL,support planned for : MySQL, SQL Server, Oracle, NuoDB and MongoDB.
+
+
+##Usage	
+Super Quick preview - similar to todomvc.com - Live Demo http://todomvc.sql-mvc.com/
+
+```
+<#model
+--:{regex:"regex:/varchar/i",autosave:yes} -- set on autosave for all fields
+
+CREATE TABLE TODO_MVC				--:{as:"Table"} 
+(
+  REF VARCHAR(40),					--:{as:"pk"}
+  NAME VARCHAR(100),				--:{as:"Text",size:40,title:"todo",onupdate:"owner=session.id"}  
+  OWNER VARCHAR(40),				--:{Type:"Hide"}
+  STATUS VARCHAR(10) default ''		--:{Type:"Pick",List:"Ticked"}  
+);
+>
+
+<#:table
+Select  --:{Title:"Make and view records",from:"TODO_MVC",autoinsert:"top",tablestyle:"Todo"}
+STATUS, --:{Action:"Edit":yes}
+NAME,   --:{Action:"Edit","placeholder":"What needs to be done"}
+OWNER,   --:{Action:"Link",Type:"Hide",form:"Test2",point:"TODO_MVC.REF",to:"TODO_MVC"}
+REF	   --:{Action:"View",Type:"Hide"}
+From TODO_MVC 
+where (owner=session.id and ( (my.todo_type='') or( (status='' or status is null) and my.todo_type='1')or(status='1' and my.todo_type='2')))
+>
+<#:print 
+--{if:"(select count(ref) from todo_mvc where owner=session.id and (status='' or status is null))!=1" }
+($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $)
+items left
+>
+<#:print 
+--{if:"(select count(ref) from todo_mvc where owner=session.id and (status='' or status is null))=1" }
+($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $)
+item left
+>
+
+<#:button --{title:"all"}
+set my.todo_type='';
+>
+<#:button --{title:"Active"}
+set my.todo_type='1';
+><#:button --{title:"Completed"}
+set my.todo_type='2';
+>
+
+```
+
+## Getting Started
+TODO
+
+
+
+## Developer Resources
+
+Building an application with SQL-MVC?
+
+* Announcement list: sign up at http://www.sql-mvc.com/
+* Ask a question: http://stackoverflow.com/questions/tagged/sql-mvc
+* SQL-MVC help and discussion mailing list: https://groups.google.com/group/sql-mvc-talk
+* IRC: `#sql-mvc` on `irc.freenode.net`
+
+Interested in contributing to SQL-MVC?
+
+* Core platform & framework design mailing list: https://groups.google.com/group/sql-mvc-core
+* Contribution guidelines: https://github.com/sql-mvc/tree/devel/Contributing.md
+
+
+## Licensing
+SQL-MVC is a commercial open source project, It is free as in speech
+but not free as in beer, but cheap as in peanuts.
+
+	
+## Alpha version 0.1 Notice: 
+When evaluating SQL-MVC keep in mind this project is still version 0.1- alpha/preview  
+release - a lot of stuff is not 100% polished or even to spec,
+try and pick up the key points we are trying to demonstrate not shortcomings or bugs
+ (although all feedback is welcome).[More ...](http://www.SQL-MVC.com/docs/AlphaNotice)	
+ 
