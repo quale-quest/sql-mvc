@@ -1,36 +1,36 @@
 # SQL-MVC
 
-Paradigm inversion - write web applications in SQL instead of JavaScript or other.
+**Paradigm inversion - write web applications in SQL instead of JavaScript or other.**
 
--Super fast Development:	
-	* Write web applications with little more than a few SQL statements
-	* DRY (don't repeat yourself), Inheritance, Auto-Menus and more further reduces development time.
-	* Drop-in and plug-in modules allow easy use and customisation of common application functionality.
-	* Quick start with Platform + Framework + Themes + Modules + Demo's 
-	* Build easily reusable custom widgets from complex HTML/JS/JQ
-	* Consistently customise the look and feel of your application widgets.	
-	* Automatic hot code push during development (no reloading of pages with F5)
-	* i18n support and tools
-	* Security implied by design rather than explicit configuration.
+###Super fast Development:	
+* Write web applications with little more than a few SQL statements
+* DRY (don't repeat yourself), Inheritance, Auto-Menus and more further reduces development time.
+* Drop-in and plug-in modules allow easy use and customisation of common application functionality.
+* Quick start with Platform + Framework + Themes + Modules + Demo's 
+* Build easily reusable custom widgets from complex HTML/JS/JQ
+* Consistently customise the look and feel of your application widgets.	
+* Automatic hot code push during development (no reloading of pages with F5)
+* i18n support and tools
+* Security implied by design rather than explicit configuration.
 
--Super fast Runtime:
-	* All database queries are amalgamated into a single database stored procedure call. 
-	* Almost no middle-ware processing.	
-	* Exchange only JSON data elements across the wire.	
-	* Single Page Applications using Nodejs, SocketStream and Hogan templates	
-	* The page displays/loads full visible content on first load - no partial view like waiting for multiple Ajax /ReST calls.
-	* Lazy loading of application client Hogan code from CDN while the user keys in his login information( if not cached already).
-	* Partial div(Divout) / records load/reload  on Navigating / Saving or refreshing content.
-	* Lazy loading of obscured views or obscured rows in large data sets
-	* Client side caching of large datasets in reusable/relocatable chunks
-	* Subscribe to events to do partial refreshes when changes are posted to database objects by other users.
+###Super fast Runtime:
+* All database queries are amalgamated into a single database stored procedure call. 
+* Almost no middle-ware processing.	
+* Exchange only JSON data elements across the wire.	
+* Single Page Applications using Nodejs, SocketStream and Hogan templates	
+* The page displays/loads full visible content on first load - no partial view like waiting for multiple Ajax /ReST calls.
+* Lazy loading of application client Hogan code from CDN while the user keys in his login information( if not cached already).
+* Partial div(Divout) / records load/reload  on Navigating / Saving or refreshing content.
+* Lazy loading of obscured views or obscured rows in large data sets
+* Client side caching of large datasets in reusable/relocatable chunks
+* Subscribe to events to do partial refreshes when changes are posted to database objects by other users.
 
-- Other features
-	* Database drivers available for Firebird SQL,support planned for : MySQL, SQL Server, Oracle, NuoDB and MongoDB.
-
+###Other features
+* Database drivers available for Firebird SQL,support planned for : MySQL, SQL Server, Oracle, NuoDB and MongoDB.
+* Planned support for client side stored procedures to enable no-sql and local sqlite databases.
 
 ##Usage	
-Super Quick preview - similar to todomvc.com - Live Demo http://todomvc.sql-mvc.com/
+Example code similar to todomvc.com - Live Demo http://todomvc.sql-mvc.com/
 
 ```
 <#model
@@ -101,8 +101,8 @@ SQL-MVC is a commercial open source project, It is free as in speech
 but not free as in beer, but cheap as in peanuts.
 
 	
-## Alpha version 0.1 Notice: 
-When evaluating SQL-MVC keep in mind this project is still version 0.1- alpha/preview  
+## Alpha version 0.0.1 Notice: 
+When evaluating SQL-MVC keep in mind this project is still version 0.0.1- alpha/preview  
 release - a lot of stuff is not 100% polished or even to spec,
 try and pick up the key points we are trying to demonstrate not shortcomings or bugs
  (although all feedback is welcome).[More ...](http://www.SQL-MVC.com/docs/AlphaNotice)	
