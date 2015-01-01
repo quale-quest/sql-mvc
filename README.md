@@ -81,12 +81,13 @@ set my.todo_type='2';
 ##How does SQL-MVC work?
 * The compiler takes your application code which is little more 
 than a few SQL statements, directives and properties and produces:
-  1) a stored procedure containing all the database code to be run to produce JSON output.
-  2) a Moustache Template(Hogan) containing all the clientside code to be filled with the JSON.
-When the two are combined in the browser !!voila!!.
-* The server node.js does very little other than pass the json between the server and client.
+  1. a stored procedure containing all the database code to be run to produce JSON output.
+  2. a Moustache Template(Hogan) containing all the client side code to be filled with the JSON.
+When the two are combined in the browser !!voilà!!.
+* The server node.js does very little other than pass JSON between the server and client.
 * All the business logic remains in the database server.
-
+* You have full control of the client side look, feel and behaviour, the 
+default framework and theme is just to give you a quic start.
 
 
 ## Getting Started
@@ -101,7 +102,7 @@ Building an application with SQL-MVC?
 * Announcement list: sign up at http://www.sql-mvc.com/
 * Ask a question: http://stackoverflow.com/questions/tagged/sql-mvc
 * SQL-MVC help and discussion mailing list: https://groups.google.com/group/sql-mvc-talk
-* IRC: `#sql-mvc` on `irc.freenode.net`
+* Git hub https://github.com/quale-quest/sql-mvc
 
 Interested in contributing to SQL-MVC?
 

@@ -1,21 +1,12 @@
 {
-  "name": "mvc-sql",
+  "name": "sql-mvc",
   "version": "0.0.1",
-  "description": "**Paradigm inversion - write web applications in SQL instead of JavaScript or other.**",
+  "description": "Paradigm inversion-write web applications in SQL instead of JavaScript.",
   "main": "index.js",
   "scripts": {
     "start": "node app.js -p 80",
     "test": "node app.js -p 3000"
   },
-  "keywords": [
-    "sql",
-    "mvc",
-    "web",
-    "app",
-    "Quale",
-    "Quic",
-    "QualeQuest"
-  ],
   "engines": {
     "node": ">= 0.6.0"
   },
@@ -29,7 +20,16 @@
     "socketstream": "0.3.x",
     "ss-hogan": "0.1.x",
     "ss-stylus": "^0.1.9"
-  },  
+  },   
+  "keywords": [
+    "sql",
+    "mvc",
+    "web",
+    "app",
+    "Quale",
+    "Quic",
+    "QualeQuest"
+  ],
   "author": "Lafras",
   "license": "commercial open source"
 }
