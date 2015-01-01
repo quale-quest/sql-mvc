@@ -17,9 +17,9 @@
 * All database queries are amalgamated into a single database stored procedure call. 
 * Almost no middle-ware processing.	
 * Exchange only JSON data elements across the wire.	
-* Single Page Applications using Nodejs, SocketStream and Hogan templates	
-* The page displays/loads full visible content on first load - no partial view like waiting for multiple Ajax /ReST calls.
-* Lazy loading of application client Hogan code from CDN while the user keys in his login information( if not cached already).
+* Build Single Page Applications using Nodejs, SocketStream and Hogan templates	
+* The page loads full visible content on first load - no partial view like waiting for multiple Ajax /ReST calls.
+* Lazy loading of application client code while the user keys in his login information( if not cached already).
 * Partial div(Divout) / records load/reload  on Navigating / Saving or refreshing content.
 * Lazy loading of obscured views or obscured rows in large data sets
 * Client side caching of large datasets in reusable/relocatable chunks
@@ -33,8 +33,8 @@
 Example code similar to todomvc.com - Live Demo http://todomvc.sql-mvc.com/
 
 ```
-<#model
---:{regex:"regex:/varchar/i",autosave:yes} -- set on autosave for all fields
+<#:model
+--:{regex:"regex:/varchar/i",autosave:yes}
 
 CREATE TABLE TODO_MVC				--:{as:"Table"} 
 (
@@ -52,16 +52,16 @@ NAME,   --:{Action:"Edit","placeholder":"What needs to be done"}
 OWNER,   --:{Action:"Link",Type:"Hide",form:"Test2",point:"TODO_MVC.REF",to:"TODO_MVC"}
 REF	   --:{Action:"View",Type:"Hide"}
 From TODO_MVC 
-where (owner=session.id and ( (my.todo_type='') or( (status='' or status is null) and my.todo_type='1')or(status='1' and my.todo_type='2')))
+where (owner=session.id and ( (my.todo_type='') or( status='' and my.todo_type='1')or(status='1' and my.todo_type='2')))
 >
 <#:print 
---{if:"(select count(ref) from todo_mvc where owner=session.id and (status='' or status is null))!=1" }
-($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $)
+--{if:"(select count(ref) from todo_mvc where owner=session.id and status='')!=1" }
+($select count(*) from todo_mvc where owner=session.id and status='') $)
 items left
 >
 <#:print 
---{if:"(select count(ref) from todo_mvc where owner=session.id and (status='' or status is null))=1" }
-($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $)
+--{if:"(select count(ref) from todo_mvc where owner=session.id and status='')=1" }
+($select count(*) from todo_mvc where owner=session.id and status='' $)
 item left
 >
 
@@ -70,14 +70,15 @@ set my.todo_type='';
 >
 <#:button --{title:"Active"}
 set my.todo_type='1';
-><#:button --{title:"Completed"}
+>
+<#:button --{title:"Completed"}
 set my.todo_type='2';
 >
 
 ```
 
 ## Getting Started
-TODO
+Download instructions should be up by 3 January 2015.
 
 
 
@@ -105,5 +106,5 @@ but not free as in beer, but cheap as in peanuts.
 When evaluating SQL-MVC keep in mind this project is still version 0.0.1- alpha/preview  
 release - a lot of stuff is not 100% polished or even to spec,
 try and pick up the key points we are trying to demonstrate not shortcomings or bugs
- (although all feedback is welcome).[More ...](http://www.SQL-MVC.com/docs/AlphaNotice)	
+ (although all feedback is welcome).
  
