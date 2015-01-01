@@ -17,7 +17,7 @@
 * All database queries are amalgamated into a single database stored procedure call. 
 * Almost no middle-ware processing.	
 * Exchange only JSON data elements across the wire.	
-* Build Single Page Applications using Nodejs, SocketStream and Hogan templates	
+* Build with Nodejs, SocketStream and Hogan templates to produce Single Page Applications.	
 * The page loads full visible content on first load - no partial view like waiting for multiple Ajax /ReST calls.
 * Lazy loading of application client code while the user keys in his login information( if not cached already).
 * Partial div(Divout) / records load/reload  on Navigating / Saving or refreshing content.
@@ -30,7 +30,8 @@
 * Planned support for client side stored procedures to enable no-sql and local sqlite databases.
 
 ##Usage	
-Example code similar to todomvc.com - Live Demo http://todomvc.sql-mvc.com/
+This example is a complete implementation of [todomvc.com](http://todomvc.com) functionality in 40 lines of code.
+Live Demo at http://todomvc.sql-mvc.com/
 
 ```
 <#:model
