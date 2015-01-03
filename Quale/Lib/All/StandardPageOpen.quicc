@@ -1,0 +1,35 @@
+
+<#script
+
+declare overridemastertable varchar(41);
+declare linkby varchar(41);
+declare field$name varchar(41);
+declare operator$ref varchar(41);
+
+sql overridemastertable=null;
+select field_name,valu,query from Z$PK_CACHE where master=:pki and indx=:pkf into :field$name,:overridemastertable,:linkby;
+select operator_ref from Z$CONTEXT where pk = :pki into :operator$ref;
+execute overridemastertable;
+sql overridemastertable=COALESCE(overridemastertable,'#defaultmastertable#');
+
+into operator select * from Z$USER where Z$USER.ref=:operator$ref; 
+
+INSERT INTO Z$CONTEXT (PK, TSTAMP, OPERATOR_REF, ID,Linked_from_cid,Linked_from_indx) 
+VALUES (:cid,'now',:operator$ref ,:z$sessionid ,:pki,:pkf);
+
+if (field$name='click') then 
+    begin
+	   sql overridemastertable=' from '||:overridemastertable||' where '||:linkby;
+	end   
+else
+		sql overridemastertable=' from '||:overridemastertable||' where ref='''||:linkby||'''';
+	
+
+into master select * ::-overridemastertable;	
+	
+
+>
+<#xmodel_scan>
+<#inject_point >
+
+<div cid={{cid}}> <!-- start of divine page -->

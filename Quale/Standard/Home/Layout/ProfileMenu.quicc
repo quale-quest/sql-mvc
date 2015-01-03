@@ -1,0 +1,48 @@
+
+
+	<div id="header">
+		<div id="logo" class="droptips">
+			<a href="#" title="sql-mvc.com"><img src="../../images/Green_strawberryIconAlpha.png" width="58" height="58" alt="sql-mvc.com"></a>
+		</div>
+		<div id="topbar">
+
+			<ul class="notify-button">
+
+                                <li  class="msg-save" ><a href="#"  title="Save Changes" language=javascript onclick="return(zxnav(event,0,0));"  >
+                                <span id="deltacounter1" class="new-alert">0</span></a></li>
+			
+			        <#Menux li-class="notify-alert" from=Z$USER where=ref=Operator.Ref form=Index Title="Active Users" Style=HeadBar
+                                       rightspan=new-alert,"($elect count(*) from Z$USER where Z$USER.parentme=master.ref $)">
+                                       
+			        <#Menu li-class="msg-alert" 
+                    from="Z$USER" where=ref=Operator.ref 
+                    form=Operator\Inbox
+                    Title="Inbox" Style=HeadBar                                       
+                    rightspan="new-alert,($elect count(*) from Mail where TO_USER=operator.ref$)"
+                    >
+			</ul>
+		</div>
+		<div id="usermenu">
+
+			<a href="#" class="admin-user"><#print "#operator.name# "><span class="user-icon"></span></a>
+			
+			<div class="sub-menu">
+				<ul>
+<#xMenuScan file=UserMenu from=Z$USER where=ref=Operator.Ref>				
+				        <#Menu icon="icon-block-black cog-b" from=Z$USER where=ref=operator.ref form=Operator\Preferences Title="Preferences" Style=UserBar>
+				        <#xMenu icon="icon-block-black info-about-b" from=Z$USER where=ref=Operator.Ref form=Help\Main Title="Help?" Style=UserBar>
+				        <#Menu icon="icon-block-black box-incoming-b" from=Z$USER where=ref=Operator.Ref form=Operator\Inbox Title="Inbox" Style=UserBar>
+				        <#xMenu icon="icon-block-black locked-tw-b" from=Z$USER where=ref=Operator.Ref form=~\Layout\Operator\Logout Title="Logout" Style=UserBar>
+				</ul>
+				<div class="admin-thumb">
+					<img src="../../images/qqui1/user-thumb1.png" alt="user" width="50" height="50">
+					
+					<#xMenu icon="p-edit" from=Z$USER where=ref=Operator.Ref form=~\All\Operator\Profile Title="EditProfile" Style=UserEdit>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	
+
+<!--end  ProfileMenu-->

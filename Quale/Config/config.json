@@ -1,0 +1,31 @@
+{
+	"serve_port": "3000",
+	"run_mode": "Develop",
+	"first": 300,
+	"db": {
+		"dialect": "fb25",
+		"server": "127.0.0.1",
+		"database": "/var/db/b7.fdb",
+		"username": "using the value from authfile",
+		"password": "using the value from authfile",
+		"authfile": "/etc/firebird/2.5/SYSDBA.password",
+		"user_table": {
+			"table_name": "Z$USER",
+			"display_name_field": "Name",
+			"primary_key_field": "ref",
+			"username_field": "USER_NAME",
+			"password_field": "PASSWORD",
+			"keys_field": "KEY_LIST"
+		},
+		"pk": "ref"
+	},
+	"email": {
+		
+	},
+	"cdn": {
+		"server": "localhost",
+		"publish": {
+			"url": "localfoldername"
+		}
+	}
+}

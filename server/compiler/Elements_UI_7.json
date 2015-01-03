@@ -1,0 +1,498 @@
+{
+    "comment": "//eof",
+	
+	
+	"xActionMain":"<span $li_class$><a href=\"#\" language=javascript onclick=\"$url$\" $LinkElements$ >$LeftSpan$ aaaaa$Title$ $RightSpan$ </a></span>",
+	"xLinkActionMain":"<span $li_class$><a href=\"#\" language=javascript onclick=\"$url$\" $LinkElements$ >$LeftSpan$  bbbbbbb$Title$ $RightSpan$ </a></span>",
+	
+
+	"ShortCutSlideActionDiv":"<div id=\"panel-right\" class=\"panel-close\"><span class=\"right-toggle\" title=\"Shortcut\">&nbsp;</span><ul class=\"shortcut-panel\">",
+	"ShortCutSlideActionEndDiv":"</ul></div>",
+	"ShortCutSlideActionMain":" <li $li_class$><a href=\"#\" title=\"$Title$\" language=javascript onclick=\"$url$\" $LinkElements$ >$LeftSpan$ </a></li>",
+
+	"ShortCutBarActionDiv":"<div id=\"shortcur-bar\" class=\"column\"><ul>",
+	"ShortCutBarActionEndDiv":"</ul></div>",
+	"ShortCutBarActionMain":" <li $li_class$><a href=\"#\" language=javascript onclick=\"$url$\" $LinkElements$ >$LeftSpan$ $Title$ $RightSpan$</a></li>",
+
+
+
+	"FootActionDiv":"<div id=\"footer-wrap\"><div id=\"footer\"><div class=\"footer-container\"><div class=\"footer-nav\"><ul>",
+	"FootActionEndDiv":"</ul></div><div class=\"copyright\">&copy; 2012 Xietel - All rights reserved</div></div><div id=\"goTop\"><a href=\"#\" class=\"tip-top\" title=\"Go Top\">Top</a></div></div></div>",
+	"FootActionMain":" <li $li_class$><a href=\"#\" language=javascript onclick=\"$url$\" $LinkElements$ >$LeftSpan$ $Title$ $RightSpan$</a></li>",
+
+
+
+
+
+	
+    "FormActionFieldView": "<a href= \"$CgiExe$/Page?X=$QueryRef$ \">hhhhhhhh$hrefdisplayvalue$</a>",
+    "HrefActionFieldView": "<a href= \"$PtrFieldValue$ \">ggggggg$hrefdisplayvalue$</a>",
+    "LrefActionFieldView": "<a href= \"zxvl:$host$__$linkref$ \">fffff$hrefdisplayvalue$</a>",
+    "jsActionFieldView": "<input type= \"button \" value= \"$hrefdisplayvalue$ \" onClick= \"javascript:$PtrFieldValue$ \" class= \"submit-button-login \" >",
+    "graphActionFieldView": " \"$CgiExe$/Page?X=$QueryRef$ \"",
+    "PlainTextFieldEdit": "<input type= \"text \" id='$id$' $onchange$  size= \"$size$ \" maxlength= \"$maxsize$ \" value= \"$displayvalue$ \">",
+    "DefaultRatingTextFieldEdit": "<div id= \"number \" class= \"fieldwrap \"></div>",
+    "TextFieldItem": "<input type= \"text \" id='$id$' $onchange$  size= \"$size$ \" maxlength= \"$maxsize$ \" value= \"$displayvalue$ \">",
+    "PlaceHolderFieldItem": "<input type= \"text \" id='$id$' $onchange$  size= \"$size$ \" maxlength= \"$maxsize$ \" placeholder= \"$displayvalue$ \">",
+
+
+    "todoDateSliderTextFieldEdit": "<div class= \"range-value \"><label for='$id$'></label><input type= \"text \" id='$id$' $onchange$ value= \"$displayvalue$ \" /></div><div id= \"sl$id$ \" class= \"handler \"></div>",
+    "todoDateSliderTextFieldEditScript": "$( \"#sl$id$ \").css('width',$size$0); $( \"#sl$id$ \").slider({value:  \"$displayvalue$ \", max: 10, step: 1, 'showMarkers' : true, change: function(event, ui) { $( \"#$id$ \").val( ui.value ); $( \"#$id$ \").trigger('change'); } });",
+    "BoxTextFieldEdit": "<textarea  type= \"text \" id='$id$' $onchange$  maxlength= \"$maxsize$ \" rows= \"10 \" cols= \"160 \" >$displayvalue$</textarea>",
+    "DataViewOnly": "0",
+    "DataNBSP": "1",
+    "DataisForm": "0",
+    "DataInherit": "",
+    "DataProduceDataTableTypes": "",
+    "DataHeadFieldFormat": "$field$$ContextButton$",
+    "DataBodyFieldFormat": "$field$$ContextButton$",
+    "DataBodyFieldSeperator": "",
+    "DataRecordSeperator": "$CRLF$",
+    "DataRecordTerminator": "",
+    "DataInvalidChars": "",
+    "DataTopTitle": "<p><b>{{name}}</b></p>",
+    
+    "DataHeadFieldSeperator": "",
+    "DataHeadFieldTitle": "<thscope=\"col\">$field$</th>",
+    "DataHeadFirstFieldTitle": "<thscope=\"col\">$field$</th>",
+    "FirstBlankDataHeadFirstFieldTitle": "<td></td>NOTUSED",
+    "DataFootTitle": "<tr>$record$</tr>",
+    "DataFootFieldSeperator": "",
+    "DataFootFieldTitle": "<td><b>$field$</b></td>",
+    "DataFootFirstFieldTitle": "<td><b>$field$</b></td>",
+    "FirstBlankDataFootFirstFieldTitle": "<td></td>NOTUSED",
+    "DataHeaderPaging": "<formautocomplete=\"off\"><tableid=\"$tid$\">$PageInput$</table></form>",
+    "DataRecord": "<tr>$record$</tr>",
+    "DataTHead": "$head$",
+    "DataGraph": "$graph$",
+    "DataDiv": "$Content$<scripttype=\"text/javascript\">$TableScripts$</script>",
+    "PlainDataInherit": "",
+    "PlainDataWrap": "<formautocomplete=\"off\"><tableid=\"$tid$\">{{{pop}}}</table></form>",
+    "DefaultDataInherit": "",
+    "DefaultDataWrap": "<divclass=\"form-grid\"><formautocomplete=\"off\"class=\"leftLabel\"><tableid=\"$tid$\"class=\"display$SubStyle$\"><caption>$Caption$</caption>{{{pop}}}</table></form></div>",
+    "DefaultDataHideIfEmpty": "1",
+    "TableGraphDataTopTitle": "",
+    "TableGraphDataWrap": "<div><ahref=\"#\"id=\"btn$tid$\"onclick=\"returnToggleThroughTables('$tid$');\"class=\"ChartTypeSpan\">Changetobargraph</a><tableid=\"$tid$\"><caption>$Caption$</caption>{{{pop}}}</table></div>",
+    "HtmlCodeDataInherit": "Concat",
+    "HtmlCodeDataEscapeHtml": "0",
+    "TableDataHeadFieldTitleSorted": "<td>$field$</td>",
+    "TableDataHeadFieldTitleCurrencySorted": "<td>$field$</td>",
+    "TableDataHeadFieldTitleNumberSorted": "<td>$field$</td>",
+    "TableDataHeadFieldTitleDateSorted": "<td>$field$</td>",
+    "TableDataHeadFieldTitleLinkSorted": "<td>$field$</td>",
+    "ContainerOpen": "<divclass=\"widget-panel\"><divclass=\"widget-top\">$LeftSpan$<h4>$Title$</h4>$RightSpan$</div><divclass=\"widget-contentmodule\"><divclass=\"content-blocktbl-default\">",
+    "ContainerClose": "</div></div></div>",
+    "ContainerFirst": "First",
+    "ContainerMaintainItemList": "0",
+    "ThinContainerOpen": "<divclass=\"widget-panel\"><divclass=\"widget-clear\">$LeftSpan$<h4>$Title$</h4>$RightSpan$</div><divclass=\"widget-contentmodule\"><divclass=\"content-blocktbl-default\">",
+    "ThinContainerClose": "</div></div></div>",
+    "ThinContainerFirst": "First",
+    "ThinContainerMaintainItemList": "0",
+    "CollapsableContainerOpen": "<divclass=\"widget-panel\"><divclass=\"widget-topcollapse-bar\"><h4>$Title$</h4>$RightSpan$</div><divclass=\"widget-contentmodule\"><divclass=\"content-blocktbl-default\">",
+    "CollapsableContainerClose": "</div></div></div>",
+    "CollapsableContainerMaintainItemList": "0",
+    "AccordionContainerOpen": "<divclass=\"widget-panel\"><divclass=\"widget-contentmodule\"><divclass=\"accordion-basic\"id=\"list-accordion\"><aclass=\"title\">$Title$$RightSpan$</a><div>",
+    "AccordionContainerNext": "</div><aclass=\"title\">$Title$</a><div>",
+    "AccordionContainerClose": "</div></div></div></div>",
+    "AccordionContainerMaintainItemList": "0",
+    "TabContainerOpen": "<divclass=\"widget-panel\"><divclass=\"widget-contentmodule\"><divclass=\"tabBlock\"><divclass=\"widget-top\"><ulclass=\"mytabs\">$TabList$</ul></div><divclass=\"mytabContainer\"><divid=\"$tabid$\"class=\"tab-block\"><divclass=\"tab-content\">",
+    "TabContainerItem": "<li><ahref=\"#$tabid$\">$Title$</a></li>",
+    "TabContainerNext": "</div></div><divid=\"$tabid$\"class=\"tab-block\"><divclass=\"tab-content\">",
+    "TabContainerClose": "</div></div></div></div></div></div>",
+    "TabContainerMaintainItemList": "1",
+    "G960Open": "<divid=\"content\"><divclass=\"container_12\">\"G960First=\"<divclass=\"grid_$grid$\">\"G960Next=\"</div><divclass=\"grid_$grid$\">\"G960Clear=\"<divclass=\"clear\"></div>\"G960Close=\"</div></div>\"",
+    "NotifyDiv": "<divclass=\"notification-wrapinformation\"><spanclass=\"icon-information\">Information: </span>$Text$</div>",
+    "HelpNotifyDiv": "<divclass=\"notification-wrapinformation\"><spanclass=\"icon-information\">Help: </span>$Text$</div>",
+    "InfromNotifyDiv": "<divclass=\"notification-wrapinformation\"><spanclass=\"icon-information\">Information: </span>$Text$</div>",
+    "WarningNotifyDiv": "<divclass=\"notification-wrapwarning\"><spanclass=\"icon-warning\">Warning: </span>$Text$</div>",
+    "SuccessNotifyDiv": "<divclass=\"notification-wrapsuccess\"><spanclass=\"icon-success\">SUCCESS: </span>$Text$</div>",
+    "FailureNotifyDiv": "<divclass=\"notification-wrapfailuer\"><spanclass=\"icon-failure\">FAILURE: </span>$Text$</div>",
+    "BriefNotifyDiv": "<scripttype=\"text/javascript\">$container=$(\"#container-n\").notify();create(\"default\",    {title: 'BriefNotification',text: '$Text$'});</script>",
+    "StickyNotifyDiv": "<scripttype=\"text/javascript\">$container=$(\"#container-n\").notify();create(\"sticky\",    {title: 'Notification',text: '$Text$'},{expires: false});</script>",
+    "StickyIconNotifyDiv": "<scripttype=\"text/javascript\">$container=$(\"#container-n\").notify();create(\"withIcon\",{title: 'Warning!',text: '$Text$',icon: '$Icon$'},{expires: false});</script>",
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+"active commands from here":"",
+"Buttons menus and  links - action widget":"comment",	
+
+	"ButtonActionMain":"<span class=\"icon-wrap-lb\"><a href=\"#\"  language=javascript onclick=\"$url$\"  title=\"$Title$\"><span class=\"icon-block-black $Glymph$\"></span>$Title$</a></span>",
+
+	"HeadBarActionMain":" <li $li_class$><a href=\"#\"  title=\"$Title$\" language=javascript onclick=\"$url$\" $LinkElements$ >$LeftSpan$  $RightSpan$</a></li>",
+	"UserBarActionMain":" <li $li_class$><a href=\"#\"  language=javascript onclick=\"$url$\" $LinkElements$ >$LeftSpan$ $Title$ $RightSpan$</a></li>",
+	"UserEditActionMain":" <span><a href=\"#\" class=\"p-edit\" language=javascript onclick=\"$url$\" $LinkElements$ > $Title$ $RightSpan$</a></span>",
+	
+	
+    "LBMenuActionDiv": "<div id=\"sidebar\"><ul id=\"sidenav\" class=\"menu collapsible\">",	
+    "LBMenuActionEndDiv": "</ul></div>",
+    "LBMenuActionEndSub": "</ul></li>",
+    "LBMenuActionMain": " <li $li_class$><a href=\"#\" language=javascript onclick=\"$url$\" $LinkElements$ >$LeftSpan$ $Title$ $RightSpan$ </a></li>",
+    "LBMenuActionSub": "    <li $li_class$><a href=\"#\" language=javascript onclick=\"$url$\" $LinkElements$ >$LeftSpan$  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $Title$ $RightSpan$ </a></li>",
+    "LBMenuActionHead": "<li><a href=\"#\"> $Title$ <span class=\"zxnav-right-icon file-exe\">&nbsp;</span></a><ul class=\"acitem\">",
+
+ 	
+"Base Element widgets":"comment",	
+	"View_Head": "{{widget.title}}",
+	"View_Div": "{{{pop}}}",
+	"View_Main": "[[{{pop}}]]",	
+	"View_Script": "",
+
+"Buttons menus and  links - element widget":"comment",	
+	"LinkFieldLink_Main": "<a href=\"#\" language=javascript onclick=\"return(zxnav(event,[[0]],{{QryOffset}}));\" {{{LinkElements}}} >{{{LeftSpan}}} [[{{pop}}]] {{{RightSpan}}} </a>",
+	"LinkFieldView_Head": "inherit:View_Head",	
+	"LinkFieldLink_Div":"inherit:View_Div",
+	"LinkFieldLink_Script": "inherit:View_Script",
+	
+
+	"ButtonLinkFieldLink_Main": [
+	    "<span class=\"icon-wrap-lb\">",
+		"<a href=\"#\" language=javascript onclick=\"return(zxnav(event,[[0]],{{QryOffset}}));\" {{{LinkElements}}} >",
+		    "{{{LeftSpan}}} [[{{pop}}]] {{{RightSpan}}} ",
+		"</a></span>"],
+	"ButtonLinkFieldView_Head": "inherit:View_Head",	
+	"ButtonLinkFieldLink_Div":"inherit:View_Div",
+	"ButtonLinkFieldLink_Script": "inherit:View_Script",
+
+	"IconLinkFieldLink_Main": [
+	    "<span class=\"icon-wrap-lb\">",
+		"<a href=\"#\" language=javascript onclick=\"return(zxnav(event,[[0]],{{QryOffset}}));\" {{{LinkElements}}} >",
+		    "{{{LeftSpan}}}<span class=\"icon-block-black {{field.f.icon}}\"></span> [[{{pop}}]] {{{RightSpan}}} ",
+		"</a></span>"],
+	"IconLinkFieldView_Head": "inherit:View_Head",	
+	"IconLinkFieldLink_Div":"inherit:View_Div",
+	"IconLinkFieldLink_Script": "inherit:View_Script",
+
+	
+
+"Base editing Element widgets":"comment",	
+	
+	"Edit_Main": ["<div class= \"fieldwrap\"><input id='{{id}}' type=\"text\" ",
+			"{{#field.f.title}}title=\"{{field.f.title}}\"{{/field.f.title}}",
+			"{{#field.f.placeholder}}placeholder=\"{{field.f.placeholder}}\"{{/field.f.placeholder}} ",
+			"{{#field.f.autosave}}data-autosave=\"{{field.f.autosave}}\"{{/field.f.autosave}} ",
+			"{{#field.f.size}}size=\"{{field.f.size}}\"{{/field.f.size}} ",
+			"{{#field.f.maxlength}}maxlength=\"{{field.f.maxlength}}\"{{/field.f.maxlength}} ",							
+			"onchange=\"zxd(event,[[0]],{{QryOffset}});\" ",
+			"value=\"[[{{pop}}]]\" /></div>"],	    	
+	"Edit_Div": "{{{pop}}}",
+	"Edit_Script": "",
+	
+	
+"More advanced widgets":"comment",		
+
+    "HideFieldView_Head":"",
+	"HideFieldView_Main":"",
+	"HideFieldView_Div":"",
+	"HideFieldView_Script":"",
+
+	"TextFieldView_Head": "inherit:View_Head",		
+	"TextFieldView_Main":"inherit:View_Main",
+	"TextFieldView_Div":"inherit:View_Div",
+	"TextFieldView_Script": "inherit:View_Script",
+	
+	"TextFieldEdit_Main":"inherit:Edit_Main",
+	"TextFieldEdit_Div": "{{{pop}}}",
+	"TextFieldEdit_Script": "inherit:Edit_Script",
+	
+
+    "BoxTextFieldView_Main":["<textarea readonly type=\"text\"",
+		" {{#field.f.width}}cols=\"{{field.f.width}}\"{{/field.f.width}}",
+		" {{#field.f.y}}rows=\"{{field.f.y}}\"{{/field.f.y}}{{^field.f.y}}rows=\"{{field.f.y}}\"{{/field.f.y}}",
+		">[[[{{pop}}]]]</textarea>"],			
+	"BoxTextFieldView_Div":"inherit:View_Div",
+	"BoxTextFieldView_Script":"inherit:Edit_Script",
+    "BoxTextFieldEdit_Main":["<textarea  type=\"text\"",
+		" onchange=\"zxd(event,[[0]],{{QryOffset}});\" ",
+		" {{#field.f.size}}maxlength=\"{{field.f.size}}\"{{/field.f.size}}",
+		" {{#field.f.width}}cols=\"{{field.f.width}}\"{{/field.f.width}}",
+		" {{#field.f.y}}rows=\"{{field.f.y}}\"{{/field.f.y}}{{^field.f.y}}rows=\"{{field.f.y}}\"{{/field.f.y}}",
+		"{{#field.f.placeholder}}placeholder=\"{{field.f.placeholder}}\"{{/field.f.placeholder}} ",
+		"{{#field.f.autosave}}data-autosave=\"{{field.f.autosave}}\"{{/field.f.autosave}} ",
+		">[[[{{pop}}]]]</textarea>"],			
+	"BoxTextFieldEdit_Div":"inherit:Edit_Div",	
+	"BoxTextFieldEdit_Script":"inherit:Edit_Script",
+	"BoxTextFieldView_Head": "inherit:View_Head",		
+	 
+		
+	"LookupFieldView_Head": "inherit:View_Head",	
+	"LookupFieldView_Main": "[[lookup({{pop}},'{{field.f.List}}')]]",	
+	"LookupFieldView_Div":"inherit:Edit_Div",
+	"LookupFieldView_Script":"inherit:Edit_Script",
+	
+	"LookupFieldEdit_Main": ["<div class= \"fieldwrap\">",
+		"<select id='{{id}}' onchange=\"zxd(event,[[0]],{{QryOffset}});\"  ",
+		"onkeydown=\"return FillList(event,'{{field.f.List}}') \" onmouseover= \"return FillList(event,'{{field.f.List}}')\" ",
+		"{{#field.f.placeholder}}placeholder=\"{{field.f.placeholder}}\"{{/field.f.placeholder}} ",
+		"{{#field.f.autosave}}data-autosave=\"{{field.f.autosave}}\"{{/field.f.autosave}} ",
+		"style=\"width:19em; \"><OPTION value='[[{{pop}}]]' selected>[[lookup({{pop}},'{{field.f.List}}')]]</OPTION></SELECT></div>"],	
+	"LookupFieldEdit_Div":"inherit:Edit_Div",
+	"LookupFieldEdit_Script":"inherit:Edit_Script",
+	"LookupPluginCode":"some way of making this code and the code in app.js  and in templates/widgets pluggable",
+
+	"RadioFieldEdit_Main":  ["[[[radio({{pop}},'{{field.f.List}}',0,'{{QryOffset}}','",
+	           "{{#field.f.autosave}}\"data-autosave\":\"{{field.f.autosave}}\"{{/field.f.autosave}} ",		
+	           "')]]]"],		
+	"RadioFieldEdit_Div":"inherit:Edit_Div",
+	"RadioFieldEdit_Script":"inherit:Edit_Script",
+	"RadioFieldView_Head": "inherit:View_Head",	
+	"RadioPluginCode":"some way of making this code and the code in app.js  and in templates/widgets pluggable",
+
+	"PickFieldEdit_Main":  ["[[[pick({{pop}},'{{field.f.List}}',0,'{{QryOffset}}','",
+	           "{{#field.f.autosave}}\"data-autosave\":\"{{field.f.autosave}}\"{{/field.f.autosave}} ",		
+	           "')]]]"],		
+	"PickFieldEdit_Div":" <div data-qqpickvalue='[[{{f_index}}]]'>{{{pop}}}</div>",
+	"PickFieldEdit_Script":"inherit:Edit_Script",
+	"PickPluginCode":"some way of making this code and the code in app.js  and in templates/widgets pluggable",
+	"PickFieldView_Head": "inherit:View_Head",	
+	
+    "DatepickerTextFieldEdit_Main": [
+			"<input class= \"datepicker\"  title=\"{{widget.title}}\" ",
+			" onchange=\"zxd(event,[[0]],{{QryOffset}});\" ",
+			"{{#field.f.autosave}}data-autosave=\"{{field.f.autosave}}\"{{/field.f.autosave}} ",
+			"type=\"text\" ",
+			"value=\"[[[codec_date({{pop}})]]]\" />"
+			],
+    "DatetimepickerTextFieldEdit_Main": [
+			"<input class= \"datetimepicker\"  title=\"{{widget.title}}\" ",
+			" onchange=\"zxd(event,[[0]],{{QryOffset}});\" ",
+			"{{#field.f.autosave}}data-autosave=\"{{field.f.autosave}}\"{{/field.f.autosave}} ",
+			"type=\"text\" ",
+			"value=\"[[[codec_stamp({{pop}})]]]\" />"
+			],
+	"DatepickerTextFieldView_Head": "inherit:View_Head",	
+	"DatepickerTextFieldEdit_Div":"inherit:Edit_Div",
+	"DatepickerTextFieldEdit_Script":"inherit:Edit_Script",
+	"DatetimepickerTextFieldView_Head": "inherit:View_Head",	
+	"DatetimepickerTextFieldEdit_Div":"inherit:Edit_Div",
+	"DatetimepickerTextFieldEdit_Script":"inherit:Edit_Script",	
+		
+    "SliderTextFieldEdit_Main": [
+		"<div class=\"qq-range-value\" ",
+		"data-min=\"{{field.f.min}}\" ",
+		"data-max=\"{{field.f.max}}\" ",
+		"data-step=\"{{field.f.step}}\" ",		
+		"data-width=\"{{field.f.pxwidth}}\" ",
+		"data-value=\"[[[{{pop}}]]]\" ",		
+		"data-orientation=\"{{field.f.orientation}}\" ",
+		">",		
+		"<input type= \"text\" ",
+		"onchange=\"zxd(event,[[0]],{{QryOffset}});\" ",
+		"{{#field.f.autosave}}data-autosave=\"{{field.f.autosave}}\"{{/field.f.autosave}} ",
+		"class= \"SlideValueDisplay \" ",
+		"value= \"[[[{{pop}}]]]\" ",			
+		"/>",
+		"</div><div class= \"handler \"></div>"
+		],
+
+		
+	"SliderTextFieldEdit_Script":"inherit:Edit_Script",
+	"SliderTextFieldEdit_Div":"inherit:Edit_Div",
+	"SliderTextFieldView_Head":"inherit:View_Head",	
+
+"SoftCodecs - server side codecs":"",				
+    "SoftCodec-Date": {
+        "encoder": "F{{indx}}=substring(:F{{indx}} from 1 for 10);",
+        "decoder": "select cast( cast(? as varchar(256))||' 00:00:00'  as varchar(256)) from rdb$database"
+    },
+    "SoftCodec-Kg": {
+        "encoder": "F{{indx}}=substring(cast((cast(:F{{indx}} as float )/1000) as varchar(20)) from 1 for 5)||' kg';",
+        "decoder": "select cast( cast( (cast(replace(cast(? as varchar(256)),' kg','') as float))*1000.0 as integer )  as varchar(256)) from rdb$database"		
+    },	
+	
+"data containers":"comment",						
+    "DataTopTitle": "<p><b>{{table.Title}}</b></p>",			
+    "DataWrap": "<div > <form autocomplete=\"off\"><table class=\"qq-table\" id=\"{{tid}}\">{{{head_html}}}{{{body_html}}}{{{foot_html}}}</table></form></div>",
+	
+    
+    "DataHead": "$CRLF$<thead>{{{pop}}}</thead>",
+	"DataHeadRecordWrap":"{{{pop}}}",
+	"DataBodyRecordWrap":"{{{pop}}}",
+	"DataFootRecordWrap":"{{{pop}}}",
+
+    "DataHeadRow": "<tr>{{{pop}}}</tr>",
+    "DataHeadFirstFieldCell": "<th scope=\"col\">{{#proper}}{{field.f.title}}{{/proper}}{{{pop}}}</th>",
+    "DataHeadFieldCell": "<td>{{#proper}}{{field.f.title}}{{/proper}}{{{pop}}}</td>",
+	
+    "DataBody": "$CRLF$<tbody>{{{pop}}}</tbody>",
+    "DataBodyArray": "[[#{{{tid}}}]]{{{pop}}}[[/{{{tid}}}]]",
+    "DataBodyRow": "<tr>{{{pop}}}</tr>",
+    "DataBodyFirstFieldCell": "<th scope=\"row\">{{{pop}}}</th>",
+    "DataBodyFieldCell": "<td>{{{pop}}}</td>",
+	"DataFoot": "$CRLF$",
+    "DataFootRow": "<tr>{{{pop}}}</tr>",
+    "DataFootFirstFieldCell": "<th scope=\"col\">{{{pop}}}</th>",
+    "DataFootFieldCell": "<td>{{{pop}}}</td>",
+	
+	
+	"FormDataWrap": "<form autocomplete=\"off\"><table id=\"{{tid}}\">{{{head_html}}}{{{body_html}}}{{{foot_html}}}</table></form>",
+	"FormDataTopTitle": "<p><b>{{#proper}}{{table.name}}{{/proper}}</b></p>",		
+	"FormDataHeadRecordWrap":"",
+	
+	"FormDataFootRecordWrap":"",
+    "FormDataHead": "",
+    "FormDataHeadRow": "",
+    "FormDataHeadFirstFieldCell": "",
+    "FormDataHeadFieldCell": "",
+	
+	"FormDataBodyArray": "[[#{{{tid}}}]]{{{pop}}}[[/{{{tid}}}]]",
+    "FormDataBody": "$CRLF${{{pop}}}",
+    "FormDataBodyRow": "{{{pop}}}",
+	"FormDataBodyRecordWrap":"{{{pop}}}",
+	
+    "FormDataBodyFirstFieldCell": "<tr><td>{{#proper}}{{field.f.title}}{{/proper}}</td><td>{{{pop}}}</td></tr>",
+    "FormDataBodyFieldCell": "<tr><td>{{#proper}}{{field.f.title}}{{/proper}}</td><td>{{{pop}}}</td></tr>",
+
+	
+    "FormDataFoot": "",
+    "FormDataFootRow": "",
+    "FormDataFootFirstFieldCell": "",
+    "FormDataFootFieldCell": "",
+
+
+	"DTData_Inherit":"",
+    "DTDataWrap": "<div > <form autocomplete=\"off\"><table class=\"data-table\" id=\"{{tid}}\">{{{head_html}}}{{{body_html}}}{{{foot_html}}}</table></form></div>",	
+	
+	"TodoData_Inherit":"",
+	"TodoDataTopTitle": "",			
+	"TodoDataHeadRecordWrap":"",
+	"TodoDataFootRecordWrap":"",
+	
+    "xTodoDataHead": "$CRLF$<thead>{{{pop}}}</thead>",
+	"xTodoDataBody":"inherit:DataBody",
+	"xTodoDataFoot":"inherit:DataFoot",
+	
+	
+	"xTodoDataBodyRecordWrap":"{{{pop}}}",
+	
+
+    "xTodoDataFootFirstFieldCell":"inherit:DataFootFirstFieldCell",
+	"xTodoDataBodyFirstFieldCell":"inherit:DataBodyFirstFieldCell",
+	"xTodoDataHeadFirstFieldCell":"inherit:DataHeadFirstFieldCell",
+	
+	"xTodoDataHeadFieldCell":"",	
+	"xTodoDataBodyFieldCell":"inherit:DataBodyFieldCell",
+	"xTodoDataFootFieldCell":"",
+	
+	"xTodoDataHeadRow":"",
+	"xTodoDataBodyRow":"inherit:DataBodyRow",
+	"xTodoDataFootRow":"",
+	
+	"xTodoDataBodyArray":"inherit:DataBodyArray",
+	
+	
+"New stuff not yet implemented":"comment",			
+	
+    "AlignShortHand": {
+        "l": " align=right ",
+        "c": " align=centre "
+    },
+    "MethodShortHand": {
+        "": "view",
+        "v": "view",
+        "e": "edit",
+        "h": "hide"
+    },
+    "WidgetShortHand": {
+        "": "text",
+        "t": "text",
+        "l": "lookup",
+        "r": "radio",
+        "i": "ick"
+    },
+
+		
+	
+"Deprecate":"comment",			
+	
+	"xViewScript": "",
+	
+	"xFieldLink": "<a href=\"#\" language=javascript onclick=\"return(zxnav(event,[[0]],{{QryOffset}}));\" {{{LinkElements}}} >{{{LeftSpan}}} [[{{pop}}]] {{{RightSpan}}} </a>",
+
+    "xFieldViewMain":"inherit:ViewMain",
+    "xxxViewFieldViewMain": "inherit:ViewFieldMain",
+	
+
+	
+	
+	"xFieldViewUnChecked": "",
+    "xFieldViewSeperator": "",
+	
+    "xxFieldEdit": "[[{{pop}}]]",
+    "xxTextFieldEditField":"",
+	"xTextFieldEditScript":"",
+	"xxViewFieldViewField":"",
+	"xViewFieldViewScript":"inherit:ViewScript",
+
+
+
+    
+	"xxEditFieldEditMain": "<div class= \"fieldwrap\"><input id='{{id}}' onchange=\"zxd(event,[[0]],{{QryOffset}});\" {{#title}}title=\"{{title}}\"{{/title}} type=\"text\" {{#size}}size=\"{{size}}\"{{/size}} {{#maxlength}}maxlength=\"{{maxlength}}\"{{/maxlength}} value= \"[[{{pop}}]]\" /></div>",
+	"xxFieldEditFieldEditMain": "<div class= \"fieldwrap\"><input id='{{id}}' onchange=\"zxd(event,[[0]],{{QryOffset}});\" {{#title}}title=\"{{title}}\"{{/title}} type=\"text\" {{#size}}size=\"{{size}}\"{{/size}} {{#maxlength}}maxlength=\"{{maxlength}}\"{{/maxlength}} value= \"[[{{pop}}]]\" /></div>",
+
+
+
+    "xFieldEditField": "<div class= \"fieldwrap\"><input id='{{id}}' onchange=\"zxd(event,[[0]],{{QryOffset}});\" {{#title}}title=\"{{title}}\"{{/title}} type=\"text\" {{#size}}size=\"{{size}}\"{{/size}} {{#maxlength}}maxlength=\"{{maxlength}}\"{{/maxlength}} value= \"[[{{pop}}]]\" /></div>",
+	"xFieldEditScript": "",
+	
+	
+
+	"xFieldEditField": "<div class= \"fieldwrap\"><input id='{{id}}' onchange=\"zxd(event,[[0]],{{QryOffset}});\" {{#title}}title=\"{{title}}\"{{/title}} type=\"text\" {{#size}}size=\"{{size}}\"{{/size}} {{#maxlength}}maxlength=\"{{maxlength}}\"{{/maxlength}} value= \"[[{{pop}}]]\" /></div>",
+	
+	"xLookupFieldEdit": "<div class= \"fieldwrap\"><select id='{{id}}' onchange= \"zxd({{tid}},{{QryOffset}},'{{id}}');\"  onkeydown= \"return FillList('{{id}}',$variable$) \" onmouseover= \"return FillList('{{id}}',$variable$) \" style= \"width:19em; \"><OPTION value='[[{{pop}}]]' selected>[[{{pop}}]]</OPTION></SELECT></div>",
+
+    
+    
+    "xTextFieldViewMain": "{{pop}}",
+    "xFieldEditUnChecked": "",
+    "xFieldEditGroupSeperator": "",
+    
+    "xTextFieldEditQuery": "yes",
+	
+    "xRadioFieldEdit": "<input type= \"radio \" id='$id$' name='$name$' $onchange$  value= \"$value$ \" checked>$displayvalue$",
+    "xRadioFieldEditUnChecked": "<input type= \"radio \" id='$id$' name='$name$' $onchange$  value= \"$value$ \">$displayvalue$",
+    "xRadioFieldEditSeperator": "<br>",
+    "xRadioFieldEditDiv": "<div class= \"blockStyle input-uniform \"><span>$div$</span></div>",
+	
+
+	
+	
+    
+		"xxxFormDataHeadFieldSeperator": "",
+		"xxxFormDataHeadFieldTitle": "<td>$field$</td>",
+		"xxxFormDataHeadFieldFormat": "<labelid=\"lbl$tid$\"for=\"$tid$\"class=\"fldTitle\">$field$</label>",
+	
+	"xxxFormDataViewOnly": "0",
+    "xxxFormDataNBSP": "1",
+    "xxxFormRadioFieldEditSeperator": "",    
+    "xxxFormDataBodyFieldFormat": "$FieldTitle$<divclass=\"fieldwrap\">$field$$ContextButton$</div>",
+    "xxxFormDataBodyFirstFieldCell": "<li>{{{pop}}}</li>",
+    "xxxFormDataBodyFieldCell": "<li>{{{pop}}}</li>",
+    "xxxFormDataBodyFieldSeperator": "",
+    "xxxFormDataRecordSeperator": "$CRLF$",
+    "xxxFormDataRecordTerminator": "",
+    "xxxFormDataDiv": "$Content$<scripttype=\"text/javascript\">$TableScripts$</script>",
+    "xxxFormDataTopTitle": "<p><b>$title$</b></p>",
+
+    "xxxFormDataFootTitle": "",
+    "xxxFormDataFootFieldSeperator": "",
+    "xxxFormDataFootFieldTitle": "",
+    
+    "xxxFormDataRecord": "$record$",
+    "xxxFormDataTHead": "",
+    "xxxFormDataBody": "$body$",
+    "xxxFormDataFoot": "",
+    "xxxFormDataGraph": "",
+    "xxxFormDataInherit": "",
+
+	"zzzend":""
+}

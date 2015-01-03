@@ -1,0 +1,27 @@
+--- emoji.js	2014-02-20 03:28:44.000000000 +0200
++++ new_emoji.js	2014-11-19 04:30:22.000000000 +0200
+@@ -941,6 +941,24 @@
+ }
+ jEmoji.unifiedToHTML = unifiedToHTML;
+ 
++var EMOJI_ZX_MAP = {};
++for (var k in EMOJI_MAP) {
++    var em = EMOJI_MAP[k];
++    var code = em[1];
++    EMOJI_ZX_MAP[code] = k;
++    }
++    
++function textToHTML(text) {
++    var txt=text;
++    if (text.substring(0,1)==':') txt=text.slice(1,-1);
++    var m = EMOJI_ZX_MAP[txt];
++    if (m===undefined) return text;//'emoji not found:'+text;
++    var em = EMOJI_MAP[m]; 
++    return '<span class="emoji emoji' + em[2] + '" title="' + em[1] + '"></span>';
++}
++jEmoji.textToHTML = textToHTML;
++
++
+ var EMOJI_DOCOMO_MAP = {};
+ var EMOJI_KDDI_MAP = {};
+ var EMOJI_SOFTBANK_MAP = {};

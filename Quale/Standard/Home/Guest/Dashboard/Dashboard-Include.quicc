@@ -1,0 +1,82 @@
+<pre process=md><pre process=emoji>
+
+
+<div align="center"> 
+#[SQL-MVC](https://github.com/quale-quest/sql-mvc) example implementation of [todomvc.com](http://todomvc.com)
+
+<#list name=Ticked
+values="
+{"1":"",
+"":"ifblank:"}
+"
+>
+
+<#:model
+
+--:{regex:"regex:/varchar/i",Default_length:"20",length:"regex:/(\\d+)/",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} --comment
+--:{regex:"regex:/create\\s+table/i",rl_context:"regex:/create\\s+table\\s+(\\w+)/i"}
+
+--:{class:"pk",Type:"Hide",Action:"Hide",PrimaryKey:true}
+
+
+--:{regex:"regex:/varchar/i",autosave:yes}
+
+CREATE TABLE TODO_MVC				--:{as:"Table"} 
+(
+  REF VARCHAR(40),					--:{as:"pk"}
+  NAME VARCHAR(100),				--:{as:"Text",size:40,title:"todo",onupdate:"owner=session.id"}  
+  OWNER VARCHAR(40),				--:{Type:"Hide"}
+  STATUS VARCHAR(10) default ''		--:{Type:"Pick",List:"Ticked"}  
+);
+
+>
+
+
+<#:table
+Select  --:{Title:"Make new records",from:"TODO_MVC",autoinsert:"top",tablestyle:"Todo"}
+STATUS, --:{Action:"Edit","xautosave":yes,titlex:"status"}
+NAME,   --:{Action:"Edit","placeholder":"What needs to be done (tab to save)","xautosave":yes}
+REF	   --:{Action:"View",Type:"Hide"}
+From TODO_MVC 
+where (owner=session.id and ( (my.todo_type='' and (status!='3' or status is null)) or( (status='' or status is null) and my.todo_type='1')or(status='1' and my.todo_type='2')))
+>
+<#:print 
+--{if:"(select count(ref) from todo_mvc where owner=session.id and (status='' or status is null))!=1" }
+($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $)
+items left
+>
+<#:print 
+--{if:"(select count(ref) from todo_mvc where owner=session.id and (status='' or status is null))=1" }
+($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $)
+item left
+
+>
+
+
+
+<#:button
+--{title:"all"}
+set my.todo_type='';
+>
+<#:button
+--{title:"Active"}
+set my.todo_type='1';
+><#:button
+--{title:"Completed"}
+set my.todo_type='2';
+>
+<#:button
+--{title:"Clear Completed",if:"(select count(ref) from todo_mvc where owner=session.id and status='1')!=0" }
+sql update todo_mvc set status='3' where owner=session.id and (status='1');
+>
+<div align="center"> 
+<br><br><br><br>
+<#print 
+($select count(*) from MAIL where FROM_USER=session.id and SUBJECT='login log' $) logins from you 
+and ($select count(*) from MAIL where SUBJECT='login log' $) logins total (in this session).
+>
+</div>	
+</div>	
+<br>
+<br>
+<br> 

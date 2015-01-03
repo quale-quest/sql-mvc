@@ -1,0 +1,22 @@
+
+<#script
+
+UPDATE OR INSERT INTO MAIL (FROM_USER, STAMP,SUBJECT)
+VALUES (
+    session.id, 
+    'now',
+    'last contact'
+) matching (FROM_USER,SUBJECT) ;
+
+INSERT INTO MAIL (FROM_USER, STAMP,SUBJECT)
+VALUES (
+    session.id, 
+    'now',
+    'login log'
+) ;
+
+
+>
+
+
+<#include file=Dashboard/Dashboard-Include>

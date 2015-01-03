@@ -1,0 +1,12 @@
+--- engine.js	2012-04-10 16:52:21.000000000 +0200
++++ new_engine.js	2014-12-13 17:00:17.000000000 +0200
+@@ -38,7 +38,7 @@
+         compiledTemplate = '<p>Error</p>';
+       }
+ 
+-      return 't[\'' + id + '\']=new ht(' + compiledTemplate + ');';    
++      return 't[\'' + id + '\']=new ht(' + compiledTemplate + ');\n';    
+     }
+   }
+ }
+\ No newline at end of file

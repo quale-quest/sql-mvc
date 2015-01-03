@@ -1,0 +1,19 @@
+#Json Encoder for Firebird
+
+
+
+
+
+#References: 
+##FB UDF
+http://www.codeproject.com/Articles/43200/Writing-UDFs-for-Firebird-Embedded-SQL-Server
+http://ibexpert.net/ibe/index.php?n=Doc.HowToWriteAnInternalUDFFunction
+http://www.aolserver.cz/download/UDF_fb_mhash-1.2.01.tgz
+
+http://code.openhub.net/project?pid=1DUnjYAueHw&prevcid=1&did=rfunc2&cid=ush_TNLKuwc&fp=267556&projSelected=true
+www.codeproject.com/KB/database/udf-for-firebird.aspx
+
+
+##JSON
+https://code.google.com/p/json-simple/wiki/EscapingExamples
+https://github.com/ATNoG/JSONObject/blob/nativeCpp/StringUtils.hpp
