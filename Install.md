@@ -5,70 +5,83 @@
 sudo su # if you are not already root       
 
 #basics
+```
 apt-get update
 apt-get upgrade
 apt-get install -y build-essential sudo curl git nano unzip tcl python
 apt-get install -y fail2ban
-
+```
 
 #database servers
 ##Firebird
+```
 apt-get install -y firebird2.5-classic firebird-dev  **just press enter on the password prompt**
 service firebird2.5-classic start
-
+```
 
 ##Redis
+```
 [#ref:](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-redis)
 wget http://download.redis.io/releases/redis-2.8.9.tar.gz
 tar xzf redis*
 cd redis*
 make & make install         **press enter on pause after hint**
 cd ~
+```
 
 #node.js
+```
 curl -sL https://deb.nodesource.com/setup | sudo bash -
 apt-get install -y nodejs
 sudo npm cache clean -f
 sudo npm install -g n
 sudo n latest
-
 npm install  -g node-gyp
-
 npm install -g socketstream
+```
 
 #now sql-mvc
+```
 However we have dependency on node fibers which often does not install out the box,
 so its a few annoying steps.
 
 npm install sql-mvc         **it will show some errors**
+```
 
 #node fibers
+```
 **This is used in the cli compiler not the http server**
 [# reference :](https://github.com/laverdet/node-fibers/issues/99)
 git clone https://github.com/laverdet/node-fibers.git fibers
 cd fibers/
 node build
+```
 
 #now sql-mvc again
+```
 npm install sql-mvc         **it should now be clear**
+```
 
 #now build the demo
+```
 cd ~/sql-mvc/install
 ./make_udf.sh
 ./make_demo_db.sh
 ./make_app.sh
-
+```
 #start sql-mvc server in dev mode
+```
 cd ~/sql-mvc
 ./dev_server.sh
-
+```
 #enjoy
-Open our browser to host:3000 and view the demo app
-Edit and play with the demo page :
-nano sql-mvc/Quale/Standard/Home/Guest/Dashboard/Dashboard-Include.quicc
+Open our browser to localhost:3000 and view the demo app
+
+Edit and play with the demo page : sql-mvc/Quale/Standard/Home/Guest/Dashboard/Dashboard-Include.quicc
 the changes you make will automatically be updated to your browser.
-error output will bve on the consol running ./dev_server.sh
-and also sql-mvc/server/compiler/output/error_log.json
+
+Error output will bve on the consol running the ./dev_server.sh
+and also in the file: sql-mvc/server/compiler/output/error_log.json
 
 #TODO / TO FOLLOW- Hot and Important
 * have errors displayed in a "dev" window on the browser in a more readable format
@@ -81,7 +94,9 @@ and also sql-mvc/server/compiler/output/error_log.json
 Please let me know if this works....
 
 Post messages to 
+
 SQL-MVC help and discussion mailing list: https://groups.google.com/group/sql-mvc-talk
+
 Git hub https://github.com/quale-quest/sql-mvc
 or you can email me directly lafras@xietel.com
 

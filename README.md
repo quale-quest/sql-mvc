@@ -1,6 +1,67 @@
 # SQL-MVC
 
-**Paradigm inversion - write web applications in SQL instead of JavaScript or other.**
+**Paradigm inversion - write web applications in SQL instead of JavaScript.**
+
+##Example	
+This is a complete implementation of [todomvc.com](http://todomvc.com) functionality in 40 lines of code.
+Live Demo at http://todomvc.sql-mvc.com/
+
+```
+<#:model
+--:{regex:"regex:/varchar/i",autosave:yes}
+CREATE TABLE TODO_MVC				--:{as:"Table"} 
+(
+  REF VARCHAR(40),					--:{as:"pk"}
+  NAME VARCHAR(100),	--:{as:"Text",size:40,title:"todo",onupdate:"owner=session.id"}  
+  OWNER VARCHAR(40),				--:{Type:"Hide"}
+  STATUS VARCHAR(10) default ''		--:{Type:"Pick",List:"Ticked"}  
+);
+>
+
+<#:table
+Select  --:{from:"TODO_MVC",autoinsert:"top",tablestyle:"Todo"}
+STATUS, --:{Action:"Edit":yes}
+NAME,   --:{Action:"Edit","placeholder":"What needs to be done"}
+REF	    --:{Action:"View",Type:"Hide"}
+From TODO_MVC 
+where (owner=session.id and ( (my.todo_type='' and status!='3' ) 
+or( status='' and my.todo_type='1')or(status='1' and my.todo_type='2')))
+>
+<#:print 
+--{if:"(select count(ref) from todo_mvc where owner=session.id and status='')!=1" }
+($select count(*) from todo_mvc where owner=session.id and status='') $)
+items left
+>
+<#:print 
+--{if:"(select count(ref) from todo_mvc where owner=session.id and status='')=1" }
+($select count(*) from todo_mvc where owner=session.id and status='' $)
+item left
+>
+<#:button --{title:"all"}
+set my.todo_type='';
+>
+<#:button --{title:"Active"}
+set my.todo_type='1';
+>
+<#:button --{title:"Completed"}
+set my.todo_type='2';
+>
+<#:button
+--{title:"Clear Completed",if:"(select count(ref) from todo_mvc where owner=session.id and status='1')!=0" }
+sql update todo_mvc set status='3' where owner=session.id and (status='1');
+>
+```
+
+##How does SQL-MVC work?
+* The compiler takes your application code which is little more 
+than a few SQL statements, directives and properties and produces:
+  1. All the database code as a single stored procedure, to be run to produce JSON output.
+  2. a Moustache Template(Hogan) containing all the client side code to be filled with the JSON.
+When the two are combined in the browser !!voilà!!.
+* The server node.js does very little other than pass JSON between the server and client.
+* All the business logic remains in the database server.
+* You have full control of the client side look, feel and behaviour, the 
+default framework and theme is just to give you a quicc start.
 
 ###Super fast Development:	
 * Write web applications with little more than a few SQL statements
@@ -29,66 +90,6 @@
 * Database drivers available for Firebird SQL, support planned for : MySQL, SQL Server, Oracle, NuoDB.
 * Planned support for JavaScript stored procedure engine, to enable no-sql, sqlite and off-line applications.
 
-##Usage	
-This example is a complete implementation of [todomvc.com](http://todomvc.com) functionality in 40 lines of code.
-Live Demo at http://todomvc.sql-mvc.com/
-
-```
-<#:model
---:{regex:"regex:/varchar/i",autosave:yes}
-
-CREATE TABLE TODO_MVC				--:{as:"Table"} 
-(
-  REF VARCHAR(40),					--:{as:"pk"}
-  NAME VARCHAR(100),				--:{as:"Text",size:40,title:"todo",onupdate:"owner=session.id"}  
-  OWNER VARCHAR(40),				--:{Type:"Hide"}
-  STATUS VARCHAR(10) default ''		--:{Type:"Pick",List:"Ticked"}  
-);
->
-
-<#:table
-Select  --:{Title:"Make and view records",from:"TODO_MVC",autoinsert:"top",tablestyle:"Todo"}
-STATUS, --:{Action:"Edit":yes}
-NAME,   --:{Action:"Edit","placeholder":"What needs to be done"}
-OWNER,   --:{Action:"Link",Type:"Hide",form:"Test2",point:"TODO_MVC.REF",to:"TODO_MVC"}
-REF	   --:{Action:"View",Type:"Hide"}
-From TODO_MVC 
-where (owner=session.id and ( (my.todo_type='') or( status='' and my.todo_type='1')or(status='1' and my.todo_type='2')))
->
-<#:print 
---{if:"(select count(ref) from todo_mvc where owner=session.id and status='')!=1" }
-($select count(*) from todo_mvc where owner=session.id and status='') $)
-items left
->
-<#:print 
---{if:"(select count(ref) from todo_mvc where owner=session.id and status='')=1" }
-($select count(*) from todo_mvc where owner=session.id and status='' $)
-item left
->
-
-<#:button --{title:"all"}
-set my.todo_type='';
->
-<#:button --{title:"Active"}
-set my.todo_type='1';
->
-<#:button --{title:"Completed"}
-set my.todo_type='2';
->
-
-```
-
-##How does SQL-MVC work?
-* The compiler takes your application code which is little more 
-than a few SQL statements, directives and properties and produces:
-  1. a stored procedure containing all the database code to be run to produce JSON output.
-  2. a Moustache Template(Hogan) containing all the client side code to be filled with the JSON.
-When the two are combined in the browser !!voilà!!.
-* The server node.js does very little other than pass JSON between the server and client.
-* All the business logic remains in the database server.
-* You have full control of the client side look, feel and behaviour, the 
-default framework and theme is just to give you a quic start.
-
 
 ## Getting Started
 Download instructions should be up by 3 January 2015.
@@ -116,7 +117,7 @@ but not free as in beer, but cheap as in peanuts.
 
 	
 ## Alpha version 0.0.1 Notice: 
-When evaluating SQL-MVC keep in mind this project is still version 0.0.1- alpha/preview  
+When evaluating SQL-MVC keep in mind this project is still version 0.0.x- alpha/preview  
 release - a lot of stuff is not 100% polished or even to spec,
 try and pick up the key points we are trying to demonstrate not shortcomings or bugs
  (although all feedback is welcome).

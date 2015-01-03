@@ -6,7 +6,7 @@ but not free as in beer, but cheap as in peanuts.
 ##Opening
 At the moment the licence is work in progress, it is brief and written in simple English, hopefully with clear intent. 
 Initially this licence may be unfairly biased against the developer, customer or public good, 
-it is not my intention keep it this way but initially it is the safest way (for me) until I get it sorted.
+it is not my intention keep it this way but initially it is the safest way (for me) until I get it sorted, anyway I don't want to spend to much time on it right now.
 
 ##Licence
 All rights reserved, anything not specified in the licence is forbidden.
@@ -18,11 +18,10 @@ by the licensor or its assignees in any further form or name, the licensor grant
  become MIT / BSD 3 clause / or any GPL licensed at the discretion of the individual.
 
 ##Definitions
-**core** is any part that is generic. (should not contain, or does not in the standard distribution or the initial distribution contain
+) **core** is any part that is generic. (should not contain, or does not in the standard distribution or the initial distribution contain
 or is not made to primarily contain customer specific code).
-**extended core** any part adjunct to the core to extend the core that may contain customer specific code but that is not necessarily application specific.
-
-**customer** any part that has a specific customer purpose, that cannot generally be applied to other customers.
+) **extended core** any part adjunct to the core to extend the core that may contain customer specific code but that is not necessarily application specific.
+) **customer** any part that has a specific customer purpose, that cannot generally be applied to other customers.
 
 
 ##Grant to you
