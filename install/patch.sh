@@ -7,6 +7,7 @@ zxPatch ()
 		popd
 		pushd $cwd/$1/
 		patch -N < $cwd/install/Patches/$2/$3.patch
+        rm $cwd/install/Patches/$2/$3.patch
 		popd
 	}
     

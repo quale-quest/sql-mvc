@@ -1,6 +1,7 @@
 
 #Linux (ubuntu 14):
 **Instructions for other OS'es to follow - but you get the idea.**
+*Windows will have issues with bash scripts and compiled UDF but instructions will follow.*
 
 sudo su # if you are not already root       
 
@@ -59,20 +60,27 @@ node build
 
 #now sql-mvc again
 ```
-npm install sql-mvc         **it should now be clear**
+npm install       **it should now be clear**
 ```
 
 #now build the demo
+**note the data base will be placed in /var/db - if you want to change it edit config.json
+if you are reinstalling you will want to do a **rm  /var/db/demo_db.fdb**, or 
+change the database in the config.json.
 ```
-cd ~/sql-mvc/install
+chmod -R +x server/compiler/*.sh
+chmod -R +x install/*.sh
+cd install
+./patch.sh
 ./make_udf.sh
 ./make_demo_db.sh
 ./make_app.sh
 ```
+
 #start sql-mvc server in dev mode
 ```
-cd ~/sql-mvc
-./dev_server.sh
+cd ..
+bash dev_server.sh
 ```
 #enjoy
 Open our browser to localhost:3000 and view the demo app

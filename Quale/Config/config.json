@@ -5,7 +5,7 @@
 	"db": {
 		"dialect": "fb25",
 		"server": "127.0.0.1",
-		"database": "/var/db/b7.fdb",
+		"database": "/var/db/demo_db.fdb",
 		"username": "using the value from authfile",
 		"password": "using the value from authfile",
 		"authfile": "/etc/firebird/2.5/SYSDBA.password",

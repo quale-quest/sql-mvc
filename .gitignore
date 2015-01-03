@@ -5,5 +5,7 @@ npm-debug.log
 tmp
 Deprecate
 
+
 client/templates/Home
 server/compiler/output
+

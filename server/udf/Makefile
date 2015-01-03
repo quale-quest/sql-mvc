@@ -34,10 +34,7 @@ q_UDFLibC.o:q_UDFLibC.c
 
 q_UDFLibC: q_UDFLibC.o
 	$(LIB_LINK) $@.o -o $@ $(LIB_LINK_FLAGS)
-	@echo ------------------------------------------------------
-	@echo You need to copy q_UDFLibC to the interbase lib directory
-	@echo in order for the server to load it. 
-	@echo ------------------------------------------------------
+	@echo coping q_UDFLibC to the interbase lib directory
 	sudo cp q_UDFLibC  $(IBASE)/UDF/q_UDFLibC.so
 	ls -l $(IBASE)/UDF/q_UDFLibC.so
 
