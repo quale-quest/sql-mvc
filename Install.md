@@ -39,40 +39,34 @@ sudo npm install -g n
 sudo n latest
 npm install  -g node-gyp
 npm install -g socketstream
+npm install -g forever
 ```
 
-#now sql-mvc
+#sql-mvc
 ```
-However we have dependency on node fibers which often does not install out the box,
-so its a few annoying steps.
+mkdir & cd where you want to install
+npm install sql-mvc   
 
-npm install sql-mvc         **it will show some errors**
-```
+#I have to create a project installer- like socket-sream - for now just do:
+mv node_modules/sql-mvc/ .   
+rm node_modules/  
+cd sql-mvc/
 
-#node fibers
-```
-**This is used in the cli compiler not the http server**
-[# reference :](https://github.com/laverdet/node-fibers/issues/99)
-git clone https://github.com/laverdet/node-fibers.git fibers
-cd fibers/
-node build
-```
+#config is under Quale/Config/config.json  (database file name, server port etc.)
+#note the data base will be placed in /var/db - to change it edit config.json
 
-#now sql-mvc again
-```
-npm install       **it should now be clear**
-```
 
 #now build the demo
-**note the data base will be placed in /var/db - if you want to change it edit config.json
-if you are reinstalling you will want to do a **rm  /var/db/demo_db.fdb**, or 
-change the database in the config.json.
-```
 chmod -R +x server/compiler/*.sh
 chmod -R +x install/*.sh
 cd install
 ./patch.sh
 ./make_udf.sh
+
+#if you are reinstalling you will want to 
+# skip the make_demo_db step (if db is unchanged) or
+#   do a **rm  /var/db/demo_db.fdb**, 
+#   or change the database name.
 ./make_demo_db.sh
 ./make_app.sh
 ```
@@ -90,6 +84,14 @@ the changes you make will automatically be updated to your browser.
 
 Error output will bve on the consol running the ./dev_server.sh
 and also in the file: sql-mvc/server/compiler/output/error_log.json
+
+
+#production
+This is not yet production ready, but FYI.
+edit  ./run_web.sh  (fixing the absolute path)
+edit crontab and add the line form install/crontab-e.md
+
+
 
 #TODO / TO FOLLOW- Hot and Important
 * have errors displayed in a "dev" window on the browser in a more readable format
