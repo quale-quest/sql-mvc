@@ -57,7 +57,7 @@ sql update todo_mvc set status='3' where owner=session.id and (status='1');
 than a few SQL statements, directives and properties and produces:
   1. All the database code as a single stored procedure, to be run to produce JSON output.
   2. a Moustache Template(Hogan) containing all the client side code to be filled with the JSON.
-When the two are combined in the browser !!voila!!.
+When the two are combined in the browser !!voilà!!.
 * The server node.js does very little other than pass JSON between the server and client.
 * All the business logic remains in the database server.
 * You have full control of the client side look, feel and behaviour, the 
@@ -76,7 +76,6 @@ default framework and theme is just to give you a quicc start.
 
 ###Super fast Runtime:
 * All database queries are amalgamated into a single database stored procedure call. 
-* the JSON from the database is retrieved in one BLOB (Less chatter to the DB).
 * Almost no middle-ware processing.	
 * Exchange only JSON data elements across the wire.	
 * Build with Nodejs, SocketStream and Hogan templates to produce Single Page Applications.	
@@ -93,8 +92,8 @@ default framework and theme is just to give you a quicc start.
 
 
 ## Getting Started
-Install instructions at :
-https://github.com/quale-quest/sql-mvc/blob/master/Install.md
+Download instructions should be up by 3 January 2015.
+
 
 
 ## Developer Resources

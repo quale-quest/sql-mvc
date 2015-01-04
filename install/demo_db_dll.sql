@@ -605,61 +605,6 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
 END^
 SET TERM ; ^
 
-SET TERM ^ ;
-CREATE PROCEDURE Z$TimeSamp_RANGE (
-    FROM_TIME TIMESTAMP,
-    TO_TIME TIMESTAMP ,
-    STEP integer 
-    )
-RETURNS (
-    INDX INTEGER,
-    THE_START TIMESTAMP,
-    THE_END TIMESTAMP )
-AS
-BEGIN
-  
-    
-  indx=0;  
-  THE_start = FROM_TIME;
-  while (THE_start<to_time) do
-    begin    
-    if (STEP=2629800) --constant for a month 365.25*85400/12
-    THEN THE_END  = ADDMONTH(THE_start,1);     
-    ELSE THE_END  = THE_start + (STEP/86400.000000000000);  
-    suspend; 
-    THE_start=THE_END;           
-    indx = indx+1;    
-    end  
-
-END^
-SET TERM ; ^
-
-SET TERM ^ ;
-CREATE PROCEDURE Z$INTEGER_RANGE (
-    FROM_I INTEGER,
-    TO_I INTEGER ,
-    STEP integer 
-    )
-RETURNS (
-    INDX INTEGER,
-    THE_START INTEGER,
-    THE_END INTEGER )
-AS
-BEGIN
-    
-  indx=0;  
-  THE_start = FROM_I;
-  while (THE_start<TO_I) do
-    begin         
-    THE_END  = THE_start + STEP;  
-    suspend; 
-    THE_start=THE_END;           
-    indx = indx+1;    
-    end  
-
-END^
-SET TERM ; ^
-
 
 CREATE INDEX IDX_MAIL1 ON MAIL (REF);
 CREATE INDEX IDX_MAIL2 ON MAIL (FROM_USER);

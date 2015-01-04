@@ -10,10 +10,9 @@ The login/page and updates can all be integrated into a single request,
 but then the page must be stored on the db server, else we will have to ask it and that is pointless.....
 
  */
-
-var db = require("../../server/database/DatabasePool");
-var fb = require("node-firebird");
-
+ 
+ var db = require("../../server/database/DatabasePool");
+ 
 exports.produce_div = function (req, res, ss, rambase, messages, session) {
 
 	//input='SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p041257x00end') p;
@@ -55,49 +54,28 @@ exports.produce_div = function (req, res, ss, rambase, messages, session) {
 
 	console.log('SELECT info,RES FROM Z$RUN (\'' + message.session + '\',\'' + message.typ + '\',' + message.cid + ',' + message.pkf + ',\'' + message.valu + '\',\'' + public_parameters + '\',\'' + update + '\')');
 
-	rambase.db.startTransaction( //transaction(fb.ISOLATION_READ_COMMITED,
-		function (err, transaction) {
-		if (err) {
-			error(err);
-			var source = {}; //filename,start_line,start_col,source};
-			parse_error(zx, err, source, line_obj);
-			console.log('Error starting transaction:', err);
+	rambase.db.query('SELECT info,RES FROM Z$RUN (?,?,?,?,?,?,?)',
+		[message.session, message.typ, message.cid, message.pkf, message.valu, public_parameters, update],
+		function (err, result) {
 
-			return;
-		}
-
-		transaction.query('SELECT info,RES FROM Z$RUN (?,?,?,?,?,?,?)',
-			[message.session, message.typ, message.cid, message.pkf, message.valu, public_parameters, update],
-			function (err, result) {
-
-			if (err !== undefined) {
-				console.log('dberror:', err);
-				//console.log('dbresult: empty' );
-				//todo - show operator some kind of server error
-				transaction.rollback();
-			} else {
-
-				transaction.commit(function (err) {
-					if (err)
-						transaction.rollback();
-					else {
-						if (result.length === 0)
-							console.log('no database results'); //this could be use full for save only instructions that don't feedback
-						else {
-
-							console.log('dbresult:', result);
-							console.log('dbresult:', String(result[0].info));
-							//console.log('Index.htm.sql  ouput: ',result[0].res );
-							ss.publish.socketId(req.socketId, 'newData', 'content', result[0].res);
-							ss.publish.socketId(req.socketId, 'switchPage', '#PAGE_2', '');
-						}
-					}
-				}); //tr com
+		if (err !== undefined) {
+			console.log('dberror:', err);
+			//console.log('dbresult: empty' );
+			//todo - show operator some kind of server error
+		} else {
+			if (result.length === 0)
+				console.log('no database results'); //this could be use full for save only instructions that don't feedback
+			else {
+				console.log('dbresult:', result);
+				console.log('dbresult:', String(result[0].info));
+				//console.log('Index.htm.sql  ouput: ',result[0].res );
+				ss.publish.socketId(req.socketId, 'newData', 'content', result[0].res);
+				ss.publish.socketId(req.socketId, 'switchPage', '#PAGE_2', '');
 			}
-		}); //tr qry
+		}
+	});
 
-	}); //tr
-}
+};
 
 function lpad(input, len, chr) {
 	var str = input.toString();
@@ -140,7 +118,7 @@ exports.actions = function (req, res, ss) {
 				checkout : false
 			};
 			req.session.save(function (err) {
-				console.log('Session data has been saved:', req.session, err);
+				console.log('Session data has been saved:', req.session,err);
 			});
 		},
 		LoginAction : function (User, Password) {
@@ -155,7 +133,7 @@ exports.actions = function (req, res, ss) {
 				};
 				// update:'u08USER8002p041258x00end'
 				message.update =
-					par_format('u', User) + par_format('p', Password);
+					par_format('u', User)+par_format('p', Password);
 
 				//        console.log('My message is',message);
 				messagelist.push(message);
