@@ -155,9 +155,13 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 				line_obj.srcinfo.source = sourcestr;
 				line_obj.srcinfo.start_line = crCount;
 				line_obj.srcinfo.start_col = col;
+                line_obj.srcinfo.current_tag_index=0;                
+                line_obj.tag='unknown123';
+                
 				//console.log('ParseFileToObject b:',tag_string,line_obj);
 				if (tag_string.substr(0, 1) !== ":") {
 					//console.log('bcb a:',line_obj);
+                    if ((objtype === undefined))
 					line_obj = bcb.parse(tag_string, filename, line_obj);
 					//console.log('bcb b:',line_obj);
 				} else {
@@ -166,9 +170,11 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 					var tag = tag_string.substring(1, tage).trim();
 					var body_string = tag_string.substring(tage + 1).trim();
 					//console.log('Quic input:',tag,body_string);
-
-					line_obj = zx.quic.parse(zx, line_obj, body_string, tag); //line_obj here gets filled later...should really be made into 2 separate objects
-					line_obj.tag = tag;
+                    line_obj.tag = tag;
+                    
+                    if ((objtype === undefined) || (objtype === line_obj.tag.toLowerCase()))
+					    line_obj = zx.quic.parse(zx, line_obj, body_string, tag); //line_obj here gets filled later...should really be made into 2 separate objects
+					
 					//console.log('Quic output:',line_obj);
 				}
 

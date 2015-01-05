@@ -49,7 +49,7 @@ npm install sql-mvc
 
 #I have to create a project installer- like socket-sream - for now just do:
 mv node_modules/sql-mvc/ .   
-rm node_modules/  
+rm node_modules/ -r
 cd sql-mvc/
 
 #config is under Quale/Config/config.json  (database file name, server port etc.)
@@ -66,7 +66,7 @@ cd install
 #if you are reinstalling you will want to 
 # skip the make_demo_db step (if db is unchanged) or
 #   do a **rm  /var/db/demo_db.fdb**, 
-#   or change the database name.
+#   or change the database name in config.json.
 ./make_demo_db.sh
 ./make_app.sh
 ```
@@ -76,7 +76,7 @@ cd install
 cd ..
 bash dev_server.sh
 ```
-#enjoy
+#Enjoy
 Open our browser to localhost:3000 and view the demo app
 
 Edit and play with the demo page : sql-mvc/Quale/Standard/Home/Guest/Dashboard/Dashboard-Include.quicc
@@ -86,11 +86,14 @@ Error output will bve on the consol running the ./dev_server.sh
 and also in the file: sql-mvc/server/compiler/output/error_log.json
 
 
-#production
+#Production
 This is not yet production ready, but FYI.
 edit  ./run_web.sh  (fixing the absolute path)
 edit crontab and add the line form install/crontab-e.md
 
+
+#Manuals
+Programmers Manual at https://github.com/quale-quest/sql-mvc/wiki
 
 
 #TODO / TO FOLLOW- Hot and Important

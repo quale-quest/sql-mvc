@@ -15,14 +15,15 @@ xifnotexists="select name from Z$USER where Z$USER.ref=operator.ref and  key_lis
 
 <div id="container">
 
-<#Menu Name=Start Style=LBMenu>
+<#:Menu --{name:"Start",style:"LBMenu"}>
 <#Menu icon="nav-icon dboard-icon" from=Z$USER where=ref=Operator.Ref form=Dashboard\Dashboard Title="Todo Demo">
-<#MenuScan menuname=MainMenu from=Z$USER where=ref=Operator.Ref>
 
-<#Menu from=Z$USER where=ref=Operator.Ref form=Help\Main Title="About">
+<#:MenuScan --{menuname:"MainMenu"}>
+
+<#:Menu --{form:"Help/Main",title:"About"}>
 
 <!--end  Menu1-->
-<#MenuEnd>
+<#:MenuEnd >
 
 <!--end  Menu2-->
 

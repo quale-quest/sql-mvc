@@ -61,15 +61,8 @@ var fs = require('fs');
 var page = require('../../modules/page.js');
 exports.module_name='action_widget.js';
 
-var gets = function (val) {
-	if (val === undefined)
-		return "";
-	if (Array.isArray(val))
-		val = val[0];
-	if (val === undefined)
-		return "";
-	return val;
-};
+var gets = require('../../zx.js').gets;
+	
 
 var styleif = function (val, str) {
 	if (val === undefined)
@@ -285,7 +278,7 @@ var tag_menuscan_recurse = function (zx, o, menuhdr) {
 			//console.warn('tag_menuscan_recurse open sub:', p, i, JSON.stringify(item, null, 4), fn);
 			if (fs.existsSync(fn)) {
 				menu_objs = page.ParseFileToObject(zx, fn, "dropinmenu");
-				//console.warn('tag_menuscan_recurse menu_objs:', JSON.stringify(menu_objs, null, 4));
+				//console.warn('tag_menuscan_recurse menu_objs aa:', JSON.stringify(menu_objs, null, 4));
 			}
 
 			if (menu_objs.length < 1) { //no file or no obj in file
@@ -315,8 +308,7 @@ var tag_menuscan_recurse = function (zx, o, menuhdr) {
 				delete o.name; //make sure it default to a item
 				fn = item.filename.replace(path.extname(item.filename), '');
 				menu_objs = page.ParseFileToObject(zx, item.filename, "dropinmenu");
-				//var obj = exports.ParseFileToObject(zx,filename);
-				//console.warn('tag_menuscan_recurse menu_objs:',menu_objs,' into ',zx.line_obj_current_tag_index);
+				//console.warn('tag_menuscan_recurse menu_objs bb:',menu_objs,' into ',zx.line_obj_current_tag_index);
 				//produce the menu item
 
 				var br = fileutils.locateclosestbuildroot(zx, fn);
@@ -327,21 +319,28 @@ var tag_menuscan_recurse = function (zx, o, menuhdr) {
 				o.form = br.filename;
 				obj = getDecoratedMenuObject(zx, o, fileutils.changefileextn(i, ''));
 				o.title = obj.title;
+                //console.warn('tag_menuscan_recurse bbb:',br);
 				if (menu_objs.length < 1) { //no definition so use beutified file name
 					//console.warn('tag_menuscan_recurse locateclosestbuildroot:',br);
 					tag_menu(zx, o);
 				} else { //defined in the file
 
-					if (menu_objs[0].title === undefined)
-						menu_objs[0].title = o.title;
-					if (menu_objs[0].form === undefined)
-						menu_objs[0].form = o.form;
+
 					for (var indx = 0; indx < menu_objs.length; indx++) {
+                        if (menu_objs[indx].title === undefined)
+                            menu_objs[indx].title = o.title;
+                        if (menu_objs[indx].form === undefined)
+                            menu_objs[indx].form = o.form;                    
 						menu_objs[indx].tag = 'menu';
+                        menu_objs[indx].srcinfo.current_tag_index=indx;
+                        
+                        //console.warn('tag_menuscan_recurse fff:',indx,menu_objs);
 						tag_menu(zx, menu_objs[indx]);
+                        //console.warn('tag_menuscan_recurse ggg:');
 					}
 
 				}
+                //console.warn('tag_menuscan_recurse done zzz:',br);
 			}
 		}
 
@@ -366,12 +365,13 @@ exports.tag_menuscan = function (zx, o) {
 		return;
 	}
 
-	var ofile = o.menuname[0];
+	var ofile = gets(o.menuname);
 	//scan for applicable menus in many folders
 	//scans the file_stack for menus in the folder named in the menuname= quale
 	//   scans inheritance libraries
 	var filelist = [];
 	var re = new RegExp('^' + ofile, "i");
+    //console.warn('tag_menuscan for:',ofile,re,'rel:',o.srcinfo.file_stack[0].filename);
 	filelist = fileutils.getDropinFileList(zx, re, o.srcinfo.file_stack[0].filename, zx.line_obj, 130024);
 
 	//console.warn('tag_menuscan filelist:',filelist,'relative to:',o.srcinfo.file_stack[0].filename);

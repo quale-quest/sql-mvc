@@ -96,6 +96,7 @@ default framework and theme is just to give you a quicc start.
 Install instructions at :
 https://github.com/quale-quest/sql-mvc/blob/master/Install.md
 
+Programmers Manual at https://github.com/quale-quest/sql-mvc/wiki
 
 ## Developer Resources
 

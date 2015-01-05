@@ -127,6 +127,7 @@ exports.Beautify = function (txt) {
 	if (!txt.toUpperCase)
 		txt = String(txt);
 	//console.log('Beautify: ',txt);
+    //txt =  txt.trim();
 	var l = txt.length;
 	//replace $ . _ with spaces
 	p = 0;
@@ -205,7 +206,7 @@ exports.gets = function (val) {
 		val = val.join(' ');
 	if (val === undefined)
 		return "";
-	return val;
+	return val.trim();
 };
 
 exports.getA = function (val) {

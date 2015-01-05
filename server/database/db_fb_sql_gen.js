@@ -509,8 +509,10 @@ exports.link_from = function (zx, line_obj) {
 
 	var PAGE_PARAMS = '';
 
-	zx.Inject_procedures.check_inline_link_procedure(zx, line_obj);
+	zx.Inject_procedures.check_inline_link_procedure(zx, line_obj,'link_from');
+    //console.log('run_procedure_: ' );
 	var proc = zx.gets(line_obj.execute);
+    //console.log('run_procedure_as table: ',proc );
 	if ((proc !== undefined) && (proc !== "")) {
 		PAGE_PARAMS = PAGE_PARAMS + "run_procedure=''" + proc + "'';";
 		//maybe master_ref?? PAGE_PARAMS=PAGE_PARAMS+"run_procedure_pk='||Z$F_F2SQL(:F"+fld_obj.cf[0].pointer+")||';'";
@@ -567,8 +569,10 @@ exports.link_from_table = function (zx, fld_obj) {
 		PAGE_PARAMS = "\n    substring((" + PAGE_PARAMS + "'') from 1 for 999)";
 	}
 
-	zx.Inject_procedures.check_inline_link_procedure(zx, fld_obj.cf[0]);
+	zx.Inject_procedures.check_inline_link_procedure(zx, fld_obj.cf[0],'link_from_table');
+    //console.log('run_procedure_ table: ' );
 	var proc = zx.gets(fld_obj.cf[0].execute);
+    //console.log('run_procedure_as : ',proc );
 	if ((proc !== undefined) && (proc !== "")) {
 		PAGE_PARAMS = PAGE_PARAMS + "||'run_procedure=''" + proc + "'';";
 		PAGE_PARAMS = PAGE_PARAMS + "run_procedure_pk='||Z$F_F2SQL(:F" + fld_obj.cf[0].pointer + ")||';";
