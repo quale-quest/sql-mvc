@@ -7,7 +7,7 @@ ease of use is important
 //var Sync = require('sync'); // https://github.com/ybogdanov/node-sync
 var fileutils = require('./fileutils.js');
 
-exports.module_name='page.js';
+exports.module_name = 'page.js';
 
 exports.compile = function (divText) {
 	return divText;
@@ -113,15 +113,29 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 			//return;
 		}
 		//console.log('finding :',body);
-        //console.log('finding body :...');
+		//console.log('finding body :...');
 
 		if (zx.inputfilecount === 1) { //only on the first file
 			//wrap in library scripts && wrap in local layout
-			body = "<#include file=~/All/StandardPageOpen> " +
-				"<#include file=LayoutOpen> " +
-				body +
-				"<#include file=LayoutClose> " +
-				"<#include file=~/All/StandardPageClose> ";
+			var concat_body = "<#include file=~/All/StandardPageOpen> ";
+
+			zx.model_files.reverse().forEach(function (filename) {
+				if (fs.statSync(filename).isDirectory()) {}
+				else {
+					var br = fileutils.locateclosestbuildroot(zx, filename);
+                    var qfilename = fileutils.changefileextn(br.filename, '');
+					concat_body += '<#include file="' + qfilename + '" >\n';
+                    //console.log('------------------------------ adding :', qfilename);
+				}
+			});
+
+			//console.log('------------------------------ finding :', concat_body);
+			concat_body +=
+			"<#include file=LayoutOpen> " +
+			body +
+			"<#include file=LayoutClose> " +
+			"<#include file=~/All/StandardPageClose> ";
+			body = concat_body;
 		}
 
 		//we dont allow nesting of <# and <{ so parsing is more simple
@@ -136,7 +150,7 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 		for (var i = 0; i < starts.length; i++) {
 
 			itemCrCount = zx.counts(starts[i], "\n");
-            //console.log('itemCrCount:',itemCrCount);
+			//console.log('itemCrCount:',itemCrCount);
 			if (starts[i] === "<#") {
 				//stop on >
 				s = starts[i + 1];
@@ -155,14 +169,14 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 				line_obj.srcinfo.source = sourcestr;
 				line_obj.srcinfo.start_line = crCount;
 				line_obj.srcinfo.start_col = col;
-                line_obj.srcinfo.current_tag_index=0;                
-                line_obj.tag='unknown123';
-                
+				line_obj.srcinfo.current_tag_index = 0;
+				line_obj.tag = 'unknown123';
+
 				//console.log('ParseFileToObject b:',tag_string,line_obj);
 				if (tag_string.substr(0, 1) !== ":") {
 					//console.log('bcb a:',line_obj);
-                    if ((objtype === undefined))
-					line_obj = bcb.parse(tag_string, filename, line_obj);
+					if ((objtype === undefined))
+						line_obj = bcb.parse(tag_string, filename, line_obj);
 					//console.log('bcb b:',line_obj);
 				} else {
 
@@ -170,11 +184,11 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 					var tag = tag_string.substring(1, tage).trim();
 					var body_string = tag_string.substring(tage + 1).trim();
 					//console.log('Quic input:',tag,body_string);
-                    line_obj.tag = tag;
-                    
-                    if ((objtype === undefined) || (objtype === line_obj.tag.toLowerCase()))
-					    line_obj = zx.quic.parse(zx, line_obj, body_string, tag); //line_obj here gets filled later...should really be made into 2 separate objects
-					
+					line_obj.tag = tag;
+
+					if ((objtype === undefined) || (objtype === line_obj.tag.toLowerCase()))
+						line_obj = zx.quic.parse(zx, line_obj, body_string, tag); //line_obj here gets filled later...should really be made into 2 separate objects
+
 					//console.log('Quic output:',line_obj);
 				}
 
@@ -266,7 +280,7 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 
 	//zx.file_stack.push({filename:filename});
 
-    //console.warn('main  file 2obj ',filename);
+	//console.warn('main  file 2obj ',filename);
 	var obj = exports.ParseFileToObject(zx, filename);
 	//console.warn('main  file ',filename, JSON.stringify(obj, null, 4).length );
 	for (var i = 0; i < obj.length; i++) {

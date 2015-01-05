@@ -1,0 +1,71 @@
+
+<#Menu Name=Start Style=ShortCutSlide>
+<#Menu icon="shortcut-icon save-x-element"  Title="Save">
+
+<#MenuScan menuname=SlideBar Icons="shortcut-icon typo-x-icon," from=Z$USER where=ref=Operator.Ref>
+
+<#Menux 
+icon="shortcut-icon dboard-x-icon" 
+from=Me 
+where=ref=Operator.Ref 
+form=Dashboard\Dashboard 
+Title="Dashboard">
+
+
+
+
+<#Menux   
+refresh=1
+from=Me where=ref=Operator.Ref 
+form=Settings\Staff
+Title="Staff"
+icon="shortcut-icon staff-x-icon"
+>
+
+<#Menux   
+refresh=1
+from=Me where=ref=Operator.Ref 
+form=Settings\Numbers
+Title="Numbers"
+icon="shortcut-icon typo-x-icon"
+>
+
+<#Menux   
+refresh=1
+from=Me where=ref=Operator.Ref 
+form=Reports\QuickReport
+Title="QuickReport"
+icon="shortcut-icon QuickReport-x-icon"
+>
+
+
+<#Menux   
+refresh=1
+from=Me where=ref=Operator.Ref 
+form=Reports\DefinedReports
+Title="DefinedReports"
+icon="shortcut-icon Report-x-icon"
+>
+
+<#Menux   
+refresh=1
+from=Me where=ref=Operator.Ref 
+form=Reports\RecentCalls
+Title="RecentCalls"
+icon="shortcut-icon PlayFile-x-icon"
+>
+
+
+<#Menux   
+refresh=1
+from=Me where=ref=Operator.Ref 
+form=Reports\BandwidthUse
+Title="BandwidthUse"
+icon="shortcut-icon chart-x-icon"
+>			
+			
+					
+<#Menux icon="shortcut-icon help-x-element"  from=Me where=ref=Operator.Ref form=Stub Title="Help">
+
+
+<#MenuEnd>

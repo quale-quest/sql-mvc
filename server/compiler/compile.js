@@ -342,6 +342,18 @@ var seq_main = function () {
 
 	}
 };
+
+var get_model_files = function (zx,path) {	
+	//scan for applicable models in many folders
+	var filelist = [];
+	var re = new RegExp('^Models' , "i");
+    //console.warn('get_model_files for:',path,re,'rel:',path);
+	filelist = fileutils.getDropinFileList(zx, re, path, zx.line_obj, 130128);
+    //console.warn('got model_files for:',filelist);
+    return filelist;
+}
+
+
 var seq_page = function (zx) {
 
 	//var fn = zx.dbg.calcfilelocation(zx,zx.pages[zx.pgi])+zx.app_extn
@@ -356,6 +368,9 @@ var seq_page = function (zx) {
 
 	var fn = fileutils.locatefile(zx, zx.pages[zx.pgi].name, zx.root_folder, "Compile " + zx.pages[zx.pgi].name, 120022);
 	//console.warn('file located : ',fn);
+    
+    zx.model_files = get_model_files(zx,fn);
+    
 	if (fn.indexOf('SaleForm') >= 0) {
 		console.log('compiling SaleForm to linkfiles: ', fn, zx.pages[zx.pgi]);
 		process.exit(44);

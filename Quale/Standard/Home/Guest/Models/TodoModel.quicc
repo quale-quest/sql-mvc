@@ -1,0 +1,13 @@
+
+
+<#:model
+
+CREATE TABLE TODO_MVC				--:{as:"Table"} 
+(
+  REF VARCHAR(40),					--:{as:"pk"}
+  NAME VARCHAR(100),				--:{as:"Text",size:40,title:"todo",onupdate:"owner=session.id"}  
+  OWNER VARCHAR(40),				--:{Type:"Hide"}
+  STATUS VARCHAR(10) default ''		--:{Type:"Pick",List:"Ticked"}  
+);
+
+>
