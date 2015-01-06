@@ -6,6 +6,8 @@ ease of use is important
 
 //var Sync = require('sync'); // https://github.com/ybogdanov/node-sync
 var fileutils = require('./fileutils.js');
+var extend = require('node.extend');
+var deepcopy = require('deepcopy');
 
 exports.module_name = 'page.js';
 
@@ -53,7 +55,7 @@ var preProcess = function (zx, filename, str) {
 		//check multiple nested levels of pre processing
 		str = preProcess(zx, filename, str);
 		//console.warn('plugin preprocessor_ searching for  :',preprocessor, ' parm:',preparam );
-		var done = zx.plugins.forEach(function (entry) {
+		var done = zx.plugins.forEach(function (entry) { //to many params .. zx.eachplugin(zx, 'preprocessor_' + preprocessor, 0);
 				if (entry['preprocessor_' + preprocessor] !== undefined) {
 					//console.warn('plugin preprocessor_ found :',preprocessor );
 					str = entry['preprocessor_' + preprocessor](zx, str, preparam, filename, preprocessor);
@@ -123,9 +125,9 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 				if (fs.statSync(filename).isDirectory()) {}
 				else {
 					var br = fileutils.locateclosestbuildroot(zx, filename);
-                    var qfilename = fileutils.changefileextn(br.filename, '');
+					var qfilename = fileutils.changefileextn(br.filename, '');
 					concat_body += '<#include file="' + qfilename + '" >\n';
-                    //console.log('------------------------------ adding :', qfilename);
+					//console.log('------------------------------ adding :', qfilename);
 				}
 			});
 
@@ -151,7 +153,7 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 
 			itemCrCount = zx.counts(starts[i], "\n");
 			//console.log('itemCrCount:',itemCrCount);
-			if (starts[i] === "<#") {
+			if (starts[i] === "<#") { //parse tags
 				//stop on >
 				s = starts[i + 1];
 				eob = s.indexOf('>'); //in strict mode this should be />
@@ -196,9 +198,57 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 				//console.log('bcb:',line_obj);
 				//have to re do this as the parser overwrites the object
 
-				if ((objtype === undefined) || (objtype === line_obj.tag.toLowerCase()))
-					blocks.push(line_obj);
+				if ((objtype === undefined) || (objtype === line_obj.tag.toLowerCase())) {
 
+					//model code is interpreted here in pass 0
+					if ((line_obj.tag.toLowerCase() == "model") && (line_obj.save !== undefined))
+						zx.saving_models = zx.gets(line_obj.save);
+                    //console.log('saving_models :', zx.saving_models);    
+					if ((line_obj.tag.toLowerCase() == "modeldone"))
+						zx.saving_models = '';
+
+					if ((line_obj.save !== undefined) || zx.saving_models !== '') {
+						//store this model
+						var name = zx.saving_models;
+                        if (name==='') name = zx.gets(line_obj.model);
+						if (zx.model_defines[name] === undefined)
+							zx.model_defines[name] = [];
+						zx.model_defines[name].push(line_obj);
+						//console.log('store model in :', name, line_obj);
+
+
+					} else {
+						if (line_obj.use === undefined) //combine the stored module with the new values
+							blocks.push(line_obj);
+						else {
+							var name = zx.gets(line_obj.use);
+							var models = zx.model_defines[name];
+							if (models !== undefined) {
+								var linecopy = deepcopy(line_obj);
+								delete linecopy.use;
+								delete linecopy.tag;
+								delete linecopy.nonkeyd;
+								delete linecopy.q;
+								models.forEach(function (model) {
+									var modelcopy = deepcopy(model);
+									delete modelcopy.srcinfo;
+
+									var lineextn = extend(modelcopy, linecopy); //second one has the priority
+									//if (lineextn.tag === 'table')
+									//	console.log('use model in :', name, lineextn);
+									lineextn.srcinfo.file_stack.push({
+										filename : model.filename,
+										start_line : model.start_line
+									});
+									blocks.push(lineextn);
+
+								});
+							}
+
+						}
+
+					}
+				}
 				//console.log('bcb b2:',line_obj);
 
 				//left over html on the next line
@@ -367,4 +417,9 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 	}
 	//console.warn('final main  file ',filename, JSON.stringify(obj, null, 4).length );
 	return obj;
+};
+
+exports.start_up = function (zx) {
+	zx.model_defines = {};
+    zx.saving_models='';
 };

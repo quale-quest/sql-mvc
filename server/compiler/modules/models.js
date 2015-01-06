@@ -19,7 +19,15 @@ exports.tag_model = function (/*zx, line_obj*/
 	//this must execute the actaul ddl commands (using the db tool
 };
 
-exports.tag_modelscan = function (zx, line_obj) {
-   console.log('tag_modelscan:',line_obj.nonkeyd );
+exports.tag_modeldone = function (zx, line_obj) {
+   //console.log('tag_modeldone:',line_obj.nonkeyd );
 }
+
+exports.start_up = function (zx) {
+
+
+	zx.model_defines = {};
+    zx.saving_models='';
+};
+
 //===========================================================

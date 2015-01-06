@@ -193,7 +193,9 @@ var seq_main = function () {
 
 		zx.models = require('./modules/models.js');
 		zx.plugins.push(zx.models);
-
+       
+        zx.plugins.push(page);
+        
 		zx.Container_widget = require('./modules/widgets/G960_widget.js');
 		zx.plugins.push(zx.Container_widget);
 
@@ -234,11 +236,7 @@ var seq_main = function () {
 		zx.plugins.push(zx.emoji);
 
 		zx.wildcard = false;
-		zx.plugins.forEach(function (entry) {
-			if (entry.start_up !== undefined) {
-				entry.start_up(zx);
-			}
-		});
+        zx.eachplugin(zx, "start_up", 0);
 
 		zx.queue_file_to_be_compiled = queue_file_to_be_compiled;
 
@@ -573,10 +571,8 @@ Sync(function () {
 		throw e;
 	}
 
-	zx.plugins.forEach(function (entry) {
-		if (entry.shut_down !== undefined)
-			entry.shut_down(zx);
-	});
+    zx.eachplugin(zx, "shut_down", 0);
+
 	zx.dbu.exit();
 });
 //eof

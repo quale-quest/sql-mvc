@@ -47,7 +47,6 @@ exports.compile = function (zx, obj) {
 
 					//common conditional keys - they have to be all true else the operation is skipped
 					//console.warn('Divin compile conditionals :',i );
-					//zx.plugins.forEach(function (entry,ii,zx, line_obj) {
 					zx.eachplugin(zx, "start_item", line_obj);
 					//console.warn('Divin compile conditionals done :',i );
 

@@ -11,3 +11,22 @@ CREATE TABLE TODO_MVC				--:{as:"Table"}
 );
 
 >
+
+<#model save="todo.itemcount">
+
+<#:print 
+--{if:"(select count(ref) from todo_mvc where owner=session.id and (status='' or status is null))!=1" }
+($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $)
+items left
+>
+<#:print 
+--{if:"(select count(ref) from todo_mvc where owner=session.id and (status='' or status is null))=1" }
+($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $)
+item left
+
+>
+
+<#modeldone>
+
+
+

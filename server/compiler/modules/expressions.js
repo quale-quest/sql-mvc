@@ -176,7 +176,7 @@ exports.ExtractFirstOne = function (zx, o, r, debugmsg) {
 
 	if (o.left === "") {
 		if (debugmsg !== undefined)
-			console.log('ExtractFirstOne Nomore left: ', debugmsg, o.left);
+			console.log('ExtractFirstOne Nomore left: ', debugmsg, o);//.left);
 		return false;
 	}
 
@@ -184,6 +184,7 @@ exports.ExtractFirstOne = function (zx, o, r, debugmsg) {
 	if (o.left.substr(0, 6).toLowerCase() === "select") {
 		if (debugmsg !== undefined)
 			console.log('ExtractFirstOne Select: ', debugmsg, o.left);
+          //  process.exit(2);
 		r.tag = TagTypeStartSelect;
 		r.method = r.tag.method;
 		r.content = o.left.substr(6);
@@ -449,6 +450,7 @@ exports.ConstantExpressions = function (zx, line_obj, QryStr, target_type, Debug
 					console.log('ConstantExpressions postback : ', val);
 				varx = exports.AnonymousExpression(zx, line_obj, val, target_type, DebugContext);
 				result += '\'\'\'||' + varx + "||\'\'\'";
+                //console.log('ppppppppppppp ConstantExpressions postback : ', val);
 			}
 			if (target_type === "paramitizedstatement") { //moment identical to post back but should .....
 				if (DebugContext !== undefined)
@@ -463,7 +465,9 @@ exports.ConstantExpressions = function (zx, line_obj, QryStr, target_type, Debug
 
 	if (target_type === "text") {
 		zx.mt.lines.push(result);
+        //console.log('zx.mt.lines.push(result) : ', result);
 	}
+    //console.log('return result : ', result);
 	return result;
 };
 
