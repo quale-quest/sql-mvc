@@ -23,6 +23,9 @@ exports.tag_modeldone = function (zx, line_obj) {
    //console.log('tag_modeldone:',line_obj.nonkeyd );
 }
 
+exports.tag_use = function (zx, line_obj) {//blank use in model inheritance   
+}
+
 exports.start_up = function (zx) {
 
 

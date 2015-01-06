@@ -201,6 +201,13 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 				if ((objtype === undefined) || (objtype === line_obj.tag.toLowerCase())) {
 
 					//model code is interpreted here in pass 0
+                    if  (line_obj.tag.toLowerCase() == "use") 
+                        {
+                        line_obj.use = zx.gets(line_obj.nonkeyd);
+                        line_obj.nonkeyd='';                        
+                        //console.log('use_models :', line_obj)
+                        }
+                        
 					if ((line_obj.tag.toLowerCase() == "model") && (line_obj.save !== undefined))
 						zx.saving_models = zx.gets(line_obj.save);
                     //console.log('saving_models :', zx.saving_models);    
@@ -210,7 +217,7 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 					if ((line_obj.save !== undefined) || zx.saving_models !== '') {
 						//store this model
 						var name = zx.saving_models;
-                        if (name==='') name = zx.gets(line_obj.model);
+                        if (name==='') name = zx.gets(line_obj.save);
 						if (zx.model_defines[name] === undefined)
 							zx.model_defines[name] = [];
 						zx.model_defines[name].push(line_obj);
@@ -223,9 +230,11 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 						else {
 							var name = zx.gets(line_obj.use);
 							var models = zx.model_defines[name];
+                            //console.log('use models in :', name, models);
 							if (models !== undefined) {
 								var linecopy = deepcopy(line_obj);
 								delete linecopy.use;
+                                //console.log('use models in :', name, linecopy);
 								delete linecopy.tag;
 								delete linecopy.nonkeyd;
 								delete linecopy.q;
@@ -275,7 +284,8 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 						srcinfo : {
 							filename : filename,
 							source : 'html',
-							file_stack : zx.file_stack.slice(0)
+							file_stack : zx.file_stack.slice(0),
+                            //note:'mark1898321'
 						}
 					});
 
