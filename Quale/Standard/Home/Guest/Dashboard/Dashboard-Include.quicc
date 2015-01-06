@@ -41,8 +41,8 @@ set my.todo_type='2';
 <br><br><br><br>
 
 <#print 
-($select count(*) from MAIL where FROM_USER=session.id and SUBJECT='login log' $) logins from you 
-and ($select count(*) from MAIL where SUBJECT='login log' $) logins total (in this session).
+($select count(*) from MAIL where FROM_USER=session.id and SUBJECT='login log' $) actions from you 
+and ($select count(*) from MAIL where SUBJECT='login log' $) actions total (in this session).
 >
 
 </div>	

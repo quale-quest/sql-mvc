@@ -55,13 +55,17 @@ var preProcess = function (zx, filename, str) {
 		//check multiple nested levels of pre processing
 		str = preProcess(zx, filename, str);
 		//console.warn('plugin preprocessor_ searching for  :',preprocessor, ' parm:',preparam );
-		var done = zx.plugins.forEach(function (entry) { //to many params .. zx.eachplugin(zx, 'preprocessor_' + preprocessor, 0);
-				if (entry['preprocessor_' + preprocessor] !== undefined) {
-					//console.warn('plugin preprocessor_ found :',preprocessor );
-					str = entry['preprocessor_' + preprocessor](zx, str, preparam, filename, preprocessor);
-				}
-			});
+		if (1) {
+			zx.eachplugin(zx, 'preprocessor_' + preprocessor, str);
+		} else {
 
+			var done = zx.plugins.forEach(function (entry) { //to many params .. zx.eachplugin(zx, 'preprocessor_' + preprocessor, 0);
+					if (entry['preprocessor_' + preprocessor] !== undefined) {
+						//console.warn('plugin preprocessor_ found :',preprocessor );
+						str = entry['preprocessor_' + preprocessor](zx, str, preparam, filename, preprocessor);
+					}
+				});
+		}
 		//console.log( markdown.toHTML( "Hello *World*!" ) );
 	}
 	return str;
@@ -199,64 +203,11 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 				//have to re do this as the parser overwrites the object
 
 				if ((objtype === undefined) || (objtype === line_obj.tag.toLowerCase())) {
-
-					//model code is interpreted here in pass 0
-                    if  (line_obj.tag.toLowerCase() == "use") 
-                        {
-                        line_obj.use = zx.gets(line_obj.nonkeyd);
-                        line_obj.nonkeyd='';                        
-                        //console.log('use_models :', line_obj)
-                        }
-                        
-					if ((line_obj.tag.toLowerCase() == "model") && (line_obj.save !== undefined))
-						zx.saving_models = zx.gets(line_obj.save);
-                    //console.log('saving_models :', zx.saving_models);    
-					if ((line_obj.tag.toLowerCase() == "modeldone"))
-						zx.saving_models = '';
-
-					if ((line_obj.save !== undefined) || zx.saving_models !== '') {
-						//store this model
-						var name = zx.saving_models;
-                        if (name==='') name = zx.gets(line_obj.save);
-						if (zx.model_defines[name] === undefined)
-							zx.model_defines[name] = [];
-						zx.model_defines[name].push(line_obj);
-						//console.log('store model in :', name, line_obj);
-
-
-					} else {
-						if (line_obj.use === undefined) //combine the stored module with the new values
-							blocks.push(line_obj);
-						else {
-							var name = zx.gets(line_obj.use);
-							var models = zx.model_defines[name];
-                            //console.log('use models in :', name, models);
-							if (models !== undefined) {
-								var linecopy = deepcopy(line_obj);
-								delete linecopy.use;
-                                //console.log('use models in :', name, linecopy);
-								delete linecopy.tag;
-								delete linecopy.nonkeyd;
-								delete linecopy.q;
-								models.forEach(function (model) {
-									var modelcopy = deepcopy(model);
-									delete modelcopy.srcinfo;
-
-									var lineextn = extend(modelcopy, linecopy); //second one has the priority
-									//if (lineextn.tag === 'table')
-									//	console.log('use model in :', name, lineextn);
-									lineextn.srcinfo.file_stack.push({
-										filename : model.filename,
-										start_line : model.start_line
-									});
-									blocks.push(lineextn);
-
-								});
-							}
-
-						}
-
-					}
+					zx.locate_plugin(zx, "tag_pass0_", line_obj.tag, line_obj);
+					zx.eachplugin(zx, "process_pass0", {
+						line_obj : line_obj,
+						blocks : blocks
+					});
 				}
 				//console.log('bcb b2:',line_obj);
 
@@ -285,7 +236,7 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 							filename : filename,
 							source : 'html',
 							file_stack : zx.file_stack.slice(0),
-                            //note:'mark1898321'
+							//note:'mark1898321'
 						}
 					});
 
@@ -431,5 +382,5 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 
 exports.start_up = function (zx) {
 	zx.model_defines = {};
-    zx.saving_models='';
+	zx.saving_models = '';
 };
