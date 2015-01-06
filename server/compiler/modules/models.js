@@ -13,15 +13,22 @@ exports.module_name = 'models.js';
 var deepcopy = require('deepcopy');
 var extend = require('node.extend');
 
-exports.tag_model = function (/*zx, line_obj*/
+exports.tag_controller = exports.tag_model = function (zx, line_obj
 ) {
-
-	//if (zx.pass==1)  console.log('tag_model:',line_obj );
+if (line_obj.save !== undefined) return;//not intrested in model save blocks
+if (line_obj.q.query===undefined) return;
+if (zx.gets(line_obj.q.query)==='') return;
+	if (zx.pass==1)  
+       {
+       console.log('tag_model:',line_obj.q.query.trim());//,line_obj );
+       console.log('tag_model quale:',line_obj.q.quale_context,zx.q.contexts[line_obj.q.quale_context]  );
+       }
+    
 	//console.log('tag_model:',line_obj.nonkeyd );
-	//this must execute the actaul ddl commands (using the db tool
+	//this must execute the actual ddl commands (using the db tool
 };
 
-exports.tag_modeldone = function (zx, line_obj) {
+exports.tag_controllerdone = exports.tag_modeldone = function (zx, line_obj) {
 	//console.log('tag_modeldone:',line_obj.nonkeyd );
 }
 
@@ -35,13 +42,13 @@ exports.tag_pass0_use = function (zx, line_obj) {
 	line_obj.nonkeyd = '';
 	//console.log('tag_pass0_use :', line_obj)
 }
-exports.tag_pass0_model = function (zx, line_obj) {
+exports.tag_pass0_controller = exports.tag_pass0_model = function (zx, line_obj) {
 
 	if (line_obj.save !== undefined)
 		zx.saving_models = zx.gets(line_obj.save);
 	//console.log('tag_pass0_model :', line_obj)
 }
-exports.tag_pass0_modeldone = function (zx, line_obj) {
+exports.tag_pass0_controllerdone = exports.tag_pass0_modeldone = function (zx, line_obj) {
 	zx.saving_models = '';
 
 	//console.log('tag_pass0_modeldone :', line_obj)

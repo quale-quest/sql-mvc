@@ -56,7 +56,7 @@ var preProcess = function (zx, filename, str) {
 		str = preProcess(zx, filename, str);
 		//console.warn('plugin preprocessor_ searching for  :',preprocessor, ' parm:',preparam );
 		if (1) {
-			zx.eachplugin(zx, 'preprocessor_' + preprocessor, str);
+			str=zx.gets(zx.eachplugin(zx, 'preprocessor_' + preprocessor, str));
 		} else {
 
 			var done = zx.plugins.forEach(function (entry) { //to many params .. zx.eachplugin(zx, 'preprocessor_' + preprocessor, 0);

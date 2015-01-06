@@ -376,12 +376,15 @@ exports.escape_scriptstring = function (zx, val, open_key_length, open, close, b
 };
 
 exports.eachplugin = function (zx, fn, value) {
+    var results=[];
 	for (var ixx = 0, max = zx.plugins.length; ixx < max; ixx += 1) {
 		if (zx.plugins[ixx][fn] !== undefined) {
            //console.log('eachplugin ',(zx.plugins[ixx].module_name||' plugin has no name'),fn,value);//,zx.plugins[ixx]);
-			zx.plugins[ixx][fn](zx, value);
+			var result=zx.plugins[ixx][fn](zx, value);
+            if (result!==undefined) results.push(result);
 		}
 	}
+    return results;
 };
 
 exports.locate_plugin = function (zx, txt, tag, value) {

@@ -185,6 +185,9 @@ var seq_main = function () {
 		zx.dbg = require('../database/db_fb_sql_gen.js');
 		zx.plugins.push(zx.dbg);
 
+		zx.db_update = require('../database/db_fb_sql_updater.js');
+		zx.plugins.push(zx.db_update);
+
 		zx.template_control = require('./modules/template_control.js');
 		zx.plugins.push(zx.template_control);
 
@@ -342,13 +345,18 @@ var seq_main = function () {
 };
 
 var get_model_files = function (zx,path) {	
-	//scan for applicable models in many folders
-	var filelist = [];
+	//scan for applicable models in many folders	
 	var re = new RegExp('^Models' , "i");
     //console.warn('get_model_files for:',path,re,'rel:',path);
-	filelist = fileutils.getDropinFileList(zx, re, path, zx.line_obj, 130128);
+	var filelist_m = fileutils.getDropinFileList(zx, re, path, zx.line_obj, 130128);
+    re = new RegExp('^Controllers' , "i");
+    var filelist_c = fileutils.getDropinFileList(zx, re, path, zx.line_obj, 130129);
+    re = new RegExp('^MC.' , "i");
+    var filelist_d = fileutils.getDropinFileList(zx, re, path, zx.line_obj, 130130);
+    
     //console.warn('got model_files for:',filelist);
-    return filelist;
+
+    return filelist_m.concat(filelist_d,filelist_c);
 }
 
 
