@@ -20,8 +20,15 @@ if (line_obj.q.query===undefined) return;
 if (zx.gets(line_obj.q.query)==='') return;
 	if (zx.pass==1)  
        {
-       console.log('tag_model:',line_obj.q.query.trim());//,line_obj );
-       console.log('tag_model quale:',line_obj.q.quale_context,zx.q.contexts[line_obj.q.quale_context]  );
+       //var query=line_obj.q.query.trim();
+       //var sh=zx.ShortHash(query);       
+       //if (zx.model_hashes[name????
+       //if (sh!=
+       //zx.model_hashes
+       
+       //console.log('tag_model:',query);//,line_obj );
+      // console.log('tag_model quale:',line_obj.q.quale_context,zx.q.contexts[line_obj.q.quale_context]  );
+//       var result=zx.db_update.model();
        }
     
 	//console.log('tag_model:',line_obj.nonkeyd );
@@ -30,10 +37,10 @@ if (zx.gets(line_obj.q.query)==='') return;
 
 exports.tag_controllerdone = exports.tag_modeldone = function (zx, line_obj) {
 	//console.log('tag_modeldone:',line_obj.nonkeyd );
-}
+};
 
 exports.tag_use = function (zx, line_obj) { //blank use in model inheritance
-}
+};
 
 //model code interpreted here in pass 0
 exports.tag_pass0_use = function (zx, line_obj) {
@@ -41,25 +48,25 @@ exports.tag_pass0_use = function (zx, line_obj) {
 	line_obj.use = zx.gets(line_obj.nonkeyd);
 	line_obj.nonkeyd = '';
 	//console.log('tag_pass0_use :', line_obj)
-}
+};
 exports.tag_pass0_controller = exports.tag_pass0_model = function (zx, line_obj) {
 
 	if (line_obj.save !== undefined)
 		zx.saving_models = zx.gets(line_obj.save);
 	//console.log('tag_pass0_model :', line_obj)
-}
+};
 exports.tag_pass0_controllerdone = exports.tag_pass0_modeldone = function (zx, line_obj) {
 	zx.saving_models = '';
 
 	//console.log('tag_pass0_modeldone :', line_obj)
-}
+};
 
 exports.process_pass0 = function (zx, par) {
-	var line_obj = par.line_obj;
+	var name,line_obj = par.line_obj;
 
 	if ((line_obj.save !== undefined) || zx.saving_models !== '') {
 		//store this model
-		var name = zx.saving_models;
+		name = zx.saving_models;
 		if (name === '')
 			name = zx.gets(line_obj.save);
 		if (zx.model_defines[name] === undefined)
@@ -72,7 +79,7 @@ exports.process_pass0 = function (zx, par) {
 		if (line_obj.use === undefined) //combine the stored module with the new values
 			par.blocks.push(line_obj);
 		else {
-			var name = zx.gets(line_obj.use);
+			name = zx.gets(line_obj.use);
 			var models = zx.model_defines[name];
 			//console.log('use models in :', name, models);
 			if (models !== undefined) {
@@ -101,12 +108,16 @@ exports.process_pass0 = function (zx, par) {
 		}
 
 	}
-}
+};
 
 exports.start_up = function (zx) {
 
 	zx.model_defines = {};
 	zx.saving_models = '';
+    
+    zx.model_hashes = {};
+    
+    
 };
 
 //===========================================================

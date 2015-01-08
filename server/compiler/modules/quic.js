@@ -15,7 +15,7 @@ var JSOL = require("../libs/jsol");
 var extend = require('node.extend');
 var deepcopy = require('deepcopy');
 
-exports.module_name='quic.js';
+exports.module_name = 'quic.js';
 
 exports.remove_comments = function (zx, obj, str) {
 
@@ -127,8 +127,8 @@ exports.parse = function (zx, line_obj, str, tag) {
 	//console.log('Quic parse done:',zx.q);
 	line_obj.q = zx.q.ths;
 
-    if (zx.q.ths.quale_context!==undefined) 
-        line_obj.quale_context = zx.q.ths.quale_context;
+	if (zx.q.ths.quale_context !== undefined)
+		line_obj.quale_context = zx.q.ths.quale_context;
 
 	line_obj = extend(line_obj, zx.q.ths.Tag);
 	line_obj.nonkeyd = str;
@@ -227,13 +227,13 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 
 	//Parse the Quic object
 	var q_obj = {};
-    try {
-	    q_obj = JSOL.parse(quics);
-        } catch (e) {
-            console.log('JSOL.parse exception: ',quickinput,line_obj)
-            process.exit(2);//TODO
-        
-        }
+	try {
+		q_obj = JSOL.parse(quics);
+	} catch (e) {
+		console.log('JSOL.parse exception: ', quickinput, line_obj);
+		process.exit(2); //TODO
+
+	}
 	//console.log('JSOL.parse:',q_obj)//," :::",str);
 	//interpret/fixup some tokens in the object
 	tokenscheck_eachRecursive(q_obj);
@@ -312,20 +312,18 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 				if (zx.q.contexts[quale.context] === undefined)
 					zx.q.contexts[quale.context] = {};
 				if (quale.name !== undefined) {
-					console.log('Quale setting model fields :',quale.context,'.',quale.name,':',quale);
+					//console.log('Quale setting model fields :',quale.context,'.',quale.name,':',quale);
 					zx.q.contexts[quale.context][quale.name] = extend(zx.q.contexts[quale.context][quale.name], quale);
 				} else {
-					console.log('Quale setting model table :',quale.context,':',quale);
+					//console.log('Quale setting model table :',quale.context,':',quale);
 					zx.q.contexts[quale.context].Table = extend(zx.q.contexts[quale.context].Table, quale);
-                    zx.q.ths.quale_context = quale.context;
+					zx.q.ths.quale_context = quale.context;
 				}
 			}
 
 			if (quale['class'] !== undefined)
 				zx.q.classes[quale['class']] = extend(zx.q.classes[quale['class']], quale);
 
-            
-                
 			//if (quale.name!==undefined)     zx.q.ths[quale.name]= extend(zx.q.classes[quale.name], quale);
 
 		}
@@ -387,7 +385,7 @@ exports.start_up = function (zx) {
 	zx.q.rl_context = '';
 	zx.q.rl_from = '';
 
-	zx.q.ths = {};	
+	zx.q.ths = {};
 };
 
 var disp_quic = function (zx, line_obj, str) {

@@ -20,7 +20,7 @@ CREATE TABLE TODO_MVC				--:{as:"Table"}
 
 <#:table
 Select  --:{from:"TODO_MVC",autoinsert:"top",tablestyle:"Todo"}
-STATUS, --:{Action:"Edit":yes}
+STATUS, --:{Action:"Edit"}
 NAME,   --:{Action:"Edit","placeholder":"What needs to be done"}
 REF	    --:{Action:"View",Type:"Hide"}
 From TODO_MVC 

@@ -12,24 +12,24 @@ To automate the DDL maintenance.
 /*
 
 #Guidelines
-The following is some guidelines. 
+The following is some guidelines.
 
 #General
 Updating a production  SQL database is always a challenge for the following reasons:
-* Data integrity is the number one concern.
-* Referral integrity, Stored procedures, triggers and views depend on the table structures, 
-   this makes it almost impossible sometimes to change a table. The intricacy  mean a programmer 
-   has to plan a upgrade path and implement a process.
-* often this this would involve
-    1) taking the database off-line (single user mode).
-    2) deleting some or all triggers, stored procedures, views and referral integrity.
-    4) altering simple columns.
-    5) creating new columns, copying / transforming data, drop the old columns, rename the new columns back.
-    6) recreating triggers, stored procedures, views and referral integrity.
-* this process is much to delicate to automate without extensive testing.
-* for this reason organisations often don't allow programmers to make such changes and rather 
-have (highly paid)dedicated database administrators for such tasks.    
-   
+ * Data integrity is the number one concern.
+ * Referral integrity, Stored procedures, triggers and views depend on the table structures,
+this makes it almost impossible sometimes to change a table. The intricacy  mean a programmer
+has to plan a upgrade path and implement a process.
+ * often this this would involve
+1) taking the database off-line (single user mode).
+2) deleting some or all triggers, stored procedures, views and referral integrity.
+4) altering simple columns.
+5) creating new columns, copying / transforming data, drop the old columns, rename the new columns back.
+6) recreating triggers, stored procedures, views and referral integrity.
+ * this process is much to delicate to automate without extensive testing.
+ * for this reason organisations often don't allow programmers to make such changes and rather
+have (highly paid)dedicated database administrators for such tasks.
+
 
 Updating a development database is fortunately not so bad because data integrity is not a concern, but development time is.
 so it is ok to "trust" a automated process on a dev database.
@@ -40,39 +40,569 @@ During early stages of development it useful not to have to much referral integr
 add it in during later stages of development.
 (it would be nice in this updater code to to be able to switch of referral integrity.)
 
-#updater features 
+#updater features
 ##during application compiling.
-* can do simple table changes(or create) according to model files.
-* can add indexes, triggers and stored procedures.
-* can populate demo data according to simple scripts.
+ * can do simple table changes(or create) according to model files.
+ * can add indexes, triggers and stored procedures.
+ * can populate demo data according to simple scripts.
 
 ##command line
-* can export a schema update script from the development database.
-* can import the schema update script to another database.
+ * can export a schema update script from the development database.
+ * can import the schema update script to another database.
 
 
 #Workflow
-* create database - command line   sql-mvc database [-a application] new_name
-* update/add model files.
-* update / add application pages.
-* the compiler will see the model changes and update the database schema.
-* test the application.
-* export the schema update script, and review, possibly keep in GIT for version control.
-* clone the production box including database to a sandbox.
-* update the sandbox to the new upp and test.
-* clone the production box including database to a backup / standby.
-* optionally take the production box off-line
-* update the production box to the new app and test.
-* bring the production box on-line
-   
-*/
- 
+ * create database - command line   sql-mvc database [-a application] new_name
+ * update/add model files.
+ * update / add application pages.
+ * the compiler will see the model changes and update the database schema.
+ * test the application.
+ * export the schema update script, and review, possibly keep in GIT for version control.
+ * clone the production box including database to a sandbox.
+ * update the sandbox to the new upp and test.
+ * clone the production box including database to a backup / standby.
+ * optionally take the production box off-line
+ * update the production box to the new app and test.
+ * bring the production box on-line
 
-exports.init = function (zx) {
-//
+ */
+
+/*
+Ported from UpdateFDB.py
+#Warnings
+#   Don't run this against your live databases without extensive testing for suitability
+#   the effects on tables with referral integrity is unknown
+
+
+#NOTES
+#   much of this process has been inspired by Flamerobin, especially DDL extract and how they create empty procedures before the tables.
+#   Supports firebird 2.0 and 2.5 (CREATE OR ALTER VIEW)
+#
+#   The parsing is quite simple and relies on expected behaviour
+#   we assume the ddl file was generated by Flamerobin (extract ddl).
+#   we want to keep comments that form part of procedures - thus we cannot just strip all comments.
+#   we presume ; , SET TERM ; ^ and SET TERM ^ ; is not going to appear somewhere in comments, and will always be on the start of the line.
+#   we presume that terminating ; will always be at the end of a line and no joining of lines or comments after will occur.
+#   we presume the table fields will always be on one and only one line and the terminator ); will always be on its own line
+#   The process will not delete tables or fields that no longer exist in the source
+
+#Improvements
+#   for more detailed parsing: http://pyparsing.wikispaces.com/
+#   Referral integrity?
+#   Output info on tables and fields that could be deleted manually
+
+#
+#Issues
+# The FDB driver seems to be stuck in dialect 2, no matter that you specify 1 or 3 this results in:
+#   Date fields throw an error: DATE must be changed to TIMESTAMP - even with "cast (tsf as DATE)" which is a real big problem- code has to be rewritten with Extract
+#   convert as:  select cast(extract(day from cast('now' as timestamp))||'.'||extract(month from cast('now' as timestamp))||'.'||extract(year from cast('now' as timestamp)) as timestamp) from RDB$DATABASE
+#   Quoted identifiers  throw an error  : a string constant is delimited by double quotes, -104, 335544569
+
+ */
+var fs = require('fs');
+
+var countLines = function (str) {
+	return (str.match(/\n/g) || []).length;
+};
+//http://stackoverflow.com/questions/25058134/javascript-split-a-string-by-comma-except-inside-parentheses
+function splitNoParen(s, delim) { //Lafras enhanced to do quotes
+	var left = 0,
+	right = 0,
+	A = [],
+	Q = 0,
+	M = s.match(/([^()']+)|([()'])/g),
+	L = M.length,
+	next,
+	str = '';
+	var del_regx = new RegExp("([^" + (delim) + "]+)", 'g');
+	//console.log("splitNoParen:", L, M);
+	for (var i = 0; i < L; i++) {
+		next = M[i];
+		if (next === "'" && Q === 0) {
+			++left;
+			Q = 1;
+		} else if (next === "'" && Q === 1) {
+			++right;
+			Q = 0;
+		} else if (next === '(')
+			++left;
+		else if (next === ')')
+			++right;
+
+		if (left !== 0) {
+			str += next;
+			if (left === right) {
+				if ((i + 1 >= L) || (i + 1 < L && (M[i + 1].charAt(0) === delim || M[i + 1].charAt(0) === ')'))) //including stray close bracket
+				{
+					//console.log("splitNoParen comma aft :", M[i + 1].charAt(0), next);
+					A[A.length - 1] += str;
+					left = right = 0;
+					str = '';
+				}
+			}
+		} else
+			A = A.concat(next.match(del_regx));
+	}
+	return A;
+}
+
+function comment_replace(inputs) {
+	//replaces / * * / style comments with spaces (keeps line an col numbering consistent compared to the source)
+	var rep_chr = " ";
+	while (1) {
+		var m = inputs.match(/([\S\s]*)(\/\*[\S\s]*\*\/)([\S\s]*)/i);
+		if (m === null)
+			break;
+		//console.log('comment_replace : ',m[2]);
+
+		var cr = m[2].replace(/\S/g, rep_chr);
+		//console.log('comment_replace cr: ',cr);
+		inputs = m[1] + cr + m[3];
+	}
+
+	//console.log('done ',inputs);
+	return inputs;
+}
+
+function dll_blocks_seperate_term(inputs) { //splits the input into blocks that are in set term and blocks out side
+
+	var open_term = ";";
+	var blocks = [];
+	while (inputs !== '') {
+		var regs = '([\\S\\s]*)set\\s+term\\s+(.)\\s+\\' + open_term + '([\\S\\s]*)';
+		var re = new RegExp(regs, 'i');
+		var m = inputs.match(re);
+		if (!m)
+			m = [0, inputs, ';', ''];
+
+		var l = countLines(m[1]);
+		inputs = m[3];
+
+		//remove xtra lines and terminator
+		var t = m[1].replace(/\s+$/g, '');
+		if (t.slice(-1) === open_term)
+			t = t.slice(0, -1);
+
+		//remove leading lines
+		//console.log('remove leading lines b4 :', m);
+		var n = t.match(/(\s*)([\S\s]+)/i);
+		//console.log('remove leading lines   :', m);
+		var o = countLines(n[1]);
+
+		if (open_term == ';') { //split into ;
+			var statements = splitNoParen(n[2], ";");
+
+			console.log('statements   :', statements);
+
+			for (var indx = 0; indx < statements.length; indx++) {
+				var statement = statements[indx];
+				var ms = statement.match(/(\s*)([\S\s]+)/i); //remove leading lines
+				console.log('    statement   :', ms);
+				l = countLines(ms[2]);
+				o += countLines(ms[1]);
+
+				blocks.push({
+					l : l,
+					o : o,
+					t : ';',
+					q : ms[2]
+				});
+
+				o = 0;
+
+			}
+		} else {
+
+			blocks.push({
+				l : l - o,
+				o : o,
+				t : open_term,
+				q : n[2]
+			});
+		}
+
+		open_term = m[2];
+	}
+	//console.log('dll_blocks_seperate_term  :', blocks);
+	return blocks;
+}
+
+var exec_qry = function (cx, qrys) {
+	cx.zx.dbu.exec_qry_cb.sync(null, cx, "exec_qry", qrys, 0);
+	delete cx.expect;
+};
+
+var dataset = function (zx, qrys) {
+	var res = zx.dbu.dataset.future(null, {
+			zx : zx
+		}, "updater dataset", qrys, 0);
+	//console.log("dataset:" ,res.result);
+	return res.result;
+};
+var singleton = function (zx, field, qrys) {
+	var res = zx.dbu.dataset.future(null, {
+			zx : zx
+		}, "updater singleton", qrys, 0);
+
+	if (res.result[0] === undefined) {
+		console.log("singleton:", res.result);
+	}
+	if (res.result[0][field] !== undefined) {
+		//console.log("singleton:" ,res.result[0][field].low_)
+		if (res.result[0][field].low_ === undefined)
+			return res.result[0][field];
+		return res.result[0][field].low_ + (res.result[0][field].high_ * 65536 * 65536);
+	} else
+		return '';
+};
+var checkTable = function (zx, name) {
+	return singleton(zx, "count", "select count(*) from rdb$relations where rdb$relation_name ='" + name + "' ;");
+};
+var checkView = function (zx, name) {
+	return singleton(zx, "count", "select count(*) from rdb$relations where rdb$relation_name ='" + name + "' AND (rdb$view_blr IS NOT NULL);");
+};
+var checkGenerator = function (zx, name) {
+	return singleton(zx, "count", "SELECT count(*) FROM RDB$GENERATORS  where RDB$GENERATOR_NAME='" + name + "' ;");
+};
+var getGenerator = function (zx, name, increment) {
+	return singleton(zx, "gen_id", "SELECT GEN_ID( " + name + "," + increment + " ) FROM RDB$DATABASE;");
+};
+var dropTriggers = function (zx) {
+	var t = dataset(zx, "select rdb$trigger_name from rdb$triggers where (rdb$system_flag = 0 or rdb$system_flag is null)");
+	//console.log("dropTriggers:",t);
+	t.forEach(function (rec) {
+		var sql = "drop trigger " + rec.rdb$trigger_name;
+		console.log("dropTriggers forEach:", rec.rdb$trigger_name);
+		exec_qry({
+			zx : zx
+		}, sql);
+	});
+	return t.length;
+};
+
+var dropProcedures = function (zx) {
+	//remove the code from procedure - alternative to drop/create empty which has a dependency issue
+	dropTriggers(zx);
+	var count = 0;
+	var totaldropped;
+	//each loop any independent procs are dropped, thereby freeing dependencies of the other procs
+	while (count++ < 10) //limit the loops in case a procedure cant be dropped
+	{
+		var t = dataset(zx, 'SELECT rdb$procedure_name FROM rdb$procedures ' +
+				'WHERE rdb$system_flag IS NULL OR rdb$system_flag = 0;');
+		console.log("DropProcedures :", t);
+		if (totaldropped === null)
+			totaldropped = t.length;
+		if (t.length === 0)
+			break;
+		for (var indx = 0; indx < t.length; indx++) {
+			var rec = t[indx];
+
+			var sql = "drop procedure " + rec.rdb$procedure_name;
+			console.log("DropProcedures forEach:", rec.rdb$procedure_name);
+
+			exec_qry({
+				zx : zx,
+				expect : /335544673/
+			}, sql);
+		}
+	}
+	return totaldropped;
 
 };
 
+var CREATE_TABLE = function (zx, qrystr) {
+
+	var barestr = qrystr; //comment_remover(qrystr).strip()
+	var Table = barestr.match(/CREATE\s+TABLE\s+([\w$]+)(\s*\(\s)(.*)/i);
+	if (!Table)
+		Table = barestr.match(/CREATE\s+GLOBAL\s+TEMPORARY\s+TABLE\s+([\w$]+)(\s*\(\s)(.*)/i);
+	if (!Table)
+		return qrystr; //did not understand try to create new table as is
+	barestr = Table[3];
+	Table = Table[1];
+	console.log('Table re:', Table, barestr);
+	var tableexists = checkTable(zx, Table);
+	//console.log("CREATE_TABLE:",Table,tableexists,"qrystr:",qrystr," barestr:",barestr);
+	if (tableexists === 0) // create new table as is
+	{
+		exec_qry(cx, qrystr);
+		return "";
+	}
+
+	var fields = splitNoParen(barestr, ',');
+	var FieldNumber = 0;
+	//console.log('Table fields:',fields );
+	var cx = {
+		zx : zx
+	};
+	fields.forEach(function (field) {
+		field = field.trim();
+		if ((field !== ")" && field !== ";")) {
+			FieldNumber = FieldNumber + 1;
+			cx.expect = /335544351/;
+			exec_qry(cx, "ALTER TABLE " + Table + " ADD " + field);
+			if (field.match(/\sblob\s/i) || field.match(/\sCOMPUTED BY\s/i)) {
+				//Blobs cant be altered
+				//Computed by gets dropped as part of cleanup ??WTF
+			} else {
+
+				var FFD = field.match(/(\S+)\s+(\S+)\s?(default)?\s?(not\s+null)?\s?(.*)/i);
+				//console.log('Table fields FFD:', field, FFD);
+				if (FFD) {
+					var FieldName = FFD[1],
+					FieldType = FFD[2],
+					Default = FFD[5];
+					if (FFD[4])
+						console.log('WARN: Cannot update "NOT NULL" property for :', Table + '.' + FieldName);
+					exec_qry(cx, "ALTER TABLE " + Table + " alter " + FieldName + " TYPE " + FieldType);
+					if (Default !== "") {
+						exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " set DEFAULT " + Default);
+						// updating the default before commit seems a problem ... this should be moved to phase 2
+						//caused an error in carlton update ->    exec_qry("update "+Table +" set " + FieldName + "="+Default+" where " +FieldName + " is null ")
+					} else {
+						cx.expect = /335544351/;
+						exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " DROP DEFAULT ");
+						exec_qry(cx, "ALTER TABLE " + Table + " ALTER " + FieldName + " POSITION " + FieldNumber);
+						//print "ALTER TABLE "+Table+" ALTER " +FieldName + " POSITION "+ str(FieldNumber)
+					}
+				}
+			}
+		}
+	});
+
+	return "";
+};
+
+exports.Execute_DDL = function (zx, filename, inputsx) {
+	var inputs;
+	if ((inputsx === null) || (inputsx === undefined))
+		inputs = fs.readFileSync(filename, 'utf8');
+	else
+		inputs = inputsx;
+
+	inputs = comment_replace(inputs);
+	//console.log('Execute_DDL  :', inputs);
+	var LineNr = 1;
+	var insertmatchingfield = '';
+	var verbosity = 10;
+
+	var cx = {
+		zx : zx
+	};
+	var blocks = dll_blocks_seperate_term(inputs);
+	blocks.forEach(function (block) {
+		LineNr += block.o;
+		//console.log('blocks.forEach  :', LineNr, block);
+		if (verbosity > 2)
+			console.log(" Preview DDL from line preview: ", LineNr, ' for ', block.l + 1, ' lines');
+		var qrystr = block.q;
+		//console.log('blocks.forEach GENERATOR:',qrystr.match(/\s*CREATE\s+GENERATOR\s/i) );
+		//statements that would be used in the make script
+		if (qrystr.match('CREATE ROLE ')) {
+			cx.expect = /335544351/;
+		} else if (qrystr.match(/DECLARE\s+EXTERNAL\s+FUNCTION\s/)) {
+			cx.expect = /335544351/;
+		} else if (qrystr.match(/CREATE\s+DOMAIN\s/)) {
+			cx.expect = /335544351/;
+		} else if (qrystr.match(/CREATE\s+INDEX\s/)) {
+			cx.expect = /335544351/;
+		} else if (qrystr.match(/GRANT\s/)) {
+			cx.expect = /335544351/;
+		} else if (qrystr.match(/CREATE\s+GENERATOR\s/i)) {
+			cx.expect = /335544351/;
+			var mg = qrystr.match(/CREATE\s+GENERATOR\s([\w\$]+)/i);
+			if (mg && checkGenerator(zx, mg[1]))
+				qrystr = "";
+			// else execute as is
+		} else if (qrystr.match(/CREATE\s+PROCEDURE\s/i)) {
+			qrystr = qrystr.replace(/CREATE\s+PROCEDURE/i, "CREATE OR ALTER PROCEDURE");
+		} else if (qrystr.match(/ALTER\s+PROCEDURE\s/i)) { //execute as is
+		} else if (qrystr.match(/CREATE\s+VIEW\s/i)) {
+			qrystr = qrystr.replace(/CREATE\s+VIEW\s/i, "CREATE OR ALTER VIEW");
+		} else if (qrystr.match(/ALTER\s+VIEW\s/i)) { //execute as is
+		} else if (qrystr.match(/CREATE\s+TRIGGER/i)) { //execute as is
+		} else if (qrystr.match(/CREATE\s+TABLE/i)) {
+			qrystr = CREATE_TABLE(qrystr);
+		} else if (qrystr.match(/CREATE\s+GLOBAL\s+TEMPORARY\s+TABLE\s/i)) {
+			qrystr = CREATE_TABLE(qrystr);
+		}
+
+		//#statements that would be used in the load or clean script
+		else if (qrystr.match(/SET\s+GENERATOR\s/i)) {
+			var mgg = qrystr.match(/SET\s+GENERATOR\s+([\w\$]+)/i);
+			//console.log(" SET+GENERATOR:  ",mgg, 'as ',qrystr);
+			if (mgg) {
+				var gv = getGenerator(zx, mgg[1], 0);
+				//console.log("GENERATOR value :",gv," ");
+				if (gv > 0) {
+					qrystr = "";
+					console.log("GENERATOR", mgg[1], "already set");
+				}
+
+			}
+		} else if (qrystr.match(/INSERT\s+INTO\s/i)) {
+			qrystr = qrystr.replace(/;\s+$/g, '');
+			if (insertmatchingfield !== '')
+				qrystr = "update or " + qrystr + " matching(" + insertmatchingfield + ") ";
+		} else if (qrystr.match(/UPDATE\s/i)) {}
+		//#non sql control statements
+		else if (qrystr.match(/INSERT\s+MATCHING\s/i)) {
+			var mi = qrystr.match(/INSERT\s+MATCHING\s+([\w\$]+)/i);
+			if (mi) {
+				insertmatchingfield = mi[1];
+			}
+			qrystr = "";
+		}
+
+		//print "Set insert matching field:",insertmatchingfield
+		else if (qrystr.match(/SET\s+VERBOSITY\s/i)) {
+			var mv = qrystr.match(/SET\s+VERBOSITY\s+([\w\$]+)/i);
+			if (mv) {
+				verbosity = +mv[1];
+				qrystr = "";
+			}
+		} else {
+			if (verbosity > 1) {
+				console.log(" Unexpected DDL, from line : ",
+					LineNr, ' lines:', block.l + 1, 'text:', qrystr);
+				//TODO update line obj
+				zx.error.log_SQL_warning(cx.zx, "Unexpected DDL :" + qrystr, zx.line_obj);
+				return; // # allowing a return will commit partial work done - good for testing
+				//process.exit(2);
+			}
+		}
+		if (qrystr !== "") {
+			console.log(" Execute DDL from line ", LineNr, ' for ', block.l + 1, ' lines '); //'as ',qrystr);
+			//			console.log(" Execute DDL from line ", LineNr, ' for ', block.l + 1, ' lines as ',qrystr);
+			exec_qry(cx, qrystr);
+		} else {
+			console.log(" Skipped DDL from line ", LineNr, ' for ', block.l + 1, ' lines '); //'as ',qrystr);
+		}
+
+		LineNr += block.l;
+	});
+};
+
+function full_updgade(zx, ddl_filename_prefix) {
+	/*
+	global con
+	try:
+
+	con = fdb.connect(
+	host=zxconf.get('zxconf', 'SQLServer', 0), database=(zxconf.get('zxconf', 'DatabaseFolder', 0)+zxconf.get('zxconf', 'DatabaseFile', 0)),
+	user=zxconf.get('zxconf', 'UserName', 0), password=zxconf.get('zxconf', 'Password', 0),
+	sql_dialect=3
+
+	)
+	#con.execute_immediate("SET SQL DIALECT 3")
+	print 'dialect:',con.sql_dialect,'  Server version:',con.version,' FDB version',fdb.__version__
+
+	except fdb.fbcore.DatabaseError:
+	errors=str(sys.exc_info()[1])
+	if (errors.find('335544344')>=0 and errors.find('No such file or directory')>=0):
+	print "No such file or directory - attempting to create database";
+	con = fdb.create_database(
+	host=zxconf.get('zxconf', 'SQLServer', 0), database=(zxconf.get('zxconf', 'DatabaseFolder', 0)+zxconf.get('zxconf', 'DatabaseFile', 0)),
+	user=zxconf.get('zxconf', 'UserName', 0), password=zxconf.get('zxconf', 'Password', 0),
+	page_size=8192
+	)
+	else:
+	raise sys.exc_info()[1], None, sys.exc_info()[2] #re throw
+	 */
+
+	/*    if os.path.exists('make.sql'):
+	#only break if we make - else we just load
+	dropTriggers()
+	Execute_DDL('clean');
+	con.commit()
+	Execute_DDL('make');
+	con.commit()
+
+	Execute_DDL('load');
+	// con.commit()
+	Execute_DDL('load-b');
+	Execute_DDL('load-c');
+	Execute_DDL('load-d');
+	 */
+
+	//con.commit()
+}
+
+function dev_updgade(zx, model_text) {
+
+	//this is intended for fairly basic upgrades
+
+	//sort order
+	/*
+
+	dropTriggers (zx);
+	DropProcedures(zx);
+
+	DECLARE EXTERNAL FUNCTION
+	CREATE GENERATOR
+	CREATE DOMAIN
+	CREATE PROCEDURE --empty
+
+	CREATE TABLE
+	CREATE INDEX --moved
+	VIEWS
+	EXCEPTIONS
+	CREATE TRIGGER
+	CREATE PROCEDURE
+	GRANT
+	COMMIT
+
+	 */
+
+}
+
+exports.init = function (zx) {};
+
+exports.unit_test = function (zx) {
+
+	console.log('comment_replace', comment_replace("abc /* cdef \n  hij */  klm \n nmp/* and */ stuff"));
+
+	console.log('checkTable(" Z$USER "):', checkTable(zx, " Z$USER "));
+	var cx = {
+		zx : zx,
+		expect : /335544569/
+	};
+	exec_qry(cx, " ALTER TABLE " + " xTable " + " ADD " + " field varchar(20); ");
+	cx = {
+		zx : zx,
+		expect : /335544561/
+	};
+	exec_qry(cx, " ALTER TABLE " + " xTable " + " ADD " + " field varchar(20); ");
+
+	console.log('getGenerator:', getGenerator(zx, 'Z$CONTEXT_SEQ', 0));
+
+	//console.log('CREATE_TABLE:', exports.CREATE_TABLE(zx,
+	//		" CREATE TABLE TODO_MVC(REF PK not null, OWNER PKR, NAME VARCHAR(100), STATUS VARCHAR(10), CREATED_STAMP TIMESTAMP DEFAULT 'now'); "));
+
+	console.log('getGenerator:', getGenerator(zx, 'Z$CONTEXT_SEQ', 0));
+
+	exports.Execute_DDL(zx, " / home / xie01 / Sites / sql / sql - mvc / install / demo_db_dll_x.sql ");
+	//dropTriggers(zx);
+
+	var result = zx.dbu.extract_dll.sync(null, zx);
+	//console.log('extract_dll result is ',str.ddl);
+	console.log('extract_dll result is ', result.err);
+
+	//process.exit(2);
+
+	//exports.Execute_DDL(zx, "/home/xie01/Sites/sql/sql-mvc/install/demo_db_dll_x.sql");
+
+	//console.log('CREATE_TABLE:', exports.CREATE_TABLE(zx,
+	//		" CREATE TABLE TODO_MVC(REF PK not null, OWNER PKR, NAME VARCHAR(100), STATUS VARCHAR(10), CREATED_STAMP TIMESTAMP DEFAULT 'now'); "));
+	//dropTriggers(zx);
 
 
+	//var res = zx.dbu.singleton.future(null, cx, " query ",
+	//" select count( * )from rdb$relations ",0);
+	//console.log('Query result is ',res.result[0].count);
 
+	//process.exit(2);
+
+
+};

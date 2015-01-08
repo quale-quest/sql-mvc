@@ -57,9 +57,9 @@ exports.databasePooled = function (root_folder, connectionID, url, callback) {
 		rambase.host = conf.db.server;
 		rambase.database = conf.db.database;
 		if (conf.db.authfile !== undefined && conf.db.authfile !== "") {
+            var str;
 			try {
-
-				var str = fs.readFileSync(conf.db.authfile).toString();
+				str = fs.readFileSync(conf.db.authfile).toString();
 			} catch (e) {
 				console.log("WARN DATABASE Password file name is set (in conf.db.authfile) but the file does not exist : ", conf.db.authfile);
 				process.exit(2);
@@ -75,6 +75,8 @@ exports.databasePooled = function (root_folder, connectionID, url, callback) {
 		rambase.user_table = conf.db.user_table;
 		rambase.pk = conf.pk;
 
+		rambase.isql_extract_dll_cmdln = ['-ex', '-user', rambase.user, '-password', rambase.password, rambase.host + ':' + rambase.database];
+		//console.log("isql_extract_dll_cmdln :",rambase.isql_extract_dll_cmdln);
 		fb.attach({
 			host : rambase.host,
 			database : rambase.database,

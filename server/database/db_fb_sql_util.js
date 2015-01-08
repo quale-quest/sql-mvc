@@ -19,14 +19,13 @@ var connection = {};
 
 var parse_error = function (zx, err, source, script) {
 	//console.log('\n\n\n\n\n\n\nparse_error a :');
-    //process.exit(2);
-    //console.log('\n\n\n\n\n\n\nparse_error b :', err.status);
-    if (err.status!==undefined)
-    {
-        err.status.forEach(function (entry) {
-            console.log('error entry:', entry);
-        });
-    }
+	//process.exit(2);
+	//console.log('\n\n\n\n\n\n\nparse_error b :', err.status);
+	if (err.status !== undefined) {
+		err.status.forEach(function (entry) {
+			console.log('error entry:', entry);
+		});
+	}
 	var script_err = {};
 	script_err.source_file = "undetermined";
 	script_err.source_line = 0;
@@ -102,7 +101,8 @@ exports.getquery_info = function (zx, name, script, line_obj, return_callback) {
 	var tr,
 	ret,
 	st;
-	function error(/*err*/) {
+	function error(/*err*/
+	) {
 		if (tr)
 			tr.rollback();
 		if (st)
@@ -171,6 +171,58 @@ exports.validate_script = function (zx, name, script, callback) {
 		} else {
 			console.log('script_ok:'); //,result );
 			callback(null, "ok");
+		}
+
+	});
+
+};
+
+exports.dataset = function (cx, name, script, line_obj, callback) {
+	var querys = script;
+	connection.db.query(querys, [],
+		function (err, result) {
+		//console.log('validation result: write',err,result );
+		if (err) {
+			//parse the error
+			var script_err = parse_error(cx.zx, err);
+			cx.zx.err = script_err;
+			//todo - show operator some kind of server error
+			callback(null, script_err);
+		} else {
+			//console.log('dataset result:', result);
+			callback(null, result);
+		}
+
+	});
+
+};
+
+exports.exec_qry_cb = function (cx, name, script, line_obj, callback) {
+
+	var qrystr = script;
+	connection.db.execute(qrystr, [],
+		function (err, result) {
+		//console.log('validation result: write',err,result );
+		//if (verbosity>5)
+		//   console.log(" Executed without error, from line:", Lastddlcount,' lines:',DDLLen,'text:',qrystr);
+
+		if (err) {
+			//parse the error
+			var script_err = JSON.stringify(err);
+
+			if (cx.expect !== undefined && cx.expect.test(script_err)) {
+				//console.log('Acceptable error:', cx.expect,qrystr);
+			} else {
+				console.log('script_err:', script_err, err);
+				script_err = parse_error(cx.zx, err);
+				cx.zx.err = script_err;
+				throw new Error("update script error.");
+				//todo - show operator some            kind of server error
+			}
+			callback(null, script_err);
+		} else {
+			//console.log('exec_qry_cb result:', result,qrystr);
+			callback(null, result);
 		}
 
 	});
@@ -335,14 +387,48 @@ exports.get_meta_info = function (meta) {
 	return info;
 };
 
-exports.exit = function (/*zx*/) {
+var spawn = require('child_process').spawn;
+exports.extract_dll = function (zx, callback) {
+	//console.log('extract_dll :',connection.rambase.isql_extract_dll_cmdln);
+	//isql-fb -ex -o ddlx.sql -user SYSDBA -password pickFb2.5 192.168.122.1:db31
+
+	var command = spawn('/usr/bin/isql-fb', connection.rambase.isql_extract_dll_cmdln);
+	var output = [];
+
+	command.stdout.on('data', function (chunk) {
+		output.push(chunk);
+	});
+
+	command.on('close', function (code) {
+		if (code === 0) {
+			var str = output.toString();
+			//  console.log('sddl_backup result :', str);
+			callback(null, {
+				err : code,
+				ddl : str
+			});
+		} else {
+			console.log('extract_dll failed :', code);
+			callback(null, {
+				err : code,
+				ddl : ""
+			});
+		}
+
+	});
+
+};
+
+exports.exit = function (/*zx*/
+) {
 	connection.db.detach(
 		function () {
 		console.log('database detached');
 	});
 };
 
-exports.init = function (/*zx*/) {
+exports.init = function (/*zx*/
+) {
 	//each type of database generator would be different ,//including noSQL
 	//console.log('init db_access.fb.sql: ');
 
