@@ -189,11 +189,18 @@ var prep_query = function (zx, cx, tcx, o) {
 	//this is really useful to get this validation from the database... other drivers must try and implement the same...
 
 
-	var queryx = zx.expressions.ConstantExpressions(zx, o, tcx.query, "paramitizedstatement" /*,"prep_query"*/
-		).slice(1, -1);
+	var queryx = queryx=zx.stripBrackets(zx.expressions.ConstantExpressions(zx, o, tcx.query, "paramitizedstatement" /*,"prep_query"*/
+		));
+        
 	// console.log('=================================\nquery in :',tcx.query,
 	//           '\n=================================\nquery out:',queryx);
 
+    if (pass===1)
+    {
+    //cannot verify table fields on the first pass for  new database because the model would not have been committed yet
+    }
+    else
+    {
 	var res = zx.dbu.getquery_info.future(null, zx, "validate_table", queryx, o);
 	//console.log('Query result is ',res.result);
 	if (res.result.status === "err") {
@@ -227,7 +234,7 @@ var prep_query = function (zx, cx, tcx, o) {
 			//console.log('tcx.field_details.found is ',i,field);
 		}
 	});
-
+   }
 };
 
 var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx, o) {

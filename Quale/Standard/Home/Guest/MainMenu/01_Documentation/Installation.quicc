@@ -6,12 +6,12 @@ Programmers Manual at https://github.com/quale-quest/sql-mvc/wiki
 
 
 
-<#:dropinmenu --{icon:"nav-icon addressbook-icon",title:"drop-in demo"}>
+<#:dropinmenu --{icon:"nav-icon addressbook-icon",title:"drop-in demo"}/>
 
 
 
-<#:link --{form:"Dashboard/Dashboard",title:"check the todo demo"}>
-<#:button --{form:"Operator/Inbox",glymph:"box-outgoing-b",title:"Read mail"} >
+<#:link --{form:"Dashboard/Dashboard",title:"check the todo demo"}/>
+<#:button --{form:"Operator/Inbox",glymph:"box-outgoing-b",title:"Read mail"} />
 
 
 

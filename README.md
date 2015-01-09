@@ -16,7 +16,7 @@ CREATE TABLE TODO_MVC				--:{as:"Table"}
   OWNER VARCHAR(40),				--:{Type:"Hide"}
   STATUS VARCHAR(10) default ''		--:{Type:"Pick",List:"Ticked"}  
 );
->
+/>
 
 <#:table
 Select  --:{from:"TODO_MVC",autoinsert:"top",tablestyle:"Todo"}
@@ -26,30 +26,30 @@ REF	    --:{Action:"View",Type:"Hide"}
 From TODO_MVC 
 where (owner=session.id and ( (my.todo_type='' and status!='3' ) 
 or( status='' and my.todo_type='1')or(status='1' and my.todo_type='2')))
->
+/>
 <#:print 
 --{if:"(select count(ref) from todo_mvc where owner=session.id and status='')!=1" }
 ($select count(*) from todo_mvc where owner=session.id and status='') $)
 items left
->
+/>
 <#:print 
 --{if:"(select count(ref) from todo_mvc where owner=session.id and status='')=1" }
 ($select count(*) from todo_mvc where owner=session.id and status='' $)
 item left
->
+/>
 <#:button --{title:"all"}
 set my.todo_type='';
->
+/>
 <#:button --{title:"Active"}
 set my.todo_type='1';
->
+/>
 <#:button --{title:"Completed"}
 set my.todo_type='2';
->
+/>
 <#:button
 --{title:"Clear Completed",if:"(select count(ref) from todo_mvc where owner=session.id and status='1')!=0" }
 sql update todo_mvc set status='3' where owner=session.id and (status='1');
->
+/>
 ```
 
 ##How does SQL-MVC work?

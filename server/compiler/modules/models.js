@@ -10,23 +10,23 @@ ease of use is important
 
  */
 exports.module_name = 'models.js';
+
 var deepcopy = require('deepcopy');
 var extend = require('node.extend');
 
-exports.tag_controller = exports.tag_model = function (zx, line_obj
-) {
-if (line_obj.save !== undefined) return;//not intrested in model save blocks
-if (line_obj.q.query===undefined) return;
-if (zx.gets(line_obj.q.query)==='') return;
+exports.tag_controller = exports.tag_model = function (zx, line_obj) {
+    if (line_obj.save !== undefined) return;//not interested in model save blocks
+    if (line_obj.q.query===undefined) return;
+    if (zx.gets(line_obj.q.query)==='') return;
 	if (zx.pass==1)  
        {
+       //console.log('remove leading lines  B :', line_obj.body.substring(0,20));
        //var query=line_obj.q.query.trim();
-       //var sh=zx.ShortHash(query);       
-       //if (zx.model_hashes[name????
-       //if (sh!=
-       //zx.model_hashes
-       
-       //console.log('tag_model:',query);//,line_obj );
+       //console.log('tag_model:',query,line_obj );
+       var query=line_obj.body;//.trim();
+       zx.db_update.Prepare_DDL(zx, null, query,line_obj) 
+
+//       console.log('tag_model:',query);//,line_obj );
       // console.log('tag_model quale:',line_obj.q.quale_context,zx.q.contexts[line_obj.q.quale_context]  );
 //       var result=zx.db_update.model();
        }
@@ -35,12 +35,20 @@ if (zx.gets(line_obj.q.query)==='') return;
 	//this must execute the actual ddl commands (using the db tool
 };
 
+exports.done_pass = function (zx, line_obj) {
+  if (zx.pass===1)
+     zx.db_update.update(zx);
+};
+
+
 exports.tag_controllerdone = exports.tag_modeldone = function (zx, line_obj) {
 	//console.log('tag_modeldone:',line_obj.nonkeyd );
 };
 
 exports.tag_use = function (zx, line_obj) { //blank use in model inheritance
 };
+
+
 
 //model code interpreted here in pass 0
 exports.tag_pass0_use = function (zx, line_obj) {
@@ -64,6 +72,7 @@ exports.tag_pass0_controllerdone = exports.tag_pass0_modeldone = function (zx, l
 exports.process_pass0 = function (zx, par) {
 	var name,line_obj = par.line_obj;
 
+//this here is used more for controllers, saving/using buttons and others as model/contoller items    
 	if ((line_obj.save !== undefined) || zx.saving_models !== '') {
 		//store this model
 		name = zx.saving_models;
@@ -115,7 +124,8 @@ exports.start_up = function (zx) {
 	zx.model_defines = {};
 	zx.saving_models = '';
     
-    zx.model_hashes = {};
+    
+    
     
     
 };

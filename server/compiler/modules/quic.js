@@ -21,10 +21,13 @@ exports.remove_comments = function (zx, obj, str) {
 
 	var search_from = 0;
 	while (search_from < str.length) {
-		//console.log('search_from:',search_from,str.substr(search_from,6));
+		//console.log('search_from:',search_from,str.length,str.substr(search_from,6));
 		var commentindex = str.indexOf('--', search_from);
 		if (commentindex === -1)
+            {
 			search_from = str.length;
+            //console.log('commentindex === -1:',commentindex,first_cr,search_from);
+            }
 		else {
 			//console.log('search_from x:',commentindex,str.substr(commentindex,4));
 			if (str.substr(commentindex, 3) === '--{') {
@@ -34,7 +37,7 @@ exports.remove_comments = function (zx, obj, str) {
 					search_from = commentindex + 4;
 					//console.log('dont remove_comment at:',commentindex);
 				} else {
-					var first_cr = str.indexOf('\n', search_from);
+					var first_cr = str.indexOf('\n', commentindex);
 					if (first_cr < 0)
 						first_cr = str.length;
 					str = str.substr(0, commentindex) + str.substr(first_cr);
@@ -54,13 +57,15 @@ exports.parse = function (zx, line_obj, str, tag) {
 	zx.q.rl_from = '';
 	zx.q.ths = {};
 	zx.q.indx = 0;
-
+    
+    //console.log('B4 Quic remove_comments',str.length);
 	str = exports.remove_comments(zx, line_obj, str);
 	//console.log('Quic remove_comments',str);
 
 	var parse_from = 0;
 	while (parse_from < str.length) {
 		//var tagindex=str.indexOf('--:{',parse_from);
+        //console.log('Quic parse loop:',parse_from,str.length);
 		var tagindex = zx.delimof(str, ['--:{', '--{'], parse_from);
 		if (tagindex >= str.length) {
 			//no tags

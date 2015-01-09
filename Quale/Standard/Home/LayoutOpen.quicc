@@ -3,34 +3,34 @@
 
 <#xinclude file=Menu\SlideBar
 ifnotexists="select name from Z$USER where Z$USER.ref=operator.ref and  key_list containing 'SWB'"
->	
+/>	
 
 <div  id="wrapper"> <!--this should hold all content excluding footer -->
-<#include file=~\Layout\ProfileMenu>
+<#include file=~\Layout\ProfileMenu/>
 
 <#xinclude file=Menu\SwitchBar
 xifnotexists="select name from Z$USER where Z$USER.ref=operator.ref and  key_list containing 'SWB'"
->	
+/>	
 
 
 <div id="container">
 
-<#:Menu --{name:"Start",style:"LBMenu"}>
-<#Menu icon="nav-icon dboard-icon" from=Z$USER where=ref=Operator.Ref form=Dashboard\Dashboard Title="Todo Demo">
+<#:Menu --{name:"Start",style:"LBMenu"}/>
+<#Menu icon="nav-icon dboard-icon" from=Z$USER where=ref=Operator.Ref form=Dashboard\Dashboard Title="Todo Demo"/>
 
-<#:MenuScan --{menuname:"MainMenu"}>
+<#:MenuScan --{menuname:"MainMenu"}/>
 
-<#:Menu --{form:"Help/Main",title:"About"}>
+<#:Menu --{form:"Help/Main",title:"About"}/>
 
 <!--end  Menu1-->
-<#:MenuEnd >
+<#:MenuEnd />
 
 <!--end  Menu2-->
 
 <!--end  Menu3-->
 <div id="content"><div style="margin-left:4px;" class="container_12">
 
-<#xG960 >
+<#xG960 />
 
 
 

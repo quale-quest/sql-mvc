@@ -79,6 +79,9 @@ var diviner = require('./modules/diviner.js');
 
 var zx = require('./zx.js');
 
+var db = require("../../server/database/DatabasePool");
+
+
 var dirxww = 493;
 /* octal 0755 */
 //var bcb = require('./modules/bcbiniparse.js');
@@ -253,7 +256,9 @@ var seq_main = function () {
 		}
 		 */
 
-		if (zx.pages.length === 0) {
+	
+    
+   	if (zx.pages.length === 0) {
 
 			if (program.args.length > 0) {
 				cmd = program.args[0];
@@ -326,9 +331,10 @@ var seq_main = function () {
 				zx.pages = zx.deduplicate_byname(zx.pages);
 				console.log('compiling  :', zx.pages);
 
-			} else if (cmd === 'all') { // compile all index.htm in the whole tree
+			} else if (cmd === 'all') { // TODO compile all index.htm in the whole tree
 				// compile all the menus
 				//this is done with a shell command at the moment
+                //currently this is being done by a bash shell .. change so windows would also work
 				console.warn('compiling :', cmd);
 			} else {
 				console.warn('invalid command expected[app|file|deltafile] got :', cmd);
@@ -367,6 +373,11 @@ var seq_page = function (zx) {
 	zx.file_stack = [];
 	delete zx.err;
 
+    zx.config = db.load_config(zx.root_folder, zx.pages[zx.pgi].name);
+    //console.warn('zx.config located : ',zx.config);
+    //process.exit(2);
+    
+    
 	var result = zx.dbu.databaseUtils.sync(null, zx.root_folder, zx.pages[zx.pgi].name, zx.pages[zx.pgi].name);
 	zx.conf = result[1].conf; //.rambase;
 	//console.warn('database synced on config A',zx.conf);
@@ -417,9 +428,11 @@ var seq_page = function (zx) {
 		//console.log('ofn:',path.dirname(ofn));
 		try {
 			fsx.mkdirSync(path.dirname(ofn) + '/', dirxww, true);
+            fsx.mkdirSync(zx.output_folder + '/Audit/', dirxww, true);
+            fsx.mkdirSync(zx.output_folder + '/Internal/', dirxww, true);
 		} catch (err) {
 			if (err.code !== 'EEXIST')
-				console.error("cannot create output folder", err);
+				console.error("cannot create output folders for ", err);
 		}
 
 		//console.log('RecurseParseFileToObject:',fn);
@@ -474,6 +487,7 @@ var seq_page = function (zx) {
 		//now write the output
 		fs.writeFileSync(ofn + '.sql', script); //for easy debuging
 
+        zx.eachplugin(zx, "before_validate_script", 0);
 
 		if (zx.err !== undefined) {
 			script = zx.sql.testhead + script + zx.sql.testfoot;

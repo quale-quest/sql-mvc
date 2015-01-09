@@ -123,7 +123,7 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 
 		if (zx.inputfilecount === 1) { //only on the first file
 			//wrap in library scripts && wrap in local layout
-			var concat_body = "<#include file=~/All/StandardPageOpen> ";
+			var concat_body = "<#include file=~/All/StandardPageOpen/> ";
 
 			zx.model_files.reverse().forEach(function (filename) {
 				if (fs.statSync(filename).isDirectory()) {}
@@ -137,10 +137,10 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 
 			//console.log('------------------------------ finding :', concat_body);
 			concat_body +=
-			"<#include file=LayoutOpen> " +
+			"<#include file=LayoutOpen/> " +
 			body +
-			"<#include file=LayoutClose> " +
-			"<#include file=~/All/StandardPageClose> ";
+			"<#include file=LayoutClose/> " +
+			"<#include file=~/All/StandardPageClose/> ";
 			body = concat_body;
 		}
 
@@ -156,11 +156,11 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 		for (var i = 0; i < starts.length; i++) {
 
 			itemCrCount = zx.counts(starts[i], "\n");
-			//console.log('itemCrCount:',itemCrCount);
+			//console.log('itemCrCount:',itemCrCount,process.memoryUsage());
 			if (starts[i] === "<#") { //parse tags
 				//stop on >
 				s = starts[i + 1];
-				eob = s.indexOf('>'); //in strict mode this should be />
+				eob = s.indexOf('/>'); //in strict mode this should be />
 				var tag_string = s.substring(0, eob < 0 ? s.length : eob);
 
 				//parse into ini
@@ -188,9 +188,11 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 
 					var tage = zx.delimof(tag_string, [' ', '\n']);
 					var tag = tag_string.substring(1, tage).trim();
-					var body_string = tag_string.substring(tage + 1).trim();
+					var body_string = tag_string.substring(tage + 1)//.trim(); //trim has been removed so the line numbers from models preserve in debug output
 					//console.log('Quic input:',tag,body_string);
+                    // console.log('remove leading lines  C :', body_string.substring(0,20));
 					line_obj.tag = tag;
+                    line_obj.body = body_string;
 
 					if ((objtype === undefined) || (objtype === line_obj.tag.toLowerCase()))
 						line_obj = zx.quic.parse(zx, line_obj, body_string, tag); //line_obj here gets filled later...should really be made into 2 separate objects

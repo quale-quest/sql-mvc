@@ -713,8 +713,8 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 	//console.log('=================================\n',line_obj);
 	var queryx = zx.expressions.ConstantExpressions(zx, line_obj, query, "postback" /*,"table_make_script"*/
 		);
-    if ((queryx.substring(0,1)==="(")&&(queryx.slice(-1)===")"))
-        queryx=queryx.slice(1, -1)
+    
+    queryx=zx.stripBrackets(queryx);
 	//console.log('=================================\nqueryx:',query,queryx);
 	//var where = zx.expressions.AnonymousExpression(zx,line_obj,wheres,target_type,"action_where");
 

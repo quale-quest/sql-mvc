@@ -16,6 +16,7 @@ var db = require("../../server/database/DatabasePool");
 //var Sync = require('sync');
 
 var connection = {};
+var deepcopy = require('deepcopy');
 
 var parse_error = function (zx, err, source, script) {
 	//console.log('\n\n\n\n\n\n\nparse_error a :');
@@ -53,13 +54,27 @@ var parse_error = function (zx, err, source, script) {
 		script_err.text = "";
 
 	} else {
-		script_err.source_file = source.srcinfo.filename;
-		script_err.source_line = source.srcinfo.start_line;
-		script_err.source_col = source.srcinfo.start_col;
-		script_err.text = source.srcinfo.source;
+        var src,srcx;
+        
+        if (source.src_obj)
+            srcx=source.src_obj.srcinfo;
+         else
+            srcx=source.srcinfo;         
+         
+        var src = deepcopy(srcx);
+        if (src.source && src.source.length>200) delete src.source;
+        console.log('script_err source:',src);//,source );
+        
+		script_err.source_file =src.filename;
+		script_err.source_line = src.start_line+script_err.line;
+        if (source.src_obj)
+            script_err.source_line += source.LineNr;
+        
+		script_err.source_col = script_err.col;
+		script_err.text = src.source;
 		if (script !== undefined)
 			script_err.context = script.substr(script_err.col - 10, 20);
-		console.log('script_err source:', script_err);
+		console.log('script_err source err:', script_err);
 	}
 
 	zx.err = script_err;
@@ -213,10 +228,10 @@ exports.exec_qry_cb = function (cx, name, script, line_obj, callback) {
 			if (cx.expect !== undefined && cx.expect.test(script_err)) {
 				//console.log('Acceptable error:', cx.expect,qrystr);
 			} else {
-				console.log('script_err:', script_err, err);
-				script_err = parse_error(cx.zx, err);
+				console.log('script_err:', script_err, err,' in :------------------>\n',script);
+				script_err = parse_error(cx.zx, err,line_obj);
 				cx.zx.err = script_err;
-				throw new Error("update script error.");
+				throw new Error("update script error.",script_err+'/n'+script);
 				//todo - show operator some            kind of server error
 			}
 			callback(null, script_err);
@@ -401,7 +416,7 @@ exports.extract_dll = function (zx, callback) {
 
 	command.on('close', function (code) {
 		if (code === 0) {
-			var str = output.toString();
+			var str = output.join('');
 			//  console.log('sddl_backup result :', str);
 			callback(null, {
 				err : code,

@@ -21,6 +21,30 @@ exports.locate = function (connectionID) {
 	return exports.connections[connectionID];
 };
 
+exports.load_config = function (root_folder,Application) {
+       
+		if (Application === '/')
+			Application = '/Home';
+		var fileContents='', search = path.resolve(root_folder + 'Config' + Application);
+
+		//console.log('Inital Application is', Application,' located at:',search);
+		while (fileContents === "" && search !== '/') {
+			try {
+				fileContents = fs.readFileSync(search + '/config.json');
+			} catch (e) {
+				//console.log('App config error: for ', search,e);
+				search = path.resolve(search + '/..');
+			}
+		}
+		console.log("Config file from : ", search);//,fileContents);
+        
+        var conf = {};
+		if (fileContents !== "")
+			conf = JSON.parse(fileContents);
+            
+        return conf;    
+}
+
 exports.databasePooled = function (root_folder, connectionID, url, callback) {
 
 	if (exports.connections[connectionID] !== undefined) {
@@ -32,26 +56,12 @@ exports.databasePooled = function (root_folder, connectionID, url, callback) {
 		console.log("database connection connect from : ", connectionID);
 		var rambase = {};
 
-		var conf = {},
-		fileContents = "",
+		var 	fileContents = "",
 		Application = url;
-		if (Application === '/')
-			Application = '/Home';
-		var search = path.resolve(root_folder + 'Config' + Application);
+        
+        
+        var conf = exports.load_config(root_folder,Application);
 
-		//console.log('Inital Application is', Application,' located at:',search);
-		while (fileContents === "" && search !== '/') {
-			try {
-				fileContents = fs.readFileSync(search + '/config.json');
-			} catch (e) {
-				//console.log('App config error: ', e);
-				search = path.resolve(search + '/..');
-			}
-		}
-		console.log("Config file from : ", search);
-
-		if (fileContents !== "")
-			conf = JSON.parse(fileContents);
 		//console.log("Config file Contents : ", fileContents,conf );
 		rambase.conf = conf;
 		rambase.host = conf.db.server;

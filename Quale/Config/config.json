@@ -9,6 +9,7 @@
 		"username": "using the value from authfile",
 		"password": "using the value from authfile",
 		"authfile": "/etc/firebird/2.5/SYSDBA.password",
+        "schema_mode":"master",
 		"user_table": {
 			"table_name": "Z$USER",
 			"display_name_field": "Name",
