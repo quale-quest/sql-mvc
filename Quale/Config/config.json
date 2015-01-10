@@ -10,6 +10,11 @@
 		"password": "using the value from authfile",
 		"authfile": "/etc/firebird/2.5/SYSDBA.password",
         "schema_mode":"master",
+		"xschema_rebuild":"always",
+        "schema_rebuild":"onchange",
+		"schema_alter_fields":"yes",
+		"schema_reorder_fields":"yes",
+		
 		"user_table": {
 			"table_name": "Z$USER",
 			"display_name_field": "Name",

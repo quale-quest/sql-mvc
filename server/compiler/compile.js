@@ -380,7 +380,7 @@ var seq_page = function (zx) {
     
 	var result = zx.dbu.databaseUtils.sync(null, zx.root_folder, zx.pages[zx.pgi].name, zx.pages[zx.pgi].name);
 	zx.conf = result[1].conf; //.rambase;
-	//console.warn('database synced on config A',zx.conf);
+	//console.warn('database synced on config A',result);
 	//console.warn('database synced on config ',JSON.stringify(zx.conf, null, 4) );
 
 	var fn = fileutils.locatefile(zx, zx.pages[zx.pgi].name, zx.root_folder, "Compile " + zx.pages[zx.pgi].name, 120022);
@@ -525,6 +525,8 @@ var seq_page = function (zx) {
 	return;
 };
 
+
+var deepcopy = require('deepcopy');
 var seq_pages = function (zx) {
 	while (zx.pgi < zx.pages.length) {
 		while (zx.pgi < zx.pages.length) {
@@ -540,9 +542,22 @@ var seq_pages = function (zx) {
 					console.log("!Known Compiler Exception!:", e);
 					//continue with the next file
 				} else {
+                
+                    var linecopy = deepcopy(zx.line_obj);
+                    if (linecopy.srcinfo)
+                        {
+                        linecopy.srcinfo.source = zx.show_longstring(linecopy.srcinfo.source);
+                        linecopy.body = zx.show_longstring(linecopy.body);
+                        linecopy.q.query = zx.show_longstring(linecopy.q.query);
+                        linecopy.nonkeyd = zx.show_longstring(linecopy.nonkeyd);
+                        }
+                    
 					console.error(e);
 					console.log("!!!!!!!!!!Unknown Compiler Exception!!!!!!!!!:", e);
-					console.log("!!!!!!!!!!Possible location!!!!!!!!!:", zx.line_obj);
+					console.log("!!!!!!!!!!Possible location!!!!!!!!!:", linecopy);
+                    
+                    
+                    
 
 					zx.error.write_unknown(zx, "unknown compiler error(" + String(e) + ")possibly at");
 					zx.error.commit(zx);

@@ -487,6 +487,14 @@ exports.CSVtoArray = function (text) { //http://www.quora.com/How-can-I-parse-a-
 	return a;
 },
 
+exports.show_longstring = function (str) {
+if (str===undefined) return undefined;
+if (typeof str !== 'string' ) str = '[OBJECT]';//JSON.stringify(str);
+str=str.trim();
+if (str.length>60) return "["+str.substring(0,40).replace(/\n/g,'\\n') + " ..." + (str.length) + " bytes... " + str.slice(-40).replace(/\n/g,'\\n')+"]";
+else return "["+str+ "] shown in full "+ (str.length) + " bytes... ";
+}
+
 //======================================================================================================extending the base classes
 //http://stackoverflow.com/questions/1431094/how-do-i-replace-a-character-at-a-particular-index-in-javascript
 //note interesting .. extending the base string class

@@ -91,6 +91,9 @@ exports.databaseUtils = function (root_folder, connectionID, url, callback) {
 		db.databasePooled(root_folder, connectionID, url,
 			function (err, msg, rambase) {
 			if (err) {
+
+                console.log("error connecting on " ,err);
+                
 				console.log(err.message);
 				if (callback !== undefined)
 					callback(err, "Error");

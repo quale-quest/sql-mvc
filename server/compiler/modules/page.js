@@ -47,11 +47,11 @@ var preProcess = function (zx, filename, str) {
 
 		if (str.slice(-post_tag.length) === post_tag)
 			str = str.slice(0, -post_tag.length);
-
+        var end_of_pre_regex = '>';
 		var preprocessor = zx.parseword(str);
-		var p = str.search(/>/g);
+		var p = str.search(end_of_pre_regex);
 		var preparam = str.substring(0, p);
-		str = str.substring(p + 1);
+		str = str.substring(p + end_of_pre_regex.length);
 		//check multiple nested levels of pre processing
 		str = preProcess(zx, filename, str);
 		//console.warn('plugin preprocessor_ searching for  :',preprocessor, ' parm:',preparam );
@@ -130,7 +130,7 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 				else {
 					var br = fileutils.locateclosestbuildroot(zx, filename);
 					var qfilename = fileutils.changefileextn(br.filename, '');
-					concat_body += '<#include file="' + qfilename + '" >\n';
+					concat_body += '<#include file="' + qfilename + '" />\n';
 					//console.log('------------------------------ adding :', qfilename);
 				}
 			});
@@ -160,7 +160,7 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 			if (starts[i] === "<#") { //parse tags
 				//stop on >
 				s = starts[i + 1];
-				eob = s.indexOf('/>'); //in strict mode this should be />
+				eob = s.indexOf(zx.end_of_block); //in strict mode this should be />
 				var tag_string = s.substring(0, eob < 0 ? s.length : eob);
 
 				//parse into ini
@@ -214,8 +214,8 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 				//console.log('bcb b2:',line_obj);
 
 				//left over html on the next line
-				starts[i] = "<#" + tag_string + ">";
-				starts[i + 1] = s.substring(eob + 1);
+				starts[i] = "<#" + tag_string +zx.end_of_block;
+				starts[i + 1] = s.substring(eob + zx.end_of_block.length);
 				itemCrCount = zx.counts(tag_string, "\n");
 			} else if (starts[i] === "<{") //json format - not used yet
 			{
@@ -385,4 +385,7 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 exports.start_up = function (zx) {
 	zx.model_defines = {};
 	zx.saving_models = '';
+    zx.end_of_block="/>";
+    zx.end_of_block_regex=/\/>/g;
+    
 };

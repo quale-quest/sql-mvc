@@ -87,7 +87,12 @@ exports.databasePooled = function (root_folder, connectionID, url, callback) {
 
 		rambase.isql_extract_dll_cmdln = ['-ex', '-user', rambase.user, '-password', rambase.password, rambase.host + ':' + rambase.database];
 		//console.log("isql_extract_dll_cmdln :",rambase.isql_extract_dll_cmdln);
-		fb.attach({
+
+        var fn=fb.attach;
+        if  (conf.run_mode==="Develop")
+          fn=fb.attachOrCreate;
+        
+		fn({
 			host : rambase.host,
 			database : rambase.database,
 			user : rambase.user,
@@ -95,7 +100,9 @@ exports.databasePooled = function (root_folder, connectionID, url, callback) {
 		},
 			function (err, dbref) {
 			if (err) {
-				console.log(err.message);
+  
+                    console.log(err.message);
+
 				if (callback !== undefined)
 					callback(err, "Error");
 			} else {

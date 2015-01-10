@@ -109,49 +109,61 @@ var countLines = function (str) {
 };
 //http://stackoverflow.com/questions/25058134/javascript-split-a-string-by-comma-except-inside-parentheses
 function splitNoParen(s, delim) { //Lafras enhanced to do quotes
+	//console.log("splitNoParen :", s);
 	var left = 0,
 	right = 0,
 	A = [],
 	Q = 0,
 	M = s.match(/([^()']+)|([()'])/g);
-    if (!M) return A;
-    var
+	if (!M)
+		return A;
+	var
 	L = M.length,
 	next,
-	str = '';
-	var del_regx = new RegExp("([^" + (delim) + "]+)", 'g');
-	//console.log("splitNoParen:", L, M);
-	for (var i = 0; i < L; i++) {
-		next = M[i];
+	str = '',
+    dbg=0;
+	//var del_regx = new RegExp("([^" + (delim) + "]+)", 'g'); //anything except the delimiter
+	if (dbg) console.log("splitNoParen:", L, M);
+	for (var i = 0; i < L; i++) {    
+		next = M[i];       
+        //console.log("             xx:",str, ' n:', next, left, right);
 		if (next === "'" && Q === 0) {
 			++left;
 			Q = 1;
-		} else if (next === "'" && Q === 1) {
+		} 
+        if (next === '(')
+			++left;
+
+		if ((left !== right)&&(i !== (L-1))) {
+			str = str + next;
+			if (dbg) console.log("accumulate :", str, left, right,' m:');
+            }
+        
+        if ((left === right)||(i === (L-1))) {
+			//var add=next.match(del_regx);
+			var add = next.split(delim);
+			if (dbg) console.log("Appending :", str,next, add);
+            str+=add.shift();
+            if (dbg) console.log(".....ding :", str, add);
+            if (A.length===0) A.push('');
+            A[A.length-1]+=str;
+			A = A.concat(add);
+            str='';
+		}
+        
+        
+        if (next === ')')
+			++right;
+        if (next === "'" && Q === 1) {
 			++right;
 			Q = 0;
-		} else if (next === '(')
-			++left;
-		else if (next === ')')
-			++right;
-
-		if (left !== 0) {
-			str += next;
-			if (left === right) {
-				if ((i + 1 >= L) || (i + 1 < L && (M[i + 1].charAt(0) === delim || M[i + 1].charAt(0) === ')'))) //including stray close bracket
-				{
-					//console.log("splitNoParen comma aft :", M[i + 1].charAt(0), next);
-					A[A.length - 1] += str;
-					left = right = 0;
-					str = '';
-				}
-			}
-		} else
-			A = A.concat(next.match(del_regx));
+		}         
+        
 	}
 	return A;
 }
 
-function comment_replace(inputs) {
+function block_comment_suppress(inputs) {
 	//replaces / * * / style comments with spaces (keeps line an col numbering consistent compared to the source)
 	var rep_chr = " ";
 	while (1) {
@@ -169,18 +181,30 @@ function comment_replace(inputs) {
 	return inputs;
 }
 
+function inline_comment_suppress(inputs) {
+	//replaces --style comments with spaces (keeps line an col numbering consistent compared to the source)
+    inputs = inputs.replace(/--[\s\S]*?$/gmi,'');
+	return inputs;
+}
+function comment_suppress(inputs) {
+   return inline_comment_suppress(block_comment_suppress(inputs));
+}
+
+var zx = require('../compiler/zx.js');
+
 function dll_blocks_seperate_term(inputs, src_obj) { //splits the input into blocks that are in set term and blocks out side
 
 	//function interpret_sorting_order(block){    }
-    //console.log('remove leading lines  A :', inputs.substring(0,20));
+	//console.log('dll_blocks_seperate_term start  A :', inputs, ':z');//.substring(0,20));
 	var open_term = ";";
 	var blocks = [];
 	while (inputs !== '') {
-        //console.log('dll_blocks_seperate_term :', inputs);
+		//console.log('dll_blocks_seperate_term :', inputs);
 		var regs = '([\\S\\s]*?)set\\s+term\\s+(.)\\s+\\' + open_term + '([\\S\\s]*)';
-      //  ([\S\s]*)set\s+term\s+(.)\s+;([\S\s]*)
+		//  ([\S\s]*)set\s+term\s+(.)\s+;([\S\s]*)
 		var re = new RegExp(regs, 'i');
 		var m = inputs.match(re);
+        //console.log('dll_blocks_seperate_term split  B :', m, '<<<<<y');
 		if (!m)
 			m = [0, inputs, ';', ''];
 
@@ -190,27 +214,31 @@ function dll_blocks_seperate_term(inputs, src_obj) { //splits the input into blo
 		//remove xtra lines and terminator
 
 		var t = m[1].replace(/\s+$/g, '');
-        
-        //console.log('remove leading lines  a :', m[1].substring(0,20));
-        //console.log('remove leading lines  b :', t.substring(0,20));
-        
+
+		//console.log('remove leading lines  a :', m[1].substring(0,20));
+		//console.log('remove leading lines  b :', t.substring(0,20));
+
 		if (t.slice(-1) === open_term)
 			t = t.slice(0, -1);
 
 		//remove leading lines
 		//console.log('remove leading lines b4 :',open_term, m[1].substring(0,20),'...',m[1].slice(-20));
-		var n = t.match(/(\s*)([\S\s]+)/i)||[0, t, '', ''];;
+		//var n = t.match(/(\s*)([\S\s]+)/i) || [0,  '',t, '']; ;
+        //var n = [0, '', t, ''];
 		//console.log('remove leading lines   :', n);
-		var o = countLines(n[1]);
+		var o = 0;//countLines(n[1]);
 
 		if (open_term == ';') { //split into ;
-			var statements = splitNoParen(n[2], ";")||[];
-            //console.log('statements   :', open_term,statements.length,n[2].substring(0,30));
-			//console.log('statements   :', open_term,statements);
-            //console.log('last statement   :', statements.slice(-1));
+			var statements = splitNoParen(t, ";") || [];
+			//console.log('statements   :', open_term,statements.length,n[2].substring(0,30));
+			//console.log('statements   :', open_term,statements.length,t);
+            //console.log('statements []  :', open_term,statements);
+			//console.log('last statement   :', statements.slice(-1));
 
 			for (var indx = 0; indx < statements.length; indx++) {
 				var statement = statements[indx];
+				//console.log('    statement   :', indx, zx.show_longstring(statement));
+				//if (/*indx==1&&*/statement.match('PK_CACHE2')) process.exit(2);
 				var ms = statement.match(/(\s*)([\S\s]+)/i); //remove leading lines
 				//console.log('    statement   :', ms);
 				l = countLines(ms[2]);
@@ -231,10 +259,10 @@ function dll_blocks_seperate_term(inputs, src_obj) { //splits the input into blo
 
 			}
 		} else {
-            //console.log('bblock   :', open_term,n[2].substring(0,30));
+			//console.log('bblock   :', open_term,n[2].substring(0,30));
 			var bblock = {
 				t : open_term,
-				q : n[2] , //driver dont need set term //"\nSET TERM ^ ;\n"+ n[2] + "\nSET TERM ; ^\n\n",
+				q : t, //driver dont need set term //"\nSET TERM ^ ;\n"+ n[2] + "\nSET TERM ; ^\n\n",
 				src : {
 					l : l - o,
 					o : o,
@@ -251,19 +279,16 @@ function dll_blocks_seperate_term(inputs, src_obj) { //splits the input into blo
 	return blocks;
 }
 
-
-
 var exec_qry = function (cx, qrys) {
-    
-    exports.write_log.push(qrys);
-    //console.log('exports.write_log.push  :', exports.write_log.length);   
-    //console.log('exports.write_log.push  :', cx.zx.line_obj.srcinfo );   
-    
-    if (cx.zx.config.db.schema_mode!=="slave")   
-        {
-        //console.log('exec_qry_cb.sync  :', qrys );   
-        cx.zx.dbu.exec_qry_cb.sync(null, cx, "exec_qry", qrys, cx.zx.line_obj);
-        }
+
+	exports.write_log.push(qrys);
+	//console.log('exports.write_log.push  :', exports.write_log.length);
+	//console.log('exports.write_log.push  :', cx.zx.line_obj.srcinfo );
+
+	if (cx.zx.config.db.schema_mode !== "slave") {
+		//console.log('exec_qry_cb.sync  :', qrys );
+		cx.zx.dbu.exec_qry_cb.sync(null, cx, "exec_qry", qrys, cx.zx.line_obj);
+	}
 	delete cx.expect;
 };
 
@@ -346,27 +371,36 @@ var dropProcedures = function (zx) {
 
 };
 var dropDependecies = function (zx) {
-    if (zx.config.db.schema_mode!=="master")  return; //safeguard against deleting someone else's procedures
+	if (zx.config.db.schema_mode !== "master")
+		return; //safeguard against deleting someone else's procedures
 	//drop constraints // FOREIGN KEY Constraint
 	dropTriggers(zx);
 	dropProcedures(zx);
 
 };
 var CREATE_TABLE = function (zx, qrystr) {
-
-	var barestr = qrystr; //comment_remover(qrystr).strip()
-	var Table = barestr.match(/CREATE\s+TABLE\s+([\w$]+)(\s*\(\s)(.*)/i);
+	var cx = {
+		zx : zx
+	};
+	var barestr = comment_suppress(qrystr); 
+	var Table = barestr.match(/CREATE\s+TABLE\s+([\w$]+)(\s*\(\s)([\S\s]*)\)/i);
 	if (!Table)
-		Table = barestr.match(/CREATE\s+GLOBAL\s+TEMPORARY\s+TABLE\s+([\w$]+)(\s*\(\s)(.*)/i);
+		Table = barestr.match(/CREATE\s+GLOBAL\s+TEMPORARY\s+TABLE\s+([\w$]+)(\s*\(\s)([\S\s]*)\)/i);
 	if (!Table)
-		return qrystr; //did not understand try to create new table as is
+		{//did not understand try to create as is
+        console.log('Could not undestand the table code - attempt to update as is');
+		exec_qry(cx, qrystr);
+		return "";
+	} 
 	barestr = Table[3];
+    //onsole.log('Table re:', Table, barestr,' >',qrystr,'[',Table);
 	Table = Table[1];
-	console.log('Table re:', Table, barestr);
+	
 	var tableexists = checkTable(zx, Table);
 	//console.log("CREATE_TABLE:",Table,tableexists,"qrystr:",qrystr," barestr:",barestr);
 	if (tableexists === 0) // create new table as is
 	{
+        console.log('Table does not exist  - attempt to create defined');
 		exec_qry(cx, qrystr);
 		return "";
 	}
@@ -374,15 +408,14 @@ var CREATE_TABLE = function (zx, qrystr) {
 	var fields = splitNoParen(barestr, ',');
 	var FieldNumber = 0;
 	//console.log('Table fields:',fields );
-	var cx = {
-		zx : zx
-	};
+
 	fields.forEach(function (field) {
 		field = field.trim();
 		if ((field !== ")" && field !== ";")) {
 			FieldNumber = FieldNumber + 1;
 			cx.expect = /335544351/;
 			exec_qry(cx, "ALTER TABLE " + Table + " ADD " + field);
+            if (cx.zx.config.db.schema_alter_fields === "yes") { 
 			if (field.match(/\sblob\s/i) || field.match(/\sCOMPUTED BY\s/i)) {
 				//Blobs cant be altered
 				//Computed by gets dropped as part of cleanup ??WTF
@@ -402,20 +435,25 @@ var CREATE_TABLE = function (zx, qrystr) {
 						// updating the default before commit seems a problem ... this should be moved to phase 2
 						//caused an error in carlton update ->    exec_qry("update "+Table +" set " + FieldName + "="+Default+" where " +FieldName + " is null ")
 					} else {
+                        
 						cx.expect = /335544351/;
 						exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " DROP DEFAULT ");
-						exec_qry(cx, "ALTER TABLE " + Table + " ALTER " + FieldName + " POSITION " + FieldNumber);
-						//print "ALTER TABLE "+Table+" ALTER " +FieldName + " POSITION "+ str(FieldNumber)
+                        
 					}
+                                            
+                    if (cx.zx.config.db.schema_reorder_fields === "yes") { 
+						exec_qry(cx, "ALTER TABLE " + Table + " ALTER " + FieldName + " POSITION " + FieldNumber);						
+                    }
 				}
 			}
+            }
 		}
 	});
 
 	return "";
 };
 
-exports.Prepare_DDL = function (zx, filename, inputsx,line_obj) {
+exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 
 	var inputs;
 	if ((inputsx === null) || (inputsx === undefined))
@@ -428,19 +466,21 @@ exports.Prepare_DDL = function (zx, filename, inputsx,line_obj) {
 	var LineNr = 1;
 	var BlockNr = exports.blocks.length;
 	var insertmatchingfield = '';
-    var insertmatchingblock;
+	var insertmatchingblock;
 	var verbosity = 10;
 
-    
-    //exports.input_audit.push(inputsx);
-    //exports.input_audit.push(JSON.stringify(line_obj,null,4));//.start_line + ' ' + line_obj.filename);
-	var blocks = dll_blocks_seperate_term(inputs,line_obj);
-    exports.input_audit.push(JSON.stringify(blocks,null,4));//.start_line + ' ' + line_obj.filename);
-	blocks.forEach(function (block,bi) {
+	//exports.input_audit.push(inputsx);
+	//exports.input_audit.push(JSON.stringify(line_obj,null,4));//.start_line + ' ' + line_obj.filename);
+	var blocks = dll_blocks_seperate_term(inputs, line_obj);
+	exports.input_audit.push(JSON.stringify(blocks, null, 4)); //.start_line + ' ' + line_obj.filename);
+
+	//exports.show_DDL(zx,"Creating",blocks);
+	blocks.forEach(function (block, bi) {
 		LineNr += block.src.o;
 		BlockNr++;
+
 		//add more context info to the block source
-		if (block.special !== "DECLARE_PROCEDURE") //src line already set
+		if (block.method !== "DECLARE_PROCEDURE") //src line already set
 			block.src.LineNr = LineNr;
 		block.src.BlockNr = BlockNr;
 
@@ -450,10 +490,12 @@ exports.Prepare_DDL = function (zx, filename, inputsx,line_obj) {
 		var qrystr = block.q;
 		//console.log('blocks.forEach GENERATOR:',qrystr.match(/\s*CREATE\s+GENERATOR\s/i) );
 		//statements that would be used in the make script
-        
-         
-		qrystr = qrystr.replace(/^ALTER\s+PROCEDURE/i, "CREATE PROCEDURE");
-        
+
+
+		qrystr = qrystr.replace(/^ALTER\s+PROCEDURE\s/i, "CREATE PROCEDURE ");
+		block.method = "exec";
+		block.qrystr = 'xxxxx';
+
 		if (qrystr.match(/SET\s+VERBOSITY\s/i)) {
 			var mv = qrystr.match(/SET\s+VERBOSITY\s+([\w\$]+)/i);
 			if (mv) {
@@ -473,20 +515,31 @@ exports.Prepare_DDL = function (zx, filename, inputsx,line_obj) {
 		} else if (qrystr.match(/CREATE\s+GENERATOR\s/i)) {
 			block.expect = /335544351/;
 			var mg = qrystr.match(/CREATE\s+GENERATOR\s([\w\$]+)/i);
+            //console.log("checkGenerator  ",mg, 'as ',qrystr);
 			if (mg && checkGenerator(zx, mg[1]))
+                {
+                //console.log(" checkGenerator:  exits");
 				qrystr = "";
+                }
 			// else execute as is
 			block.order = 500;
 		} else if (qrystr.match(/SET\s+GENERATOR\s/i)) {
 			var mgg = qrystr.match(/SET\s+GENERATOR\s+([\w\$]+)/i);
-			//console.log(" SET+GENERATOR:  ",mgg, 'as ',qrystr);
+			//console.log("getGenerator  ",mgg, 'as ',qrystr);
 			if (mgg) {
+                if (checkGenerator(zx, mgg[1]))
+                {
 				var gv = getGenerator(zx, mgg[1], 0);
 				//console.log("GENERATOR value :",gv," ");
+                //console.log(" checkGenerator:  exits");
 				if (gv > 0) {
 					qrystr = "";
-					console.log("GENERATOR", mgg[1], "already set");
+					//console.log("GENERATOR", mgg[1], "already set");
 				}
+                }
+                else
+                qrystr = "";
+                
 			}
 			block.order = 600;
 		} else if (qrystr.match(/CREATE\s+SEQUENCE\s/i)) {
@@ -509,40 +562,40 @@ exports.Prepare_DDL = function (zx, filename, inputsx,line_obj) {
 			}
 			block.order = 600;
 		} else if (qrystr.match(/CREATE\s+TABLE/i)) {
-			block.special = "TABLE";
+			block.method = "TABLE";
 			block.order = 700;
-		} else if (qrystr.match(/CREATE\s+GLOBAL\s+TEMPORARY\s+TABLE\s/i)) {
-			qrystr = CREATE_TABLE(qrystr);
-			block.special = "TABLE";
+		} else if (qrystr.match(/CREATE\s+GLOBAL\s+TEMPORARY\s+TABLE\s/i)) {			
+			block.method = "TABLE";
 			block.order = 800;
 		} else if (qrystr.match(/CREATE\s+INDEX\s/)) {
 			block.expect = /335544351/;
 			block.order = 900;
+			//console.log("show CREATE INDEX:", qrystr);
 		} else if (qrystr.match(/CREATE\s+VIEW\s/i)) {
-			qrystr = qrystr.replace(/CREATE\s+VIEW\s/i, "CREATE OR ALTER VIEW");
+			qrystr = qrystr.replace(/CREATE\s+VIEW\s/i, "CREATE OR ALTER VIEW ");
 			block.order = 1000;
 		} else if (qrystr.match(/CREATE\s+OR\s+ALTER\s+VIEW\s/i)) { //execute as is
 			block.order = 1100;
 		} else if (qrystr.match(/ALTER\s+VIEW\s/i)) { //execute as is
 			block.order = 1200;
 		} else if (qrystr.match(/CREATE\s+EXCEPTION\s/i)) {
-			qrystr = qrystr.replace(/CREATE\s+EXCEPTION\s/i, "CREATE OR ALTER EXCEPTION");
+			qrystr = qrystr.replace(/CREATE\s+EXCEPTION\s/i, "CREATE OR ALTER EXCEPTION ");
 			block.order = 1300;
 		} else if (qrystr.match(/CREATE\s+OR\s+ALTER\s+EXCEPTION\s/i)) { //execute as is
 			block.order = 1400;
 		} else if (qrystr.match(/CREATE\s+(?:OR\s+ALTER\s+)?PROCEDURE\s/i)) {
-			qrystr = qrystr.replace(/CREATE\s+PROCEDURE/i, "CREATE OR ALTER PROCEDURE");
+			qrystr = qrystr.replace(/CREATE\s+PROCEDURE\s/i, "CREATE OR ALTER PROCEDURE ");
 			var DECLARE_PROCEDURE = deepcopy(block);
-			DECLARE_PROCEDURE.special = "DECLARE_PROCEDURE";
+			DECLARE_PROCEDURE.method = "DECLARE_PROCEDURE";
 			DECLARE_PROCEDURE.order = 850;
-            DECLARE_PROCEDURE.qrystr=qrystr;
+			DECLARE_PROCEDURE.qrystr = qrystr;
 			blocks.push(DECLARE_PROCEDURE);
 			block.order = 1500;
 		} else if (qrystr.match(/ALTER\s+PROCEDURE\s/i)) {
 			//execute as is
 			block.order = 1700;
 		} else if (qrystr.match(/CREATE\s+TRIGGER\s/i)) {
-			qrystr = qrystr.replace(/CREATE\s+TRIGGER\s/i, "CREATE OR ALTER TRIGGER");
+			qrystr = qrystr.replace(/CREATE\s+TRIGGER\s/i, "CREATE OR ALTER TRIGGER ");
 			block.order = 1800;
 		} else if (qrystr.match(/CREATE\s+OR\s+ALTER\s+TRIGGER/i)) { //execute as is
 			block.order = 1900;
@@ -551,7 +604,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx,line_obj) {
 			block.order = 2000;
 		} else if (qrystr.match(/INSERT\s+MATCHING\s/i)) {
 			block.order = 2100;
-			var mi = qrystr.match(/INSERT\s+MATCHING\s+([\w\$]+)/i);
+			var mi = qrystr.match(/INSERT\s+MATCHING\s+([\w\$,\s]+)/i);
 			if (mi) {
 				insertmatchingfield = mi[1];
 				block.records = [];
@@ -563,120 +616,145 @@ exports.Prepare_DDL = function (zx, filename, inputsx,line_obj) {
 			qrystr = qrystr.replace(/;\s+$/g, '');
 			if (insertmatchingfield !== '') {
 				qrystr = "update or " + qrystr + " matching(" + insertmatchingfield + ") ";
-				block.qrystr = qrystr;
-				//block.special = "bypass";
+				block.qrystr = qrystr;				
 				insertmatchingblock.records.push(block);
 			}
 
-		} else if (qrystr.match(/UPDATE\s/i)) {}
-		else {
+		} else if (qrystr.match(/UPDATE\s/i)) {
 			block.order = 2300;
+		} else {
+
+        
+            var qrystrx = comment_suppress(qrystr).trim()
+            block.order = 9999;
+            if (qrystrx===''||qrystrx===';')
+                {
+                block.method = "bypass";
+                }
+                else
+                {
+			
+
 			if (verbosity > 1) {
 				console.log(" Unexpected DDL, from line : ",
-                block.src.LineNr, ' lines:', block.src.l + 1, 'text:', qrystr,' after:',
-                blocks[bi?bi-1:0].q
-                 );
-				//TODO update line obj
+					block.src.LineNr, ' lines:', block.src.l + 1, 'text:', qrystr, ' after:',
+					blocks[bi ? bi - 1 : 0].q);
 				zx.error.log_SQL_warning(zx, "Unexpected DDL :" + qrystr, zx.line_obj);
-				return; // # allowing a return will commit partial work done - good for testing
-				//process.exit(2);
 			}
+            }
 		}
 
 		block.qrystr = qrystr;
 		block.Hash = zx.ShortHash(qrystr);
+		//console.log('Update block, :',block.order, block.qrystr );
 		LineNr += block.src.l;
+		//exports.show_DDL(zx,"working",blocks);
 	});
 
-    console.log('Prepare_DDL blocks.length :', blocks.length);
-	exports.blocks =  exports.blocks.concat(blocks);
-
+	//console.log('Prepare_DDL blocks.length :', blocks.length);
+	//exports.show_DDL(zx,"Adding",blocks);
+	exports.blocks = exports.blocks.concat(blocks);
+	//process.exit(2);
 };
 
+exports.show_DDL = function (zx, msg, blocks) {
+	console.log("show_DDL------------------------------------>", msg, blocks.length);
+	blocks.forEach(function (block, i) {
+		//console.log(msg, i," : ");
+		console.log(msg, i, block.order, block.src.BlockNr, block.method, block.Hash, zx.show_longstring(block.qrystr)); //qrystr||'');
+		//if (block.qrystr===undefined)
+		//        console.log('block.undefined:', i,block);
+	});
+	console.log("done show_DDL^^^^^^^^^^^^^^^^^^", msg);
+}
+
 exports.Sort_DDL = function (zx, blocks) {
+
 	blocks.sort(function (a, b) {
-        //console.log('Sort_DDL :', a.order , b.order);
+		//console.log('Sort_DDL :', a.order , b.order);
 		if (a.order !== b.order)
 			return (a.order - b.order);
 		else
 			return (a.src.BlockNr - b.src.BlockNr);
 	});
 	var Hash = 0;
-	blocks.forEach(function (block,i) {
-		Hash += block.Hash; //maybe we need a stronger has algorithm - na, just issue a rebuild  of fidgit the model text a bit
-        //console.log('block.Sort_ed:', i,block.q);//qrystr||'');
+	var build_str = [];
+	blocks.forEach(function (block, i) {
+		var qrystr = block.qrystr;
+		if (block.method === 'DECLARE_PROCEDURE')
+			qrystr = "DECLARE" + zx.show_longstring(qrystr);
+		build_str.push(" BORDER:" + block.order + " BNR:" + block.src.BlockNr + " method:" + block.method + " SRC:" + qrystr);
 	});
-	return Hash;
+	return {
+		Hash : Hash,
+		build_str : build_str.join('\n')
+	};
 };
-var DECLARE_PROCEDURE = function (cx,qrystr) {
+var DECLARE_PROCEDURE = function (cx, qrystr) {
 
-		var m = qrystr.match(/([\S\s]*?AS\s)/i);
-		if (m === null)
-			return;
-          
+	var m = qrystr.match(/([\S\s]*?AS\s)/i);
+	if (m === null)
+		return;
 
-		//qrystr = "\n--->>>\n" +m[1] + "\nBEGIN END" + "\nSET TERM ; ^\n---<<<\n\n";
-        
-        qrystr = m[1] + "\nBEGIN END" + "\n";
+	//qrystr = "\n--->>>\n" +m[1] + "\nBEGIN END" + "\nSET TERM ; ^\n---<<<\n\n";
 
+	qrystr = m[1] + "\nBEGIN END" + "\n";
 
-        exec_qry(cx, qrystr);
+	exec_qry(cx, qrystr);
 
 };
 
 exports.Execute_DDL = function (zx, blocks) {
-    console.log('exports.Execute_DDL length:', blocks.length);
+	//console.log('exports.Execute_DDL length:', blocks.length);
 	var cx = {
 		zx : zx
 	};
-	blocks.forEach(function (block,i) {
-        if (block.qrystr===undefined)
-        {
-        //console.log('block.qrystr===undefined:', i,block);
-        }
-        else
-        {
-        var qrystr = block.qrystr;
-		cx.expect = block.expect;
-        //console.log('exports.Execute_DDL item:', i,block.special,(qrystr||'').substring(0,40),'q:',(block.q||'').substring(0,40));
-        var ex = block.src.src_obj.srcinfo;
-        //delete block.src.src_obj.body;
-        //delete block.src.src_obj.nonkeyd;
-        
-        //delete ex.source;
-       // delete ex.q.query;
-        
-        //console.log('exports.Execute_DDL item:', i,block.src.LineNr);
-        //console.log('exports.Execute_DDL item:', i,ex);
-        //process.exit(2);
-if (1){        
-            zx.line_obj = block.src;//.src_obj;
-       }else{       
+	blocks.forEach(function (block, i) {
+		if (block.qrystr === undefined) {
+			//console.log('block.qrystr===undefined:', i,block);
+		} else {
+			var qrystr = block.qrystr;
+			cx.expect = block.expect;
+			//console.log('exports.Execute_DDL item:', i,block.method,(qrystr||'').substring(0,40),'q:',(block.q||'').substring(0,40));
+			var ex = block.src.src_obj.srcinfo;
+			//delete block.src.src_obj.body;
+			//delete block.src.src_obj.nonkeyd;
+
+			//delete ex.source;
+			// delete ex.q.query;
+
+			//console.log('exports.Execute_DDL item:', i,block.src.LineNr);
+			//console.log('exports.Execute_DDL item:', i,ex);
+			//process.exit(2);
+			if (1) {
+				zx.line_obj = block.src; //.src_obj;
+			} else {
 				zx.line_obj.srcinfo = {};
 				//in case the parser needs to throw an error
 				zx.line_obj.srcinfo.main_page_name = ex.main_page_name;
 				zx.line_obj.srcinfo.file_stack = ex.file_stack.slice(0);
 				zx.line_obj.srcinfo.filename = ex.filename;
 				//zx.line_obj.srcinfo.source = sourcestr;
-				zx.line_obj.srcinfo.start_line = ex.start_line+block.src.LineNr;
+				zx.line_obj.srcinfo.start_line = ex.start_line + block.src.LineNr;
 				zx.line_obj.srcinfo.start_col = ex.start_col;
 				zx.line_obj.srcinfo.current_tag_index = ex.current_tag_index;
-				zx.line_obj.tag = block.src.src_obj.tag;        
-        }
-		if (block.special === "TABLE") {
-			//qrystr = CREATE_TABLE(qrystr);
-		} else if (block.special === "DECLARE_PROCEDURE") {
-			qrystr = DECLARE_PROCEDURE(cx,qrystr);
-		} else if (block.special === "bypass") {}
-		else
-			if (qrystr !== "") {
-				//console.log(" Execute DDL from line ", block.src.LineNr, ' for ', block.src.l + 1, ' lines '); //'as ',qrystr);
-				//			console.log(" Execute DDL from line ", LineNr, ' for ', block.src.l + 1, ' lines as ',qrystr);
-				exec_qry(cx, qrystr);
-			} else {
-				//console.log(" Skipped DDL from line ", block.src.LineNr, ' for ', block.src.l + 1, ' lines '); //'as ',qrystr);
+				zx.line_obj.tag = block.src.src_obj.tag;
 			}
-}
+			if (block.method === "TABLE") {
+				
+                CREATE_TABLE(zx,qrystr);
+			} else if (block.method === "DECLARE_PROCEDURE") {
+				qrystr = DECLARE_PROCEDURE(cx, qrystr);
+			} else if (block.method === "bypass") {}
+			else
+				if (qrystr !== "") {
+					//console.log(" Execute DDL from line ", block.src.LineNr, ' for ', block.src.l + 1, ' lines '); //'as ',qrystr);
+					//			console.log(" Execute DDL from line ", LineNr, ' for ', block.src.l + 1, ' lines as ',qrystr);
+					exec_qry(cx, qrystr);
+				} else {
+					//console.log(" Skipped DDL from line ", block.src.LineNr, ' for ', block.src.l + 1, ' lines '); //'as ',qrystr);
+				}
+		}
 	});
 
 };
@@ -726,49 +804,54 @@ function full_updgade(zx, ddl_filename_prefix) {
 	//con.commit()
 }
 
-exports.Backup_DDL = function(zx,reflect,backup)
-{
+exports.Backup_DDL = function (zx, reflect, backup) {
 	var result = zx.dbu.extract_dll.sync(null, zx);
 	//console.log('extract_dll result is ',str.ddl);
 	console.log('extract_dll result is ', result.err);
-    if (backup)
-        {        
-        var d = new Date();
-		var df = (1900+d.getYear())+'_'+d.getMonth()+'_'+d.getDate()+' '+d.getHours()+'_'+d.getMinutes()+'_'+d.getSeconds();		
-        fs.writeFileSync(zx.output_folder + '/Audit/Before update on '+df,result.ddl);
-        }
-    if (reflect)
-        {        
-        fs.writeFileSync(zx.output_folder + 'reflect.sql',result.ddl);
-        }        
-        
+	if (backup) {
+		var d = new Date();
+		var df = (1900 + d.getYear()) + '_' + d.getMonth() + '_' + d.getDate() + ' ' + d.getHours() + '_' + d.getMinutes() + '_' + d.getSeconds();
+		fs.writeFileSync(zx.output_folder + '/Audit/Before update on ' + df, result.ddl);
+	}
+	if (reflect) {
+		fs.writeFileSync(zx.output_folder + 'reflect.sql', result.ddl);
+	}
+
 }
 
 exports.update = function (zx) {
 	//called several times from the input processor....exports.Prepare_DDL(zx, null, model_text)
-    //console.log('exports.blocks length:', exports.blocks.length);
-    
-    if (exports.lastHash === null)
-       try {exports.lastHash = JSON.parse(require('fs').readFileSync(zx.output_folder + 'update.hash').toString()).Hash;} catch (e) {} 
-       
-   
-    exports.rebuild=1;
-	var Hash = exports.Sort_DDL(zx, exports.blocks);
-    //console.log('exports.Sort_DDL length:', exports.blocks.length,exports.lastHash,Hash);
-	if ((exports.lastHash === null) || (exports.lastHash !== Hash)||(exports.rebuild===1)) {
-            //console.log('exports.Execute_DDL hashed:');
-			exports.Backup_DDL(zx,0,1);   //audit trail
-			exports.Execute_DDL(zx, exports.blocks,0);
-			exports.Backup_DDL(zx,1,0);  //reflection.sql
-		}
-    //console.log('exports.write_log.length  :', exports.write_log.length);    
-    exports.lastHash=Hash;
-    
-    fs.writeFileSync(zx.output_folder + 'input.sql', exports.input_audit.join(''));
-    fs.writeFileSync(zx.output_folder + 'update.sql', exports.write_log.join(''));
-    fs.writeFileSync(zx.output_folder + 'update.hash',JSON.stringify({Hash:Hash}));
+	//console.log('exports.blocks length:', exports.blocks.length);
 
-        
+	if (exports.lastHash === null)
+		try {
+			exports.lastHash = JSON.parse(require('fs').readFileSync(zx.output_folder + 'update.hash').toString()).Hash;
+		} catch (e) {}
+
+	//exports.show_DDL(zx,"B4 Sort",exports.blocks);
+
+	exports.rebuild = 1;
+	var B = exports.Sort_DDL(zx, exports.blocks);
+
+	fs.writeFileSync(zx.output_folder + 'prebuild.sql', B.build_str);
+	//console.log('exports.Sort_DDL length:', exports.blocks.length,exports.lastHash,Hash);
+	//exports.show_DDL(zx,"Afer Write",exports.blocks);
+	if ((exports.lastHash === null) || (exports.lastHash !== B.Hash) || (zx.config.db.schema_rebuild==="always")) {
+		//console.log('exports.Execute_DDL hashed:');
+		exports.Backup_DDL(zx, 0, 1); //audit trail
+		//exports.show_DDL(zx, "After sort b4 exec ", exports.blocks);
+		exports.Execute_DDL(zx, exports.blocks, 0);
+		exports.Backup_DDL(zx, 1, 0); //reflection.sql
+	}
+	//console.log('exports.write_log.length  :', exports.write_log.length);
+	exports.lastHash = B.Hash;
+
+	fs.writeFileSync(zx.output_folder + 'input.sql', exports.input_audit.join(''));
+	fs.writeFileSync(zx.output_folder + 'update.sql', exports.write_log.join(''));
+	fs.writeFileSync(zx.output_folder + 'update.hash', JSON.stringify({
+			Hash : B.Hash
+		}));
+
 };
 
 function recreate(zx, model_text) {}
@@ -778,18 +861,16 @@ exports.init = function (zx) {
 	exports.lastHash = null;
 	exports.src_obj = {};
 	exports.blocks = [];
-    exports.write_log=[];
-    exports.input_audit=[];
+	exports.write_log = [];
+	exports.input_audit = [];
 
 };
 
-exports.start_up = function (zx) {
-
-};
+exports.start_up = function (zx) {};
 
 exports.unit_test = function (zx) {
 
-	console.log('comment_replace', comment_replace("abc /* cdef \n  hij */  klm \n nmp/* and */ stuff"));
+	console.log('comment_suppress', comment_suppress("abc /* cdef \n  hij */  klm \n nmp/* and */ stuff"));
 
 	console.log('checkTable(" Z$USER "):', checkTable(zx, " Z$USER "));
 	var cx = {
@@ -834,3 +915,16 @@ exports.unit_test = function (zx) {
 
 
 };
+
+exports.unit_test_s = function (zx) {
+
+
+console.log(JSON.stringify(splitNoParen('123;456;789;(abc;(123;456;789);default;);999', ';'), null, 4));
+console.log(JSON.stringify(splitNoParen('123;456;789;(abc;(123;456;789) default;) 999', ';'), null, 4));
+process.exit(2);
+}
+
+//var inputs = fs.readFileSync('test.txt', 'utf8');
+//console.log(JSON.stringify(splitNoParen(inputs, ';'), null, 4));
+//console.log(inline_comment_suppress('abc --def\nghi\nklm\n---none of this\nend')); 
+//process.exit(2);
