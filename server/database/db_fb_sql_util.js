@@ -54,22 +54,24 @@ var parse_error = function (zx, err, source, script) {
 		script_err.text = "";
 
 	} else {
-        var src,srcx;
-        
-        if (source.src_obj)
-            srcx=source.src_obj.srcinfo;
-         else
-            srcx=source.srcinfo;         
-         
-        var src = deepcopy(srcx);
-        if (src.source && src.source.length>200) delete src.source;
-        console.log('script_err source:',src);//,source );
-        
-		script_err.source_file =src.filename;
-		script_err.source_line = src.start_line+script_err.line;
-        if (source.src_obj)
-            script_err.source_line += source.LineNr;
-        
+		var src,
+		srcx;
+
+		if (source.src_obj)
+			srcx = source.src_obj.srcinfo;
+		else
+			srcx = source.srcinfo;
+
+		var src = deepcopy(srcx);
+		if (src.source && src.source.length > 200)
+			src.source = exports.show_longstring(src.source);
+		console.log('script_err source:', src); //,source );
+
+		script_err.source_file = src.filename;
+		script_err.source_line = src.start_line + script_err.line;
+		if (source.src_obj)
+			script_err.source_line += source.LineNr;
+
 		script_err.source_col = script_err.col;
 		script_err.text = src.source;
 		if (script !== undefined)
@@ -92,8 +94,8 @@ exports.databaseUtils = function (root_folder, connectionID, url, callback) {
 			function (err, msg, rambase) {
 			if (err) {
 
-                console.log("error connecting on " ,err);
-                
+				console.log("error connecting on ", err);
+
 				console.log(err.message);
 				if (callback !== undefined)
 					callback(err, "Error");
@@ -231,10 +233,10 @@ exports.exec_qry_cb = function (cx, name, script, line_obj, callback) {
 			if (cx.expect !== undefined && cx.expect.test(script_err)) {
 				//console.log('Acceptable error:', cx.expect,qrystr);
 			} else {
-				console.log('script_err:', script_err, err,' in :------------------>\n',script);
-				script_err = parse_error(cx.zx, err,line_obj);
+				console.log('script_err:', script_err, err, ' in :------------------>\n', script);
+				script_err = parse_error(cx.zx, err, line_obj);
 				cx.zx.err = script_err;
-				throw new Error("update script error.",script_err+'/n'+script);
+				throw new Error("update script error.", script_err + '/n' + script);
 				//todo - show operator some            kind of server error
 			}
 			callback(null, script_err);
@@ -248,7 +250,7 @@ exports.exec_qry_cb = function (cx, name, script, line_obj, callback) {
 };
 
 exports.write_script = function (zx, name, script, callback) {
-
+    name = name.replace(/\\/g, '/'); //windows
 	connection.db.query('UPDATE OR INSERT INTO Z$SP (FILE_NAME, SCRIPT)VALUES (?,?) MATCHING (FILE_NAME)', [name, script],
 		function (err, result) {
 		//console.log('dbresult: write' );
@@ -410,30 +412,39 @@ exports.extract_dll = function (zx, callback) {
 	//console.log('extract_dll :',connection.rambase.isql_extract_dll_cmdln);
 	//isql-fb -ex -o ddlx.sql -user SYSDBA -password pickFb2.5 192.168.122.1:db31
 
-	var command = spawn('/usr/bin/isql-fb', connection.rambase.isql_extract_dll_cmdln);
+
 	var output = [];
 
-	command.stdout.on('data', function (chunk) {
-		output.push(chunk);
-	});
+	if (zx.config.windows) {
 
-	command.on('close', function (code) {
-		if (code === 0) {
-			var str = output.join('');
-			//  console.log('sddl_backup result :', str);
-			callback(null, {
-				err : code,
-				ddl : str
-			});
-		} else {
-			console.log('extract_dll failed :', code);
-			callback(null, {
-				err : code,
-				ddl : ""
-			});
-		}
+		callback(null, {
+			err : 2,
+			ddl : ""
+		});
+	} else {
+		var command = spawn('/usr/bin/isql-fb', connection.rambase.isql_extract_dll_cmdln);
+		command.stdout.on('data', function (chunk) {
+			output.push(chunk);
+		});
 
-	});
+		command.on('close', function (code) {
+			if (code === 0) {
+				var str = output.join('');
+				//  console.log('sddl_backup result :', str);
+				callback(null, {
+					err : code,
+					ddl : str
+				});
+			} else {
+				console.log('extract_dll failed :', code);
+				callback(null, {
+					err : code,
+					ddl : ""
+				});
+			}
+
+		});
+	}
 
 };
 

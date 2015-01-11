@@ -37,7 +37,11 @@ exports.tag_controller = exports.tag_model = function (zx, line_obj) {
 
 exports.done_pass = function (zx, line_obj) {
   if (zx.pass===1)
-     zx.db_update.update(zx);
+    {
+        //console.log(' model db_update.update:');
+        zx.db_update.update(zx);
+        //console.log(' model db_update.update done:');     
+    }
 };
 
 

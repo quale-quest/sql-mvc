@@ -226,7 +226,7 @@ var process_new_data = function (cx) {
 			};
 
 			qq_stache[cx.obj.Data.cid] = cx.obj.Data; //set global
-			console.log("qq_stache.cid  :", cx.obj.Data.cid);
+			console.log("qq_stache.cid  :", cx.obj.Data.cid,cx.obj.Stash);
 			var html = ss.tmpl[cx.obj.Stash].render(cx.obj.Data);
 			//console.log("cx.Data  :",cx.obj.Stash,cx.obj.Data);
 			$(cx.obj.Target).html(html);

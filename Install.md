@@ -1,7 +1,8 @@
 
 #Linux (ubuntu 14):
 **Instructions for other OS'es to follow - but you get the idea.**
-*Windows will have issues with bash scripts and compiled UDF but instructions will follow.*
+[Install-windows here](https://github.com/quale-quest/sql-mvc/blob/master/Install-windows.md)
+
 
 sudo su # if you are not already root       
 
@@ -52,9 +53,12 @@ mv node_modules/sql-mvc/ .
 rm node_modules/ -r
 cd sql-mvc/
 
-#config is under Quale/Config/config.json  (database file name, server port etc.)
-#note the data base will be placed in /var/db - to change it edit config.json
-
+#the default config will:
+#    place the database in /var/db 
+#    attempt to update the current database
+#    run dev server on port 3000
+# to edit the default config :
+nano ../Quale/Config/config.json
 
 #now build the demo
 chmod -R +x server/compiler/*.sh
@@ -63,11 +67,6 @@ cd install
 ./patch.sh
 ./make_udf.sh
 
-#if you are reinstalling you will want to 
-# skip the make_demo_db step (if db is unchanged) or
-#   do a **rm  /var/db/demo_db.fdb**, 
-#   or change the database name in config.json.
-./make_demo_db.sh
 ./make_app.sh
 ```
 
@@ -82,7 +81,7 @@ Open our browser to localhost:3000 and view the demo app
 Edit and play with the demo page : sql-mvc/Quale/Standard/Home/Guest/Dashboard/Dashboard-Include.quicc
 the changes you make will automatically be updated to your browser.
 
-Error output will bve on the consol running the ./dev_server.sh
+Error output will bve on the console running the ./dev_server.sh
 and also in the file: sql-mvc/server/compiler/output/error_log.json
 
 

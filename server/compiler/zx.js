@@ -388,7 +388,7 @@ exports.eachplugin = function (zx, fn, value) {
     var results=[];
 	for (var ixx = 0, max = zx.plugins.length; ixx < max; ixx += 1) {
 		if (zx.plugins[ixx][fn] !== undefined) {
-           //console.log('eachplugin ',(zx.plugins[ixx].module_name||' plugin has no name'),fn,value);//,zx.plugins[ixx]);
+            //console.log('eachplugin ',(zx.plugins[ixx].module_name||' plugin has no name'),fn,exports.show_longstring(value));//,zx.plugins[ixx]);
 			var result=zx.plugins[ixx][fn](zx, value);
             if (result!==undefined) results.push(result);
 		}

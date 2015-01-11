@@ -79,14 +79,24 @@ exports.produce_div = function (req, res, ss, rambase, messages, session) {
 
 				transaction.commit(function (err) {
 					if (err)
+                        {
+                        console.log('error in transaction.commit',err);
 						transaction.rollback();
+                        }                        
 					else {
 						if (result.length === 0)
 							console.log('no database results'); //this could be use full for save only instructions that don't feedback
 						else {
-
-							console.log('dbresult:', result);
-							console.log('dbresult:', String(result[0].info));
+                            //if ((rambase.conf.run_mode=="dev")&&result[0].res)
+                                {//debug
+                                var json = JSON.parse(result[0].res);
+							    console.log('db json :', JSON.stringify(json[0].Data,null,4));
+                                console.log('db stash :', JSON.stringify(json[0].Stash,null,4));
+                                console.log('db cid :', JSON.stringify(json[0].Data.cid,null,4));
+                                }
+                                
+							console.log('db - JSON:\n\n', result[0].res,'\n\n');
+							console.log('dbresult:', String(result[0].info),'');
 							//console.log('Index.htm.sql  ouput: ',result[0].res );
 							ss.publish.socketId(req.socketId, 'newData', 'content', result[0].res);
 							ss.publish.socketId(req.socketId, 'switchPage', '#PAGE_2', '');

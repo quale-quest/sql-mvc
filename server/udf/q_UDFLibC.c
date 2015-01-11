@@ -10,10 +10,17 @@
 #include "ibase.h"
 #include "ib_util.h"
 
+#ifdef __GNUC__
+#define EXPORT
+#else
+#include <windows.h>
+#define EXPORT __declspec(dllexport) 
+#endif
 
-int Z$F_VERSION(void)
+
+EXPORT int Z$F_VERSION(void)
 {
-return (100);
+return (101);
 }
 
 
@@ -62,7 +69,7 @@ void escapeJSON(const char* input,char* output)
 		input++;
     }
 	*output='"';output++;    
-	*output=0;output++;    
+	*output=0;
 }
 
 #define UNESCAPED 0
@@ -137,7 +144,7 @@ void unescapeJSON(char* input,char* output)
         }
 		input++;
     }
-	*output=0;output++;
+	*output=0;
 }
 
 
@@ -158,12 +165,12 @@ void escapeSQL(const char* input,char* output)
 		input++;
     }
 	*output='\'';output++;    
-	*output=0;output++;    
+	*output=0;
 }
 
 
 
-char * Z$F_F2J (char * sz)     
+EXPORT char * Z$F_F2J (char * sz)     
 {
   int len = strlen(sz);
   char * sz_result = (char *) ib_util_malloc (len*2+4);  
@@ -171,7 +178,7 @@ char * Z$F_F2J (char * sz)
   return sz_result;
 }
 
-char * Z$F_J2F (char * sz)     
+EXPORT char * Z$F_J2F (char * sz)     
 { 
   int len = strlen(sz);
   char * sz_result = (char *) ib_util_malloc (len);  
@@ -180,7 +187,7 @@ char * Z$F_J2F (char * sz)
 }
 
 
-char * Z$F_F2SQL (char * sz)     
+EXPORT char * Z$F_F2SQL (char * sz)     
 {
   int len = strlen(sz);
   char * sz_result = (char *) ib_util_malloc (len*2+4);  

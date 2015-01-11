@@ -931,7 +931,7 @@ exports.start_pass = function (zx /*, line_objects*/
 	emit(zx, 0, "res='[{``start``:``true``';", "");
 	emito(zx, "Object", "fullstash");
 	emito(zx, "Target", "#maincontainer");
-	emito(zx, "Stash", zx.main_page_name.substring(2).replace(/\//g, '-'));
+	emito(zx, "Stash", zx.main_page_name.substring(2).replace(/[\/\\]/g, '-')); //windows
 	emito(zx, "ContainerId", "GUIDofTheTemplate");
 	emits(zx, "``Data``:{``start``:``true``");
 

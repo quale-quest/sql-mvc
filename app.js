@@ -101,7 +101,7 @@ var config = JSON.parse(require('fs').readFileSync('Quale/Config/config.json').t
 server.listen(config.serve_port);
 
 //start qq file monitor if in dev mode
-if (config.run_mode === "dev") { //Develop Debug Demo Production
+if (config[config.run_mode] === "check") { //Develop Debug Demo Production
 	run_monitor(1000);
 }
 

@@ -551,7 +551,7 @@ var seq_pages = function (zx) {
 				} else {
                 
                     var linecopy = deepcopy(zx.line_obj);
-                    if (linecopy.srcinfo)
+                    if (linecopy && linecopy.srcinfo)
                         {
                         linecopy.srcinfo.source = zx.show_longstring(linecopy.srcinfo.source);
                         linecopy.body = zx.show_longstring(linecopy.body);
@@ -615,8 +615,9 @@ Sync(function () {
 		throw e;
 	}
 
+    //console.log("shuting_down");
     zx.eachplugin(zx, "shut_down", 0);
-
+    //console.log("shut_down");
 	zx.dbu.exit();
 });
 //eof
