@@ -33,7 +33,7 @@ var run_monitor = function (interval_ms) {
 					if (str.length > 0) //don't bother us with small status message
 						console.log('server/compiler/check.sh result :', str);
 				} else
-                   id (code===127)
+                   if (code===127)
                      console.log('server/compiler busy :');
                    else
 					console.log('server/compiler/check.sh failed :', code);

@@ -313,7 +313,7 @@ var tag_menuscan_recurse = function (zx, o, menuhdr) {
 
 				var br = fileutils.locateclosestbuildroot(zx, fn);
 				zx.linkfiles.push({
-					name : br.filename,
+					name : "//" + br.filename,
 					obj : o
 				});
 				o.form = br.filename;

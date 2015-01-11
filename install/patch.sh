@@ -12,6 +12,7 @@ zxPatch ()
 	}
     
 ##should be run from the install directory    
+cd "$( cd "$( dirname "$0" )" && pwd -P)"
 cd ..    
 cwd=`pwd` 
 zxPatch node_modules/ss-hogan/node_modules/hogan.js/lib ss-hogan compiler.js
