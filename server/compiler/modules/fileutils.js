@@ -18,7 +18,7 @@ var locateclosestbuildroot = exports.locateclosestbuildroot = function (zx, fn) 
 	zx.build_roots.forEach(function (root_name) {
 		var build_rel = path.resolve(path.join(zx.root_folder, root_name));
 		var rel = path.relative(build_rel, fn);
-		//console.log('    relative   :',rel );
+		//console.log('    relative   : from ',zx.root_folder,' via:',root_name,' to:',fn, ' is:', rel);
 		if (rel.length < filename.length) {
 			filename = rel;
 			build_root = root_name;

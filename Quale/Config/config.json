@@ -1,6 +1,7 @@
 {
-	"serve_port": "3000",
-	"run_mode": "Develop",
+	"run_mode": "dev",
+    "monitor_mode":{"dev":"check","prod":"none","help":["check","gaze","none"]},
+	"serve_port": "3000",	
 	"first": 300,
 	"db": {
 		"dialect": "fb25",
@@ -17,7 +18,7 @@
 		
 		"user_table": {
 			"table_name": "Z$USER",
-			"display_name_field": "Name",
+			"display_name_field": "USER_NAME",
 			"primary_key_field": "ref",
 			"username_field": "USER_NAME",
 			"password_field": "PASSWORD",

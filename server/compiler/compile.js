@@ -96,14 +96,20 @@ var queue_file_to_be_compiled = function (zx, dfn) {
 	var fileobj,
 	br,
 	name;
-	//console.log('queue_file_to_be_compiled:',dfn);
+	console.log('queue_file_to_be_compiled:',dfn);
 
 	if (dfn !== '') {
 		dfn = path.resolve(dfn);
-
+        //console.log('resolve:',dfn);
 		if (zx.endsWith(dfn, "Index"+zx.app_extn)) {
 			//path.relative
 			br = fileutils.locateclosestbuildroot(zx, dfn.replace(zx.app_extn, ''));
+            //console.log('locateclosestbuildroot:',br.filename);
+            if (br.filename===undefined)
+                {
+                console.warn('can not find locateclosestbuildroot:',br.filenam);
+                //return;
+                }                   
 			zx.pages.push({
 				name : '//' + br.filename,
 				obj : "filedepIndex",
@@ -168,7 +174,8 @@ var seq_main = function () {
 		zx.depends = {};
 		zx.mainfiles = [];
 		zx.BlockIndex = 0;
-		zx.root_folder = path.resolve('../../Quale/') + '/';
+		zx.root_folder = path.resolve(path.join(__dirname,'../../Quale/')) + '/';
+        console.log('zx.root_folder :',zx.root_folder);
 		zx.build_roots = ["Config", "Custom", "Standard", "Lib", ""];
 		//if dev mode zx.build_roots.unshift("sandbox");
 		zx.output_folder = path.resolve('./output/') + '/';

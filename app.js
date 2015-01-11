@@ -33,6 +33,9 @@ var run_monitor = function (interval_ms) {
 					if (str.length > 0) //don't bother us with small status message
 						console.log('server/compiler/check.sh result :', str);
 				} else
+                   id (code===127)
+                     console.log('server/compiler busy :');
+                   else
 					console.log('server/compiler/check.sh failed :', code);
 
 			});
@@ -98,7 +101,7 @@ var config = JSON.parse(require('fs').readFileSync('Quale/Config/config.json').t
 server.listen(config.serve_port);
 
 //start qq file monitor if in dev mode
-if (config.run_mode === "Develop") { //Develop Debug Demo Production
+if (config.run_mode === "dev") { //Develop Debug Demo Production
 	run_monitor(1000);
 }
 

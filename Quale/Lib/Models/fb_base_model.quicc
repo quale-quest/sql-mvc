@@ -4,7 +4,7 @@
 --:{regex:"regex:/varchar/i",Default_length:"20",length:"regex:/(\\d+)/",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} --comment
 --:{regex:"regex:/create\\s+table/i",rl_context:"regex:/create\\s+table\\s+(\\w+)/i"}
 --:{class:"pk",Type:"Hide",Action:"Hide",PrimaryKey:true}
---:{class:"pkr",Type:"Link",Action:"Link"}
+--:{class:"fk",Type:"Link",Action:"Link"}
 
 
 DECLARE EXTERNAL FUNCTION Z$F_F2J
@@ -152,7 +152,7 @@ CREATE TABLE Z$USER
   PASSWRD Z$PASSWORD,
   LANDING_PAGE VARCHAR(80) DEFAULT 'Home/Guest',
   KEY_LIST VARCHAR(250),
-  LANGUAGE PKR,				/*i18n built in support*/
+  LANGUAGE fk,				/*i18n built in support*/
   GP_INPUT VARCHAR(250)  
 );
 CREATE INDEX IDX_ME1 ON Z$USER (REF);

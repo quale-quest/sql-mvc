@@ -400,7 +400,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 	//console.log("CREATE_TABLE:",Table,tableexists,"qrystr:",qrystr," barestr:",barestr);
 	if (tableexists === 0) // create new table as is
 	{
-        console.log('Table does not exist  - attempt to create defined');
+        console.log('Table does not exist  - attempt to create as defined');
 		exec_qry(cx, qrystr);
 		return "";
 	}
@@ -887,7 +887,7 @@ exports.unit_test = function (zx) {
 	console.log('getGenerator:', getGenerator(zx, 'Z$CONTEXT_SEQ', 0));
 
 	//console.log('CREATE_TABLE:', exports.CREATE_TABLE(zx,
-	//		" CREATE TABLE TODO_MVC(REF PK not null, OWNER PKR, NAME VARCHAR(100), STATUS VARCHAR(10), CREATED_STAMP TIMESTAMP DEFAULT 'now'); "));
+	//		" CREATE TABLE TODO_MVC(REF PK not null, OWNER fk, NAME VARCHAR(100), STATUS VARCHAR(10), CREATED_STAMP TIMESTAMP DEFAULT 'now'); "));
 
 	console.log('getGenerator:', getGenerator(zx, 'Z$CONTEXT_SEQ', 0));
 
@@ -903,7 +903,7 @@ exports.unit_test = function (zx) {
 	//exports.Execute_DDL(zx, "/home/xie01/Sites/sql/sql-mvc/install/demo_db_dll_x.sql");
 
 	//console.log('CREATE_TABLE:', exports.CREATE_TABLE(zx,
-	//		" CREATE TABLE TODO_MVC(REF PK not null, OWNER PKR, NAME VARCHAR(100), STATUS VARCHAR(10), CREATED_STAMP TIMESTAMP DEFAULT 'now'); "));
+	//		" CREATE TABLE TODO_MVC(REF PK not null, OWNER fk, NAME VARCHAR(100), STATUS VARCHAR(10), CREATED_STAMP TIMESTAMP DEFAULT 'now'); "));
 	//dropTriggers(zx);
 
 

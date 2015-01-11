@@ -27,7 +27,7 @@ exports.load_config = function (root_folder,Application) {
 			Application = '/Home';
 		var fileContents='', search = path.resolve(root_folder + 'Config' + Application);
 
-		//console.log('Inital Application is', Application,' located at:',search);
+		//console.log('Inital Application is',root_folder+ ' + Config _' + Application, Application,' located at:',search);
 		while (fileContents === "" && search !== '/') {
 			try {
 				fileContents = fs.readFileSync(search + '/config.json');
@@ -89,7 +89,7 @@ exports.databasePooled = function (root_folder, connectionID, url, callback) {
 		//console.log("isql_extract_dll_cmdln :",rambase.isql_extract_dll_cmdln);
 
         var fn=fb.attach;
-        if  (conf.run_mode==="Develop")
+        if  (conf.run_mode==="dev")
           fn=fb.attachOrCreate;
         
 		fn({
