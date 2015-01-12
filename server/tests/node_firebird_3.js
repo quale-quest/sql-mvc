@@ -123,7 +123,7 @@ var test_0_3_0_A = function () {
 };
 
 var test_0_3_0_B = function () { //
-	//in node firebird 3.0.0 throws :  Error: invalid BLOB ID  when selectin blob from stored procedure
+	//in node firebird 0.3.0 throws :  Error: invalid BLOB ID  when selecting blob from stored procedure
 	/*
 	SET TERM ^ ;
 	CREATE PROCEDURE SPTEST (
@@ -148,7 +148,7 @@ var test_0_3_0_B = function () { //
 
 		db.query("SELECT a.info,a.RES FROM SPTEST ('12345') a;", function (err, result) {
 
-			console.log("SELECT info,RES FROM Z$RUN ('6:33:01.520','',1000,0,'','','u05guestp05gu35tw00x00') a : \n", err, result);
+			console.log("SELECT a.info,a.RES FROM SPTEST ('12345') a  : \n", err, result);
 			//Error: invalid BLOB ID
 
 			result[0].res(function (err, name, e) {
