@@ -45,13 +45,10 @@ npm install -g forever
 
 #sql-mvc
 ```
-mkdir & cd where you want to install
-npm install sql-mvc   
+git clone https://github.com/quale-quest/sql-mvc.git 
+cd sql-mvc   
+npm install
 
-#I have to create a project installer- like socket-sream - for now just do:
-mv node_modules/sql-mvc/ .   
-rm node_modules/ -r
-cd sql-mvc/
 
 #the default config will:
 #    place the database in /var/db 
