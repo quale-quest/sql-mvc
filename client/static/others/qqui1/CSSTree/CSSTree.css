@@ -1,0 +1,45 @@
+		/* ul[class=tree] and every ul under it loses all alignment, and bullet
+		 * style.
+		 */
+		ul.tree, ul.tree ul {
+			list-style-type: none;
+			margin:0;
+			padding:0;
+			display : none;
+		}
+
+		/* Every ul under ul[class=tree] gets an indent of 1em, and a background
+		 * image (vertical line) applied to all nodes under it (repeat-y)
+		 */
+		ul.tree ul {
+			padding-left: 1em;
+			background:  url(vline.png) repeat-y;
+		}
+
+		/* ... except the last ul child in every ul; so no vertical lines for
+		 * the children of the last ul
+		  */
+		ul.tree ul:last-child {
+			background: none;
+		}
+
+		/* Every li under ul[class=tree]
+		 *  - gets styling to make it bold and blue, and indented.
+		 *  - gets a background image (tilted T), to denote that its a node
+		 *  - sets height to match the height of background image
+		 */
+		ul.tree li {
+			margin:0;
+			padding: 0 1.2em;
+			background: url(node.png) no-repeat;
+			line-height: 20px;
+			color: #369;
+			font-weight: bold;
+		}
+
+		/*  The last li gets a different background image to denote it as the
+		 *  end of branch
+		 */
+		ul.tree li:nth-last-of-type(1) {
+			background: url(lastnode.png) no-repeat;
+		}

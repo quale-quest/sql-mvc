@@ -328,7 +328,7 @@ var seq_main = function () {
 				}
 
 				filelist = fs.readFileSync(fn, 'utf8').split(/\r\n|\r|\n/);
-				console.log('filelist  :', filelist);
+				//console.log('filelist  :', filelist);
 
 				filelist.forEach(function (dfn) {
 					queue_file_to_be_compiled(zx, dfn);
@@ -336,7 +336,7 @@ var seq_main = function () {
 				});
 
 				zx.pages = zx.deduplicate_byname(zx.pages);
-				console.log('compiling  :', zx.pages);
+				//console.log('compiling  :', zx.pages);
 
 			} else if (cmd === 'all') { // TODO compile all index.htm in the whole tree
 				// compile all the menus
@@ -350,7 +350,7 @@ var seq_main = function () {
 
 		}
 
-		console.log('file list:', zx.pages);
+		//console.log('file list:', zx.pages);
 		zx.pgi = 0;
 		seq_pages(zx);
 
@@ -589,8 +589,8 @@ var seq_pages = function (zx) {
 
 Sync(function () {
 
-	for (var i = 0; i < 25; i++)
-		console.log('');
+//	for (var i = 0; i < 25; i++)
+//		console.log('');
 	console.log(Date());
 
 	zx.pages = [];

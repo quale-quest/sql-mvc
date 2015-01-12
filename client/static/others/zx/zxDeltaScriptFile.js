@@ -579,6 +579,13 @@ $(document).keydown(function(e) {
   focusable = form.find('input,a,select,button,textarea,div[contenteditable=true]').filter(':visible');
 
   function enterKey(){
+    if ((e.keyCode === 81 ) && e.ctrlKey === true )
+       {
+       
+       zx_switch_key();
+       }
+      // alert('pressed'+String(e));    
+    
     if (e.which === 13 && !self.is('textarea,div[contenteditable=true]')) { // [Enter] key
 
       // If not a regular hyperlink/button/textarea

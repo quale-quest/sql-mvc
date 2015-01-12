@@ -7,6 +7,7 @@ var ss = require('socketstream'); //without var this become global( and visible 
 var db = require("./server/database/DatabasePool");
 var path = require('path');
 var spawn = require('child_process').spawn;
+var fs = require('fs');
 
 var timestamp = function () {
 	var pad2 = function (number) {
@@ -24,19 +25,25 @@ var run_monitor = function (interval_ms) {
 			var output = [];
 
 			command.stdout.on('data', function (chunk) {
+               if (chunk.length > 10)
 				output.push(chunk);
 			});
 
 			command.on('close', function (code) {
 				if (code === 0) {
-					var str = output.toString();
+
+					var str = output.join('').toString();
+					if (str.length > 10) {
+						var fn = path.resolve('server/compiler/output/consol.txt');
+						fs.writeFileSync(fn, str + "...");
+
+                        ss.api.publish.all('BuildNotify', '#debugBuildNotify','done'); // Broadcast the message to everyone
+					}
 					if (str.length > 0) //don't bother us with small status message
 						console.log('server/compiler/check.sh result :', str);
 				} else
-                   if (code===127)
-                     console.log('server/compiler busy :');
-                   else
-					console.log('server/compiler/check.sh failed :', code);
+
+					console.log('server/compiler busy :');
 
 			});
 
@@ -101,7 +108,7 @@ var config = JSON.parse(require('fs').readFileSync('Quale/Config/config.json').t
 server.listen(config.serve_port);
 
 //start qq file monitor if in dev mode
-if (config[config.run_mode] === "check") { //Develop Debug Demo Production
+if (config.monitor_mode[config.run_mode] === "check") { //Develop Debug Demo Production
 	run_monitor(1000);
 }
 

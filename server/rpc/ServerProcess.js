@@ -11,6 +11,8 @@ but then the page must be stored on the db server, else we will have to ask it a
 
  */
 
+ 
+var ide = require("../../server/IDE/debugger");
 var db = require("../../server/database/DatabasePool");
 var fb = require("node-firebird");
 
@@ -129,6 +131,11 @@ function par_format(type, message) {
 
 }
 
+
+exports.BuildNotify = function (message) {
+ss.publish.all('BuildNotify', '#debugBuildNotify',message); // Broadcast the message to everyone
+}
+
 // Define actions which can be called from the client using ss.rpc('demo.ACTIONNAME', param1, param2...)
 exports.actions = function (req, res, ss) {
 	var rambase;
@@ -213,6 +220,22 @@ exports.actions = function (req, res, ss) {
 				//ss.publish.all('newMessage', message);     // Broadcast the message to everyone
 				//ss.publish.socketId(req.socketId, 'justForMe', 'Just for one tab');
 
+				return res(true); // Confirm it was sent to the originating client
+			} else {
+				return res(false);
+			}
+		},
+        
+        
+		sendDebugMessage : function (message) {
+			if (message && message.length > 0) { // Check for blank messages
+				//ss.publish.all('newMessage', message); // Broadcast the message to everyone
+                console.log('sendDebugMessage recieved:', message);         
+                var cmds=JSON.parse(message);
+                //console.log('sendDebugMessage cmds:', JSON.stringify(cmds,null,4)  );         
+                var result=ide.ProcessDebugRequest(cmds);
+                
+                ss.publish.socketId(req.socketId, 'debugresult', '#debugcontainer', result,cmds.fn);
 				return res(true); // Confirm it was sent to the originating client
 			} else {
 				return res(false);

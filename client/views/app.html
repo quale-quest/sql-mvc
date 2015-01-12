@@ -22,6 +22,7 @@ body {
 <link rel="stylesheet" href="/others/qqui1/DataTables/media/css/jquery.dataTables.css" media="screen" />
 <link rel="stylesheet" href="/others/qqui1/emoji/emoji.css" type="text/css" />
 <link rel="stylesheet" href="/others/qqui1/timepicker/jquery-ui-timepicker-addon.css" type="text/css" />
+<link rel="stylesheet" href="/others/qqui1/CSSTree/CSSTree.css"  type="text/css">
 <style type="text/css" class="init"></style>
 
 <script src="/others/qqui1/jquery/external/jquery/jquery.js"></script>
@@ -45,21 +46,25 @@ body {
 <body >
 
 <div id="PAGE_3" class="zxPage" style="display: none;"> 
-      <a href="https://github.com/socketstream/socketstream">
-        <img src="/images/logo.png" alt="SocketStream Logo" width="160" height="160">
-      </a>
-      <h1>Realtime messaging application</h1>
-      <form id="RealTimeChatForm" onsubmit="return false">
-        <h3>Broadcast room</h3>
-        <h5>Type message followed by enter: </h5>
-        <div id="chatlog"></div>
-        <input id="myMessage" type="text" autocomplete="off">
-      </form>
+<div style="width: 100%; height: 100%; background: none ;">
+<div  id="wrapper"> 
+        <input id="auth-code" type="text" autocomplete="off">
+		<span class="icon-wrap-lb"><a href="#" language="javascript" id="DebugViewConsole" title="Console"><span class="icon-block-black "></span>Console</a></span>
+		<span class="icon-wrap-lb"><a href="#" language="javascript" id="DebugViewErrors" title="Errors"><span class="icon-block-black "></span>Errors</a></span>			
+		<span class="icon-wrap-lb"><a href="#" language="javascript" id="DebugViewModel" title="Model"><span class="icon-block-black "></span>Model</a></span>			
+		<span class="icon-wrap-lb"><a href="#" language="javascript" id="DebugViewControllers" title="Controllers"><span class="icon-block-black "></span>Controllers</a></span>			
+		<span class="icon-wrap-lb"><a href="#" language="javascript" id="DebugViewViews" title="Views"><span class="icon-block-black "></span>Views</a></span>					
+		<span class="icon-wrap-lb"><a href="#" language="javascript" id="DebugRebuild" title="Rebuildl"><span class="icon-block-black "></span>Rebuild</a></span>					
+		<span class="icon-wrap-lb"><a href="#" language="javascript" onclick="return(zx_switch_key());" title="View Web"><span class="icon-block-black "></span>Web</a></span>			
+		<HR/>		
+		<div divout="Standard" id="debugBuildNotify"></div>
+        <div divout="Standard" id="debugcontainer">		
+ </div>
+</div>	  
+</div>	  
 </div>
+
 <div id="PAGE_1" class="zxPage"  xstyle="display: none;">
-
-
-
 
 <!--[if IE]>
 <script type="text/javascript">

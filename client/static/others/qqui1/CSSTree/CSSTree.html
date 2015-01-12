@@ -1,0 +1,67 @@
+<html>
+<head>
+	<title>CSS Tree</title>
+
+	<link rel="stylesheet" type="text/css" href="CSSTree.css">
+	<script type="text/javascript" language="javascript" src="jquery-1.9.1.js"></script>	
+	
+</head>
+<body>
+	<a href="http://odyniec.net/articles/turning-lists-into-trees/">Tutorial</a>
+
+	
+	<div class='showtree' ><li >Show Animals+</li></div>
+	<ul class="tree" id="tree">
+		<div class='plus' ><li >Animals+</li></div>
+		<ul>
+			<li>Birds</li>
+			<ul>
+				<li>Parrot</li>
+				<li>Sparrow</li>
+			</ul>
+			<li>Mammals</li>
+			<ul>
+				<li>Humans</li>
+				<li>Cows</li>
+			</ul>
+			<li>Fish</li>
+			<ul>
+				<li>Salmon</li>
+			</ul>
+			<li>Reptiles</li>
+			<ul>
+				<li>Snake</li>
+				<li>Lizard</li>
+			</ul>
+		</ul>
+		<div class='plus'><li>Plants+</li></div>
+		<ul>
+			<div class='plus'><li>Trees+</li></div>
+			<ul>
+				<li>Mango</li>
+				<li>Banyan</li>
+				<li>Redwood</li>
+			</ul>
+			
+			<div class='plus'><li>Shrubs+</li></div>
+			<ul>
+				<li>Cactus</li>
+				<li>Congress</li>
+			</ul>
+		</ul>
+	</ul>
+
+
+<script type="text/javascript"> $(document).ready(function () {
+ 
+ $('.showtree').on('click',  function () {
+	$( this ).next().toggle();
+	});
+ 
+ $('ul.tree .plus').on('click',  function () {
+	$( this ).next().toggle();
+	});
+ }); </script> 	
+	
+</body>
+</html>

@@ -2,13 +2,31 @@
 /*jshint browser: true, node: false, jquery: true */
 /* qq App */
 
-ss.event.on('switchPage', function (div /*, page, message*/
-	) {
-	//alert ('test1'+div);
-	$('.zxPage').hide();
-	$(div).show();
+        
+var zx_view_page='#PAGE_3';       
+var zx_prev_page='#PAGE_3';
 
-	return;
+var zx_switch_page = function (div){
+    console.log("zx_switch_page :",div );
+    if (div!==zx_view_page)
+       {
+        zx_prev_page=zx_view_page;
+        zx_view_page = div;        
+        $('.zxPage').hide();        
+        $(div).show();
+       } 
+}
+
+zx_switch_key = function (){
+zx_switch_page(zx_prev_page);
+}
+
+ss.event.on('switchPage', function (div /*, page, message*/
+) {
+
+zx_switch_page(div);
+
+return;
 
 });
 
@@ -307,6 +325,8 @@ var process_new_data = function (cx) {
 			$(cx.obj.Target).off('click', '.right-toggle', zx_right_toggle_menu);
 			$(cx.obj.Target).on('click', '.right-toggle', zx_right_toggle_menu);
             
+            
+          
 
 			/*======================
 			DATE PICKER
@@ -426,6 +446,28 @@ ss.event.on('newData', function (div, message) {
 	return;
 
 });
+
+
+
+ss.event.on('BuildNotify', function (div,message) {
+   //console.log("BuildNotify result  :", div,message);
+  $(div).html('<pre>'+Date()+' : '+message+'</pre>');
+ });
+
+ss.event.on('debugresult', function (div,message,fn) {
+
+
+       // console.log("debugresult  :", message);
+        var html = message;//ss.tmpl[cx.obj.Stash].render(cx.obj.Data);
+        //console.log("cx.Data  :",fn);
+        $(div).html(html);
+          
+  $(div).off('click', '.showtree', function () {$( this ).next().toggle();});
+  $(div).off('click', 'ul.tree .plus', function () {	$( this ).next().toggle();	});               
+  $(div).on('click', '.showtree', function () {$( this ).next().toggle();});
+  $(div).on('click', 'ul.tree .plus', function () {	$( this ).next().toggle();	});             
+});
+
 
 // Listen out for newMessage events coming from the server
 ss.event.on('newMessage', function (message) {
@@ -547,20 +589,29 @@ $(function () {
 });
 
 // Show the chat form and bind to the submit action
-$('#RealTimeChatForm').on('submit', function () {
+var debug_button_fn = function (fn) {
 
 	// Grab the message from the text box
-	var text = $('#myMessage').val();
+    fn.auth = $('#auth-code').val()
+	var text = JSON.stringify(fn);
 
 	// Call the 'send' funtion (below) to ensure it's valid before sending to the server
-	return exports.send(text, function (success) {
+	return exports.sendDebug(text, function (success) {
 		if (success) {
-			return $('#myMessage').val('');
+			return ;//$('#auth-code').val('');
 		} else {
 			//return alert('Oops! Unable to send message');
 		}
 	});
-});
+};
+
+$('#DebugViewConsole').on('click', function () {return debug_button_fn({fn:'Console'}); });
+$('#DebugViewErrors').on('click', function () {return debug_button_fn({fn:'Errors'}); });
+$('#DebugViewModel').on('click', function () {return debug_button_fn({fn:'Model'}); });
+$('#DebugViewControllers').on('click', function () {return debug_button_fn({fn:'Controllers'}); });
+$('#DebugViewViews').on('click', function () {return debug_button_fn({fn:'Views'}); });
+$('#DebugRebuild').on('click', function () {return debug_button_fn({fn:'Rebuild'}); });
+
 
 // sharing code between modules by exporting function
 exports.send = function (text, cb) {
@@ -570,3 +621,15 @@ exports.send = function (text, cb) {
 		return cb(false);
 	}
 };
+
+exports.sendDebug = function (text, cb) {
+	if (valid(text)) {
+		return ss.rpc('ServerProcess.sendDebugMessage', text, cb);
+	} else {
+		return cb(false);
+	}
+};
+
+
+
+

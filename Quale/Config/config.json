@@ -1,6 +1,7 @@
 {
 	"run_mode": "dev",
     "monitor_mode":{"dev":"check","prod":"none","help":["check","gaze","none"]},
+	"debugkey":"",
 	"serve_port": "3000",	
 	"first": 300,
 	"db": {
