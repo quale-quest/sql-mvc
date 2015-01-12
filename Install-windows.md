@@ -3,17 +3,15 @@
 
 **at the moment this does not work **
 
-The issue we use a old version of node-firebird , beacuse we have a issue with reading blobs 
-on the new version, however , on windows the old vesion seens to have a problem with comitting transactions......
+The issue is we use a old version of node-firebird , because we have a issue with reading blobs 
+on the new version, however , on windows the old version seems to have a problem with committing transactions......
 
 This will require further investigations...
 
-Upto now we have :
+Up to now we have :
 
 
-
-
-This is based on windows XP, adjust the paths as needed.
+This is based on windows XP, adjust as needed.
 The pre compiled dll is 32 bit I don't know if 64bit server will run with this DLL.
 
 This installation guide is far from perfected , 
@@ -23,12 +21,14 @@ promise it will be worth it in the end.
 ##Firebird
 
 Install:
+
 1. http://www.firebirdsql.org/en/get-started/
 2. http://www.flamerobin.org/
 
 ##Node and gyp
 
-install 
+Install :
+
 1. http://nodejs.org/download/
 2. node-gyp requirements, details at : https://github.com/TooTallNate/node-gyp
 
@@ -47,44 +47,58 @@ copy Patches\marked\new_marked.js   ..\node_modules\marked\lib\marked.js
 copy Patches\emoji\new_emoji.js  ..\node_modules\emoji\lib\emoji.js
 ```
 
-##udf pre-compiled 
+##pre-compiled UDF
 
 copy server\udf\q_UDFLibC.dll  "C:\Program Files\Firebird\Firebird_2_5\UDF"
 
-#set configuration
+##set configuration
 
 ```
-"monitor_mode":{"dev":"none",
+edit Quale/Config/config.json
+set "monitor_mode":{"dev":"none",
 add "windows":"yes",
 
-in db:
+in db record:
 
-"database": "C:\\data\\demo_db.fdb",
-"username": "sysdba",
-"password": "whatever",
-"authfile": "",
+set "database": "C:\\data\\demo_db.fdb",
+set "username": "sysdba",
+set "password": "whatever the server is set to",
+set "authfile": "",
 ```
 		
-#manually build the demo index page.
+##manually build the demo index page.
+
+cd server/compiler
 
 node compile.js app Home/Guest Index
 
-cd server/compiler 
-node compile.js app Home/Guest Index 
 --this only compiles a single page...the the auto compiler not working yet
 
-run the server
+##run the server
 cd ../..
 node app.js
 
 point you browser to localhost:3000
 
+Only the index page will load, it will look ok but the actions wont work...yet
 
 
 
  
 
-###test with 
+##Trouble shooting
+If you have trouble getting this to work try:
+
+1. run firebird as a program instead of a service
+2. copy ib_util.dll from the firebird lib directory to the UDF directory
+2. Check firebird.conf that UdfAccess is not been enabled.
+3. reboot
+4. manually test the firebird connection with flamerobin
+5. manually test the UDF (procedure below)
+5. manually build the UDF (especially 64 bit server)
+ 
+
+###test UDF lib with 
 open a test database with [flamerobin](http://www.flamerobin.org/) and run these test commands
 DECLARE EXTERNAL FUNCTION Z$F_VERSION
 RETURNS INTEGER BY VALUE 
@@ -95,14 +109,6 @@ MODULE_NAME 'q_UDFLibC';
 select  Z$F_VERSION() from RDB$DATABASE
 	
 select Z$F_F2J('abc') from RDB$DATABASE
-
-If you have trouble getting this to work try
- 1. run firebird as a program instead of a service
- 2. copy ib_util.dll from the firebird lib directory to the UDF directory
- 2. Check firebird.conf that UdfAccess is not been enabled.
- 3. reboot
-
- 
  
  
  
@@ -122,17 +128,14 @@ cl.exe /D_USRDLL /D_WINDLL /I "C:\Program Files\Firebird\Firebird_2_5\include"  
 
 stop the fb server
 
-copy q_UDFLibC.dll C:\Program Files\Firebird\Firebird_2_5\UDF\
+copy q_UDFLibC.dll "C:\Program Files\Firebird\Firebird_2_5\UDF\"
 
 start the server again
 ```	
- 
- 
- 
+  
 refs:
 http://www.firebirdnews.org/compiling-linux-udfs-on-msvc/
 http://stackoverflow.com/questions/1130479/how-to-build-a-dll-from-the-command-line-in-windows-using-msvc
-
 
 
 
