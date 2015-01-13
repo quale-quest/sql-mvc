@@ -349,7 +349,7 @@ var tag_menuscan_recurse = function (zx, o, menuhdr) {
 };
 
 exports.tag_menuscan = function (zx, o) {
-	//<#MenuScan menuname=MainMenu from=Z$USER where=ref=Operator.Ref>
+	//<#MenuScan menuname=MainMenu from=user_table_name where=user_pk_field=Operator.user_pk_field>
 	/*
 	Inherits all applicable files and directories with the name starting with name specified in menuname= quale
 	extracts them by name as objects under the main name - remove duplicates
@@ -466,9 +466,9 @@ var tag_menu = exports.tag_menu = function (zx, o) {
 		return tag_menustart(zx, o);
 
 	if (o.from === undefined)
-		o.from = zx.conf.db.user_table.table_name;
+		o.from = zx.conf.db.platform_user_table.user_table_name;
 	if (o.where === undefined)
-		o.where = zx.conf.db.user_table.primary_key_field + '=Operator.' + zx.conf.db.user_table.primary_key_field;
+		o.where = zx.conf.db.platform_user_table.user_pk_field + '=Operator.' + zx.conf.db.platform_user_table.user_pk_field;
 
 	var ReplaceText = zxAction(zx, o, 0);
 	zx.mt.lines.push(ReplaceText);

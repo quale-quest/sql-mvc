@@ -47,7 +47,7 @@ var preProcess = function (zx, filename, str) {
 
 		if (str.slice(-post_tag.length) === post_tag)
 			str = str.slice(0, -post_tag.length);
-        var end_of_pre_regex = '>';
+		var end_of_pre_regex = '>';
 		var preprocessor = zx.parseword(str);
 		var p = str.search(end_of_pre_regex);
 		var preparam = str.substring(0, p);
@@ -56,7 +56,7 @@ var preProcess = function (zx, filename, str) {
 		str = preProcess(zx, filename, str);
 		//console.warn('plugin preprocessor_ searching for  :',preprocessor, ' parm:',preparam );
 		if (1) {
-			str=zx.gets(zx.eachplugin(zx, 'preprocessor_' + preprocessor, str));
+			str = zx.gets(zx.eachplugin(zx, 'preprocessor_' + preprocessor, str));
 		} else {
 
 			var done = zx.plugins.forEach(function (entry) { //to many params .. zx.eachplugin(zx, 'preprocessor_' + preprocessor, 0);
@@ -70,6 +70,23 @@ var preProcess = function (zx, filename, str) {
 	}
 	return str;
 };
+var check_user_table_name = function (zx,str) {
+	var check_user_table = function (str, key) {
+		if (zx.conf.db.platform_user_table[key] !== key) {
+			//console.log('replace platform_user_table ',key,' with ',zx.conf.db.platform_user_table[key]);            
+			return zx.replaceAll(str, key,  zx.conf.db.platform_user_table[key]);
+		} else
+			return str;
+	}
+
+	str = check_user_table(str, "user_table_name");
+	str = check_user_table(str, "user_display_field");
+	str = check_user_table(str, "user_pk_field");
+	str = check_user_table(str, "user_name_field");
+	str = check_user_table(str, "user_password_field");
+	str = check_user_table(str, "user_keys_field");
+	return str;
+}
 
 exports.ParseFileToObject = function (zx, filename, objtype) {
 	var s,
@@ -86,11 +103,12 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 		zx.obj = [];
 		obj = zx.obj;
 		try {
-			str = String(fs.readFileSync(filename));
+			str =String(fs.readFileSync(filename));
 		} catch (e) {
 			zx.missingfiles.push(filename);
 			return [];
 		}
+        str = check_user_table_name(zx,str);
 		//console.log('not a json page..processing as htm',filename,str.length);
 
 		//check file type - markdown etc....
@@ -188,11 +206,11 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 
 					var tage = zx.delimof(tag_string, [' ', '\n']);
 					var tag = tag_string.substring(1, tage).trim();
-					var body_string = tag_string.substring(tage + 1)//.trim(); //trim has been removed so the line numbers from models preserve in debug output
-					//console.log('Quic input:',tag,body_string);
-                    // console.log('remove leading lines  C :', body_string.substring(0,20));
-					line_obj.tag = tag;
-                    line_obj.body = body_string;
+					var body_string = tag_string.substring(tage + 1) //.trim(); //trim has been removed so the line numbers from models preserve in debug output
+						//console.log('Quic input:',tag,body_string);
+						// console.log('remove leading lines  C :', body_string.substring(0,20));
+						line_obj.tag = tag;
+					line_obj.body = body_string;
 
 					if ((objtype === undefined) || (objtype === line_obj.tag.toLowerCase()))
 						line_obj = zx.quic.parse(zx, line_obj, body_string, tag); //line_obj here gets filled later...should really be made into 2 separate objects
@@ -214,7 +232,7 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 				//console.log('bcb b2:',line_obj);
 
 				//left over html on the next line
-				starts[i] = "<#" + tag_string +zx.end_of_block;
+				starts[i] = "<#" + tag_string + zx.end_of_block;
 				starts[i + 1] = s.substring(eob + zx.end_of_block.length);
 				itemCrCount = zx.counts(tag_string, "\n");
 			} else if (starts[i] === "<{") //json format - not used yet
@@ -385,7 +403,7 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 exports.start_up = function (zx) {
 	zx.model_defines = {};
 	zx.saving_models = '';
-    zx.end_of_block="/>";
-    zx.end_of_block_regex=/\/>/g;
-    
+	zx.end_of_block = "/>";
+	zx.end_of_block_regex = /\/>/g;
+
 };

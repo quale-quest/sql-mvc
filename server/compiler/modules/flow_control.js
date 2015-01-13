@@ -75,26 +75,25 @@ exports.is_conditional = function (zx, o) {
 			'\'');
 	}
 
+    var keyqry =   
+            "select first 1 "+zx.conf.db.platform_user_table.user_pk_field+" from "+
+             zx.conf.db.platform_user_table.user_table_name + " where "+
+             zx.conf.db.platform_user_table.user_pk_field+"=:operator$ref and  "+
+             zx.conf.db.platform_user_table.user_keys_field + " containing '";
+             
 	if (o.key !== undefined) { //make the database query and add it to if exists list
-		append_conditional(o.and_if, zx.getA(o.key),
-			'not exists (select first 1 ref from me where me.ref=:operator_ref and me.key_list containing \'',
-			'\')');
+		append_conditional(o.and_if, zx.getA(o.key),"not exists ("+keyqry,"')");
 	}
 	if (o.notkey !== undefined) { //make the database query and add it to if(not) exists list
-		append_conditional(o.and_if, zx.getA(o.notkey),
-			' exists (select first 1 ref from me where me.ref=:operator_ref and me.key_list containing \'',
-			'\')');
+        append_conditional(o.and_if, zx.getA(o.notkey),"exists ("+keyqry,"')");
 	}
 	if (o.ifkey !== undefined) { //make the database query and add it to if exists list
-		append_conditional(o.and_if, zx.getA(o.ifkey),
-			'not exists (select first 1 ref from me where me.ref=:operator_ref and me.key_list containing \'',
-			'\')');
+    
+    //console.log('ifkey conditionals is :',keyqry,zx.getA(o.ifkey));
+        append_conditional(o.and_if, zx.getA(o.ifkey),"not exists ("+keyqry,"')");
 	}
 	if (o.ifnotkey !== undefined) { //make the database query and add it to if(not) exists list
-		append_conditional(o.and_if, zx.getA(o.ifnotkey),
-			' exists (select first 1 ref from me where me.ref=:operator_ref and me.key_list containing \'',
-			'\')');
-
+        append_conditional(o.and_if, zx.getA(o.ifnotkey),"exists ("+keyqry,"')");
 	}
 
 	if (o.ifempty !== undefined) { //make the database query and add it to if(not) exists list

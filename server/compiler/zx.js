@@ -445,6 +445,14 @@ exports.insertArrayAt = function (array, index, arrayToInsert) {
 	Array.prototype.splice.apply(array, [index, 0].concat(arrayToInsert));
 };
 
+exports.replaceAll = function (str, find, replace) {
+//http://stackoverflow.com/questions/1144783/replacing-all-occurrences-of-a-string-in-javascript
+//http://jsperf.com/replace-all-vs-split-join
+//this is faster than regex
+ return str.split(find).join(replace);
+};
+
+
 exports.isArrayEmpty = function (array) { //http://stackoverflow.com/questions/6072590/how-to-match-an-empty-dictionary-in-javascript
 	for (var prop in array)
 		if (array.hasOwnProperty(prop))

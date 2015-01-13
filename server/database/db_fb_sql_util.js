@@ -64,7 +64,7 @@ var parse_error = function (zx, err, source, script) {
 
 		var src = deepcopy(srcx);
 		if (src.source && src.source.length > 200)
-			src.source = exports.show_longstring(src.source);
+			src.source = zx.show_longstring(src.source);
 		console.log('script_err source:', src); //,source );
 
 		script_err.source_file = src.filename;
@@ -131,6 +131,7 @@ exports.getquery_info = function (zx, name, script, line_obj, return_callback) {
 	}
 
 	script = script.replace(/operator.ref/gi, "?");
+	script = script.replace(new RegExp('operator.'+zx.conf.db.platform_user_table.user_pk_field ,'gi'), "?"); 
 	// console.log('prepareingStatement:',script );
 
 	connection.db.startTransaction(

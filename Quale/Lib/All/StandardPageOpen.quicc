@@ -1,8 +1,8 @@
 
 <#script
 
-declare overridemastertable varchar(41);
-declare linkby varchar(41);
+declare overridemastertable varchar(100);
+declare linkby varchar(100);
 declare field$name varchar(41);
 declare operator$ref varchar(41);
 
@@ -12,7 +12,7 @@ select operator_ref from Z$CONTEXT where pk = :pki into :operator$ref;
 execute overridemastertable;
 sql overridemastertable=COALESCE(overridemastertable,'#defaultmastertable#');
 
-into operator select * from Z$USER where Z$USER.ref=:operator$ref; 
+into operator select * from user_table_name where user_table_name.user_pk_field=:operator$ref; 
 
 INSERT INTO Z$CONTEXT (PK, TSTAMP, OPERATOR_REF, ID,Linked_from_cid,Linked_from_indx) 
 VALUES (:cid,'now',:operator$ref ,:z$sessionid ,:pki,:pkf);

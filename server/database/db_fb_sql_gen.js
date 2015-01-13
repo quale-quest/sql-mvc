@@ -74,7 +74,7 @@ declare st varchar(1000);
 declare operator_name  varchar(1000);
 BEGIN
 
-st='select name from Z$USER where Z$USER.ref = '''||operator_ref||'''';
+st='select name from user_table_name where user_table_name.user_pk_field = '''||operator_ref||'''';
 execute statement st into operator_name;
 
 
@@ -720,8 +720,8 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 
 
 	//2 possible methods exist
-	//methods 1   for select abc,def from Z$USER into :f1,f2 do begin r=r||f1||f2; end
-	//methods 2   for select abc||def from Z$USER into :st do begin r=r||st; end
+	//methods 1   for select abc,def from user_table_name into :f1,f2 do begin r=r||f1||f2; end
+	//methods 2   for select abc||def from user_table_name into :st do begin r=r||st; end
 	//the benefit of 1 over 2 is we just need to know the number of fields, the negative is you need to define a whole bunch of varaiabels
 
 	/*The stach :

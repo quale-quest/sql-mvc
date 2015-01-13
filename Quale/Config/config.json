@@ -17,13 +17,13 @@
 		"schema_alter_fields":"yes",
 		"schema_reorder_fields":"yes",
 		
-		"user_table": {
-			"table_name": "Z$USER",
-			"display_name_field": "USER_NAME",
-			"primary_key_field": "ref",
-			"username_field": "USER_NAME",
-			"password_field": "PASSWORD",
-			"keys_field": "KEY_LIST"
+		"platform_user_table": {
+			"user_table_name": "Z$USER",
+			"user_display_field": "name",
+			"user_pk_field": "id",
+			"user_name_field": "name",
+			"user_password_field": "passwd",
+			"user_keys_field": "key_list"
 		},
 		"pk": "ref"
 	},

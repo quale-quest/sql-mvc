@@ -63,6 +63,7 @@ var loginvalid = function (text) {
 };
 
 //===========================event initialisers - WIP to be moved to  some plugin location
+// the location sould probebly be a static js file per module being served from the web/cdn
 var zxInitTabs = function () {
 	/*===================
 	TAB STYLE
@@ -550,7 +551,7 @@ if (0) {
 			if (success) {
 				return $('#myMessage').val('');
 			} else {
-				return alert('Username or Password is invalid, please retry.');
+				return alert('Username or password is invalid, please retry.');
 			}
 		});
 	});
@@ -564,7 +565,7 @@ if (0) {
 			if (success) {
 				return $('#myMessage').val('');
 			} else {
-				return alert('Username or Password is invalid, please retry.');
+				return alert('Username or password is invalid, please retry.');
 			}
 		});
 	});

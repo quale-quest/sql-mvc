@@ -55,7 +55,7 @@ exports.produce_div = function (req, res, ss, rambase, messages, session) {
 	update += "x00";
 	console.log("Server received update:", update);
 
-	console.log('SELECT info,RES FROM Z$RUN (\'' + message.session + '\',\'' + message.typ + '\',' + message.cid + ',' + message.pkf + ',\'' + message.valu + '\',\'' + public_parameters + '\',\'' + update + '\')');
+	console.log('\n\nSELECT info,RES FROM Z$RUN (\'' + message.session + '\',\'' + message.typ + '\',' + message.cid + ',' + message.pkf + ',\'' + message.valu + '\',\'' + public_parameters + '\',\'' + update + '\')\n\n');
 
 	rambase.db.startTransaction( //transaction(fb.ISOLATION_READ_COMMITED,
 		function (err, transaction) {
@@ -90,18 +90,30 @@ exports.produce_div = function (req, res, ss, rambase, messages, session) {
 							console.log('no database results'); //this could be use full for save only instructions that don't feedback
 						else {
                             //if ((rambase.conf.run_mode=="dev")&&result[0].res)
-                                {//debug
-                                var json = JSON.parse(result[0].res);
-							    console.log('db json :', JSON.stringify(json[0].Data,null,4));
-                                console.log('db stash :', JSON.stringify(json[0].Stash,null,4));
-                                console.log('db cid :', JSON.stringify(json[0].Data.cid,null,4));
-                                }
+                            console.log('dbresult:', String(result[0].info),'');
+                            if (result[0].info==='exception') {
+                                 var str='\n\n\n\nSET TERM ^ ;'+ result[0].res+'^\nSET TERM ; ^\n\n\n\n';
+                                 //write this to a audit
+                                 console.log(str);
+                            
+                            }else
+                                {
                                 
-							console.log('db - JSON:\n\n', result[0].res,'\n\n');
-							console.log('dbresult:', String(result[0].info),'');
-							//console.log('Index.htm.sql  ouput: ',result[0].res );
-							ss.publish.socketId(req.socketId, 'newData', 'content', result[0].res);
-							ss.publish.socketId(req.socketId, 'switchPage', '#PAGE_2', '');
+                                
+                                console.log('db - JSON:\n\n', result[0].res,'\n\n');
+                                
+                                    {//debug
+                                    var json = JSON.parse(result[0].res);
+                                    console.log('db json :', JSON.stringify(json[0].Data,null,4));
+                                    console.log('db stash :', JSON.stringify(json[0].Stash,null,4));
+                                    console.log('db cid :', JSON.stringify(json[0].Data.cid,null,4));
+                                    }
+                                    
+
+                                //console.log('Index.htm.sql  ouput: ',result[0].res );
+                                ss.publish.socketId(req.socketId, 'newData', 'content', result[0].res);
+                                ss.publish.socketId(req.socketId, 'switchPage', '#PAGE_2', '');
+                                }
 						}
 					}
 				}); //tr com

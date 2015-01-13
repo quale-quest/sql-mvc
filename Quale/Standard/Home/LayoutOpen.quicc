@@ -2,21 +2,21 @@
 <body>	
 
 <#xinclude file=Menu\SlideBar
-ifnotexists="select name from Z$USER where Z$USER.ref=operator.ref and  key_list containing 'SWB'"
+ifnotexists="select name from user_table_name where user_table_name.user_pk_field=user_pk_field and  user_keys_field containing 'SWB'"
 />	
 
 <div  id="wrapper"> <!--this should hold all content excluding footer -->
 <#include file=~\Layout\ProfileMenu/>
 
 <#xinclude file=Menu\SwitchBar
-xifnotexists="select name from Z$USER where Z$USER.ref=operator.ref and  key_list containing 'SWB'"
+xifnotexists="select name from user_table_name where user_table_name.user_pk_field=operator.user_pk_field and  user_keys_field containing 'SWB'"
 />	
 
 
 <div id="container">
 
 <#:Menu --{name:"Start",style:"LBMenu"}/>
-<#Menu icon="nav-icon dboard-icon" from=Z$USER where=ref=Operator.Ref form=Dashboard\Dashboard Title="Todo Demo"/>
+<#Menu icon="nav-icon dboard-icon" from=user_table_name where=user_pk_field=Operator.user_pk_field form=Dashboard\Dashboard Title="Todo Demo"/>
 
 <#:MenuScan --{menuname:"MainMenu"}/>
 

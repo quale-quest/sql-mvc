@@ -316,7 +316,7 @@ var singleton = function (zx, field, qrys) {
 		return '';
 };
 var checkTable = function (zx, name) {
-	return singleton(zx, "count", "select count(*) from rdb$relations where rdb$relation_name ='" + name + "' ;");
+	return singleton(zx, "count", "select count(*) from rdb$relations where rdb$relation_name ='" + name.toUpperCase() + "' ;");
 };
 var checkView = function (zx, name) {
 	return singleton(zx, "count", "select count(*) from rdb$relations where rdb$relation_name ='" + name + "' AND (rdb$view_blr IS NOT NULL);");
@@ -400,7 +400,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 	//console.log("CREATE_TABLE:",Table,tableexists,"qrystr:",qrystr," barestr:",barestr);
 	if (tableexists === 0) // create new table as is
 	{
-        console.log('Table does not exist  - attempt to create as defined');
+        console.log('Table does not exist  - attempt to create as defined '+Table);
 		exec_qry(cx, qrystr);
 		return "";
 	}

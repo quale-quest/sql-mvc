@@ -50,10 +50,10 @@ CREATE DOMAIN PK
 CREATE DOMAIN SHORT_NAME
  AS VARCHAR(20)
  DEFAULT '';
- CREATE DOMAIN Z$PASSWORD
+ CREATE DOMAIN Z$T_PASSWORD
  AS VARCHAR(20)
  DEFAULT '';
- 
+--:{regex:"regex:/SHORT_NAME/i",Default_length:"20",length:"regex:/(\\d+)/",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} 
  
 /****************** GENERATORS ********************/
 
@@ -69,6 +69,21 @@ SET GENERATOR Z$SERVER_NUMBER TO 12;
 
 
 /******************** TABLES **********************/
+CREATE TABLE user_table_name                         --:{as:"Table"} 
+(
+  user_pk_field PK,                                  --:{as:"pk"}
+  user_name_field SHORT_NAME,                        --:{as:"Text",title:"Name"}  
+  user_password_field Z$T_PASSWORD,			  		 --:{as:"Text",title:"Password"}  
+  
+  LANDING_PAGE VARCHAR(80) DEFAULT 'Home/Guest',     --:{as:"Text"}  
+  user_keys_field VARCHAR(250),						 --:{as:"Text",title:"Key list"}  
+  LANGUAGE fk,										 --:{as:"Text",title:"Language"}  
+  GP_INPUT VARCHAR(250)  						  	 --:{Type:"Hide"}
+);
+CREATE INDEX IDX_ME1 ON user_table_name (user_pk_field);
+CREATE INDEX IDX_ME4 ON user_table_name (user_name_field);
+
+
 CREATE TABLE Z$CONTEXT
 (
   PK INTEGER,
@@ -145,27 +160,15 @@ CREATE TABLE Z$VARIABLES
 );
 CREATE INDEX IDX_ZVARIABLES1 ON Z$VARIABLES (REF);
 
-CREATE TABLE Z$USER
-(
-  REF PK,
-  USER_NAME SHORT_NAME,
-  PASSWRD Z$PASSWORD,
-  LANDING_PAGE VARCHAR(80) DEFAULT 'Home/Guest',
-  KEY_LIST VARCHAR(250),
-  LANGUAGE fk,				/*i18n built in support*/
-  GP_INPUT VARCHAR(250)  
-);
-CREATE INDEX IDX_ME1 ON Z$USER (REF);
-CREATE INDEX IDX_ME4 ON Z$USER (USER_NAME);
 
 /******************** TRIGGERS ********************/
 SET TERM ^ ;
-CREATE TRIGGER Z$USER FOR Z$USER ACTIVE
+CREATE TRIGGER user_table_name FOR user_table_name ACTIVE
 BEFORE INSERT POSITION 0
 AS
 BEGIN
-if (new.ref is null) then
-    select ref from Z$GEN_PK(1) into new.ref;
+if (new.user_pk_field is null) then
+    select ref from Z$GEN_PK(1) into new.user_pk_field;
 
 END^
 SET TERM ; ^
@@ -273,7 +276,7 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
 */
     /*read the Session, CID,PKRef info*/
     --info='mark1';  suspend;
-    /*post updates - and check for username passwords*/    
+    /*post updates - and check for username user_password_fields*/    
     bp=1;    
     c=0;
     while (c<1000) do 
@@ -388,7 +391,7 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
             SELECT r.OPERATOR_REF, r.ID FROM Z$CONTEXT r where r.pk=:CID into :o_ref,:o_session;
             /*todo validate o_session against session*/
                         
-            SELECT LANDING_PAGE FROM Z$USER WHERE REF = :o_ref into :LANDING_PAGE;
+            SELECT LANDING_PAGE FROM user_table_name WHERE user_pk_field = :o_ref into :LANDING_PAGE;
 
 
             
@@ -402,10 +405,10 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
         begin
           o_ref=NULL;
           /*alow them to login even if expired,  the dashboard gives information that they have expired...*/
-          select first 1 ref,LANDING_PAGE from Z$USER where USER_NAME=:usern and PASSWRD=:passw into :o_ref,:LANDING_PAGE;
+          select first 1 user_pk_field,LANDING_PAGE from user_table_name where user_name_field=:usern and user_password_field=:passw into :o_ref,:LANDING_PAGE;
           /*if null then select the nobody user */
           if (o_ref is NULL) then 
-              select first 1 ref,LANDING_PAGE from Z$USER where USER_NAME='Guest' into :o_ref,:LANDING_PAGE;
+              select first 1 user_pk_field,LANDING_PAGE from user_table_name where user_name_field='Guest' into :o_ref,:LANDING_PAGE;
           
           /*info=:o_ref||'&'||:LANDING_PAGE||'&'||:passw||'&';  suspend;*/
           
@@ -418,7 +421,7 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
          
          --this record is so we can save and reload the first page                    
          INSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,TARGET,QUERY, PAGE_PARAMS)
-            VALUES (:pk,0,'click','Z$USER', :currentpage , 'ref='''||replace(:o_ref,'''','''''')||'''','');  
+            VALUES (:pk,0,'click','user_table_name', :currentpage , 'user_pk_field='''||replace(:o_ref,'''','''''')||'''','');  
                              
          CID = pk;           
           
@@ -444,7 +447,7 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
     SELECT first 1 pk,:Openstr||q.SCRIPT FROM Z$SP q where file_name=:currentpage into :current_page_pk,:script ;
     if (script is null) then /*back home or direct to an 404 error page ..?*/                    
         SELECT first 1 pk,:Openstr||q.SCRIPT FROM Z$SP q where 
-                   file_name='//'||(SELECT LANDING_PAGE FROM Z$USER WHERE REF = :o_ref)||'/404' into :current_page_pk,:script ;                        
+                   file_name='//'||(SELECT LANDING_PAGE FROM user_table_name WHERE user_pk_field = :o_ref)||'/404' into :current_page_pk,:script ;                        
     if (script is null) then /*global 404 error page */
         SELECT first 1 pk,:Openstr||q.SCRIPT FROM Z$SP q where file_name='//Default/404' into :current_page_pk,:script ;                        
       
@@ -465,6 +468,13 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
 		  script = replace(:script,'--assign_params',COALESCE(:page_params,''));
           --res= :script ;  suspend;
           FOR EXECUTE STATEMENT script INTO :info,:res DO suspend;
+          WHEN ANY DO
+              BEGIN
+              info='exception';
+              res= :script ;  
+              suspend;              
+              END   
+              		  
         end    
     
     
@@ -487,9 +497,9 @@ INSERT INTO Z$INSERTREF (NON_MATCH, INSERT_REF) VALUES ('NON_MATCH_1', '1');
 INSERT INTO Z$INSERTREF (NON_MATCH, INSERT_REF) VALUES ('NON_MATCH_2', '2');
 INSERT INTO Z$INSERTREF (NON_MATCH, INSERT_REF) VALUES ('NON_MATCH_3', '3');
 
-INSERT MATCHING NAME;
-INSERT INTO Z$USER (NAME,LANDING_PAGE,USER_NAME,PASSWRD) values ('Guest','Home/Guest','Guest','Any');
-INSERT INTO Z$USER (NAME,LANDING_PAGE,USER_NAME,PASSWRD) values ('SysAdmin','Home/SysAdmin','sysadmin','changethis');
+INSERT MATCHING user_name_field;
+INSERT INTO user_table_name (LANDING_PAGE,user_name_field,user_password_field) values ('Home/Guest','Guest','Any');
+INSERT INTO user_table_name (LANDING_PAGE,user_name_field,user_password_field) values ('Home/SysAdmin','sysadmin','changethis');
 
 />
 
