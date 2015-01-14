@@ -4,7 +4,7 @@ speed/memory performance  is not important
 ease of use is important
  */
 var hogan = require("hogan");
-exports.module_name='element_widget.js';
+exports.module_name = 'element_widget.js';
 
 var zx;
 var getFieldStyleSub = function (CompoundKey) {
@@ -120,7 +120,11 @@ var getFieldStyle = function (cx, SubStyle, Type, Class, Action, Key) {
 		}
 
 	}
-
+	console.log('getFieldStyle: ', Style, "ss:", SubStyle, "t:", Type, "c:", Class, "a:", Action, 'k:', Key, 'Result:', Result);
+	if (Result === undefined) {
+		zx.error.log_noStyle_warning(zx, "no style info at all: 99:");
+		//    process.exit(2);
+	}
 	Result.replace(/\$CRLF\$/g, "\n");
 	return (Result);
 };
@@ -136,39 +140,54 @@ var fieldSubItem = function (cx, FT) {
 	else
 	hrefDisplay=DisplayValue;
 	 */
+	try {
+		console.log('fieldSubItem a0: ',FT.cf[0].Action,FT.cf[0].form);
+		if (FT.cf[0].Action === 'Link') //
+		{
+			//console.log('fieldSubItem A: ',cx.pop,FT);
+			cx.QryOffset = zx.dbg.link_from_table(cx.zx, FT);
+			//  cx.QryUrl = "return(zxnav(event,{{0}},"+QryOffset+"));";
 
-	//console.log('fieldSubItem a0: ',FT.cf[0].Action,FT.cf[0].form);
-	if (FT.cf[0].Action === 'Link') //
-	{
-		//console.log('fieldSubItem A: ',cx.pop,FT);
-		cx.QryOffset = zx.dbg.link_from_table(cx.zx, FT);
-		//  cx.QryUrl = "return(zxnav(event,{{0}},"+QryOffset+"));";
+			tt = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Main");
+			//console.log('fieldSubItem A2: ',FT.SubStyle,FT.cf[0].Type,"Field",FT.cf[0].Action,ts);
+			if (tt !== '') {
 
-		var ts = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Main");
-		//console.log('fieldSubItem A2: ',FT.SubStyle,FT.cf[0].Type,"Field",FT.cf[0].Action,ts);
-		template = hogan.compile(ts);
-		FieldHtml = template.render(cx); //pop
-		//console.log('fieldSubItem link: ',FieldHtml);
-		//process.exit(2);
+				template = hogan.compile(tt);
+				FieldHtml = template.render(cx); //pop
+			}
+			//console.log('fieldSubItem link: ',FieldHtml);
+			//process.exit(2);
 
-	} //ptr
-	else if (FT.cf[0].Action === 'Edit') // this displays when edit is disabled
-	{ //edit
-		//console.log('fieldSubItem B: ',cx.pop,FT);
-		//this kills the table  cx.tid=1111;
+		} //ptr
+		else if (FT.cf[0].Action === 'Edit') // this displays when edit is disabled
+		{ //edit
+			//console.log('fieldSubItem B: ',cx.pop,FT);
+			//this kills the table  cx.tid=1111;
 
-		cx.QryOffset = zx.dbg.edit_from_table(zx, cx, FT);
+			cx.QryOffset = zx.dbg.edit_from_table(zx, cx, FT);
 
-		tt = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Main");
-		template = hogan.compile(tt);
-		FieldHtml = '' + template.render(cx); //pop
-		//console.log('fieldSubItem B2: ',FieldHtml,tt,FT);
-	} else {
-		//console.log('fieldSubItem C: ',cx.pop,FT);
-		tt = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Main");
-		template = hogan.compile(tt);
-		FieldHtml = template.render(cx); //pop
-		// console.log('fieldSubItem C2: ',FieldHtml,tt,FT);
+			tt = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Main");
+			if (tt !== '') {
+
+				template = hogan.compile(tt);
+				FieldHtml = '' + template.render(cx); //pop
+			}
+			//console.log('fieldSubItem B2: ',FieldHtml,tt,FT);
+		} else {
+			console.log('fieldSubItem C: ', cx.pop, FT);
+			tt = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Main");
+			console.log('fieldSubItem C1: ', tt);
+			if (tt !== '') {
+				template = hogan.compile(tt);
+				FieldHtml = template.render(cx); //pop
+			}
+			console.log('fieldSubItem C2: ', FieldHtml, tt, FT);
+		}
+
+	} catch (e) {
+		console.log('fieldSubItem 120818: ', FieldHtml, tt, FT);
+		zx.error.caught_exception(zx, e, " fragment -120818, : " + tt);
+		throw zx.error.known_error;
 	}
 
 	return FieldHtml;
@@ -184,17 +203,27 @@ var formatField = function (cx, FT /*, itemindex*/
 			cx.EditCount++;
 
 		var result = '';
+		try {
+			result += '' + fieldSubItem(cx, FT, FT.cf[0].Action);
+			cx.pop = result + '';
 
-		result += '' + fieldSubItem(cx, FT, FT.cf[0].Action);
-		cx.pop = result + '';
-
+		} catch (e) {
+			zx.error.caught_exception(zx, e, " formatField -120556, fieldSubItemt : " + "\ncx: " + JSON.stringify(cx));
+			throw zx.error.known_error;
+		}
 		//console.log('formatField B: ',cx.pop,FT);
 
 		/*div wraps individual radios all into one*/
-		var ts = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Div");
-		var template = hogan.compile(ts);
+		try {
+			var ts = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Div");
+			var template = hogan.compile(ts);
 
-		cx.pop = '' + template.render(cx); //pop
+			cx.pop = '' + template.render(cx); //pop
+		} catch (e) {
+			zx.error.caught_exception(zx, e, " formatField -120555, hogan fragment : " + JSON.stringify(ts) + "\ncx: " + JSON.stringify(cx));
+			throw zx.error.known_error;
+		}
+
 		//console.log('fieldSubItem X2: ',ts,cx.pop);
 
 		//this is produces scripts for executing after the page has loaded

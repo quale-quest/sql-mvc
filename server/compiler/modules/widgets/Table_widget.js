@@ -32,7 +32,7 @@ var hogan = require("hogan");
 //var deepcopy = require('deepcopy');
 //var extend = require('node.extend');
 
-exports.module_name='table_widget.js';
+exports.module_name = 'table_widget.js';
 
 var assignfeature = exports.assignfeature = function (o, r, i, nameto, namefrom, defaultto) {
 	var ftl = String(zx.gets(o[namefrom])).split(',');
@@ -189,52 +189,49 @@ var prep_query = function (zx, cx, tcx, o) {
 	//this is really useful to get this validation from the database... other drivers must try and implement the same...
 
 
-	var queryx = queryx=zx.stripBrackets(zx.expressions.ConstantExpressions(zx, o, tcx.query, "paramitizedstatement" /*,"prep_query"*/
-		));
-        
+	var queryx = queryx = zx.stripBrackets(zx.expressions.ConstantExpressions(zx, o, tcx.query, "paramitizedstatement" /*,"prep_query"*/
+			));
+
 	// console.log('=================================\nquery in :',tcx.query,
 	//           '\n=================================\nquery out:',queryx);
 
-    if (pass===1)
-    {
-    //cannot verify table fields on the first pass for  new database because the model would not have been committed yet
-    }
-    else
-    {
-	var res = zx.dbu.getquery_info.future(null, zx, "validate_table", queryx, o);
-	//console.log('Query result is ',res.result);
-	if (res.result.status === "err") {
-		console.log('>>>>>>>>>>>>>>>Throwing known error (2)');
-		throw zx.error.known_error;
-	}
-	tcx.field_details = res.result.output;
-	tcx.param_details = res.result.input;
-
-	//process.exit(2);
-	// tcx.field_details
-	tcx.field_details.forEach(function (field, i) {
-		var info = zx.dbu.get_meta_info(field);
-		var r = {
-			indx : i,
-			name : field.alias,
-			cf : [{}
-
-			],
-			info : info
-		};
-		//console.log('tcx.field_details.forEach is ',field);
-		//conditional formatting is where the field types can change depending on content of itself or others
-		tcx.fields.push(r);
-
-		if ((tcx.implied_pk_name !== "") &&
-			((tcx.implied_pk_name.toLowerCase() === (field.alias || 'NULL').toLowerCase()) ||
-				(tcx.implied_pk_name.toLowerCase() === (field.name || 'NULL').toLowerCase()))) {
-			tcx.implied_pk_found = i;
-			tcx.implied_pk = i;
-			//console.log('tcx.field_details.found is ',i,field);
+	if (pass === 1) {
+		//cannot verify table fields on the first pass for  new database because the model would not have been committed yet
+	} else {
+		var res = zx.dbu.getquery_info.future(null, zx, "validate_table", queryx, o);
+		//console.log('Query result is ',res.result);
+		if (res.result.status === "err") {
+			console.log('>>>>>>>>>>>>>>>Throwing known error (2)');
+			throw zx.error.known_error;
 		}
-	});
-   }
+		tcx.field_details = res.result.output;
+		tcx.param_details = res.result.input;
+
+		//process.exit(2);
+		// tcx.field_details
+		tcx.field_details.forEach(function (field, i) {
+			var info = zx.dbu.get_meta_info(field);
+			var r = {
+				indx : i,
+				name : field.alias,
+				cf : [{}
+
+				],
+				info : info
+			};
+			//console.log('tcx.field_details.forEach is ',field);
+			//conditional formatting is where the field types can change depending on content of itself or others
+			tcx.fields.push(r);
+
+			if ((tcx.implied_pk_name !== "") &&
+				((tcx.implied_pk_name.toLowerCase() === (field.alias || 'NULL').toLowerCase()) ||
+					(tcx.implied_pk_name.toLowerCase() === (field.name || 'NULL').toLowerCase()))) {
+				tcx.implied_pk_found = i;
+				tcx.implied_pk = i;
+				//console.log('tcx.field_details.found is ',i,field);
+			}
+		});
+	}
 };
 
 var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx, o) {
@@ -591,16 +588,37 @@ var exec_query = function (zx, o, QueryType) {
 	//console.log('cx.table.tablestyle:');
 	cx.CurrentTableInheritStyle = "";
 	//console.log('formulatemodel:');
-	formulatemodel(zx, cx, o);
+
+	try {
+		formulatemodel(zx, cx, o);
+	} catch (e) {
+		zx.error.caught_exception(zx, e, " exec_query -114812, formulatemodel ");
+		throw zx.error.known_error;
+	}
 	//console.log('generatetable call:',QueryType);
 	if (QueryType === "Table") {
-		var tabletext = generatetable(zx, cx, o);
+		try {
+			var tabletext = generatetable(zx, cx, o);
+		} catch (e) {
+			zx.error.caught_exception(zx, e, " exec_query -114813, generatetable ");
+			throw zx.error.known_error;
+		}
 		zx.mt.lines.push(tabletext);
-		zx.dbg.table_make_script(zx, cx, o, QueryType);
+		try {
+			zx.dbg.table_make_script(zx, cx, o, QueryType);
+		} catch (e) {
+			zx.error.caught_exception(zx, e, " exec_query -114814,  table_make_script");
+			throw zx.error.known_error;
+		}
 
 	}
 	if ((QueryType === "List") || (QueryType === "Dict")) {
-		zx.dbg.table_make_script(zx, cx, o, QueryType);
+		try {
+			zx.dbg.table_make_script(zx, cx, o, QueryType);
+		} catch (e) {
+			zx.error.caught_exception(zx, e, " exec_query -114535,  table_make_script-list ");
+			throw zx.error.known_error;
+		}
 	}
 
 };
@@ -823,12 +841,16 @@ var zxTable = exports.zxTable = function (cx) {
 	//console.log("DataStyle",cx.Static.Format,cx.Static.DataStyle);
 
 	//console.log("Static",cx);
-	cx.pop = table_style(cx, 'TopTitle');
-	if (cx.pop !== "") {
-		html += cx.pop;
-		//console.log("DataStyle",cx.zx.line_obj);
+	try {
+		cx.pop = table_style(cx, 'TopTitle');
+		if (cx.pop !== "") {
+			html += cx.pop;
+			//console.log("DataStyle",cx.zx.line_obj);
+		}
+	} catch (e) {
+		zx.error.caught_exception(zx, e, " TopTitle -114823,  ");
+		throw zx.error.known_error;
 	}
-
 	//Divine-table_content
 	html += table_content(cx); //Should push direct to div
 
@@ -975,52 +997,66 @@ var row_content = function (cx, HeaderOrBodyOrFooter) {
 
 
 	//divine-RecordContent
+	try {
+		var html = "";
+		//Build the row of Objects
+		//console.log("cx.fields",cx.fields);
 
-	var html = "";
-	//Build the row of Objects
-	//console.log("cx.fields",cx.fields);
+		cx.FieldVisibleCount = 0;
 
-	cx.FieldVisibleCount = 0;
+		//divine-ForEach_FormatField_FieldSeperator_FieldCell_Or_FirstField-done
+		for (var j = 0; j < cx.fields.length; j++) {
+			//console.log("cx.fields[j]:",cx.fields[j]);
+			//for (var i=0; i < cx.fields[j].cf.length; i++) {
 
-	//divine-ForEach_FormatField_FieldSeperator_FieldCell_Or_FirstField-done
-	for (var j = 0; j < cx.fields.length; j++) {
-		//console.log("cx.fields[j]:",cx.fields[j]);
-		//for (var i=0; i < cx.fields[j].cf.length; i++) {
+			cx.field = cx.fields[j];
+			cx.field.f = cx.field.cf[0];
+			//console.log("cx.field:",cx.field);
 
-		cx.field = cx.fields[j];
-		cx.field.f = cx.field.cf[0];
-		//console.log("cx.field:",cx.field);
-
-		if (cx.field.f.Action !== 'Hide') {
-			eval_widget(cx, cx.field, HeaderOrBodyOrFooter);
-			if (cx.field.f.Type !== 'Hide') {
-				if (j === 0)
-					table_style(cx, HeaderOrBodyOrFooter + 'FirstFieldCell');
-				else
-					table_style(cx, HeaderOrBodyOrFooter + 'FieldCell');
-				html = html + cx.pop;
+			if (cx.field.f.Action !== 'Hide') {
+				try {
+					eval_widget(cx, cx.field, HeaderOrBodyOrFooter);
+				} catch (e) {
+					zx.error.caught_exception(zx, e, " eval row_field -114835, field[" + j + "] : ");// + JSON.stringify(cx.field));
+					throw zx.error.known_error;
+				}
+				if (cx.field.f.Type !== 'Hide') {
+					try {
+						if (j === 0)
+							table_style(cx, HeaderOrBodyOrFooter + 'FirstFieldCell');
+						else
+							table_style(cx, HeaderOrBodyOrFooter + 'FieldCell');
+						html = html + cx.pop;
+					} catch (e) {
+						zx.error.caught_exception(zx, e, " wrap row_field -122505, field[" + j + "] : ");// + JSON.stringify(cx.field));
+						throw zx.error.known_error;
+					}
+				}
 			}
+			cx.pop = "";
+			//divine-check_boxes_per_record:todo
+
 		}
-		cx.pop = "";
-		//divine-check_boxes_per_record:todo
+
+		cx.pop = html;
+
+		//TODO first row different handling if 'RecordSeperator' is required - possibly extend moustache to have a way to specify separator symbol..
+		/////   {{#people}}<tr>    <td>{{FullName}}</td>    <td>{{WorkEmail}}</td> </tr>{{/people/,}} -- {{/people/,}} /, indicates separator string is specified for when the loop occurs
+
+		table_style(cx, HeaderOrBodyOrFooter + 'RecordWrap');
+
+		//divine-CellBorder-redone hogan2context, using hogan access to static formatting info
+		//CellBorder is transparent from this code as it can be read direct from static data by the hogan template
+
+		//divine-RecordTerminator
+
+
+		//divine-UniqueTableIdIfNeeded-redone -- hogan2context
+		//there is always a table id called Data.ContainerId
+	} catch (e) {
+		zx.error.caught_exception(zx, e, " row_content -114831, " + HeaderOrBodyOrFooter);
+		throw zx.error.known_error;
 	}
-
-	cx.pop = html;
-
-	//TODO first row different handling if 'RecordSeperator' is required - possibly extend moustache to have a way to specify separator symbol..
-	/////   {{#people}}<tr>    <td>{{FullName}}</td>    <td>{{WorkEmail}}</td> </tr>{{/people/,}} -- {{/people/,}} /, indicates separator string is specified for when the loop occurs
-
-	table_style(cx, HeaderOrBodyOrFooter + 'RecordWrap');
-
-	//divine-CellBorder-redone hogan2context, using hogan access to static formatting info
-	//CellBorder is transparent from this code as it can be read direct from static data by the hogan template
-
-	//divine-RecordTerminator
-
-
-	//divine-UniqueTableIdIfNeeded-redone -- hogan2context
-	//there is always a table id called Data.ContainerId
-
 
 	return cx.pop;
 };

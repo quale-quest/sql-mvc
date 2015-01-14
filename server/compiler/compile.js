@@ -81,7 +81,6 @@ var zx = require('./zx.js');
 
 var db = require("../../server/database/DatabasePool");
 
-
 var dirxww = 493;
 /* octal 0755 */
 //var bcb = require('./modules/bcbiniparse.js');
@@ -96,20 +95,19 @@ var queue_file_to_be_compiled = function (zx, dfn) {
 	var fileobj,
 	br,
 	name;
-	console.log('queue_file_to_be_compiled:',dfn);
+	console.log('queue_file_to_be_compiled:', dfn);
 
 	if (dfn !== '') {
 		dfn = path.resolve(dfn);
-        //console.log('resolve:',dfn);
-		if (zx.endsWith(dfn, "Index"+zx.app_extn)) {
+		//console.log('resolve:',dfn);
+		if (zx.endsWith(dfn, "Index" + zx.app_extn)) {
 			//path.relative
 			br = fileutils.locateclosestbuildroot(zx, dfn.replace(zx.app_extn, ''));
-            //console.log('locateclosestbuildroot:',br.filename);
-            if (br.filename===undefined)
-                {
-                console.warn('can not find locateclosestbuildroot:',br.filenam);
-                //return;
-                }                   
+			//console.log('locateclosestbuildroot:',br.filename);
+			if (br.filename === undefined) {
+				console.warn('can not find locateclosestbuildroot:', br.filenam);
+				//return;
+			}
 			zx.pages.push({
 				name : '//' + br.filename,
 				obj : "filedepIndex",
@@ -174,8 +172,8 @@ var seq_main = function () {
 		zx.depends = {};
 		zx.mainfiles = [];
 		zx.BlockIndex = 0;
-		zx.root_folder = path.resolve(path.join(__dirname,'../../Quale/')) + '/';
-        console.log('zx.root_folder :',zx.root_folder);
+		zx.root_folder = path.resolve(path.join(__dirname, '../../Quale/')) + '/';
+		console.log('zx.root_folder :', zx.root_folder);
 		zx.build_roots = ["Config", "Custom", "Standard", "Lib", ""];
 		//if dev mode zx.build_roots.unshift("sandbox");
 		zx.output_folder = path.resolve('./output/') + '/';
@@ -206,9 +204,9 @@ var seq_main = function () {
 
 		zx.models = require('./modules/models.js');
 		zx.plugins.push(zx.models);
-       
-        zx.plugins.push(page);
-        
+
+		zx.plugins.push(page);
+
 		zx.Container_widget = require('./modules/widgets/G960_widget.js');
 		zx.plugins.push(zx.Container_widget);
 
@@ -249,7 +247,7 @@ var seq_main = function () {
 		zx.plugins.push(zx.emoji);
 
 		zx.wildcard = false;
-        zx.eachplugin(zx, "start_up", 0);
+		zx.eachplugin(zx, "start_up", 0);
 
 		zx.queue_file_to_be_compiled = queue_file_to_be_compiled;
 
@@ -263,9 +261,7 @@ var seq_main = function () {
 		}
 		 */
 
-	
-    
-   	if (zx.pages.length === 0) {
+		if (zx.pages.length === 0) {
 
 			if (program.args.length > 0) {
 				cmd = program.args[0];
@@ -341,7 +337,7 @@ var seq_main = function () {
 			} else if (cmd === 'all') { // TODO compile all index.htm in the whole tree
 				// compile all the menus
 				//this is done with a shell command at the moment
-                //currently this is being done by a bash shell .. change so windows would also work
+				//currently this is being done by a bash shell .. change so windows would also work
 				console.warn('compiling :', cmd);
 			} else {
 				console.warn('invalid command expected[app|file|deltafile] got :', cmd);
@@ -357,44 +353,47 @@ var seq_main = function () {
 	}
 };
 
-var get_model_files = function (zx,path) {	
-	//scan for applicable models in many folders	
-	var re = new RegExp('^Models' , "i");
-    //console.warn('get_model_files for:',path,re,'rel:',path);
+var get_model_files = function (zx, path) {
+	//scan for applicable models in many folders
+	var re = new RegExp('^Models', "i");
+	//console.warn('get_model_files for:',path,re,'rel:',path);
 	var filelist_m = fileutils.getDropinFileList(zx, re, path, zx.line_obj, 130128);
-    re = new RegExp('^Controllers' , "i");
-    var filelist_c = fileutils.getDropinFileList(zx, re, path, zx.line_obj, 130129);
-    re = new RegExp('^MC.' , "i");
-    var filelist_d = fileutils.getDropinFileList(zx, re, path, zx.line_obj, 130130);
-    
-    //console.warn('got model_files for:',filelist);
+	re = new RegExp('^Controllers', "i");
+	var filelist_c = fileutils.getDropinFileList(zx, re, path, zx.line_obj, 130129);
+	re = new RegExp('^MC.', "i");
+	var filelist_d = fileutils.getDropinFileList(zx, re, path, zx.line_obj, 130130);
 
-    return filelist_m.concat(filelist_d,filelist_c);
+	//console.warn('got model_files for:',filelist);
+
+	return filelist_m.concat(filelist_d, filelist_c);
 }
-
 
 var seq_page = function (zx) {
 
 	//var fn = zx.dbg.calcfilelocation(zx,zx.pages[zx.pgi])+zx.app_extn
+	try {
+		zx.file_stack = [];
+		delete zx.err;
 
-	zx.file_stack = [];
-	delete zx.err;
+		zx.config = db.load_config(zx.root_folder, zx.pages[zx.pgi].name);
+		//console.warn('zx.config located : ',zx.config);
+		//process.exit(2);
 
-    zx.config = db.load_config(zx.root_folder, zx.pages[zx.pgi].name);
-    //console.warn('zx.config located : ',zx.config);
-    //process.exit(2);
-    
-    
-	var result = zx.dbu.databaseUtils.sync(null, zx.root_folder, zx.pages[zx.pgi].name, zx.pages[zx.pgi].name);
-	zx.conf = result[1].conf; //.rambase;
-	//console.warn('database synced on config A',result);
-	//console.warn('database synced on config ',JSON.stringify(zx.conf, null, 4) );
 
-	var fn = fileutils.locatefile(zx, zx.pages[zx.pgi].name, zx.root_folder, "Compile " + zx.pages[zx.pgi].name, 120022);
-	//console.warn('file located : ',fn);
-    
-    zx.model_files = get_model_files(zx,fn);
-    
+		var result = zx.dbu.databaseUtils.sync(null, zx.root_folder, zx.pages[zx.pgi].name, zx.pages[zx.pgi].name);
+		zx.conf = result[1].conf; //.rambase;
+		//console.warn('database synced on config A',result);
+		//console.warn('database synced on config ',JSON.stringify(zx.conf, null, 4) );
+
+		var fn = fileutils.locatefile(zx, zx.pages[zx.pgi].name, zx.root_folder, "Compile " + zx.pages[zx.pgi].name, 120022);
+		//console.warn('file located : ',fn);
+
+		zx.model_files = get_model_files(zx, fn);
+
+	} catch (e) {
+		zx.error.caught_exception(zx, e, " seq_page db/config start mark-114231 ");
+	}
+
 	if (fn.indexOf('SaleForm') >= 0) {
 		console.log('compiling SaleForm to linkfiles: ', fn, zx.pages[zx.pgi]);
 		process.exit(44);
@@ -435,17 +434,21 @@ var seq_page = function (zx) {
 		//console.log('ofn:',path.dirname(ofn));
 		try {
 			fsx.mkdirSync(path.dirname(ofn) + '/', dirxww, true);
-            fsx.mkdirSync(zx.output_folder + '/Audit/', dirxww, true);
-            fsx.mkdirSync(zx.output_folder + '/Internal/', dirxww, true);
+			fsx.mkdirSync(zx.output_folder + '/Audit/', dirxww, true);
+			fsx.mkdirSync(zx.output_folder + '/Internal/', dirxww, true);
 		} catch (err) {
 			if (err.code !== 'EEXIST')
 				console.error("cannot create output folders for ", err);
 		}
 
-		//console.log('RecurseParseFileToObject:',fn);
-		zx.obj = page.RecurseParseFileToObject(zx, fn);
-		//console.log('RecurseParseFileToObject done:',fn);
-
+		try {
+			//console.log('RecurseParseFileToObject:',fn);
+			zx.obj = page.RecurseParseFileToObject(zx, fn);
+			//console.log('RecurseParseFileToObject done:',fn);
+		} catch (e) {
+			zx.error.caught_exception(zx, e, " RecurseParseFileToObject mark-114232 ");
+			throw zx.error.known_error;
+		}
 
 		zx.missingfiles = zx.deduplicate(zx.missingfiles);
 		zx.linkfiles = zx.deduplicate_byname(zx.linkfiles);
@@ -458,10 +461,14 @@ var seq_page = function (zx) {
 
 		//console.log('writing zx.depends:',zx.depends);
 		fs.writeFileSync(zx.output_folder + 'depends.json', JSON.stringify(zx.depends, null, 4));
-
-		//console.log('diviner.compile:');
-		diviner.compile(zx, zx.obj);
-		//console.log('diviner.compile done:');
+		try {
+			//console.log('diviner.compile:');
+			diviner.compile(zx, zx.obj);
+			//console.log('diviner.compile done:');
+		} catch (e) {
+			zx.error.caught_exception(zx, e, " diviner.compile mark-114233 ");
+			throw zx.error.known_error;
+		}
 		fs.writeFileSync(ofn + '.linkfiles.txt', JSON.stringify(zx.linkfiles, null, 4));
 
 		if (zx.wildcard || zx.pages[zx.pgi].wildcard === true) {
@@ -494,7 +501,7 @@ var seq_page = function (zx) {
 		//now write the output
 		fs.writeFileSync(ofn + '.sql', script); //for easy debuging
 
-        zx.eachplugin(zx, "before_validate_script", 0);
+		zx.eachplugin(zx, "before_validate_script", 0);
 
 		if (zx.err !== undefined) {
 			script = zx.sql.testhead + script + zx.sql.testfoot;
@@ -522,54 +529,38 @@ var seq_page = function (zx) {
 			fs.writeFileSync(lokfn, errtxt); //for easy debugging - when this file reloads it means there was an error
 
 		} else {
-			console.log('Script validation failed - ', valid);
-			script = zx.sql.testhead + script + zx.sql.testfoot;
-			zx.error.log_validation_fail(zx, 'Script validation failed', script, valid);
-			throw zx.error.known_error;
+            script = zx.sql.testhead + script + zx.sql.testfoot;
+            fs.writeFileSync(zx.error_file_name, script);
+			if (valid.message.match(/count of column list and variable list do not match/)) {
+				console.log('Quale definition missing - ', valid);				//definition
+				zx.error.log_SQL_fail(zx, 'Quale definition missing',
+                        "Each field in a table select statement must have a -:{} even if empty.",{}, {});
+                
+				throw zx.error.known_error;
+			} else {
+				console.log('Script validation failed - ', valid);
+				
+				zx.error.log_validation_fail(zx, 'Script validation failed', script, valid);				
+				throw zx.error.known_error;
+			}
 		}
 	}
 
 	return;
 };
 
-
 var deepcopy = require('deepcopy');
 var seq_pages = function (zx) {
 	while (zx.pgi < zx.pages.length) {
 		while (zx.pgi < zx.pages.length) {
+			console.warn('\n\n\n=============================================================================Page ', zx.pages[zx.pgi].name);
+
+			zx.eachplugin(zx, "start_page", zx.pages[zx.pgi]);
+
 			try {
-				//console.warn('zx.pages',zx.pages);
-				console.warn('\n\n\n=============================================================================Page ', zx.pages[zx.pgi].name);
-				zx.eachplugin(zx, "start_page", zx.pages[zx.pgi]);
 				seq_page(zx);
 			} catch (e) {
-				// If some of async functions returned an error to a callback
-				// it will be thrown as exception
-				if (e === zx.error.known_error) {
-					console.log("!Known Compiler Exception!:", e);
-					//continue with the next file
-				} else {
-                
-                    var linecopy = deepcopy(zx.line_obj);
-                    if (linecopy && linecopy.srcinfo)
-                        {
-                        linecopy.srcinfo.source = zx.show_longstring(linecopy.srcinfo.source);
-                        linecopy.body = zx.show_longstring(linecopy.body);
-                        linecopy.q.query = zx.show_longstring(linecopy.q.query);
-                        linecopy.nonkeyd = zx.show_longstring(linecopy.nonkeyd);
-                        }
-                    
-					console.error(e);
-					console.log("!!!!!!!!!!Unknown Compiler Exception!!!!!!!!!:", e);
-					console.log("!!!!!!!!!!Possible location!!!!!!!!!:", linecopy);
-                    
-                    
-                    
-
-					zx.error.write_unknown(zx, "unknown compiler error(" + String(e) + ")possibly at");
-					zx.error.commit(zx);
-					//continue with the next file
-				}
+				zx.error.caught_exception(zx, e, " iterating pages mark-114230 ");
 			}
 			zx.eachplugin(zx, "done_page", zx.pages[zx.pgi]);
 
@@ -589,8 +580,8 @@ var seq_pages = function (zx) {
 
 Sync(function () {
 
-//	for (var i = 0; i < 25; i++)
-//		console.log('');
+	//	for (var i = 0; i < 25; i++)
+	//		console.log('');
 	console.log(Date());
 
 	zx.pages = [];
@@ -615,9 +606,9 @@ Sync(function () {
 		throw e;
 	}
 
-    //console.log("shuting_down");
-    zx.eachplugin(zx, "shut_down", 0);
-    //console.log("shut_down");
+	//console.log("shuting_down");
+	zx.eachplugin(zx, "shut_down", 0);
+	//console.log("shut_down");
 	zx.dbu.exit();
 });
 //eof

@@ -127,7 +127,7 @@ exports.Beautify = function (txt) {
 	if (!txt.toUpperCase)
 		txt = String(txt);
 	//console.log('Beautify: ',txt);
-    //txt =  txt.trim();
+	//txt =  txt.trim();
 	var l = txt.length;
 	//replace $ . _ with spaces
 	p = 0;
@@ -217,10 +217,10 @@ exports.getA = function (val) {
 	return [val];
 };
 
-exports.stripWrapper = function (val,open,close) {
+exports.stripWrapper = function (val, open, close) {
 	if (val === undefined)
 		return "";
-    val=val.trim();    
+	val = val.trim();
 	if (val.substring(0, open.length) !== open)
 		return val;
 	if (val.slice(-close.length) !== close)
@@ -229,11 +229,11 @@ exports.stripWrapper = function (val,open,close) {
 };
 
 exports.stripQ = function (val) {
-  return exports.stripWrapper(val,'"','"');
+	return exports.stripWrapper(val, '"', '"');
 };
 
 exports.stripBrackets = function (val) {
- return exports.stripWrapper(val,'(',')');
+	return exports.stripWrapper(val, '(', ')');
 };
 
 exports.parseword = function (val) { //works in combo with  removeword
@@ -385,15 +385,20 @@ exports.escape_scriptstring = function (zx, val, open_key_length, open, close, b
 };
 
 exports.eachplugin = function (zx, fn, value) {
-    var results=[];
+	var results = [];
 	for (var ixx = 0, max = zx.plugins.length; ixx < max; ixx += 1) {
 		if (zx.plugins[ixx][fn] !== undefined) {
-            //console.log('eachplugin ',(zx.plugins[ixx].module_name||' plugin has no name'),fn,exports.show_longstring(value));//,zx.plugins[ixx]);
-			var result=zx.plugins[ixx][fn](zx, value);
-            if (result!==undefined) results.push(result);
+			//console.log('eachplugin ',(zx.plugins[ixx].module_name||' plugin has no name'),fn,exports.show_longstring(value));//,zx.plugins[ixx]);
+			try {
+				var result = zx.plugins[ixx][fn](zx, value);
+				if (result !== undefined)
+					results.push(result);
+			} catch (e) {
+				zx.error.caught_exception(zx, e, " zx.eachplugin: " +zx.plugins[ixx].module_name + " " + fn +" ( "  + exports.show_longstring(JSON.stringify(value))+" ) ");
+			}
 		}
 	}
-    return results;
+	return results;
 };
 
 exports.locate_plugin = function (zx, txt, tag, value) {
@@ -446,12 +451,11 @@ exports.insertArrayAt = function (array, index, arrayToInsert) {
 };
 
 exports.replaceAll = function (str, find, replace) {
-//http://stackoverflow.com/questions/1144783/replacing-all-occurrences-of-a-string-in-javascript
-//http://jsperf.com/replace-all-vs-split-join
-//this is faster than regex
- return str.split(find).join(replace);
+	//http://stackoverflow.com/questions/1144783/replacing-all-occurrences-of-a-string-in-javascript
+	//http://jsperf.com/replace-all-vs-split-join
+	//this is faster than regex
+	return str.split(find).join(replace);
 };
-
 
 exports.isArrayEmpty = function (array) { //http://stackoverflow.com/questions/6072590/how-to-match-an-empty-dictionary-in-javascript
 	for (var prop in array)
@@ -496,11 +500,15 @@ exports.CSVtoArray = function (text) { //http://www.quora.com/How-can-I-parse-a-
 },
 
 exports.show_longstring = function (str) {
-if (str===undefined) return undefined;
-if (typeof str !== 'string' ) str = '[OBJECT]';//JSON.stringify(str);
-str=str.trim();
-if (str.length>60) return "["+str.substring(0,40).replace(/\n/g,'\\n') + " ..." + (str.length) + " bytes... " + str.slice(-40).replace(/\n/g,'\\n')+"]";
-else return "["+str+ "] shown in full "+ (str.length) + " bytes... ";
+	if (str === undefined)
+		return undefined;
+	if (typeof str !== 'string')
+		str = '[OBJECT]'; //JSON.stringify(str);
+	str = str.trim();
+	if (str.length > 60)
+		return "[" + str.substring(0, 40).replace(/\n/g, '\\n') + " ..." + (str.length) + " bytes... " + str.slice(-40).replace(/\n/g, '\\n') + "]";
+	else
+		return "[" + str + "] shown in full " + (str.length) + " bytes... ";
 }
 
 //======================================================================================================extending the base classes
@@ -541,65 +549,72 @@ the terms of the CC0 1.0 Universal legal code:
 
 http://creativecommons.org/publicdomain/zero/1.0/legalcode
 
-*/
+ */
 
 /* Returns the approximate memory usage, in bytes, of the specified object. The
  * parameter is:
  *
  * object - the object whose size should be determined
  */
-exports.sizeof = function(object){
+exports.sizeof = function (object) {
 
-  // initialise the list of objects and size
-  var objects = [object];
-  var size    = 0;
+	// initialise the list of objects and size
+	var objects = [object];
+	var size = 0;
 
-  // loop over the objects
-  for (var index = 0; index < objects.length; index ++){
+	// loop over the objects
+	for (var index = 0; index < objects.length; index++) {
 
-    // determine the type of the object
-    switch (typeof objects[index]){
+		// determine the type of the object
+		switch (typeof objects[index]) {
 
-      // the object is a boolean
-      case 'boolean': size += 4; break;
+			// the object is a boolean
+		case 'boolean':
+			size += 4;
+			break;
 
-      // the object is a number
-      case 'number': size += 8; break;
+			// the object is a number
+		case 'number':
+			size += 8;
+			break;
 
-      // the object is a string
-      case 'string': size += 2 * objects[index].length; break;
+			// the object is a string
+		case 'string':
+			size += 2 * objects[index].length;
+			break;
 
-      // the object is a generic object
-      case 'object':
+			// the object is a generic object
+		case 'object':
 
-        // if the object is not an array, add the sizes of the keys
-        if (Object.prototype.toString.call(objects[index]) != '[object Array]'){
-          for (var key in objects[index]) size += 2 * key.length;
-        }
+			// if the object is not an array, add the sizes of the keys
+			if (Object.prototype.toString.call(objects[index]) != '[object Array]') {
+				for (var key in objects[index])
+					size += 2 * key.length;
+			}
 
-        // loop over the keys
-        for (var key in objects[index]){
+			// loop over the keys
+			for (var key in objects[index]) {
 
-          // determine whether the value has already been processed
-          var processed = false;
-          for (var search = 0; search < objects.length; search ++){
-            if (objects[search] === objects[index][key]){
-              processed = true;
-              break;
-            }
-          }
+				// determine whether the value has already been processed
+				var processed = false;
+				for (var search = 0; search < objects.length; search++) {
+					if (objects[search] === objects[index][key]) {
+						processed = true;
+						break;
+					}
+				}
 
-          // queue the value to be processed if appropriate
-          if (!processed) objects.push(objects[index][key]);
+				// queue the value to be processed if appropriate
+				if (!processed)
+					objects.push(objects[index][key]);
 
-        }
+			}
 
-    }
+		}
 
-  }
+	}
 
-  // return the calculated size
-  return size;
+	// return the calculated size
+	return size;
 
 }
-

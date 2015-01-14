@@ -571,6 +571,16 @@ exports.link_from_table = function (zx, fld_obj) {
 
 	zx.Inject_procedures.check_inline_link_procedure(zx, fld_obj.cf[0],'link_from_table');
     //console.log('run_procedure_ table: ' );
+    
+
+if (fld_obj.cf[0].pointer===undefined)
+{
+
+    zx.error.log_SQL_fail (zx, "no primary key for link","You must select(and mark) the primary key as part of the query, in order to make a link on the table", fld_obj, zx.line_obj)
+    throw zx.error.known_error;
+}
+
+    
 	var proc = zx.gets(fld_obj.cf[0].execute);
     //console.log('run_procedure_as : ',proc );
 	if ((proc !== undefined) && (proc !== "")) {
@@ -652,7 +662,12 @@ exports.edit_from_table = function (zx, cx, fld_obj) {
 	//needs pk to update on and the field that should be updated
 	//console.log('=================================\n',fld_obj );
 
+if (fld_obj.cf[0].pointer===undefined)
+{
 
+    zx.error.log_SQL_fail (zx, "no primary key for edit ","You must select(and mark) the primary key as part of the query, in order to edit a field in the table", fld_obj, zx.line_obj);
+    throw zx.error.known_error;
+}
 	var pointerfieldindex = fld_obj.cf[0].pointer;
 	//console.log('pointerfieldindex a:',fld_obj.cf[0].pointer,cx.fields[ pointerfieldindex ]);
 	var pointerfields = cx.fields[pointerfieldindex].name;
@@ -881,7 +896,7 @@ exports.start_pass = function (zx /*, line_objects*/
 		"EXECUTE BLOCK RETURNS  (res blob SUB_TYPE 1)AS \n" +
 		"declare pki integer=12345678;\n" +
 		"declare pkf integer=12345678;\n" +
-		"declare session_id varchar(40)='12345678';\n\n\n";
+		"declare Z$SESSIONID varchar(40)='12345678';\n\n\n";
 	zx.sql.testfoot = "\n--no need to - set term ;#\n";
 
 	if (zx.sql.engine === 'flamerobin') { //flamerobin

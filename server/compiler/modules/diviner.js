@@ -63,16 +63,20 @@ exports.compile = function (zx, obj) {
 
 					//check plugins
 					tag = line_obj.tag.toLowerCase();
+					try {
+						done = zx.locate_plugin(zx, "tag_", tag, line_obj);
+						if (!done) {
+							//console.warn('Widgets not done for :',tag );
+							if ((tag.substring(0, 1) !== 'x') && (tag.substring(tag.length - 1) !== 'x') && (zx.pass === 1)) {
+								console.log('WARN : unknown tag type: ', tag, 'in', line_obj.srcinfo.filename);
+								console.log('WARN :           object: ', line_obj.srcinfo);
 
-					done = zx.locate_plugin(zx, "tag_", tag, line_obj);
-					if (!done) {
-						//console.warn('Widgets not done for :',tag );
-						if ((tag.substring(0, 1) !== 'x') && (tag.substring(tag.length - 1) !== 'x') && (zx.pass === 1)) {
-							console.log('WARN : unknown tag type: ', tag, 'in', line_obj.srcinfo.filename);
-							console.log('WARN :           object: ', line_obj.srcinfo);
-
-						} //case
-					} //if done
+							}
+						} //if done
+					} catch (e) {
+						zx.error.caught_exception(zx, e, " locate_plugin -114538,  tag_" + tag);
+						throw zx.error.known_error;
+					}
 				} //else
 
 				zx.eachplugin(zx, "done_item", line_obj);
