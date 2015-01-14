@@ -120,7 +120,7 @@ var getFieldStyle = function (cx, SubStyle, Type, Class, Action, Key) {
 		}
 
 	}
-	console.log('getFieldStyle: ', Style, "ss:", SubStyle, "t:", Type, "c:", Class, "a:", Action, 'k:', Key, 'Result:', Result);
+	//console.log('getFieldStyle: ', Style, "ss:", SubStyle, "t:", Type, "c:", Class, "a:", Action, 'k:', Key, 'Result:', Result);
 	if (Result === undefined) {
 		zx.error.log_noStyle_warning(zx, "no style info at all: 99:");
 		//    process.exit(2);
@@ -141,7 +141,7 @@ var fieldSubItem = function (cx, FT) {
 	hrefDisplay=DisplayValue;
 	 */
 	try {
-		console.log('fieldSubItem a0: ',FT.cf[0].Action,FT.cf[0].form);
+		//console.log('fieldSubItem a0: ',FT.cf[0].Action,FT.cf[0].form);
 		if (FT.cf[0].Action === 'Link') //
 		{
 			//console.log('fieldSubItem A: ',cx.pop,FT);
@@ -174,14 +174,14 @@ var fieldSubItem = function (cx, FT) {
 			}
 			//console.log('fieldSubItem B2: ',FieldHtml,tt,FT);
 		} else {
-			console.log('fieldSubItem C: ', cx.pop, FT);
+			//console.log('fieldSubItem C: ', cx.pop, FT);
 			tt = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Main");
-			console.log('fieldSubItem C1: ', tt);
+			//console.log('fieldSubItem C1: ', tt);
 			if (tt !== '') {
 				template = hogan.compile(tt);
 				FieldHtml = template.render(cx); //pop
 			}
-			console.log('fieldSubItem C2: ', FieldHtml, tt, FT);
+			//console.log('fieldSubItem C2: ', FieldHtml, tt, FT);
 		}
 
 	} catch (e) {

@@ -23,12 +23,10 @@ exports.remove_comments = function (zx, obj, str) {
 	while (search_from < str.length) {
 		//console.log('search_from:',search_from,str.length,str.substr(search_from,6));
 		var commentindex = str.indexOf('--', search_from);
-		if (commentindex === -1)
-            {
+		if (commentindex === -1) {
 			search_from = str.length;
-            //console.log('commentindex === -1:',commentindex,first_cr,search_from);
-            }
-		else {
+			//console.log('commentindex === -1:',commentindex,first_cr,search_from);
+		} else {
 			//console.log('search_from x:',commentindex,str.substr(commentindex,4));
 			if (str.substr(commentindex, 3) === '--{') {
 				search_from = commentindex + 3;
@@ -57,15 +55,16 @@ exports.parse = function (zx, line_obj, str, tag) {
 	zx.q.rl_from = '';
 	zx.q.ths = {};
 	zx.q.indx = 0;
-    
-    //console.log('B4 Quic remove_comments',str.length);
+
+	//console.log('B4 Quic remove_comments',str.length);
 	str = exports.remove_comments(zx, line_obj, str);
 	//console.log('Quic remove_comments',str);
+
 
 	var parse_from = 0;
 	while (parse_from < str.length) {
 		//var tagindex=str.indexOf('--:{',parse_from);
-        //console.log('Quic parse loop:',parse_from,str.length);
+		//console.log('Quic parse loop:',parse_from,str.length);
 		var tagindex = zx.delimof(str, ['--:{', '--{'], parse_from);
 		if (tagindex >= str.length) {
 			//no tags
@@ -129,11 +128,12 @@ exports.parse = function (zx, line_obj, str, tag) {
 
 	}
 	zx.q.ths.query = str;
-	//console.log('Quic parse done:',zx.q);
+	//console.log('Quic parse done:',zx.q.contexts);
+	//console.log('Quic parse done:',zx.q.ths);
 	line_obj.q = zx.q.ths;
 
-	if (zx.q.ths.quale_context !== undefined)
-		line_obj.quale_context = zx.q.ths.quale_context;
+	if (zx.q.quale_context !== undefined)
+		line_obj.quale_context = zx.q.quale_context;
 
 	line_obj = extend(line_obj, zx.q.ths.Tag);
 	line_obj.nonkeyd = str;
@@ -208,11 +208,16 @@ function tokens_eval_eachRecursive(obj, zx, line_obj, quickinput) {
 	}
 }
 
+var watch = function (zx, msg) {
+	//if (zx.q.contexts['TODO_MVC'] && zx.q.contexts['TODO_MVC'].STATUS)
+	//	console.log('>>>>>>>>>>>>WATCH ' + msg, zx.q.contexts[' TODO_MVC '][' STATUS '].Type);
+};
+
 exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
-	//console.log('--------------------------\nQuic_eval:',quickinput,' :: ',quics)//," :::",str);
+	//console.log('-------------------------- \ nQuic_eval : ',quickinput,'::',quics)//," :::",str);
 
-	var r_obj = {};
-
+	var quale = {};
+	watch(zx, " at 134240 :");
 	//apply regex qualia to the SQL input
 
 	zx.q.regex.forEach(function (regexx) {
@@ -222,13 +227,12 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 			//interpret any regex in the properties
 			var copy = deepcopy(regexx);
 			tokens_eval_eachRecursive(copy, zx, line_obj, quickinput);
-			r_obj = extend(r_obj, copy); //second one has the priority
-			//r_obj = extend(copy,r_obj );
+			quale = extend(quale, copy); //second one has the priority
 		}
 		//zx.q.regex.
 		//if (entry.start_page!==undefined) entry.start_page(zx,zx.pages[zx.pgi]);
 	});
-	delete r_obj.regex;
+	delete quale.regex;
 
 	//Parse the Quic object
 	var q_obj = {};
@@ -239,15 +243,14 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 		process.exit(2); //TODO
 
 	}
-	//console.log('JSOL.parse:',q_obj)//," :::",str);
+	//console.log('JSOL.parse:',q_obj)//,":: : ",str);
 	//interpret/fixup some tokens in the object
 	tokenscheck_eachRecursive(q_obj);
 
-	//console.log('r_obj:',r_obj);
-	//console.log('q_obj:',q_obj);
 
+	watch(zx, " at 134242 ");
 	//merge the objects to create the new quale
-	var quale = extend(r_obj, q_obj); //second one has the priority
+	extend(quale, q_obj); //second one has the priority
 	//console.log('quale:',quale);
 
 	//merge with any class information
@@ -269,11 +272,12 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 		delete quale['class'];
 	}
 
+	watch(zx, " at 134245 ");
 	//merge with any context information
 	//console.log('quale b4 context:',quale);
 	if ((tag.toLowerCase() !== 'model') && (quale.name === undefined) && quale.from === undefined) {
-		var firstword = quickinput.match(/(\w+.\w)/);
-		//console.log('Quale table context :',firstword);
+		var firstword = quickinput.match(/(\w+.\w)/); //TODO this looks wrong
+		//console.log('Quale firstword extract :', firstword);
 		if (firstword !== null) {
 			firstword = firstword[1];
 			var fa = firstword.split('.');
@@ -288,20 +292,28 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 		//console.log('quale z context:',quale);
 	}
 
+	watch(zx, " at 134250 ");
 	if (quale.table === undefined && zx.q.rl_from !== undefined)
 		quale.table = zx.q.rl_from;
 
 	if ((quale.name !== undefined) && (quale.name !== '') && (quale.table !== undefined) && (quale.table !== '')) {
-		//console.log('AAAAAAAAAAAAAAAAAAAAAAA Quale context inheritance from quale:',quale.table,' . ',quale.name,quale);
-		//console.log('BBBBBBBBBBBBBBBBBBBBBBB Quale context inheritance from contexts :',quale.table,' . ',quale.name,zx.q.contexts[quale.table][quale.name]);
-		quale = extend(zx.q.contexts[quale.table][quale.name], quale); //second one has the priority
+		//this is for reading back from existing models
+		if (quale.debug) {
+			console.log('AAAAAAAAAAAAAAAAAAAAAAA Quale context inheritance from quale:', tag, quale.table, ' . ', quale.name, quale);
+			console.log('BBBBBBBBBBBBBBBBBBBBBBB Quale context inheritance from contexts :', tag, quale.table, ' . ', quale.name, zx.q.contexts[quale.table][quale.name]);
+		}
+			watch(zx, " at 134255 ");
+			extend(true, quale, zx.q.contexts[quale.table][quale.name], deepcopy(quale)); //second one has the priority
+			watch(zx, " at 134258 ");
+
 		//quale = extend(quale,zx.q.contexts[quale.table][quale.name]);
-		//console.log('CCCCCCCCCCCCCCCCCCCCCC Quale context inheritance merged quale:',quale.table,' . ',quale.name,quale);
+		//console.log('CCCCCCCCCCCCCCCCCCCCCC Quale context inheritance merged quale:',tag,quale.table,' . ',quale.name,quale);
 	}
 
 	//merge the quale to the global dictionary or object
 	quale.quickinput = quickinput;
 
+	watch(zx, " at 134248 ");
 	if (tag.toLowerCase() === 'model') {
 		//console.log('Quale model  :',quale);
 		if (quale.regex !== undefined)
@@ -317,19 +329,26 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 				if (zx.q.contexts[quale.context] === undefined)
 					zx.q.contexts[quale.context] = {};
 				if (quale.name !== undefined) {
-					//console.log('Quale setting model fields :',quale.context,'.',quale.name,':',quale);
-					zx.q.contexts[quale.context][quale.name] = extend(zx.q.contexts[quale.context][quale.name], quale);
+					if (quale.debug) {
+						console.log('Quale setting model fields :', quale.context, '.', quale.name, ':', quale);
+					}
+					zx.q.contexts[quale.context][quale.name] = extend(zx.q.contexts[quale.context][quale.name], deepcopy(quale));
+
 				} else {
-					//console.log('Quale setting model table :',quale.context,':',quale);
-					zx.q.contexts[quale.context].Table = extend(zx.q.contexts[quale.context].Table, quale);
-					zx.q.ths.quale_context = quale.context;
+					if (quale.debug) {
+						console.log('Quale setting model table :', quale.context, ':', quale);
+					}
+					zx.q.contexts[quale.context].Table = extend(zx.q.contexts[quale.context].Table, deepcopy(quale));
+					zx.q.quale_context = quale.context; //returns context back to line object for debugging
 				}
 			}
 
-			if (quale['class'] !== undefined)
-				zx.q.classes[quale['class']] = extend(zx.q.classes[quale['class']], quale);
-
-			//if (quale.name!==undefined)     zx.q.ths[quale.name]= extend(zx.q.classes[quale.name], quale);
+			if (quale['class'] !== undefined) {
+				if (quale.debug) {
+					console.log('Quale setting class :', quale['class'], ':', quale);
+				}
+				zx.q.classes[quale['class']] = extend(zx.q.classes[quale['class']], deepcopy(quale));
+			}
 
 		}
 	} else { //use in table or other tags
@@ -338,7 +357,10 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 			zx.q.rl_from = quale.from;
 
 		if (quale.name !== undefined) {
-			//console.log('Quale setting fields :',quale.name,':',quale);
+			//fields
+			if (quale.debug) {
+				console.log('Quale setting local fields :', quale.name, ':', quale);
+			}
 			if (quale.append !== undefined) { //find an existing quale by name an append to it
 				if (zx.q.ths.names[quale.append] !== undefined)
 					quale.indx = zx.q.ths.names[quale.append];
@@ -349,10 +371,10 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 			} //allow quales with field indexes to append to existing quales
 			//better to use array in case of name conflicts
 
-			// zx.q.ths[quale.name]= extend(zx.q.ths[quale.name], quale);
+			// extend(zx.q.ths[quale.name], quale);
 			if (zx.q.ths.Fields === undefined)
 				zx.q.ths.Fields = [];
-			zx.q.ths.Fields[quale.indx] = extend(zx.q.ths.Fields[quale.indx], quale);
+			zx.q.ths.Fields[quale.indx] = extend(zx.q.ths.Fields[quale.indx], deepcopy(quale));
 
 			if (zx.q.ths.names === undefined)
 				zx.q.ths.names = {};
@@ -361,8 +383,8 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 			//zx.q.ths.FieldOrder[quale.indx]= zx.q.ths[quale.name];
 
 		} else {
-			//console.log('Quale setting table :',':',quale);
-			zx.q.ths.Table = extend(zx.q.ths.Table, quale);
+			//console.log('Quale setting table :', ':', quale);
+			zx.q.ths.Table = extend(zx.q.ths.Table, deepcopy(quale));
 			// zx.q.ths= extend(zx.q.ths, quale);
 		}
 	}
@@ -380,7 +402,7 @@ exports.init = function (zx) {
 	zx.q.rl_context = '';
 	zx.q.rl_from = '';
 	zx.q.ths = {};
-	//  console.log("QuicInit");
+	//  console.log(" QuicInit ");
 };
 exports.start_up = function (zx) {
 	zx.q = {};
@@ -394,10 +416,10 @@ exports.start_up = function (zx) {
 };
 
 var disp_quic = function (zx, line_obj, str) {
-	console.log("\n\n\nparsing:", str);
+	console.log(" \ n \ n \ nparsing : ", str);
 	var sql = exports.parse(zx, line_obj, str, 'model');
-	console.log("SQL remaining after parsed::\n", sql);
-	console.log("\n------------------------------\n\n");
+	console.log(" SQL remaining after parsed:: \ n ", sql);
+	console.log(" \ n------------------------------ \ n \ n ");
 };
 
 exports.unit_test = function () {
@@ -406,7 +428,7 @@ exports.unit_test = function () {
 	exports.init(zx);
 
 	var line_obj = {};
-	line_obj = JSOL.parse("{hello:\"test\"}");
+	//line_obj = JSOL.parse(" {hello :  \ " test \ "}");
 	console.log('start Quic', line_obj.hello);
 
 	disp_quic(zx, line_obj, "--:{regex:\"regex:/varchar/i\",Default_length:\"20\",length:\"regex:/(\\\\d+)/\",name:\"regex:/(\\\\w+)/\",base:\"text\"} --comment ");
