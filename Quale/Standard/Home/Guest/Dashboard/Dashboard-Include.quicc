@@ -3,16 +3,6 @@
 
 <div align="center"> 
 #[SQL-MVC](https://github.com/quale-quest/sql-mvc) example implementation of [todomvc.com](http://todomvc.com)
-<#:table
-Select  --:{Title:"Make new records",from:"TODO_MVC"}
-STATUS, --:{Action:"View",debug:0,Type:"Text"}
-NAME,   --:{Action:"View","placeholder":"What needs to be done (tab to save)","autosave":yes}
-REF	    --:{Action:"View"}
-From TODO_MVC 
-
-/>
-
-<hr/>
 
 <#:button
 --{save:"allbutton",title:"all"}
