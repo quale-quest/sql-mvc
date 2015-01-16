@@ -3,7 +3,16 @@
 
 <div align="center"> 
 #[SQL-MVC](https://github.com/quale-quest/sql-mvc) example implementation of [todomvc.com](http://todomvc.com)
+<#:table
+Select  --:{Title:"Make new records",from:"TODO_MVC"}
+STATUS, --:{Action:"View",debug:0,Type:"Text"}
+NAME,   --:{Action:"View","placeholder":"What needs to be done (tab to save)","autosave":yes}
+REF	    --:{Action:"View"}
+From TODO_MVC 
 
+/>
+
+<hr/>
 
 <#:button
 --{save:"allbutton",title:"all"}
@@ -12,9 +21,9 @@ set here.todo_type='';
 
 <#:table
 Select  --:{Title:"Make new records",from:"TODO_MVC",autoinsert:"top",tablestyle:"Todo"}
-STATUS, --:{Action:"Edit",autosave:yes}
+STATUS, --:{Action:"Edit",debug:0,autosave:yes}
 NAME,   --:{Action:"Edit","placeholder":"What needs to be done (tab to save)","autosave":yes}
-REF	   --:{Action:"View",Type:"Hide"}
+REF	    --:{Action:"View",Type:"Hide"}
 From TODO_MVC 
 where (owner=session.id and ( (here.todo_type='' and (status!='3' or status is null)) 
 or( (status='' or status is null) and here.todo_type='1')or(status='1' and here.todo_type='2')))/>
@@ -36,6 +45,8 @@ set here.todo_type='1';
 set here.todo_type='2';
 />
 <#use "todo.clear.button"/>
+
+
 
 <div align="center"> 
 <br><br><br><br>

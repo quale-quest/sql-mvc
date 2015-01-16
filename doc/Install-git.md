@@ -1,8 +1,7 @@
 
-#npm Linux (ubuntu 14):
+#Linux from GIT for platform development (ubuntu 14):
 **Instructions for other OS'es to follow - but you get the idea.**
 [Install-windows here](https://github.com/quale-quest/sql-mvc/blob/master/Install-windows.md)
-[Install-linux from git here](https://github.com/quale-quest/sql-mvc/blob/master/Install-git.md)
 
 
 sudo su # if you are not already root       
@@ -44,33 +43,43 @@ npm install -g socketstream
 npm install -g forever
 ```
 
-
-#sql-mvc from npm
+#sql-mvc from GIT - to develop in the platform directly (for contributions)
 
 ```
-npm install sql-mvc -g
-sql-mvc new demo-app
-cd demo-app
+git clone https://github.com/quale-quest/sql-mvc.git 
+cd sql-mvc   
 npm install
 
 #the default config will:
 #    place the database in /var/db 
-#    it will attempt to update or create the database
+#    attempt to update the current database
 #    run dev server on port 3000
-#to edit the default config :
-nano ../Quale/Config/config.json  #customise what you need
-node app.js   # it will say "compiler busy " for a few seconds while it builds the app and demo db
+# to edit the default config :
+nano ../Quale/Config/config.json
+
+#now build the demo
+chmod -R +x server/compiler/*.sh
+chmod -R +x install/*.sh
+cd install
+./patch.sh
+./make_udf.sh
+
+./make_app.sh
 ```
 
+#start sql-mvc server in dev mode
+```
+cd ..
+bash dev_server.sh
+```
 #Enjoy
 Open our browser to localhost:3000 and view the demo app
 
-Edit and play with the demo page : /Quale/Standard/Home/Guest/Dashboard/Dashboard-Include.quicc
+Edit and play with the demo page : sql-mvc/Quale/Standard/Home/Guest/Dashboard/Dashboard-Include.quicc
 the changes you make will automatically be updated to your browser.
 
-Compiler error output can be viewd by pressing ctrl-q in the application page.
-And it will be on the console running the ./dev_server.sh
-and also in the file: output/error_log.json
+Error output will bve on the console running the ./dev_server.sh
+and also in the file: sql-mvc/server/compiler/output/error_log.json
 
 
 #Production

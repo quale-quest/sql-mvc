@@ -14,31 +14,6 @@ else return "["+str+ "] shown in full "+ (str.length) + " bytes... ";
 
 
 exports.html = function(name,object,output){
-/*
-<div class='showtree' ><li >Show Animals+</li></div>
-	<ul class="tree" id="tree">
-		<div class='plus' ><li >Animals+</li></div>
-		<ul>
-			<li>Birds</li>
-		</ul>
-		<div class='plus'><li>Plants+</li></div>
-		<ul>
-			<div class='plus'><li>Trees+</li></div>
-			<ul>
-				<li>Mango</li>
-				<li>Banyan</li>
-				<li>Redwood</li>
-			</ul>
-			
-			<div class='plus'><li>Shrubs+</li></div>
-			<ul>
-				<li>Cactus</li>
-				<li>Congress</li>
-			</ul>
-		</ul>
-	</ul>
-
-*/
   
   var this_depth=0;
   function html_recur(name,object,output)
@@ -98,10 +73,10 @@ exports.html = function(name,object,output){
 
 
 
-var obj={abc:5,def:8,ghi:[123,567,870],klm:{qwery:5,yuiop:{poiuy:5}}};
-var output  = [];
-exports.html("root",obj,output);
-console.log('\n...........................................\n',output.join('\n'));
+//var obj={abc:5,def:8,ghi:[123,567,870],klm:{qwery:5,yuiop:{poiuy:5}}};
+//var output  = [];
+//exports.html("root",obj,output);
+//console.log('\n...........................................\n',output.join('\n'));
 //process.exit(2);
 
 

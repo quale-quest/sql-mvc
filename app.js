@@ -21,7 +21,7 @@ var run_monitor = function (interval_ms) {
 	console.log('monitoring for application changes :');
 	var interval = setInterval(function () {
 
-			var command = spawn('server/compiler/check.sh');
+			var command = spawn('./check.sh');
 			var output = [];
 
 			command.stdout.on('data', function (chunk) {
@@ -34,16 +34,16 @@ var run_monitor = function (interval_ms) {
 
 					var str = output.join('').toString();
 					if (str.length > 10) {
-						var fn = path.resolve('server/compiler/output/consol.txt');
+						var fn = path.resolve('output/consol.txt');
 						fs.writeFileSync(fn, str + "...");
 
                         ss.api.publish.all('BuildNotify', '#debugBuildNotify','done'); // Broadcast the message to everyone
 					}
 					if (str.length > 0) //don't bother us with small status message
-						console.log('server/compiler/check.sh result :', str);
+						console.log('check.sh result :', str);
 				} else
 
-					console.log('server/compiler busy :');
+					console.log('compiler busy :');
 
 			});
 

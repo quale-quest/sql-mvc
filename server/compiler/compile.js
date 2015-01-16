@@ -66,6 +66,8 @@ replace with a <#jscript tag, to store away for execution after the dom injectio
 
  */
 
+
+ 
 var program = require('commander');
 //var XLSX =  require('xlsx');
 var fs = require('fs');
@@ -172,12 +174,12 @@ var seq_main = function () {
 		zx.depends = {};
 		zx.mainfiles = [];
 		zx.BlockIndex = 0;
-		zx.root_folder = path.resolve(path.join(__dirname, '../../Quale/')) + '/';
+		zx.root_folder = path.resolve(path.join('./Quale/')) + '/';
 		console.log('zx.root_folder :', zx.root_folder);
 		zx.build_roots = ["Config", "Custom", "Standard", "Lib", ""];
 		//if dev mode zx.build_roots.unshift("sandbox");
 		zx.output_folder = path.resolve('./output/') + '/';
-		zx.hogan_folder = path.resolve('../../client/templates/') + '/';
+		zx.hogan_folder = path.resolve('./client/templates/') + '/';
 		zx.app_folder = 'Guest';
 		zx.app_incl_extn = zx.app_extn = '.quicc';
 
@@ -577,6 +579,14 @@ var seq_pages = function (zx) {
 	}
 
 };
+
+
+console.log('compiler started');
+if (!fs.existsSync("Quale")) {
+    // Do something
+    console.log('The compiler must be run with the current working directory being the root of the project to be compiled.');
+    process.exit(2);
+}
 
 Sync(function () {
 

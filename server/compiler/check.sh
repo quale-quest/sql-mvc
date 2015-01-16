@@ -7,10 +7,15 @@
 # The absolute path of the directory containing this script.
 DIR="$( cd "$( dirname "$0" )" && pwd -P)"
 
-# Where is the top level project directory relative to this script?
-PROJECT_DIR="$( cd "${DIR}/../.." && pwd -P)"
+# Where is the top level project directory relative to wd?
+COMPILER_DIR="$( cd "${DIR}/../../server/compiler" && pwd -P)"
+PROJECT_DIR="$( pwd -P)"
+
+
+
 
 #echo PROJECT_DIR : $PROJECT_DIR
+#echo COMPILER_DIR : $COMPILER_DIR
 
 
 # Set up a list of directories to monitor.
@@ -32,7 +37,7 @@ INTERVAL_SECONDS=1
 ( #lock and start subprocess
 flock -x -w 0.1 200 || exit 1 
 
-if [ -f "$PROJECT_DIR/built_complete" ]; then
+if [ -f "$PROJECT_DIR/output/built_complete" ]; then
 
 # Give some user feedback 
  #echo Monitoring ${MONITOR[*]}
@@ -73,10 +78,9 @@ fi
 	#give some feedback
 	cat ${DELTA_FILE} 	
 	
-	#execute the compiler
-    pushd ${PROJECT_DIR}/server/compiler
-	node compile.js deltafile ${DELTA_FILE} 
-    popd
+	#execute the compiler    
+	node  $COMPILER_DIR/compile.js deltafile ${DELTA_FILE} 
+    
     
   fi
 #  sleep ${INTERVAL_SECONDS}
@@ -85,7 +89,7 @@ fi
 else
     echo rebuilding 
 
-	rm -r ../../server/compiler/output  2> /dev/null	 
+	rm -r  ${PROJECT_DIR}/output  2> /dev/null	 
 	find ${MONITOR[*]} -type f -name Index.quicc > ${DELTA_FILE}
 
 	#give some feedback
@@ -96,9 +100,9 @@ else
 	#pushd ${PROJECT_DIR}/server/compiler
 	pwd
 	#node compile.js deltafile ${DELTA_FILE} 
-	node ${PROJECT_DIR}/server/compiler/compile.js deltafile ${DELTA_FILE} 
+	node $COMPILER_DIR/compile.js deltafile ${DELTA_FILE} 
 
-	touch $PROJECT_DIR/built_complete   
+	touch $PROJECT_DIR/output/built_complete   
 	
 fi
 
