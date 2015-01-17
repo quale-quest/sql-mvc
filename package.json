@@ -1,6 +1,6 @@
 {
 	"name" : "sql-mvc",
-	"version" : "0.0.7",
+	"version" : "0.0.14",
 	"description" : "Paradigm inversion-write web applications in SQL instead of JavaScript",
 	"main" : "app.js",
 	"scripts" : {
@@ -51,7 +51,7 @@
 		"node" : ">= 0.8.0"
 	},
 	"scripts" : {
-		"postinstall" : "bin/sql-mvc patchhost",
+		"install" : "bin/sql-mvc patchhost",
 		"start" : "node app.js"
 	},
 	"bin" : {

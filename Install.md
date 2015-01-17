@@ -54,6 +54,7 @@ sudo npm install sql-mvc -g
 sql-mvc new demo-app
 cd demo-app
 npm install
+sql-mvc patch
 
 #the default config will:
 #    place the database in /var/db 
