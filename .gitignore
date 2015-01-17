@@ -9,3 +9,4 @@ Deprecate
 client/templates/Home
 server/compiler/output
 
+/output

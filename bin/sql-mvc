@@ -5,7 +5,7 @@ var //quicc = require('../')
   program = require('commander');
 
 program
-  .usage('new <name_of_your_project>')
+  .usage('new <name_of_your_project>|patch|forever path')
   //.version(quicc.version)
   .option('-m, --minimal', 'minimal install (no demo)')
   .option('-c, --coffee', 'use CoffeeScript')
