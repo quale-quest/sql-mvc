@@ -22,7 +22,8 @@
 		"ss-hogan" : "0.1.x",
 		"ss-stylus" : "^0.1.9",
 		"sync" : "^0.2.3",
-        "fs-extra" : "*"
+        "fs-extra" : "*",
+		"colors": "= 1.0.3"
 	},
 	"repository" : {
 		"type" : "git",
@@ -50,7 +51,8 @@
 		"node" : ">= 0.8.0"
 	},
 	"scripts" : {
-		"install" : "bin/sql-mvc patchhost"
+		"postinstall" : "bin/sql-mvc patchhost",
+		"start" : "node app.js"
 	},
 	"bin" : {
 		"sql-mvc" : "./bin/sql-mvc"

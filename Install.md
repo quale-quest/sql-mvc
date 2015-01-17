@@ -2,10 +2,12 @@
 #npm Linux (ubuntu 14):
 **Instructions for other OS'es to follow - but you get the idea.**
 [Install-windows here](https://github.com/quale-quest/sql-mvc/blob/master/Install-windows.md)
-[Install-linux from git here](https://github.com/quale-quest/sql-mvc/blob/master/Install-git.md)
+[Install-linux from git here](https://github.com/quale-quest/sql-mvc/blob/master/doc/Install-git.md)
 
 
-sudo su # if you are not already root       
+sudo su # if you are not already root   
+
+Skip what you already have or don't need.    
 
 #basics
 ```
@@ -48,7 +50,7 @@ npm install -g forever
 #sql-mvc from npm
 
 ```
-npm install sql-mvc -g
+sudo npm install sql-mvc -g
 sql-mvc new demo-app
 cd demo-app
 npm install
@@ -75,9 +77,13 @@ and also in the file: output/error_log.json
 
 #Production
 This is not yet production ready, but FYI.
-edit  ./run_web.sh  (fixing the absolute path)
-edit crontab and add the line form install/crontab-e.md
+Edit the config.json (set server port etc..)
 
+>sql-mvc forevere path_to_your_project_root
+
+
+or edit crontab and add the line :
+>@reboot /usr/local/bin/sql-mvc forevere path_to_your_project_root
 
 #Manuals
 Programmers Manual at https://github.com/quale-quest/sql-mvc/wiki
