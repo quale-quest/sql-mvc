@@ -50,19 +50,26 @@ npm install -g forever
 #sql-mvc from npm
 
 ```
-sudo npm install sql-mvc -g
-sql-mvc new demo-app
-cd demo-app
-npm install
-sql-mvc patch
+#the global package
+    sudo npm install sql-mvc -g
+    cp /usr/local/lib/node_modules/sql-mvc/server/udf/q_UDFLibC /usr/lib/firebird/2.5/UDF/q_UDFLibC2.so
 
-#the default config will:
+#the application
+    sql-mvc new demo-app
+    cd demo-app
+    npm install
+    sql-mvc patch
+
+#Update the config (if needed), by default it will:
 #    place the database in /var/db 
 #    it will attempt to update or create the database
-#    run dev server on port 3000
-#to edit the default config :
-nano ../Quale/Config/config.json  #customise what you need
-node app.js   # it will say "compiler busy " for a few seconds while it builds the app and demo db
+#    run the server on port 3000
+    nano ../Quale/Config/config.json  
+    mkdir /var/db
+    chown firebird:firebird /var/db
+
+#run the server app	
+    node app.js   # it will say "compiler busy "  while it builds the app and demo db.
 ```
 
 #Enjoy
