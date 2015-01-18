@@ -945,6 +945,12 @@ exports.start_pass = function (zx /*, line_objects*/
 	/*this is very node dependant and would be moded to a plugin*/
 	emit(zx, 0, "res='[{``start``:``true``';", "");
 	emito(zx, "Object", "fullstash");
+    
+    emit(zx, 0, "res=res||',``Session``:``'||Z$SESSIONID||'``';", "");
+    
+   
+    
+    
 	emito(zx, "Target", "#maincontainer");
 	emito(zx, "Stash", zx.main_page_name.substring(2).replace(/[\/\\]/g, '-')); //windows
 	emito(zx, "ContainerId", "GUIDofTheTemplate");

@@ -139,6 +139,19 @@ var zxAdapt_menus = function () {
 
 };
 
+var parse_json_attributes = function (cx,attr) {
+    cx.f = {};
+    if (attr !== undefined) {        
+        var jsonobj = '{' + attr + '}';
+        try {
+            cx.f = JSON.parse(jsonobj);
+        } catch (e) {
+            console.log('parse_json_attributes failed:', e);
+        }
+        //console.log('cx.obj.Data.pick vals:',cx.f);
+    }
+}                
+
 var process_new_data = function (cx) {
 	//console.log("Static",o.Datasets[oi].Static,cx.Static );
 
@@ -172,25 +185,17 @@ var process_new_data = function (cx) {
 			cx.obj.Data.ick = function (ths, ctx, _, fn) {
 				//console.log('cx.obj.Data.lookup:',this,ctx,ctx[0]);
 				var cx = {};
-				var items = ths[0].split(",");
-				if (ths[0] === "")
-					items = [];
+				var items = [];
+				if (ths[0] !== "")
+					items = ths[0].split(",");
+                    
 				//console.log('cx.obj.Data.pick obj:',fn,ths);
-				if (ths[4] !== undefined) {
-					cx.f = {};
-					var jsonobj = '{' + ths[4] + '}';
-					try {
-						cx.f = JSON.parse(jsonobj);
-					} catch (e) {
-						console.log('cx.obj.Data.pick failed:', e);
-					}
-					//console.log('cx.obj.Data.pick vals:',cx.f);
-				}
+                parse_json_attributes(cx,ths[4]);
 
 				var look = ctx[0][ths[1]]; //this[1] is the name of the lookup list and look is the dictionary
 				//var findkey = ths[0];
 				if (look === undefined)
-					return 'unknown-' + ths[1];
+					return 'unknown list-' + ths[1];
 
 				cx.par = ths;
 				//console.log('cx.obj.Data.pick obj:',look,findkey,this);
@@ -227,6 +232,38 @@ var process_new_data = function (cx) {
 				};
 			};
 
+			cx.obj.Data.upload = function ( ctx, _) {
+               //_ is the current context dom object
+				//console.log('cx.obj.Data.upload:',this,ctx,ctx[0]);
+                //console.log('cx.obj.Data.upload:',ths[0],ctx,ctx[0]);
+                var ths=this;
+                //ths is a array of the parameters passed from the element fragment
+                //   first is normally the text content of the field
+                //   second is a field (sub)type 
+                //    [4] is attributes passed in f.
+                //console.log('cx.obj.Data.upload fn:');
+                //console.log('cx.obj.Data.upload _:');
+                //console.log('cx.obj.Data.upload ths[0]:',ths);
+				var lcx = {};
+                
+				var items = ths[0].split(",");
+				if (ths[0] === "")
+					items = [];
+                parse_json_attributes(lcx,ths[4]);
+                lcx.Session=cx.obj.Session;
+				//console.log('lcx.obj.Data.pick obj:',fn,ths);
+
+				lcx.par = ths;
+                console.log('Widgets-Uploader(',lcx);
+				var retval = ss.tmpl['Widgets-Uploader' ].render(lcx);
+				//console.log("new Option:",SelTxt,SelVal,toSel.options[toSel.length-1]);
+				
+
+				//console.log("new uploader:",retval);
+				return retval;
+			};
+            
+            
 			cx.obj.Data.codec_date = function () {
 				return function () {
 					var ta = this[0].split(" ");
@@ -401,6 +438,7 @@ var process_new_data = function (cx) {
 			$(cx.obj.Target).on('click', '#header', zxAdapt_menus);
 
 			capture_enter();
+            zxUploaderInit(); //todo make this conditional call only if it is inclueded
 
 		}
 		break; //Content

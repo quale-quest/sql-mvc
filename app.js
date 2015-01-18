@@ -6,49 +6,13 @@ var http = require('http');
 var ss = require('socketstream'); //without var this become global( and visible without declaration in other modules), with var it is local
 var db = require("./server/database/DatabasePool");
 var path = require('path');
-var spawn = require('child_process').spawn;
+
 var fs = require('fs');
+var app_util = require("./server/lib/app_utils");
+var app_uploads = require("./server/lib/app_uploads");
 
-var timestamp = function () {
-	var pad2 = function (number) {
-		return (number < 10 ? '0' : '') + number;
-	};
-	var d = new Date();
-	return d.getHours() + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds()) + '.' + pad2(d.getMilliseconds());
-};
+var Busboy  = require('busboy');
 
-var run_monitor = function (interval_ms) {
-	console.log('monitoring for application changes :');
-	var interval = setInterval(function () {
-
-			var command = spawn('./check.sh');
-			var output = [];
-
-			command.stdout.on('data', function (chunk) {
-               if (chunk.length > 10)
-				output.push(chunk);
-			});
-
-			command.on('close', function (code) {
-				if (code === 0) {
-
-					var str = output.join('').toString();
-					if (str.length > 10) {
-						var fn = path.resolve('output/consol.txt');
-						fs.writeFileSync(fn, str + "...");
-
-                        ss.api.publish.all('BuildNotify', '#debugBuildNotify','done'); // Broadcast the message to everyone
-					}
-					if (str.length > 0) //don't bother us with small status message
-						console.log('check.sh result :', str);
-				} else
-
-					console.log('compiler busy :');
-
-			});
-
-		}, interval_ms);
-}
 
 // Define a single-page client called 'main'
 ss.client.define('main', {
@@ -61,11 +25,49 @@ ss.client.define('main', {
 	tmpl : '*'
 });
 
-// Serve this client on the root URL
+ss.http.route('/upload', function (req, res) {
+return app_uploads.ajax_upload_with_rpc_feedback(req, res);
+});
+
+ss.http.route('/blob', function (req, res) {
+//check load_binary_resource from zxDeltaScriptFile.js
+var fn=req.url.substr(6);
+console.log('parse ', req.url, fn);
+
+//   http://10.0.0.254:3000/blob/images/Green_strawberryIconAlpha
+app_util.serveBuffer(res,'image/png',fs.readFileSync('client/static/'+fn+".png"));
+        //do url processing to get the correct binary object to retrieve from the database       
+		//res.serveString('text/html; charset=UTF-8', 'abcdef');
+//app_util.serveBuffer(res,'image/png',fs.readFileSync('client/static/images/Green_strawberryIconAlpha.png'));
+                                                     
+        //var buffer=fs.readFileSync('client/static/favicon.ico'); //this would read from a database
+		//app_util.serveBuffer(res,'image/x-icon',buffer);
+
+
+return true;//app_uploads.ajax_upload_with_rpc_feedback(req, res);
+});
+
+
+
+
 ss.http.route('/', function (req, res) {
+
+	if (req.url.substring(0, 7) === '/blobs/') {
+        //do url processing to get the correct binary object to retrieve from the database       
+		//res.serveString('text/html; charset=UTF-8', 'abcdef');
+		//res.serveBuffer('image/png',fs.readFileSync('client/static/images/Green_strawberryIconAlpha.png'));
+        //var buffer=fs.readFileSync('client/static/favicon.ico'); //this would read from a database
+		//app_util.serveBuffer(res,'image/x-icon',buffer);
+		return;
+	}
+    // we can also serve url friendly pages from the application  
+    
+    //...rest of normnal socket stream code ....
+    
+
 	//console.log('===========================Initial contents of my session is ', req.session.myStartID);
 	console.log('===========================Inital contents of my session is ', req.headers.host, req.url, req.session.myStartID);
-
+    
 	/*
 	TODO locate the application that wants to be run
 	within that application we retrieve a config file
@@ -74,7 +76,7 @@ ss.http.route('/', function (req, res) {
 
 	if (req.session.myStartID === undefined) {
 		//ss.session.options.secret = crypto.randomBytes(32).toString();
-		req.session.myStartID = timestamp();
+		req.session.myStartID = app_util.timestamp();
 		req.session.save();
 	}
 
@@ -84,12 +86,16 @@ ss.http.route('/', function (req, res) {
 		if (err) {
 			console.log(err.message);
 		} else {
+			//console.log('serveClient b4:', JSON.stringify(res,null,4));
+			//console.log('serveClient b4:', res);
 			res.serveClient('main');
+			// console.log('serveClient aft:', res);
 		}
 
 	});
 
 }); //end of ss.http.route callback
+
 
 //ss.session.store.use('redis'); - gves a prolem but should be used later
 
@@ -102,6 +108,11 @@ ss.client.templateEngine.use(require('ss-hogan')); //, '/client/templates');
 if (ss.env === 'production')
 	ss.client.packAssets();
 
+//var bodyParser = require('body-parser');
+//ss.http.middleware.prepend( bodyParser() );    
+
+//ss.http.middleware.prepend( Busboy () );    
+    
 // Start web server
 var server = http.Server(ss.http.middleware);
 var config = JSON.parse(require('fs').readFileSync('Quale/Config/config.json').toString());
@@ -109,7 +120,7 @@ server.listen(config.serve_port);
 
 //start qq file monitor if in dev mode
 if (config.monitor_mode[config.run_mode] === "check") { //Develop Debug Demo Production
-	run_monitor(1000);
+	app_util.run_monitor(1000);
 }
 
 // Start SocketStream

@@ -299,6 +299,18 @@
 	"SliderTextFieldEdit_Div":"inherit:Edit_Div",
 	"SliderTextFieldView_Head":"inherit:View_Head",	
 
+
+	"UploadFieldEdit_Main":  ["[[[upload({{pop}},'{{field.f.filetype}}',0,'{{QryOffset}}','",
+	           "repack(Title,Button) ",		
+	           "')]]]"],	
+				
+	"UploadFieldEdit_Div":" <div data-qqpickvalue='[[{{f_index}}]]'>{{{pop}}}</div>",
+	"UploadFieldEdit_Script":"inherit:Edit_Script",
+	"UploadPluginCode":"some way of making this code and the code in app.js  and in templates/widgets pluggable",
+	"UploadFieldView_Head": "inherit:View_Head",	
+
+	
+	
 "SoftCodecs - server side codecs":"",				
     "SoftCodec-Date": {
         "encoder": "F{{indx}}=substring(:F{{indx}} from 1 for 10);",
@@ -310,8 +322,8 @@
     },	
 	
 "data containers":"comment",						
-    "DataTopTitle": "<p><b>{{table.Title}}</b></p>",			
-    "DataWrap": "<div > <form autocomplete=\"off\"><table class=\"qq-table\" id=\"{{tid}}\">{{{head_html}}}{{{body_html}}}{{{foot_html}}}</table></form></div>",
+    "DataTopTitle": "<p><b>{{table.Title}}</b></p>",			    
+	"DataWrap": "<div > <form autocomplete=\"off\"><table class=\"qq-table\" id=\"{{tid}}\">{{{head_html}}}{{{body_html}}}{{{foot_html}}}</table></form></div>",
 	
     
     "DataHead": "$CRLF$<thead>{{{pop}}}</thead>",
@@ -366,6 +378,12 @@
 	"TodoDataTopTitle": "",			
 	"TodoDataHeadRecordWrap":"",
 	"TodoDataFootRecordWrap":"",
+	
+	"UploadData_Inherit":"",
+	"UploadDataWrap": "<div > <table class=\"qq-table\" id=\"{{tid}}\">{{{head_html}}}{{{body_html}}}{{{foot_html}}}</table></div>",
+	"UploadDataTopTitle": "",			
+	"UploadDataHeadRecordWrap":"",
+	"UploadDataFootRecordWrap":"",
 	
     "xTodoDataHead": "$CRLF$<thead>{{{pop}}}</thead>",
 	"xTodoDataBody":"inherit:DataBody",

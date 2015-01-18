@@ -320,6 +320,8 @@ exports.extractEscapedStringFrom = function (o, OpenKey, CloseKey, from) { //sub
 }; // can inject replacement string  at o.at
 
 
+
+
 exports.extractEscapedStringFromRegex = function (o, okl, OpenKey, CloseKey, from) { //substitute fields and symbols
 
 	var afrom; //lower = o.left.toLowerCase();
@@ -365,6 +367,25 @@ exports.extractEscapedStringFromRegex = function (o, okl, OpenKey, CloseKey, fro
 
 	return false;
 }; // can inject replacement string  at o.at
+
+
+exports.process_tags = function (str,OpenKey, CloseKey, from,callback) {     
+  	
+	var o = {},
+	res = "";
+    from = from||0;
+    
+	o.left = str;
+	while (exports.extractEscapedStringFrom(o, OpenKey, CloseKey, from)) {
+		//console.log('process_tags',o);
+		res += o.left + callback(o.content);//.substring(OpenKey.length));
+		o.left = o.right;
+		//process.exit(1);
+	}
+	res += o.left;
+    //console.log('process_tags ..:',res);
+	return res;
+}
 
 exports.escape_scriptstring = function (zx, val, open_key_length, open, close, before, aft) {
 	var from = 0,
@@ -618,3 +639,20 @@ exports.sizeof = function (object) {
 	return size;
 
 }
+
+
+//================================================tests
+/*
+var Result="abc,repack(cd,ef),ouqwui";
+	exports.process_tags(Result, 'repack(', ')', 0, function (value) {
+    console.log('repacking process_tags a: ', value);
+		var a = value.split(',') || [value];
+		var r = '';
+		a.forEach(function (p) {
+			r += "{{#field.f."+p+"}}"+p+"=\"{{field.f."+p+"}}\"{{/field.f."+p+"}} ";
+		});
+        console.log('repacking process_tags: ', r);
+        return r;
+	});
+
+*/

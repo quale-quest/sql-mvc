@@ -126,6 +126,26 @@ var getFieldStyle = function (cx, SubStyle, Type, Class, Action, Key) {
 		//    process.exit(2);
 	}
 	Result.replace(/\$CRLF\$/g, "\n");
+
+	//convenience function to pass quale to cleint side widget
+    
+	
+    //var show=0;
+	Result = zx.process_tags(Result, 'repack(', ')', 0, function (value) {
+    //console.log('repacking process_tags a: ', value);
+		var a = value.split(',') || [value];
+		var r = '"o":1'; //object dimention
+        //show=1;
+		a.forEach(function (p) {
+//            if (r!=='') r+=',';
+			r += "{{#field.f."+p+"}},\""+p+"\":\"{{field.f."+p+"}}\"{{/field.f."+p+"}}";
+                 
+		});
+        //console.log('repacking process_tags: ', r);
+        return r;
+	});
+    //if (show) console.log('repacking process_tags result: ', Result);
+
 	return (Result);
 };
 
@@ -283,3 +303,4 @@ exports.init = function (global_zx) {
 	zx = global_zx;
 
 };
+

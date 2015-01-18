@@ -103,10 +103,10 @@ exports.produce_div = function (req, res, ss, rambase, messages, session) {
                                 console.log('db - JSON:\n\n', result[0].res,'\n\n');
                                 
                                     {//debug
-                                    var json = JSON.parse(result[0].res);
-                                    console.log('db json :', JSON.stringify(json[0].Data,null,4));
-                                    console.log('db stash :', JSON.stringify(json[0].Stash,null,4));
-                                    console.log('db cid :', JSON.stringify(json[0].Data.cid,null,4));
+                                    //var json = JSON.parse(result[0].res);
+                                    //console.log('db json :', JSON.stringify(json[0].Data,null,4));
+                                    //console.log('db stash :', JSON.stringify(json[0].Stash,null,4));
+                                    //console.log('db cid :', JSON.stringify(json[0].Data.cid,null,4));
                                     }
                                     
 

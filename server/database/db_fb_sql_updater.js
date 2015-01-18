@@ -282,7 +282,7 @@ function dll_blocks_seperate_term(inputs, src_obj) { //splits the input into blo
 var exec_qry = function (cx, qrys) {
 
 	exports.write_log.push(qrys);
-	//console.log('exports.write_log.push  :', exports.write_log.length);
+	//console.log('exports.write_log.push  :', qrys);
 	//console.log('exports.write_log.push  :', cx.zx.line_obj.srcinfo );
 
 	if (cx.zx.config.db.schema_mode !== "slave") {
@@ -429,8 +429,10 @@ var CREATE_TABLE = function (zx, qrystr) {
 					Default = FFD[5];
 					if (FFD[4])
 						console.log('WARN: Cannot update "NOT NULL" property for :', Table + '.' + FieldName);
+                    cx.expect = /335544351/;    
 					exec_qry(cx, "ALTER TABLE " + Table + " alter " + FieldName + " TYPE " + FieldType);
 					if (Default !== "") {
+                        cx.expect = /335544351/; 
 						exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " set DEFAULT " + Default);
 						// updating the default before commit seems a problem ... this should be moved to phase 2
 						//caused an error in carlton update ->    exec_qry("update "+Table +" set " + FieldName + "="+Default+" where " +FieldName + " is null ")
@@ -442,6 +444,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 					}
                                             
                     if (cx.zx.config.db.schema_reorder_fields === "yes") { 
+                        cx.expect = /335544351/; 
 						exec_qry(cx, "ALTER TABLE " + Table + " ALTER " + FieldName + " POSITION " + FieldNumber);						
                     }
 				}
@@ -681,6 +684,7 @@ exports.Sort_DDL = function (zx, blocks) {
 	var build_str = [];
 	blocks.forEach(function (block, i) {
 		var qrystr = block.qrystr;
+        Hash += block.Hash; 
 		if (block.method === 'DECLARE_PROCEDURE')
 			qrystr = "DECLARE" + zx.show_longstring(qrystr);
 		build_str.push(" BORDER:" + block.order + " BNR:" + block.src.BlockNr + " method:" + block.method + " SRC:" + qrystr);
@@ -836,6 +840,14 @@ exports.update = function (zx) {
 	fs.writeFileSync(zx.output_folder + 'prebuild.sql', B.build_str);
 	//console.log('exports.Sort_DDL length:', exports.blocks.length,exports.lastHash,Hash);
 	//exports.show_DDL(zx,"Afer Write",exports.blocks);
+    
+    
+    if ((exports.lastHash !== null) && (exports.lastHash === B.Hash))
+       {
+       exports.write_log.push("Model meta hash indicates it has not changed..."+ B.Hash);
+       //console.log("Model meta hash indicates it has not changed...", B.Hash);
+       }
+    
 	if ((exports.lastHash === null) || (exports.lastHash !== B.Hash) || (zx.config.db.schema_rebuild==="always")) {
 		//console.log('exports.Execute_DDL hashed:');
 		exports.Backup_DDL(zx, 0, 1); //audit trail
@@ -847,7 +859,7 @@ exports.update = function (zx) {
 	exports.lastHash = B.Hash;
 
 	fs.writeFileSync(zx.output_folder + 'input.sql', exports.input_audit.join(''));
-	fs.writeFileSync(zx.output_folder + 'update.sql', exports.write_log.join(''));
+	fs.writeFileSync(zx.output_folder + 'build.sql', exports.write_log.join(''));
 	fs.writeFileSync(zx.output_folder + 'update.hash', JSON.stringify({
 			Hash : B.Hash
 		}));
