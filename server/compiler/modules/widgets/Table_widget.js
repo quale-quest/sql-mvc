@@ -325,6 +325,7 @@ var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx,
 	});
 
 	if (+cx.table.autoinsert_internal > 0) { //for inserts we have to modify the query
+		//this should be part of the driver code
 		tcx.query = tcx.query_original;
 
 		var p = tcx.query.indexOf('left');
@@ -536,6 +537,12 @@ var formulatemodel = exports.formulatemodel = function (zx, cx, o) {
 
 	cx.fields = tcx.fields;
 	cx.query = tcx.query;
+
+	tcx.fields.forEach(function (r) {
+		r.cf.forEach(function (r) {
+			zx.eachplugin(zx, "plug_field_check", zx.line_object, r);
+		});
+	});
 
 	//console.log('done formulatemodel:',tcx);
 
@@ -1017,7 +1024,7 @@ var row_content = function (cx, HeaderOrBodyOrFooter) {
 				try {
 					eval_widget(cx, cx.field, HeaderOrBodyOrFooter);
 				} catch (e) {
-					zx.error.caught_exception(zx, e, " eval row_field -114835, field[" + j + "] : ");// + JSON.stringify(cx.field));
+					zx.error.caught_exception(zx, e, " eval row_field -114835, field[" + j + "] : "); // + JSON.stringify(cx.field));
 					throw zx.error.known_error;
 				}
 				if (cx.field.f.Type !== 'Hide') {
@@ -1028,7 +1035,7 @@ var row_content = function (cx, HeaderOrBodyOrFooter) {
 							table_style(cx, HeaderOrBodyOrFooter + 'FieldCell');
 						html = html + cx.pop;
 					} catch (e) {
-						zx.error.caught_exception(zx, e, " wrap row_field -122505, field[" + j + "] : ");// + JSON.stringify(cx.field));
+						zx.error.caught_exception(zx, e, " wrap row_field -122505, field[" + j + "] : "); // + JSON.stringify(cx.field));
 						throw zx.error.known_error;
 					}
 				}

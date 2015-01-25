@@ -405,17 +405,17 @@ exports.escape_scriptstring = function (zx, val, open_key_length, open, close, b
 
 };
 
-exports.eachplugin = function (zx, fn, value) {
+exports.eachplugin = function (zx, fn, line_obj,value) {
 	var results = [];
 	for (var ixx = 0, max = zx.plugins.length; ixx < max; ixx += 1) {
 		if (zx.plugins[ixx][fn] !== undefined) {
-			//console.log('eachplugin ',(zx.plugins[ixx].module_name||' plugin has no name'),fn,exports.show_longstring(value));//,zx.plugins[ixx]);
+			//console.log('eachplugin ',(zx.plugins[ixx].module_name||' plugin has no name'),fn,exports.show_longstring(line_obj));//,zx.plugins[ixx]);
 			try {
-				var result = zx.plugins[ixx][fn](zx, value);
+				var result = zx.plugins[ixx][fn](zx, line_obj,value);
 				if (result !== undefined)
 					results.push(result);
 			} catch (e) {
-				zx.error.caught_exception(zx, e, " zx.eachplugin: " +zx.plugins[ixx].module_name + " " + fn +" ( "  + exports.show_longstring(JSON.stringify(value))+" ) ");
+				zx.error.caught_exception(zx, e, " zx.eachplugin: " +zx.plugins[ixx].module_name + " " + fn +" ( "  + exports.show_longstring(JSON.stringify(line_obj))+" ) ");
 			}
 		}
 	}

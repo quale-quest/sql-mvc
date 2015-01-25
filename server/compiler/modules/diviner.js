@@ -26,7 +26,12 @@ exports.compile = function (zx, obj) {
 		zx.eachplugin(zx, "start_pass", zx.line_objects);
 		//console.warn('iterate over items :',0 );
 		//iterate over items
-
+        if (zx.pass===5)
+           {
+           zx.CurrentPageIndex = zx.dbg.getPageIndexNumber(zx,zx.pages[zx.pgi].name);
+           //console.warn('Page ', zx.pages[zx.pgi].name,' == ',zx.CurrentPageIndex);
+           }
+        
 
 		for (i = 0; i < zx.line_objects.length; i += 1) {
 			line_obj = zx.line_objects[i];

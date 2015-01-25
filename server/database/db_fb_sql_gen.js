@@ -674,13 +674,17 @@ if (fld_obj.cf[0].pointer===undefined)
 	//console.log('=================================\n',pointerfields );
 	var pkname = pointerfields.split(' ')[0];
 	if (pkname === 'INSERT_REF')
-		pkname = 'REF';
+		pkname = 'REF'//This refers to the pk of the "Z$INSERTREF" Table
 
 	if (pointerfieldindex === undefined) {
 		console.log('!!!!!!!!!!!!!!!!!!!!!!!!No Primary key field for edit\n', pointerfieldindex, fld_obj, pkname, pointerfields);
 		process.exit(2); //TODO log and continue non destructive
 	}
+   fld_obj.cf[0].pkname = pkname;
+    
+    var baserecord_ref=zx.async_data.check_Async_Binary_Fields(zx,fld_obj);
 
+    
 	var TARGET_VALUES = "''";
 	var TARGET_FIELDS = "";
 	if (fld_obj.cf[0].onupdate !== undefined) {
@@ -703,11 +707,11 @@ if (fld_obj.cf[0].pointer===undefined)
 			TARGET_VALUES += "||','||Z$F_F2SQL(" + expressed_value + ")";
 		}
 	}
-
-	var links = "INSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS,TARGET_FIELDS,TARGET_VALUES)" +
+ 
+	var links = "INSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS,TARGET_FIELDS,TARGET_VALUES,baserecord)" +
 		"VALUES (:cid,:tfid,'updateonpk','" + /*valu*/
 		from +
-		"','" + pkname + "', '" + fld_obj.name + "', :F" + pointerfieldindex + " ,'" + Soft_decode + "' ,'" + TARGET_FIELDS + "'," + TARGET_VALUES + ");tfid=tfid+1;";
+		"','" + pkname + "', '" + fld_obj.name + "', :F" + pointerfieldindex + " ,'" + Soft_decode + "' ,'" + TARGET_FIELDS + "'," + TARGET_VALUES + ","+baserecord_ref+");tfid=tfid+1;";
 	//console.log('=================================\n',fld_obj, pkname );
 	// process.exit(2);
 	//done the postback must also be informed of any softcodec required
@@ -1023,6 +1027,12 @@ exports.emit_variable_getter = function (zx, line_obj, v /*, comment*/
 	return result;
 };
 
+exports.getPageIndexNumber = function (zx, name) {
+return zx.dbu.getPageIndexNumber(zx,name);
+//var CurrentPageIndex =  zx.dbu.singleton(zx, "pk", "select pk from z$SP where FILE_NAME='"+name+"'"); 
+//return CurrentPageIndex;
+}
+
 exports.init = function (zx) {
 	//each type of database generator would be different ,//including noSQL
 	//console.log('init sqlgen_fb: ');
@@ -1031,7 +1041,7 @@ exports.init = function (zx) {
 	zx.sql.declare_above = [];
 	zx.sql.args = [];
 	zx.sql.script = [];
-
+    
 	zx.sql_escapetoString = fb_escapetoString;
 
 	zx.sql.filelinemap = [];
@@ -1039,6 +1049,8 @@ exports.init = function (zx) {
 	zx.sql.engine = 'Z$RUN';
 
 	zx.sql.max_f = 0;
+    
+    zx.sql.sub_proc_index = 1;
 	//     zx.sql.engine='node-fb';
 	//     zx.sql.engine='flamerobin';
 };

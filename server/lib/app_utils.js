@@ -7,6 +7,7 @@ var ss = require('socketstream'); //without var this become global( and visible 
 var path = require('path');
 var fs = require('fs');
 var spawn = require('child_process').spawn;
+var mime = require('mime-types');
 
 exports.timestamp = function () {
 	var pad2 = function (number) {
@@ -71,6 +72,10 @@ exports.serveBuffer = function (res, Type, Buffer, code) {
 	// var filename = path.basename(file);
 	//res.setHeader('Content-disposition', 'attachment; filename=' + filename); //for dowloading files
 	//var mimetype = mime.lookup(file);
+    
+    if ((Type===undefined)||(Type===null)||(Type===''))
+        Type = mime.lookup(".png");
+
 	res.setHeader('Content-Length', Buffer.length);
 	res.setHeader('Content-Type', Type);
 	res.end(Buffer);

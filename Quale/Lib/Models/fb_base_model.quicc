@@ -57,14 +57,20 @@ CREATE DOMAIN SHORT_NAME
  
 /****************** GENERATORS ********************/
 
-CREATE GENERATOR Z$CONTEXT_SEQ;
-SET GENERATOR Z$CONTEXT_SEQ TO 10000;
 
 CREATE GENERATOR Z$PK_GEN;
 SET GENERATOR Z$PK_GEN TO 1000000100;
 
 CREATE GENERATOR Z$SERVER_NUMBER;
 SET GENERATOR Z$SERVER_NUMBER TO 12;
+
+
+CREATE GENERATOR Z$CONTEXT_SEQ;
+SET GENERATOR Z$CONTEXT_SEQ TO 10000;
+
+CREATE GENERATOR Z$SP_INDEX;
+SET GENERATOR Z$SP_INDEX TO 1;
+
 
 
 
@@ -192,7 +198,9 @@ CREATE TRIGGER Z$SP_BI FOR Z$SP ACTIVE
 BEFORE INSERT POSITION 0
 AS
 BEGIN
-    new.pk = gen_id( Z$CONTEXT_seq, 1 );
+/*we increment by 1000 as we have sub procedures that are indexed relative to this index*/
+    if (new.pk is null) then
+        new.pk = gen_id( Z$SP_INDEX, 1000 )+1;
     new.tstamp='now';
 END^
 SET TERM ; ^

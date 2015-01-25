@@ -4,7 +4,9 @@
 
 ##Example	
 This is a complete implementation of [todomvc.com](http://todomvc.com) functionality in 40 lines of code.
-Live Demo at http://todomvc.sql-mvc.com/
+Prerequisites : SQL,JSON,Regex and [mustache](https://mustache.github.io/mustache.5.html).
+
+Live Demo at http://todomvc.sql-mvc.com/, 
 
 ```
 <#:model

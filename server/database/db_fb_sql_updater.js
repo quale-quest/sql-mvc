@@ -292,14 +292,14 @@ var exec_qry = function (cx, qrys) {
 	delete cx.expect;
 };
 
-var dataset = function (zx, qrys) {
+var dataset = function (zx, qrys) {//could use the one from sql_utils
 	var res = zx.dbu.dataset.future(null, {
 			zx : zx
 		}, "updater dataset", qrys, 0);
 	//console.log("dataset:" ,res.result);
 	return res.result;
 };
-var singleton = function (zx, field, qrys) {
+var singleton = function (zx, field, qrys) {//could use the one from sql_utils
 	var res = zx.dbu.dataset.future(null, {
 			zx : zx
 		}, "updater singleton", qrys, 0);

@@ -11,8 +11,7 @@ var fs = require('fs');
 var app_util = require("./server/lib/app_utils");
 var app_uploads = require("./server/lib/app_uploads");
 
-var Busboy  = require('busboy');
-
+var Busboy = require('busboy');
 
 // Define a single-page client called 'main'
 ss.client.define('main', {
@@ -25,49 +24,40 @@ ss.client.define('main', {
 	tmpl : '*'
 });
 
-ss.http.route('/upload', function (req, res) {
-return app_uploads.ajax_upload_with_rpc_feedback(req, res);
-});
+//ss.client.set({liveReload: false}) //WORKS FOR PRODUCTION
 
-ss.http.route('/blob', function (req, res) {
-//check load_binary_resource from zxDeltaScriptFile.js
-var fn=req.url.substr(6);
-console.log('parse ', req.url, fn);
-
-//   http://10.0.0.254:3000/blob/images/Green_strawberryIconAlpha
-app_util.serveBuffer(res,'image/png',fs.readFileSync('client/static/'+fn+".png"));
-        //do url processing to get the correct binary object to retrieve from the database       
-		//res.serveString('text/html; charset=UTF-8', 'abcdef');
-//app_util.serveBuffer(res,'image/png',fs.readFileSync('client/static/images/Green_strawberryIconAlpha.png'));
-                                                     
-        //var buffer=fs.readFileSync('client/static/favicon.ico'); //this would read from a database
-		//app_util.serveBuffer(res,'image/x-icon',buffer);
+console.log('add route upload ',ss.http.route('/upload', function (req, res) {
+	return app_uploads.ajax_upload_with_rpc_feedback(req, res);
+}));
 
 
-return true;//app_uploads.ajax_upload_with_rpc_feedback(req, res);
+ss.http.route('/locked?*', function (req, res) { //files that should not be publicly accessible
+	var fn = req.url.substr(8);
+	//console.log('parse ', req.url, fn);
+    //var path = zx.config.async.public         	
+	return app_uploads.ajax_get_secured_file(req, res,fn);   
 });
 
 
-
+ss.http.route('/files?*', function (req, res) {
+	var fn = req.url.substr(7);
+	console.log('parse ', req.session,req.url, fn);
+    //var path = zx.config.async.public    
+	app_util.serveBuffer(res, '', fs.readFileSync('./database/files/' + fn)); //TODO in production the s must be improved - should actually be server from a web server or CDN
+	return true; 
+});
 
 ss.http.route('/', function (req, res) {
+//console.log('parse/ ', req.url);
 
-	if (req.url.substring(0, 7) === '/blobs/') {
-        //do url processing to get the correct binary object to retrieve from the database       
-		//res.serveString('text/html; charset=UTF-8', 'abcdef');
-		//res.serveBuffer('image/png',fs.readFileSync('client/static/images/Green_strawberryIconAlpha.png'));
-        //var buffer=fs.readFileSync('client/static/favicon.ico'); //this would read from a database
-		//app_util.serveBuffer(res,'image/x-icon',buffer);
-		return;
-	}
-    // we can also serve url friendly pages from the application  
-    
-    //...rest of normnal socket stream code ....
-    
+	// we can also serve url friendly pages from the application
+
+	//...rest of normnal socket stream code ....
+
 
 	//console.log('===========================Initial contents of my session is ', req.session.myStartID);
 	console.log('===========================Inital contents of my session is ', req.headers.host, req.url, req.session.myStartID);
-    
+
 	/*
 	TODO locate the application that wants to be run
 	within that application we retrieve a config file
@@ -76,7 +66,7 @@ ss.http.route('/', function (req, res) {
 
 	if (req.session.myStartID === undefined) {
 		//ss.session.options.secret = crypto.randomBytes(32).toString();
-		req.session.myStartID = app_util.timestamp();
+		req.session.myStartID = app_util.timestamp();//crypto.randomBytes(32).toString();
 		req.session.save();
 	}
 
@@ -109,10 +99,10 @@ if (ss.env === 'production')
 	ss.client.packAssets();
 
 //var bodyParser = require('body-parser');
-//ss.http.middleware.prepend( bodyParser() );    
+//ss.http.middleware.prepend( bodyParser() );
 
-//ss.http.middleware.prepend( Busboy () );    
-    
+//ss.http.middleware.prepend( Busboy () );
+
 // Start web server
 var server = http.Server(ss.http.middleware);
 var config = JSON.parse(require('fs').readFileSync('Quale/Config/config.json').toString());

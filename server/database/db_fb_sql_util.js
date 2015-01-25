@@ -84,6 +84,9 @@ var parse_error = function (zx, err, source, script) {
 	return script_err;
 
 };
+exports.LocateDatabasePool = function (connectionID) {
+  return db.LocateDatabasePool(connectionID);
+}
 
 exports.databaseUtils = function (root_folder, connectionID, url, callback) {
 	connection.ready = false;
@@ -131,7 +134,7 @@ exports.getquery_info = function (zx, name, script, line_obj, return_callback) {
 	}
 
 	script = script.replace(/operator.ref/gi, "?");
-	script = script.replace(new RegExp('operator.'+zx.conf.db.platform_user_table.user_pk_field ,'gi'), "?"); 
+	script = script.replace(new RegExp('operator.' + zx.conf.db.platform_user_table.user_pk_field, 'gi'), "?");
 	// console.log('prepareingStatement:',script );
 
 	connection.db.startTransaction(
@@ -148,6 +151,7 @@ exports.getquery_info = function (zx, name, script, line_obj, return_callback) {
 			function (err, statement) {
 			if (err) {
 				error(err);
+                console.log('=====script_err:');
 				var script_err = parse_error(zx, err, line_obj, script);
 				script_err.query = script;
 				//console.log('=====script:',script);
@@ -200,22 +204,67 @@ exports.validate_script = function (zx, name, script, callback) {
 
 exports.dataset = function (cx, name, script, line_obj, callback) {
 	var querys = script;
+    //console.log('exports.dataset: ',querys);
+    //var fn=connection.db.query;
+    //if (querys.substring(0,6).toLowerCase()!=="select")
+    //    fn=connection.db.execute;
+        
 	connection.db.query(querys, [],
 		function (err, result) {
 		//console.log('validation result: write',err,result );
 		if (err) {
 			//parse the error
+            console.log('exports.dataset err: ');
 			var script_err = parse_error(cx.zx, err);
 			cx.zx.err = script_err;
 			//todo - show operator some kind of server error
 			callback(null, script_err);
 		} else {
 			//console.log('dataset result:', result);
+            if (result===undefined) result=[];
 			callback(null, result);
 		}
 
 	});
 
+};
+
+exports.fetch_dataset = function (zx, qrys) {
+	var res = zx.dbu.dataset.future(null, {
+			zx : zx
+		}, "util dataset", qrys, 0);
+	//console.log("dataset:" ,res.result);
+	return res.result;
+};
+exports.singleton = function (zx, field, qrys) {
+	//console.log('singleton q: ',qrys);
+	var res = zx.dbu.dataset.sync(null, {
+			zx : zx
+		}, "util singleton", qrys, 0);
+    //console.log('singleton r: ',field);
+    if (field==="") return '';
+    //console.log('singleton 7: ',res);
+	if (res[0] === undefined) {
+		console.log('singleton q: ', qrys);
+		console.log("singleton unknown record :", res);
+		return '';
+	}
+    //console.log('singleton s: ',field);
+	if (res[0][field] !== undefined) {
+
+		//console.log("singleton a:" ,res[0][field])
+		if (res[0][field].low_ === undefined)
+			return res[0][field];
+		return res[0][field].low_ + (res[0][field].high_ * 65536 * 65536);
+	} else {
+		console.log('singleton qq: ', qrys);
+		console.log("singleton unknown field :", field, res);
+		return '';
+	}
+};
+
+exports.getGenerator = function (zx, name, increment) {
+	return exports.singleton(zx, "gen_id", "SELECT GEN_ID( " + name + "," + increment + " ) FROM RDB$DATABASE;");
 };
 
 exports.exec_qry_cb = function (cx, name, script, line_obj, callback) {
@@ -250,14 +299,52 @@ exports.exec_qry_cb = function (cx, name, script, line_obj, callback) {
 
 };
 
-exports.write_script = function (zx, name, script, callback) {
-    name = name.replace(/\\/g, '/'); //windows
-	connection.db.query('UPDATE OR INSERT INTO Z$SP (FILE_NAME, SCRIPT)VALUES (?,?) MATCHING (FILE_NAME)', [name, script],
-		function (err, result) {
-		//console.log('dbresult: write' );
-		callback(null, err, result);
-	});
+exports.getPageIndexNumber = function (zx, name) {
+  //console.log('getPageIndexNumber : A' ,name);
+  exports.singleton(zx, "","UPDATE OR INSERT INTO Z$SP (FILE_NAME)VALUES ('"+name+"') MATCHING (FILE_NAME) ");
+  //console.log('getPageIndexNumber : B' );
+  var CurrentPageIndex =  exports.singleton(zx, "pk", "select pk from z$SP where FILE_NAME='"+name+"'"); 
+  
+  //console.log('getPageIndexNumber : ' +CurrentPageIndex);
+  return CurrentPageIndex;
+}
 
+exports.write_script_async = function (zx, real, spi, name, script, code, callback) {
+	name = name.replace(/\\/g, '/'); //windows
+	//console.log('.write_script_async - ' +spi,'>',name,'<',script);   
+		script = script.replace('Z$$integer', 'Z$$' + spi);
+
+		//name = 'Z$$' + spi;
+		//console.log('write_script_async to Z$SP : ', name);
+		connection.db.query('UPDATE OR INSERT INTO Z$SP (PK,FILE_NAME,SCRIPT,CODE)VALUES (?,?,?,?) MATCHING (PK) ', [spi, name,script,JSON.stringify(code)],
+			function (err, result) {
+
+			if (real) {
+                name = 'Z$$' + spi;
+				//console.log('create real SP : ', script);
+				connection.db.query(script, [],
+					function (err, result) {
+					//console.log('dbresult: write' );
+					//also write it to the table for convenience and access to code field
+					//console.log('dbresult: write' );
+					//console.log('write_script_async done : ');
+					callback(null, err);
+				});
+			} else
+				callback(null, err);
+		});
+
+	
+};
+
+exports.write_script = function (zx,real, spi, name, script, code) {
+    //onsole.log('.write_script - ' +spi,name,'script:',script);   
+	name = name.replace(/\\/g, '/'); //windows
+	zx.dbu.write_script_async.sync(null, zx,real, spi, name, script, code);
+	if (spi !== null)
+		return spi;
+	else
+		return exports.singleton(zx, "pk", "select PK from z$SP where FILE_NAME='" + name + "'");
 };
 
 var SQL_TEXT = 452, // Array of char

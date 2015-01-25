@@ -242,6 +242,10 @@ var seq_main = function () {
 		zx.error = require('./modules/error.js');
 		zx.plugins.push(zx.error);
 
+		zx.async_data = require('./modules/async_data.js');
+		zx.plugins.push(zx.async_data);        
+        
+        
 		zx.markdown = require('./modules/markdown.js');
 		zx.plugins.push(zx.markdown);
 
@@ -372,6 +376,10 @@ var get_model_files = function (zx, path) {
 
 var seq_page = function (zx) {
 
+           
+			console.warn('\n\n\n=============================================================================Page ', zx.pages[zx.pgi].name);
+			zx.eachplugin(zx, "start_page", zx.pages[zx.pgi]);
+
 	//var fn = zx.dbg.calcfilelocation(zx,zx.pages[zx.pgi])+zx.app_extn
 	try {
 		zx.file_stack = [];
@@ -386,7 +394,11 @@ var seq_page = function (zx) {
 		zx.conf = result[1].conf; //.rambase;
 		//console.warn('database synced on config A',result);
 		//console.warn('database synced on config ',JSON.stringify(zx.conf, null, 4) );
+        
 
+        zx.CurrentPageIndex = 1; //default until pass 5
+           
+        
 		var fn = fileutils.locatefile(zx, zx.pages[zx.pgi].name, zx.root_folder, "Compile " + zx.pages[zx.pgi].name, 120022);
 		//console.warn('file located : ',fn);
 
@@ -523,7 +535,7 @@ var seq_page = function (zx) {
 				fnh,
 				mtscript);
 
-			zx.dbu.write_script.sync(null, zx, zx.main_page_name, script);
+			zx.dbu.write_script(zx,false, zx.CurrentPageIndex ,zx.main_page_name, script,'');
 
 			console.log('Wrote script to database - ' + zx.main_page_name, 'size:', script.length);
 
@@ -555,9 +567,6 @@ var deepcopy = require('deepcopy');
 var seq_pages = function (zx) {
 	while (zx.pgi < zx.pages.length) {
 		while (zx.pgi < zx.pages.length) {
-			console.warn('\n\n\n=============================================================================Page ', zx.pages[zx.pgi].name);
-
-			zx.eachplugin(zx, "start_page", zx.pages[zx.pgi]);
 
 			try {
 				seq_page(zx);

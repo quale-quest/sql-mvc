@@ -27,9 +27,24 @@
 		},
 		"pk": "ref"
 	},
-	"email": {
-		
+	"email": {		
 	},
+	"async": {
+		"database": {
+		},
+		"public": {
+			"url": "/files?",
+			"path" : "./database/files",
+			"filename":"uuid.v4",
+			"extension":"original"
+		},
+		"protected": {
+		    "url": "/locked?",
+			"path" : "./database/protected",
+			"filename":"uuid.v4",
+			"extension":"original"
+		}
+	},	
 	"cdn": {
 		"server": "localhost",
 		"publish": {
