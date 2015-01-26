@@ -32,7 +32,16 @@ although this could be made fully generic it is not the intention to make it so,
 thus we must optimise this case to simple text substitutions
 
  */
+var path = require('path'); 
 exports.module_name='template_control';
+
+exports.tag_console = function (zx, line_obj) {		
+    console.warn("Log from :",path.basename(line_obj.srcinfo.filename),':',line_obj.srcinfo.start_line, " -------->",line_obj.nonkeyd);
+};
+
+exports.tag_warn = function (zx, line_obj) {	
+	console.warn("WARN from :",path.basename(line_obj.srcinfo.filename),':',line_obj.srcinfo.start_line, " -------->",line_obj.nonkeyd);
+};
 
 exports.tag_html = function (zx, line_obj) {
 	// if (active_pass!=zx.pass) return true;

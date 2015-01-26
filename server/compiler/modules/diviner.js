@@ -21,20 +21,33 @@ exports.compile = function (zx, obj) {
 
 	zx.pass_max = 5;
 	for (zx.pass = 1; zx.pass <= zx.pass_max; zx.pass += 1) {
+
 		console.warn('=======================================================================Pass', zx.pass);
 
 		zx.eachplugin(zx, "start_pass", zx.line_objects);
 		//console.warn('iterate over items :',0 );
 		//iterate over items
-        if (zx.pass===5)
-           {
-           zx.CurrentPageIndex = zx.dbg.getPageIndexNumber(zx,zx.pages[zx.pgi].name);
-           //console.warn('Page ', zx.pages[zx.pgi].name,' == ',zx.CurrentPageIndex);
-           }
-        
+		if (zx.pass === 5) {
+			zx.CurrentPageIndex = zx.dbg.getPageIndexNumber(zx, zx.pages[zx.pgi].name);
+			//console.warn('Page ', zx.pages[zx.pgi].name,' == ',zx.CurrentPageIndex);
+		}
 
 		for (i = 0; i < zx.line_objects.length; i += 1) {
+
 			line_obj = zx.line_objects[i];
+
+			if (zx.pass === 1) {
+
+				//zx.locate_plugin(zx, "tag_pass0_", line_obj.tag, line_obj);
+				zx.eachplugin(zx, "process_pass01", {
+					line_obj : line_obj,
+					//blocks : blocks,
+                    line_objects : zx.line_objects,
+                    indx : i
+				});
+
+			}
+
 			zx.line_obj = line_obj;
 			//console.warn('iterate over item :',i,line_obj.tag );
 			//console.warn('iterate over item :',i,line_obj );

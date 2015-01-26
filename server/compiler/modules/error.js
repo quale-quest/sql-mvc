@@ -122,13 +122,15 @@ exports.caught_exception = function (zx,e,msg) {
 		if (linecopy && linecopy.srcinfo) {
 			linecopy.srcinfo.source = zx.show_longstring(linecopy.srcinfo.source);
 			linecopy.body = zx.show_longstring(linecopy.body);
-			linecopy.q.query = zx.show_longstring(linecopy.q.query);
+            if (linecopy.q!==undefined)
+			    linecopy.q.query = zx.show_longstring(linecopy.q.query);
 			linecopy.nonkeyd = zx.show_longstring(linecopy.nonkeyd);
 		}
 
 		console.error(e);
         if (msg.length>100) msg = zx.show_longstring(msg);
 		console.log("!!!!!!!!!!Unknown Compiler Exception from "+msg+" !!!!!!!!!:", e);
+        console.trace("COMPILER STACK TRACE - as from catch location:");
         
 		console.log("!!!!!!!!!!Possible location!!!!!!!!!:", linecopy);
 

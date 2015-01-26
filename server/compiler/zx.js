@@ -478,7 +478,7 @@ exports.replaceAll = function (str, find, replace) {
 	return str.split(find).join(replace);
 };
 
-exports.isArrayEmpty = function (array) { //http://stackoverflow.com/questions/6072590/how-to-match-an-empty-dictionary-in-javascript
+exports.isObjectEmpty = function (array) { //http://stackoverflow.com/questions/6072590/how-to-match-an-empty-dictionary-in-javascript
 	for (var prop in array)
 		if (array.hasOwnProperty(prop))
 			return false;

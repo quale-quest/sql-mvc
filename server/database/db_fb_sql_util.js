@@ -194,7 +194,7 @@ exports.validate_script = function (zx, name, script, callback) {
 			//todo - show operator some kind of server error
 			callback(null, script_err);
 		} else {
-			console.log('script_ok:'); //,result );
+			//console.log('script_ok:'); //,result );
 			callback(null, "ok");
 		}
 

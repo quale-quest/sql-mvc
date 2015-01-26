@@ -138,6 +138,10 @@ var queue_file_to_be_compiled = function (zx, dfn) {
 
 };
 
+var start_page_compiler = function (zx) {
+		zx.missingfiles = [];
+		zx.includedfiles = [];
+}
 var seq_main = function () {
 	var cmd,
 	fileobj,
@@ -154,9 +158,9 @@ var seq_main = function () {
 	if (!program.args.length) {
 		program.help();
 	} else {
-		console.log('Keywords: ' + program.args);
+		//console.log('Keywords: ' + program.args);
 
-		console.log('start main', Date());
+		//console.log('start main', Date());
 
 		zx.UIsl = {};
 
@@ -167,15 +171,15 @@ var seq_main = function () {
 
 		zx.debug = 1;
 		zx.debug_conditional_structure = 0;
-		zx.missingfiles = [];
-		zx.includedfiles = [];
+        start_page_compiler(zx);
+
 
 		zx.linkfiles = [];
 		zx.depends = {};
 		zx.mainfiles = [];
 		zx.BlockIndex = 0;
 		zx.root_folder = path.resolve(path.join('./Quale/')) + '/';
-		console.log('zx.root_folder :', zx.root_folder);
+		//console.log('zx.root_folder :', zx.root_folder);
 		zx.build_roots = ["Config", "Custom", "Standard", "Lib", ""];
 		//if dev mode zx.build_roots.unshift("sandbox");
 		zx.output_folder = path.resolve('./output/') + '/';
@@ -369,16 +373,23 @@ var get_model_files = function (zx, path) {
 	re = new RegExp('^MC.', "i");
 	var filelist_d = fileutils.getDropinFileList(zx, re, path, zx.line_obj, 130130);
 
-	//console.warn('got model_files for:',filelist);
+    //console.warn('got model_files for --M:',filelist_m);
+    //console.warn('got model_files for --C:',filelist_c);
+    //console.warn('got model_files for --D:',filelist_d);
+	
+    var list = filelist_c.concat(filelist_m, filelist_d);
+    //console.warn('got model_files for --:',list);
 
-	return filelist_m.concat(filelist_d, filelist_c);
+	return list;
 }
 
 var seq_page = function (zx) {
 
            
-			console.warn('\n\n\n=============================================================================Page ', zx.pages[zx.pgi].name);
-			zx.eachplugin(zx, "start_page", zx.pages[zx.pgi]);
+    console.warn('\n\n\n=============================================================================Page ', zx.pages[zx.pgi].name);
+    start_page_compiler(zx);
+    zx.eachplugin(zx, "start_page", zx.pages[zx.pgi]);
+    
 
 	//var fn = zx.dbg.calcfilelocation(zx,zx.pages[zx.pgi])+zx.app_extn
 	try {
@@ -464,6 +475,9 @@ var seq_page = function (zx) {
 			throw zx.error.known_error;
 		}
 
+      
+        
+        
 		zx.missingfiles = zx.deduplicate(zx.missingfiles);
 		zx.linkfiles = zx.deduplicate_byname(zx.linkfiles);
 

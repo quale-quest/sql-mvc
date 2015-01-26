@@ -107,9 +107,9 @@ exports.tag_inject_point = function (zx, line_obj) {
 					//remove from the target lists as it is no longer used in the target
 					delete zx.injected.cross.tar[myname][Sources][Files];
 					//console.log('Injecting delete at :',zx.injected.cross.tar[myname]);
-					if (zx.isArrayEmpty(zx.injected.cross.tar[myname][Sources]))
+					if (zx.isObjectEmpty(zx.injected.cross.tar[myname][Sources]))
 						delete zx.injected.cross.tar[myname][Sources];
-					if (zx.isArrayEmpty(zx.injected.cross.tar[myname]))
+					if (zx.isObjectEmpty(zx.injected.cross.tar[myname]))
 						delete zx.injected.cross.tar[myname];
 					//console.log('Injecting delete at :',zx.injected.cross.tar[myname]);
 				} else {

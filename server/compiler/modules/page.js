@@ -104,6 +104,11 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 		obj = zx.obj;
 		try {
 			str =String(fs.readFileSync(filename));
+            if (objtype!=="dropinmenu")
+            {
+            //console.log('loading in file : ',filename); 
+            //console.trace("STACK!!!!");    
+            }
 		} catch (e) {
 			zx.missingfiles.push(filename);
 			return [];
@@ -142,7 +147,7 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 		if (zx.inputfilecount === 1) { //only on the first file
 			//wrap in library scripts && wrap in local layout
 			var concat_body = "<#include file=~/All/StandardPageOpen/> ";
-
+            //console.log('building include files : ',zx.model_files);
 			zx.model_files.reverse().forEach(function (filename) {
 				if (fs.statSync(filename).isDirectory()) {}
 				else {
@@ -153,13 +158,14 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 				}
 			});
 
-			//console.log('------------------------------ finding :', concat_body);
+			//console.log('------------------------------ finding :', zx.inputfilecount,concat_body);
 			concat_body +=
 			"<#include file=LayoutOpen/> " +
 			body +
 			"<#include file=LayoutClose/> " +
 			"<#include file=~/All/StandardPageClose/> ";
 			body = concat_body;
+            //console.log('Main Body : ',body);            
 		}
 
 		//we dont allow nesting of <# and <{ so parsing is more simple

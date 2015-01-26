@@ -89,7 +89,7 @@ exports.databasePooled = function (root_folder, connectionID, url, callback) {
 			rambase.user = (str.match(/^ISC_USER=\"*(\w+)/im) || ["", "sysdba"])[1];
 			rambase.password = (str.match(/^ISC_PASSWORD=\"*(\w+)/im) || ["", "masterkey"])[1]; //old default
 
-			console.log("Using Password file name set in conf.db.authfile as : ", conf.db.authfile, " retrieved as user ", rambase.user);
+			//console.log("Using Password file name set in conf.db.authfile as : ", conf.db.authfile, " retrieved as user ", rambase.user);
 		} else {
 			rambase.user = conf.db.username;
 			rambase.password = conf.db.password;
