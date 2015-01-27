@@ -48,7 +48,7 @@ exports.remove_comments = function (zx, obj, str) {
 	return str;
 };
 
-exports.parse = function (zx, line_obj, str, tag) {
+exports.parse = function (zx, line_obj, str, tag,Quale_eval) {
 	//input is any string or strings that may contain  --:{
 	var quics = '';
 	zx.q.rl_context = '';
@@ -56,77 +56,93 @@ exports.parse = function (zx, line_obj, str, tag) {
 	zx.q.ths = {};
 	zx.q.indx = 0;
 
-	//console.log('B4 Quic remove_comments',str.length);
+	//console.log('B4 Quic remove_comments');//,str.length);
 	str = exports.remove_comments(zx, line_obj, str);
 	//console.log('Quic remove_comments',str);
+	try {
 
-
-	var parse_from = 0;
-	while (parse_from < str.length) {
-		//var tagindex=str.indexOf('--:{',parse_from);
-		//console.log('Quic parse loop:',parse_from,str.length);
-		var tagindex = zx.delimof(str, ['--:{', '--{'], parse_from);
-		if (tagindex >= str.length) {
-			//no tags
-			//console.log('no Quic tag in:',str);
-			//return str;
-			break;
-		}
-
-		var linestart = str.substring(0, tagindex).lastIndexOf('\n');
-		//if (linestart === -1) linestart=0;
-		//find the end of the json object - at the end of a line before a comment --
-
-		//console.log('Quic parse in:',str.substring(linestart+1,tagindex));
-		var opener;
-		if (str.substr(tagindex, 4) === '--:{')
-			opener = '--:{';
-		if (str.substr(tagindex, 3) === '--{')
-			opener = '--{';
-		var openerlength = opener.length;
-
-		var search_from = tagindex + openerlength,
-		first_cr,
-		firstcomment,
-		end_s = -1;
-		while (search_from < str.length) {
-			first_cr = str.indexOf('\n', search_from);
-			if (first_cr < 0)
-				first_cr = str.length;
-			firstcomment = str.indexOf('--', search_from);
-			if (firstcomment < 0)
-				firstcomment = str.length;
-			if (firstcomment < first_cr) {
-				end_s = firstcomment;
-				quics = str.substring(tagindex + openerlength - 1, firstcomment).trim();
-				if (quics.slice(-1) === '}')
-					break;
-
-				search_from = first_cr = str.indexOf('\n', firstcomment);
-				if (search_from < 0)
-					search_from = str.length;
-			} else {
-				end_s = first_cr;
-				quics = str.substring(tagindex + openerlength - 1, first_cr).trim();
-				if (quics.slice(-1) === '}') {
-					break;
-				}
-				search_from = first_cr + 1;
-
+		var parse_from = 0;
+		while (parse_from < str.length) {
+			//var tagindex=str.indexOf('--:{',parse_from);
+			//console.log('Quic parse loop:',parse_from,str.length);
+			var tagindex = zx.delimof(str, ['--:{', '--{'], parse_from);
+			if (tagindex >= str.length) {
+				//no tags
+				//console.log('no Quic tag in:',str);
+				//return str;
+				break;
 			}
+
+			var linestart = str.substring(0, tagindex).lastIndexOf('\n');
+			//if (linestart === -1) linestart=0;
+			//find the end of the json object - at the end of a line before a comment --
+
+			//console.log('Quic parse in:',str.substring(linestart+1,tagindex));
+			var opener;
+			if (str.substr(tagindex, 4) === '--:{')
+				opener = '--:{';
+			if (str.substr(tagindex, 3) === '--{')
+				opener = '--{';
+			var openerlength = opener.length;
+
+			var search_from = tagindex + openerlength,
+			first_cr,
+			firstcomment,
+			end_s = -1;
+			while (search_from < str.length) {
+				first_cr = str.indexOf('\n', search_from);
+				if (first_cr < 0)
+					first_cr = str.length;
+				firstcomment = str.indexOf('--', search_from);
+				if (firstcomment < 0)
+					firstcomment = str.length;
+				if (firstcomment < first_cr) {
+					end_s = firstcomment;
+					quics = str.substring(tagindex + openerlength - 1, firstcomment).trim();
+					if (quics.slice(-1) === '}')
+						break;
+
+					search_from = first_cr = str.indexOf('\n', firstcomment);
+					if (search_from < 0)
+						search_from = str.length;
+				} else {
+					end_s = first_cr;
+					quics = str.substring(tagindex + openerlength - 1, first_cr).trim();
+					if (quics.slice(-1) === '}') {
+						break;
+					}
+					search_from = first_cr + 1;
+
+				}
+			}
+
+			var quickinput = str.substring(linestart + 1, tagindex).trim();
+
+			str = str.substr(0, tagindex) + str.substr(end_s);
+			parse_from = tagindex;
+			//console.log('Quic parse :',linestart,tagindex,quickinput,quics,tag,opener);
+			if (opener === '--:{'  && Quale_eval)
+				try {
+					exports.Quic_eval(zx, line_obj, quickinput, quics, tag, opener);
+				} catch (e) {
+					zx.error.caught_exception(zx, e, " Quicc parse mark 070741 ");
+					throw zx.error.known_error;
+				}
+
+			if (opener === '--{')
+				try {
+					exports.Tag_eval(zx, line_obj, quickinput, quics, tag, opener);
+				} catch (e) {
+					zx.error.caught_exception(zx, e, " Quicc parse mark 070743 ");
+					throw zx.error.known_error;
+				}
 		}
 
-		var quickinput = str.substring(linestart + 1, tagindex).trim();
-
-		str = str.substr(0, tagindex) + str.substr(end_s);
-		parse_from = tagindex;
-		//console.log('Quic parse :',linestart,tagindex,quickinput,quics,tag,opener);
-		if (opener === '--:{')
-			exports.Quic_eval(zx, line_obj, quickinput, quics, tag, opener);
-		if (opener === '--{')
-			exports.Tag_eval(zx, line_obj, quickinput, quics, tag, opener);
-
+	} catch (e) {
+		zx.error.caught_exception(zx, e, " Quicc parse mark 070745 ");
+		throw zx.error.known_error;
 	}
+
 	zx.q.ths.query = str;
 	//console.log('Quic parse done:',zx.q.contexts);
 	//console.log('Quic parse done:',zx.q.ths);
@@ -211,6 +227,7 @@ function tokens_eval_eachRecursive(obj, zx, line_obj, quickinput) {
 var watch = function (zx, msg) {
 	//if (zx.q.contexts['TODO_MVC'] && zx.q.contexts['TODO_MVC'].STATUS)
 	//	console.log('>>>>>>>>>>>>WATCH ' + msg, zx.q.contexts[' TODO_MVC '][' STATUS '].Type);
+    //console.log('>>>>>>>>>>>>WATCH ' + msg);
 };
 
 exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
@@ -246,7 +263,6 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 	//console.log('JSOL.parse:',q_obj)//,":: : ",str);
 	//interpret/fixup some tokens in the object
 	tokenscheck_eachRecursive(q_obj);
-
 
 	watch(zx, " at 134242 ");
 	//merge the objects to create the new quale
@@ -302,9 +318,15 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 			console.log('AAAAAAAAAAAAAAAAAAAAAAA Quale context inheritance from quale:', tag, quale.table, ' . ', quale.name, quale);
 			console.log('BBBBBBBBBBBBBBBBBBBBBBB Quale context inheritance from contexts :', tag, quale.table, ' . ', quale.name, zx.q.contexts[quale.table][quale.name]);
 		}
-			watch(zx, " at 134255 ");
-			extend(true, quale, zx.q.contexts[quale.table][quale.name], deepcopy(quale)); //second one has the priority
-			watch(zx, " at 134258 ");
+		watch(zx, " at 134255 ");
+        //console.log('quale z5 context:',quale ,' in ',Object.keys(zx.q.contexts));
+        if (zx.q.contexts[quale.table]!==undefined)
+		    extend(true, quale, zx.q.contexts[quale.table][quale.name], deepcopy(quale)); //second one has the priority
+         else
+          {
+          console.trace("Unknown Table");
+}          
+		watch(zx, " at 134258 ");
 
 		//quale = extend(quale,zx.q.contexts[quale.table][quale.name]);
 		//console.log('CCCCCCCCCCCCCCCCCCCCCC Quale context inheritance merged quale:',tag,quale.table,' . ',quale.name,quale);

@@ -107,7 +107,7 @@ var queue_file_to_be_compiled = function (zx, dfn) {
 			br = fileutils.locateclosestbuildroot(zx, dfn.replace(zx.app_extn, ''));
 			//console.log('locateclosestbuildroot:',br.filename);
 			if (br.filename === undefined) {
-				console.warn('can not find locateclosestbuildroot:', br.filenam);
+				//console.warn('can not find locateclosestbuildroot:', br.filenam);
 				//return;
 			}
 			zx.pages.push({
@@ -141,6 +141,8 @@ var queue_file_to_be_compiled = function (zx, dfn) {
 var start_page_compiler = function (zx) {
 		zx.missingfiles = [];
 		zx.includedfiles = [];
+        zx.line_obj={};
+        zx.linkfiles = [];
 }
 var seq_main = function () {
 	var cmd,
@@ -174,7 +176,7 @@ var seq_main = function () {
         start_page_compiler(zx);
 
 
-		zx.linkfiles = [];
+		
 		zx.depends = {};
 		zx.mainfiles = [];
 		zx.BlockIndex = 0;

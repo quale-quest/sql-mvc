@@ -72,7 +72,6 @@ exports.process_pass0 = function (zx, par) {
 	//this here is used more for controllers, saving/using buttons and others as model/contoller items
 	if ((line_obj.save !== undefined) || zx.saving_models !== '') {
 		//store this model
-
 		name = zx.saving_models;
 		if (name === '')
 			name = zx.gets(line_obj.save);
@@ -84,7 +83,7 @@ exports.process_pass0 = function (zx, par) {
 
 
 	} else {		
-			par.blocks.push(line_obj);
+			//par.blocks.push(line_obj);
 	}
 }
 

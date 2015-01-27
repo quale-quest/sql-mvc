@@ -104,7 +104,7 @@ exports.locatefile = function (zx, fn, current_page, line_obj, trce) {
 	return "";
 };
 
-exports.getDropinFileList = function (zx, regex, current_page /*, line_obj, trce*/
+exports.getDropinFileList = function (zx, regex, current_page , line_obj, trce
 ) {
 	//makes a list of files that meet a search criteria
 	var filelist = [];
@@ -128,10 +128,10 @@ exports.getDropinFileList = function (zx, regex, current_page /*, line_obj, trce
 		//console.log('lengths : ',search_path.length,build_rel.length,search_path,build_rel );
 
 		inheritFiles(path.resolve(search_path), filelist, path.resolve(build_rel), regex);
-
+        //console.log(' getDropinFileList  building  :',filelist);
 		return false;
 	});
-
+    //console.log(' getDropinFileList    :',filelist);
 	return filelist;
 };
 
@@ -153,14 +153,17 @@ function getFiles(dir, files_, regex) { //regular recursive search
 					continue;
 			}
 			files_.push(pathname);
+            //console.log('inheritFiles found:',pathname);
 		}
 	}
+    
+    //console.log('getFiles found list:',files_);
 	return files_;
 }
 
 function inheritFiles(dir, files_, root, regex_prefix, regex_extn, debug) { //backward search TODO untested
 
-	//console.log('inheritFiles:',root,dir);
+	//console.log('inheritFiles:',root,' where:',regex_prefix,'*',regex_extn,' in ',dir);
 	files_ = files_ || [];
 	if (typeof files_ === 'undefined')
 		files_ = [];
@@ -190,6 +193,8 @@ function inheritFiles(dir, files_, root, regex_prefix, regex_extn, debug) { //ba
 
 	if (dir.length > root.length)
 		inheritFiles(path.resolve(dir + '/..'), files_, root, regex_prefix);
+        
+    // console.log('inheritFiles found list:',files_);    
 	return files_;
 }
 

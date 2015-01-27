@@ -70,11 +70,11 @@ var preProcess = function (zx, filename, str) {
 	}
 	return str;
 };
-var check_user_table_name = function (zx,str) {
+var check_user_table_name = function (zx, str) {
 	var check_user_table = function (str, key) {
 		if (zx.conf.db.platform_user_table[key] !== key) {
-			//console.log('replace platform_user_table ',key,' with ',zx.conf.db.platform_user_table[key]);            
-			return zx.replaceAll(str, key,  zx.conf.db.platform_user_table[key]);
+			//console.log('replace platform_user_table ',key,' with ',zx.conf.db.platform_user_table[key]);
+			return zx.replaceAll(str, key, zx.conf.db.platform_user_table[key]);
 		} else
 			return str;
 	}
@@ -103,17 +103,16 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 		zx.obj = [];
 		obj = zx.obj;
 		try {
-			str =String(fs.readFileSync(filename));
-            if (objtype!=="dropinmenu")
-            {
-            //console.log('loading in file : ',filename); 
-            //console.trace("STACK!!!!");    
-            }
+			str = String(fs.readFileSync(filename));
+			if (objtype !== "dropinmenu") {
+				//console.log('loading in file : ', filename);
+				//console.trace("STACK!!!!");
+			}
 		} catch (e) {
 			zx.missingfiles.push(filename);
 			return [];
 		}
-        str = check_user_table_name(zx,str);
+		str = check_user_table_name(zx, str);
 		//console.log('not a json page..processing as htm',filename,str.length);
 
 		//check file type - markdown etc....
@@ -147,7 +146,7 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 		if (zx.inputfilecount === 1) { //only on the first file
 			//wrap in library scripts && wrap in local layout
 			var concat_body = "<#include file=~/All/StandardPageOpen/> ";
-            //console.log('building include files : ',zx.model_files);
+			//console.log('building include files : ',zx.model_files);
 			zx.model_files.reverse().forEach(function (filename) {
 				if (fs.statSync(filename).isDirectory()) {}
 				else {
@@ -165,7 +164,7 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 			"<#include file=LayoutClose/> " +
 			"<#include file=~/All/StandardPageClose/> ";
 			body = concat_body;
-            //console.log('Main Body : ',body);            
+			//console.log('Main Body : ',body);
 		}
 
 		//we dont allow nesting of <# and <{ so parsing is more simple
@@ -203,38 +202,20 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 				line_obj.tag = 'unknown123';
 
 				//console.log('ParseFileToObject b:',tag_string,line_obj);
+				var tage = zx.delimof(tag_string, [' ', '\n']);
 				if (tag_string.substr(0, 1) !== ":") {
 					//console.log('bcb a:',line_obj);
-					if ((objtype === undefined))
-						line_obj = bcb.parse(tag_string, filename, line_obj);
+					line_obj.ini_body = tag_string;
 					//console.log('bcb b:',line_obj);
 				} else {
-
-					var tage = zx.delimof(tag_string, [' ', '\n']);
-					var tag = tag_string.substring(1, tage).trim();
-					var body_string = tag_string.substring(tage + 1) //.trim(); //trim has been removed so the line numbers from models preserve in debug output
-						//console.log('Quic input:',tag,body_string);
-						// console.log('remove leading lines  C :', body_string.substring(0,20));
-						line_obj.tag = tag;
-					line_obj.body = body_string;
-
-					if ((objtype === undefined) || (objtype === line_obj.tag.toLowerCase()))
-						line_obj = zx.quic.parse(zx, line_obj, body_string, tag); //line_obj here gets filled later...should really be made into 2 separate objects
-
-					//console.log('Quic output:',line_obj);
+					line_obj.tag = tag_string.substring(1, tage).trim();
+					line_obj.body = tag_string.substring(tage + 1) //.trim(); //trim has been removed so the line numbers from models preserve in debug output
 				}
-
-				//line_obj.filename=line_obj.srcinfo.filename;
-				//console.log('bcb:',line_obj);
-				//have to re do this as the parser overwrites the object
 
 				if ((objtype === undefined) || (objtype === line_obj.tag.toLowerCase())) {
-					zx.locate_plugin(zx, "tag_pass0_", line_obj.tag, line_obj);
-					zx.eachplugin(zx, "process_pass0", {
-						line_obj : line_obj,
-						blocks : blocks
-					});
+					blocks.push(line_obj);
 				}
+
 				//console.log('bcb b2:',line_obj);
 
 				//left over html on the next line
@@ -272,7 +253,7 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 				//console.warn('Unknown start ',starts[i]);
 				//  return (2);
 			}
-
+			//console.log('ParseFileToObject z:');
 			var arr = starts[i].split("\n");
 			//console.log('arr.length:',arr.length,col,arr);
 			if (arr.length > 1)
@@ -319,10 +300,38 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 
 	//console.warn('main  file 2obj ',filename);
 	var obj = exports.ParseFileToObject(zx, filename);
-	//console.warn('main  file ',filename, JSON.stringify(obj, null, 4).length );
+	//console.warn('main  file ', filename, JSON.stringify(obj, null, 4).length);
 	for (var i = 0; i < obj.length; i++) {
+		//console.warn('page-Tag ', i, obj[i].tag);
 		if (obj[i].tag === undefined)
 			console.warn('page-undefined Tag ', i, obj[i]);
+
+		try {
+			if (obj[i].ini_body) {
+
+				obj[i] = bcb.parse(obj[i].ini_body, obj[i].srcinfo.filename, obj[i]);
+
+			} 
+            if (obj[i].body){
+				//console.log('Quic RecurseParseFileToObject 172021 :',obj[i]);
+				obj[i] = zx.quic.parse(zx, obj[i], obj[i].body, obj[i].tag, true); //obj[i] here gets filled later...should really be made into 2 separate objects
+                //console.log('Quic RecurseParseFileToObject 172022 :');
+			}
+		} catch (e) {
+			zx.error.caught_exception(zx, e, " RecurseParseFileToObject mark-172031 ");
+			throw zx.error.known_error;
+		}
+		try {
+			zx.locate_plugin(zx, "tag_pass0_", obj[i].tag, obj[i]);
+			zx.eachplugin(zx, "process_pass0", {
+				line_obj : obj[i],
+				blocks : obj
+			});
+
+		} catch (e) {
+			zx.error.caught_exception(zx, e, " RecurseParseFileToObject mark-172032 ");
+			throw zx.error.known_error;
+		}
 
 		if (obj[i].tag.toLowerCase() === 'table') {
 			if (obj[i].q) {
@@ -355,6 +364,7 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 		if (obj[i].tag.toLowerCase() === 'include') {
 			fn = obj[i].file[0] + zx.app_incl_extn;
 
+			//console.log('include tag : ', fn);
 			fn = fileutils.locatefile(zx, fn, zx.file_name, obj[i], 120014);
 			//WIP
 			if (fn !== "") {
@@ -374,8 +384,7 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 			zx.includedfiles = zx.deduplicate(zx.includedfiles);
 			//console.log('include tag stack y:',obj[i] );
 			var obj2 = exports.ParseFileToObject(zx, fn + zx.app_extn);
-			//console.warn('include tag : file ',fn, JSON.stringify(obj2, null, 4).length );
-
+			//console.warn('include tag : file ', fn, JSON.stringify(obj2, null, 4).length);
 
 			if (obj2 === undefined) {
 				console.warn('include file could ot be read or found ', fn + zx.app_extn);
