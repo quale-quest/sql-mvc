@@ -248,7 +248,7 @@ DECLARE VARIABLE o_session varchar(40);
 DECLARE VARIABLE passw    varchar(20) ='';
 DECLARE VARIABLE usern    varchar(20) ='';
 DECLARE VARIABLE LANDING_PAGE varchar(100) ;
-DECLARE VARIABLE currentpage varchar(100);
+DECLARE VARIABLE currentpage varchar(100)='';
 
 DECLARE VARIABLE table_name varchar(100);
 DECLARE VARIABLE target_field_name  varchar(100);
@@ -307,8 +307,9 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
           
             bt=LOWER(bt);
                  if (bt='u') THEN  usern=val ;       
-            else if (bt='p') THEN  passw=val ;       
-            else if (bt='c') THEN  update_cid=val ;  -- used as tempory storage                 
+            else if (bt='p') THEN  passw=val ;  
+			else if (bt='l') THEN  currentpage=val ;			
+            else if (bt='c') THEN  update_cid=val ;  -- used as temporary storage                 
             else if (bt='k') THEN  i=cast(val as integer); /*Key field update - used as temporary storage                 */
             else if (bt='v') THEN /*Key value update - temp cache*/
                      BEGIN
@@ -404,7 +405,7 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
 
             
 			
-            --if (currentpage is null) then usern='SessionExpired';
+            --if (currentpage='') then usern='SessionExpired';
             --info=:CID||'&'||:PKRef||'& '||'/'||COALESCE(:currentpage,'');  suspend;
             
         END
@@ -420,8 +421,9 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
           
           /*info=:o_ref||'&'||:LANDING_PAGE||'&'||:passw||'&';  suspend;*/
           
-         currentpage = '//'||LANDING_PAGE||'/Index';
-          
+		 IF ( currentpage <> '') THEN currentpage = '//'||LANDING_PAGE||currentpage;
+         ELSE currentpage = '//'||LANDING_PAGE||'/Index';
+		 
          current_page_pk=NULL;
          pk = gen_id( Z$CONTEXT_seq, 1 );          
          INSERT INTO Z$CONTEXT (PK, TSTAMP, OPERATOR_REF, ID) 

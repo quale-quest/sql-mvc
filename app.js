@@ -48,7 +48,7 @@ ss.http.route('/files?*', function (req, res) {
 });
 
 ss.http.route('/', function (req, res) {
-//console.log('parse/ ', req.url);
+//console.log('parse/ ', req.headers.host);
 
 	// we can also serve url friendly pages from the application
 
@@ -58,24 +58,33 @@ ss.http.route('/', function (req, res) {
 	//console.log('===========================Initial contents of my session is ', req.session.myStartID);
 	console.log('===========================Inital contents of my session is ', req.headers.host, req.url, req.session.myStartID);
 
+	if (req.session.myStartID === undefined) {
+		//ss.session.options.secret = crypto.randomBytes(32).toString();
+		req.session.myStartID = app_util.timestamp();//crypto.randomBytes(32).toString();
+		req.session.save();
+	}    
+    
 	/*
 	TODO locate the application that wants to be run
 	within that application we retrieve a config file
 	organise the application source in this tree... even though the compiler puts it in the database
 	 */
 
-	if (req.session.myStartID === undefined) {
-		//ss.session.options.secret = crypto.randomBytes(32).toString();
-		req.session.myStartID = app_util.timestamp();//crypto.randomBytes(32).toString();
-		req.session.save();
-	}
-
-	var root_folder = path.resolve('./Quale/') + '/';
-	db.databasePooled(root_folder, req.session.myStartID, req.url, function (err /*, msg, dbref*/
+    var root_folder = path.resolve('./Quale/') + '/';
+    var host_name = (req.headers.host.match(/(http:\/\/)?(https:\/\/)?(\w+)/) || ["", "",""])[3];    
+    var home_page = (req.url.match(/([\/]\w+)([\w\W]+)/) || ["", "",""]);    
+    var Application = home_page[1]; //=host_name  to make host name based routing
+	var page_user_pass = (home_page[2].match(/([\w\/]+)\?*(\w*)&*([\w]*)/) || ["", "","",""]); 
+    console.log('serveClient host:',host_name,' home_page:', home_page,page_user_pass);
+    
+	db.databasePooled(root_folder, req.session.myStartID,Application, function (err , msg, dbref
 		) {
 		if (err) {
 			console.log(err.message);
 		} else {
+        
+            dbref.page_user_pass=page_user_pass;
+            //console.log('serveClient b4:', home_page);
 			//console.log('serveClient b4:', JSON.stringify(res,null,4));
 			//console.log('serveClient b4:', res);
 			res.serveClient('main');
@@ -106,6 +115,7 @@ if (ss.env === 'production')
 // Start web server
 var server = http.Server(ss.http.middleware);
 var config = JSON.parse(require('fs').readFileSync('Quale/Config/config.json').toString());
+config.run=config.run_settings[config.run_mode];
 server.listen(config.serve_port);
 
 //start qq file monitor if in dev mode

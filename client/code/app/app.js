@@ -599,7 +599,7 @@ if (0) {
 
 		// Grab the message from the text box
 		// Call the 'send' funtion (below) to ensure it's valid before sending to the server
-		return exports.sendLogin($('#LoginName').val(), $('#LoginInput').val(), function (success) {
+		return exports.sendLogin($('#LoginName').val(), $('#LoginInput').val(), $('#LoginPage').val(), function (success) {
 			if (success) {
 				return $('#myMessage').val('');
 			} else {
@@ -611,9 +611,9 @@ if (0) {
 
 //
 // sharing code between modules by exporting function
-exports.sendLogin = function (LoginName, LoginInput, cb) {
+exports.sendLogin = function (LoginName, LoginInput, Page, cb) {
 	if (loginvalid(LoginName) && loginvalid(LoginInput)) {
-		return ss.rpc('ServerProcess.LoginAction', LoginName, LoginInput, cb);
+		return ss.rpc('ServerProcess.LoginAction', LoginName, LoginInput,Page, cb);
 	} else {
 		return cb(false);
 	}
@@ -623,7 +623,7 @@ exports.sendLogin = function (LoginName, LoginInput, cb) {
 $(function () {
 	setTimeout(function () {
 		$('#LoginForm').submit();
-	}, 1000);
+	}, 100);
 
 });
 

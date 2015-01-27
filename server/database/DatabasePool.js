@@ -24,15 +24,19 @@ exports.locate = function (connectionID) {
 
 exports.load_config = function (root_folder, Application) {
 
+	if (Application === '')
+		Application = '/Home';
 	if (Application === '/')
 		Application = '/Home';
+        
+    var initial   =root_folder + 'Config' + Application; 
 	var fileContents = '',
-	search = path.resolve(root_folder + 'Config' + Application);
+	search = path.resolve(initial);
 
-	//console.log('Inital Application is',root_folder+ ' + Config _' + Application, Application,' located at:',search);
+	//console.log('Inital Application is',initial, Application,' located at:',search);
 	while (fileContents === "" && search !== '/') {
 		try {
-			fileContents = fs.readFileSync(search + '/config.json');
+			fileContents = fs.readFileSync(search + '/config.json');            
 		} catch (e) {
 			//console.log('App config error: for ', search,e);
 			search = path.resolve(search + '/..');
@@ -43,7 +47,10 @@ exports.load_config = function (root_folder, Application) {
 
 	var conf = {};
 	if (fileContents !== "")
+       {
 		conf = JSON.parse(fileContents);
+        conf.run=conf.run_settings[conf.run_mode];
+        }
 
 	return conf;
 }
@@ -57,20 +64,18 @@ exports.LocateDatabasePool = function (connectionID) {
 
 }
 
-exports.databasePooled = function (root_folder, connectionID, url, callback) {
+exports.databasePooled = function (root_folder, connectionID, Application, callback) {
 	//util.log('db connections json 164959 :'+util.inspect(exports.connections));
 	if (exports.connections[connectionID] !== undefined) {
 		//console.log("database connection cached from : ", connectionID);
 		if (callback !== undefined)
 			callback(null, "Connected", exports.connections[connectionID]);
 	} else { //read the config from  a file in the application folder
-		//console.log("url for " + connectionID + ' : ' + url);
+		//console.log("Application for " + connectionID + ' : ' + Application);
 		//console.log("database connection connect from : ", connectionID);
 		var rambase = {};
 
-		var fileContents = "",
-		Application = url;
-
+		var fileContents = "";
 		var conf = exports.load_config(root_folder, Application);
 
 		//console.log("Config file Contents : ", fileContents,conf );
