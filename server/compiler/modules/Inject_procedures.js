@@ -31,16 +31,18 @@ var fileutils = require('./fileutils.js');
 exports.module_name='Inject_Procedures.js';
 exports.check_inline_link_procedure = function (zx, line_obj,debug) {
 	//..if there is code to execute  inject it and set a when statement......
+    //console.log('check_inline_link_procedure from 151927:',debug,line_obj.nonkeyd);
 	if (zx.pass !== 1)
 		return; //first pass sets up the items second pass injects them
 
-    //if (debug)console.log('check_inline_link_procedure from:',debug);
+    //if (debug) console.log('check_inline_link_procedure from 151928:',line_obj.title,line_obj.tag,debug,line_obj.nonkeyd);
         
 	var myname = zx.injected.page_name;	
 	if ((zx.gets(line_obj.nonkeyd).length > 0)&&zx.injected.cross!==undefined) {
         var Code = zx.getA(line_obj.nonkeyd);
 		var name = zx.UniqueName(zx, line_obj, 'CondProc');
-		//console.log('Inline button procedure:',Code,name,line_obj.form);
+		console.log('Inline button procedure:',Code,name,line_obj.form);
+        //console.trace("STACK 150115");
 		line_obj.execute = name;
 
 		var target_name = (line_obj.form === undefined) ? myname : zx.Current_main_page_name;

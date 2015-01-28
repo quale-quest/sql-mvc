@@ -7,10 +7,13 @@ ease of use is important
 exports.module_name = 'models.js';
 var deepcopy = require('deepcopy');
 var extend = require('node.extend');
+var fs = require('fs');
 
 exports.tag_controller = exports.tag_model = function (zx, line_obj) {
 	if (line_obj.save !== undefined)
 		return; //not interested in model save blocks
+	if (line_obj.q === undefined)
+		return;        
 	if (line_obj.q.query === undefined)
 		return;
 	if (zx.gets(line_obj.q.query) === '')
@@ -115,17 +118,23 @@ exports.process_pass01 = function (zx, par) {
 					filename : model.filename,
 					start_line : model.start_line
 				});
+                delete lineextn.use;
+                if (lineextn.save) delete lineextn.save;
 				blocks.push(lineextn);
 
 			});
 			if (blocks.length > 0) {
                 
                 //console.log('use model insertArrayAt :',par.indx, par.line_objects.length,blocks.length);
-                //console.log('use model insertArrayAt :',par.indx, par.line_objects);
                 //
-                
+                //if (name==='allbutton') fs.writeFileSync('output/debug1.json', JSON.stringify(zx.line_objects, null, 4));
+                //console.log('use model insert  :',par.indx, blocks);    
 				zx.insertArrayAt(zx.line_objects, par.indx+1, blocks);
+                //var rem = 
                 zx.line_objects.splice(par.indx, 1);                
+                //console.log('use model removed  :',par.indx, rem);    
+                //console.log('use model insertArrayAt :',par.indx, par.line_objects);
+                if (name==='allbutton')fs.writeFileSync('output/debug2.json', JSON.stringify(zx.line_objects, null, 4));
                 
                 //console.log('use model done insertArrayAt :',par.indx, par.line_objects.length);
 			}

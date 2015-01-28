@@ -34,20 +34,19 @@ exports.compile = function (zx, obj) {
 
 		for (i = 0; i < zx.line_objects.length; i += 1) {
 
-			line_obj = zx.line_objects[i];
-
 			if (zx.pass === 1) {
 
 				//zx.locate_plugin(zx, "tag_pass0_", line_obj.tag, line_obj);
 				zx.eachplugin(zx, "process_pass01", {
-					line_obj : line_obj,
+					line_obj : zx.line_objects[i],
 					//blocks : blocks,
                     line_objects : zx.line_objects,
                     indx : i
 				});
 
 			}
-
+            
+            line_obj = zx.line_objects[i];
 			zx.line_obj = line_obj;
 			//console.warn('iterate over item :',i,line_obj.tag );
 			//console.warn('iterate over item :',i,line_obj );
@@ -61,8 +60,9 @@ exports.compile = function (zx, obj) {
 			} else {
 				tag = line_obj.tag.toLowerCase();
 
-				if ((tag.substring(0, 1) !== 'x') && (tag.substring(tag.length - 1) !== 'x')) {
-
+                //console.warn('iterate over item 130405:',i,line_obj.tag ,line_obj.save);
+				if ((line_obj.save === undefined)&&(tag.substring(0, 1) !== 'x') && (tag.substring(tag.length - 1) !== 'x')) {
+                    //console.warn('iterate over item 130407:',i,line_obj.tag );
 					//common conditional keys - they have to be all true else the operation is skipped
 					//console.warn('Divin compile conditionals :',i );
 					zx.eachplugin(zx, "start_item", line_obj);
@@ -82,6 +82,7 @@ exports.compile = function (zx, obj) {
 					//check plugins
 					tag = line_obj.tag.toLowerCase();
 					try {
+                    //console.warn('iterate over item 130410:',i,line_obj.tag );
 						done = zx.locate_plugin(zx, "tag_", tag, line_obj);
 						if (!done) {
 							//console.warn('Widgets not done for :',tag );
