@@ -75,6 +75,7 @@ exports.process_pass0 = function (zx, par) {
 	//this here is used more for controllers, saving/using buttons and others as model/contoller items
 	if ((line_obj.save !== undefined) || zx.saving_models !== '') {
 		//store this model
+        line_obj.part_of_model =line_obj.save|| zx.saving_models;
 		name = zx.saving_models;
 		if (name === '')
 			name = zx.gets(line_obj.save);

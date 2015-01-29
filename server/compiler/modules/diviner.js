@@ -17,7 +17,8 @@ exports.compile = function (zx, obj) {
 	zx.debug = 0;
 	zx.line_objects = obj;
 
-	zx.eachplugin(zx, "init", zx.line_objects);
+	zx.eachplugin(zx, "init", zx.line_objects); //to be deprecated
+    zx.eachplugin(zx, "start_page", zx.line_objects);
 
 	zx.pass_max = 5;
 	for (zx.pass = 1; zx.pass <= zx.pass_max; zx.pass += 1) {
@@ -61,7 +62,9 @@ exports.compile = function (zx, obj) {
 				tag = line_obj.tag.toLowerCase();
 
                 //console.warn('iterate over item 130405:',i,line_obj.tag ,line_obj.save);
-				if ((line_obj.save === undefined)&&(tag.substring(0, 1) !== 'x') && (tag.substring(tag.length - 1) !== 'x')) {
+				if ((line_obj.save === undefined)&&
+                    (line_obj.part_of_model === undefined)&&
+                    (tag.substring(0, 1) !== 'x') && (tag.substring(tag.length - 1) !== 'x')) {
                     //console.warn('iterate over item 130407:',i,line_obj.tag );
 					//common conditional keys - they have to be all true else the operation is skipped
 					//console.warn('Divin compile conditionals :',i );
