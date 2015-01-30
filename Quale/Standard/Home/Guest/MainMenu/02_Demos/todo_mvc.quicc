@@ -42,17 +42,27 @@ set here.todo_type='2';
 <div align="center"> 
 <br><br><br><br>
 
+
+</div>	
+</div>	
+
+<#Container
+Style=Tab
+rem="----------------------------------------------------------------------------" tab=Info/>
+
 <h1>Info</h1>
 
 <#print you were here last at here.this_page_info/>
 <#:script set here.this_page_info=cast('now' as timestamp);/><br>
+
 <#print 
 ($select count(*) from MAIL where FROM_USER=session.id and SUBJECT='login log' $) actions from you 
 and ($select count(*) from MAIL where SUBJECT='login log' $) actions total (in this session).
 />
+<#NextContainer rem="----------------------------------------------------------" tab=Source_Code/>
+<#include type="pre" file="MainMenu/02_Demos/todo_mvc" />
 
-</div>	
-</div>	
+<#CloseContainer/>
 <br>
 <br>
 <br> 

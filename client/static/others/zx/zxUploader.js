@@ -59,6 +59,7 @@ function updateProgress (oEvent) {
 
 function transferComplete(evt) {
   //alert("The transfer is complete.");
+  zxdelta_increment();
 }
 
 function transferFailed(evt) {

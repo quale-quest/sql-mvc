@@ -241,6 +241,13 @@ function truish(input) {
  return (val!==undefined)&&(val!=0)&&(val!='')&&(val.substr(0,1).toLowerCase()!='n')&&(val.substr(0,1).toLowerCase()!='f')&&(val!='0');
 }
 
+
+function zxdelta_increment() { 
+deltacount=deltacount+1;
+$('#deltacounter1').text(deltacount);
+$('#deltacounter2').text(deltacount);
+}
+
 function zxd(e,pkf,pko) { //delta
 var r;
 
@@ -253,9 +260,7 @@ var r;
   
   zx_delta(Cell);
 
-deltacount=deltacount+1;
-$('#deltacounter1').text(deltacount);
-$('#deltacounter2').text(deltacount);
+  zxdelta_increment();
 
  var autosave=$( el ).attr("data-autosave");
  var save=truish(autosave);

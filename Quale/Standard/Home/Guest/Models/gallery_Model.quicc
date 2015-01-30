@@ -3,27 +3,32 @@
 
 <#:model
 
-CREATE TABLE TODO_MVC				--:{as:"Table"} 
+CREATE TABLE GALLERY		     	--:{as:"Table"} 
 (
   REF VARCHAR(40),					--:{as:"pk"}
   NAME VARCHAR(100),				--:{as:"Text",size:40,title:"todo",onupdate:"owner=session.id"}  
   OWNER VARCHAR(40),				--:{Type:"Hide"}
-  STATUS VARCHAR(10) default ''    	--:{Type:"Pick",List:"Ticked",onupdate:"owner=session.id"}  
+  STATUS VARCHAR(10) default '',	--:{Type:"Pick",List:"Ticked"}  
+  DisplayName  VARCHAR(100),		--:{as:"Text"}
+  BLOB_ID   VARCHAR(100)			--:{Type:"Gallery"}
+  
 );
 
 
 
+
 SET TERM ^ ;
-CREATE TRIGGER TODO_MVC_BI FOR TODO_MVC ACTIVE
+CREATE TRIGGER GALLERY_BI FOR GALLERY ACTIVE
 BEFORE INSERT POSITION 0
 AS
 BEGIN
   if (new.ref is null) then
      select ref from Z$GEN_PK(1) into new.ref;
+	 
 END^
 SET TERM ; ^
-/******************** TRIGGERS ********************/
 
+/******************** TRIGGERS ********************/
 />
 
 

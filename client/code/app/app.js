@@ -112,6 +112,26 @@ var zx_right_toggle_menu = function () {
     $('#panel-right').toggleClass('panel-close panel-open',500, 'easeOutExpo');
 };
 
+var zx_gallery_adaptive_touch_init  = function () {
+  
+     // See if this is a touch device
+     if ('ontouchstart' in window)
+     {
+        // Set the correct body class
+        $('body').removeClass('no-touch').addClass('touch');
+       
+        // Add the touch toggle to show text
+        $('div.qiui1gallery_boxInner img').click(function(){
+           $(this).closest('.qiui1gallery_boxInner').toggleClass('touchFocus');
+        });
+     }
+  
+};
+
+var zx_SyntaxHighlighter_init = function () {
+//    SyntaxHighlighter.all();
+};
+
 
               
 var static_zx_hide_leftbar = 0;
@@ -439,7 +459,8 @@ var process_new_data = function (cx) {
 
 			capture_enter();
             zxUploaderInit(); //todo make this conditional call only if it is inclueded
-
+            zx_gallery_adaptive_touch_init();
+            zx_SyntaxHighlighter_init();
 		}
 		break; //Content
 	case "Action": {}

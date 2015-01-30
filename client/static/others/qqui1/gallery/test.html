@@ -1,0 +1,117 @@
+<!DOCTYPE HTML>
+<!-- source: http://jsbin.com/utupuw/5 -->
+ 
+<html lang="en-US"> 
+<head> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">   
+  <title>Responsive Tiled Photo Gallery</title>
+  
+  <link rel="stylesheet" href="gallery.css" type="text/css" media="screen"/>
+  
+  <!-- Enable media queries for old IE -->
+  <!--[if lt IE 9]>
+     <script src="http://css3-mediaqueries-js.googlecode.com/svn/trunk/css3-mediaqueries.js"></script>
+  <![endif]-->
+  
+</head> 
+<body class="no-touch"> 
+  
+  <div class="qiui1gallery_wrap">
+    
+    <!-- Define all of the tiles: -->
+    <div class="qiui1gallery_box">
+      <div class="qiui1gallery_boxInner">
+        <img src="http://www.dwuser.com/education/content/creating-responsive-tiled-layout-with-pure-css/images/demo/7.jpg" />
+        <div class="titleqiui1gallery_box">Butterfly</div>
+      </div>
+    </div>
+    <div class="qiui1gallery_box">
+      <div class="qiui1gallery_boxInner">
+        <img src="http://www.dwuser.com/education/content/creating-responsive-tiled-layout-with-pure-css/images/demo/1.jpg" />
+        <div class="titleqiui1gallery_box">An old greenhouse</div>
+      </div>
+    </div>
+    <div class="qiui1gallery_box">
+      <div class="qiui1gallery_boxInner">
+        <img src="http://www.dwuser.com/education/content/creating-responsive-tiled-layout-with-pure-css/images/demo/2.jpg" />
+        <div class="titleqiui1gallery_box">Purple wildflowers</div>
+      </div>
+    </div>
+    <div class="qiui1gallery_box">
+      <div class="qiui1gallery_boxInner">
+        <img src="http://www.dwuser.com/education/content/creating-responsive-tiled-layout-with-pure-css/images/demo/3.jpg" />
+        <div class="titleqiui1gallery_box">A birdfeeder</div>
+      </div>
+    </div>
+    <div class="qiui1gallery_box">
+      <div class="qiui1gallery_boxInner">
+        <img src="http://www.dwuser.com/education/content/creating-responsive-tiled-layout-with-pure-css/images/demo/10.jpg" />
+        <div class="titleqiui1gallery_box">Crocus close-up</div>
+      </div>
+    </div>
+    <div class="qiui1gallery_box">
+      <div class="qiui1gallery_boxInner">
+        <img src="http://www.dwuser.com/education/content/creating-responsive-tiled-layout-with-pure-css/images/demo/4.jpg" />
+        <div class="titleqiui1gallery_box">The garden shop</div>
+      </div>
+    </div>
+    <div class="qiui1gallery_box">
+      <div class="qiui1gallery_boxInner">
+        <img src="http://www.dwuser.com/education/content/creating-responsive-tiled-layout-with-pure-css/images/demo/5.jpg" />
+        <div class="titleqiui1gallery_box">Spring daffodils</div>
+      </div>
+    </div>
+    <div class="qiui1gallery_box">
+      <div class="qiui1gallery_boxInner">
+        <img src="http://www.dwuser.com/education/content/creating-responsive-tiled-layout-with-pure-css/images/demo/6.jpg" />
+        <div class="titleqiui1gallery_box">Iris along the path</div>
+      </div>
+    </div>
+    <div class="qiui1gallery_box">
+      <div class="qiui1gallery_boxInner">
+        <img src="http://www.dwuser.com/education/content/creating-responsive-tiled-layout-with-pure-css/images/demo/8.jpg" />
+        <div class="titleqiui1gallery_box">The garden blueprint</div>
+      </div>
+    </div>
+    <div class="qiui1gallery_box">
+      <div class="qiui1gallery_boxInner">
+        <img src="http://www.dwuser.com/education/content/creating-responsive-tiled-layout-with-pure-css/images/demo/9.jpg" />
+        <div class="titleqiui1gallery_box">The patio</div>
+      </div>
+    </div>
+    <div class="qiui1gallery_box">
+      <div class="qiui1gallery_boxInner">
+        <img src="http://www.dwuser.com/education/content/creating-responsive-tiled-layout-with-pure-css/images/demo/11.jpg" />
+        <div class="titleqiui1gallery_box">Bumble bee collecting nectar</div>
+      </div>
+    </div>
+    <div class="qiui1gallery_box">
+      <div class="qiui1gallery_boxInner">
+        <img src="http://www.dwuser.com/education/content/creating-responsive-tiled-layout-with-pure-css/images/demo/12.jpg" />
+        <div class="titleqiui1gallery_box">Winding garden path</div>
+      </div>
+    </div>
+    
+  </div>
+  <!-- /#wrap -->
+  
+  <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.3.js"></script>
+  <script type="text/javascript">
+  $(function(){
+     // See if this is a touch device
+     if ('ontouchstart' in window)
+     {
+        // Set the correct body class
+        $('body').removeClass('no-touch').addClass('touch');
+       
+        // Add the touch toggle to show text
+        $('div.qiui1gallery_boxInner img').click(function(){
+           $(this).closest('.qiui1gallery_boxInner').toggleClass('touchFocus');
+        });
+     }
+  });
+  </script>
+  
+</body> 
+</html>

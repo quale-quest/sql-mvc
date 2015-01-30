@@ -302,14 +302,20 @@
 
 	"UploadFieldEdit_Main":  ["[[[upload({{pop}},'{{field.f.filetype}}',0,'{{QryOffset}}','",
 	           "repack(Title,Button) ",		
-	           "')]]]"],	
-				
+	           "')]]]"],					
 	"UploadFieldEdit_Div":" <div data-qqpickvalue='[[{{f_index}}]]'>{{{pop}}}</div>",
 	"UploadFieldEdit_Script":"inherit:Edit_Script",
 	"UploadPluginCode":"some way of making this code and the code in app.js  and in templates/widgets pluggable",
-	"UploadFieldView_Head": "inherit:View_Head",	
-
 	
+	"UploadFieldView_Head": "inherit:View_Head",			
+	"UploadFieldView_Div":"inherit:View_Div",
+	"UploadFieldView_Script": "inherit:View_Script",	
+	"UploadFieldView_Main":["<img src='{{{field.f.url}}}[[[{{pop}}]]]' alt='[[[{{pop}}]]]' title='[[[{{pop}}]]]' ",
+			" {{#field.f.width}}width=\"{{field.f.width}}\"{{/field.f.width}}",
+			" {{#field.f.height}}rows=\"{{field.f.height}}\"{{/field.f.height}}",	
+			"/>"],
+	
+		
 	
 "SoftCodecs - server side codecs":"",				
     "SoftCodec-Date": {
@@ -384,6 +390,52 @@
 	"UploadDataTopTitle": "",			
 	"UploadDataHeadRecordWrap":"",
 	"UploadDataFootRecordWrap":"",
+
+	
+	"UploadFormData_Inherit":"Form",
+	"UploadFormDataWrap": "<div > <table class=\"qq-table\" id=\"{{tid}}\">{{{head_html}}}{{{body_html}}}{{{foot_html}}}</table></div>",
+	"UploadFormDataTopTitle": "",			
+	"UploadFormDataHeadRecordWrap":"",
+	"UploadFormDataFootRecordWrap":"",
+	
+	
+    "GalleryDataTopTitle": "<p><b>{{table.Title}}</b></p>",			    
+	"GalleryDataWrap": "<div class='qiui1gallery_wrap'>{{{head_html}}}{{{body_html}}}{{{foot_html}}}</div>",    
+    "GalleryDataHead": "$CRLF${{{pop}}}",
+	"GalleryDataHeadRecordWrap":"{{{pop}}}",
+	"GalleryDataBodyRecordWrap":"{{{pop}}}",
+	"GalleryDataFootRecordWrap":"{{{pop}}}",
+    "GalleryDataHeadRow": " ",
+    "GalleryDataHeadFirstFieldCell": " ",
+    "GalleryDataHeadFieldCell": " ",	
+    "GalleryDataBody": "$CRLF${{{pop}}}",
+    "GalleryDataBodyArray": "[[#{{{tid}}}]]{{{pop}}}[[/{{{tid}}}]]",
+    "GalleryDataBodyRow": "{{{pop}}}",
+    "GalleryDataBodyFirstFieldCell": "{{{pop}}}",
+    "GalleryDataBodyFieldCell": "{{{pop}}}",
+	"GalleryDataFoot": "$CRLF$",
+    "GalleryDataFootRow": "{{{pop}}}",
+    "GalleryDataFootFirstFieldCell": "{{{pop}}}",
+    "GalleryDataFootFieldCell": "{{{pop}}}",	
+	
+	"GalleryFieldEdit_Main":  ["[[[upload({{pop}},'{{field.f.filetype}}',0,'{{QryOffset}}','",
+	           "repack(Title,Button) ",		
+	           "')]]]"],					
+	"GalleryFieldEdit_Div":" <div data-qqpickvalue='[[{{f_index}}]]'>{{{pop}}}</div>",
+	"GalleryFieldEdit_Script":"inherit:Edit_Script",
+	"GalleryPluginCode":"some way of making this code and the code in app.js  and in templates/widgets pluggable",
+	
+	"GalleryFieldView_Head": "inherit:View_Head",			
+	"GalleryFieldView_Div":"inherit:View_Div",
+	"GalleryFieldView_Script": "inherit:View_Script",	
+	"GalleryFieldView_Main":["<div class='qiui1gallery_box'><div class='qiui1gallery_boxInner'>",
+			"<img src='{{{field.f.url}}}[[[{{pop}}]]]' alt='[[[{{pop}}]]]' title='[[[{{pop}}]]]' ",
+			" {{#field.f.width}}width=\"{{field.f.width}}\"{{/field.f.width}}",
+			" {{#field.f.height}}rows=\"{{field.f.height}}\"{{/field.f.height}}",	
+			"/>",
+			"<div class='titleqiui1gallery_box'>[[[{{field.w.DisplayName}}]]]</div></div></div>"],
+    
+	
 	
     "xTodoDataHead": "$CRLF$<thead>{{{pop}}}</thead>",
 	"xTodoDataBody":"inherit:DataBody",
