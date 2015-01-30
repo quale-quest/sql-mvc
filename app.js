@@ -41,7 +41,7 @@ ss.http.route('/locked?*', function (req, res) { //files that should not be publ
 
 ss.http.route('/files?*', function (req, res) {
 	var fn = req.url.substr(7);
-	console.log('parse ', req.session,req.url, fn);
+	//console.log('parse ', req.session,req.url, fn);
     //var path = zx.config.async.public    
 	app_util.serveBuffer(res, '', fs.readFileSync('./database/files/' + fn)); //TODO in production the s must be improved - should actually be server from a web server or CDN
 	return true; 

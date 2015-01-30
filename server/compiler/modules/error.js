@@ -78,11 +78,19 @@ exports.log_SQL_warning = function (zx, text, Quale, source_line_obj) {
 		source : source_line_obj
 	});
 };
+exports.log_syntax_warning = function (zx, text, Quale, source_line_obj) {
+	exports.error_log.push({
+		endpoint : "syntax_warning",
+		at : text,
+		Quale : Quale,
+		source : source_line_obj
+	});
+};
 //=============================================================================fail
 exports.log_validation_fail = function (zx, text, script, validation_obj) {
 	var errtxt = print_error(zx, validation_obj);
 	exports.error_log.push({
-		endpoint : "InValid",
+		endpoint : "Invalid",
 		level : "fail",
 		at : text,
 		errtxt : errtxt,

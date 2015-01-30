@@ -237,7 +237,7 @@ var formatField = function (cx, FT /*, itemindex*/
 		try {
 			var ts = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Div");
 			var template = hogan.compile(ts);
-
+            //console.log('template.render(cx): -----------------------------------',cx.field);
 			cx.pop = '' + template.render(cx); //pop
 		} catch (e) {
 			zx.error.caught_exception(zx, e, " formatField -120555, hogan fragment : " + JSON.stringify(ts) + "\ncx: " + JSON.stringify(cx));

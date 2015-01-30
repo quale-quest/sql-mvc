@@ -641,6 +641,49 @@ exports.sizeof = function (object) {
 }
 
 
+var forFields = exports.forFields = function (object,callback) {
+//returns true and stops if a match is found - acts like arr.some
+
+    if (Array.isArray(object))         
+        return object.some(callback);
+        
+    for (var key in object) {
+        if (object.hasOwnProperty(key)) {
+            if (callback( object[key],key,object)===true) return;
+        }
+    }                    
+    return false;
+}                        
+
+var encodeHtml = exports.encodeHtml = function (html) {
+//decode with <script type="text/javascript">document.write(unescape("..."));</script>
+     html = escape(html);
+     html = html.replace(/\//g,"%2F");
+     html = html.replace(/\?/g,"%3F");
+     html = html.replace(/=/g,"%3D");
+     html = html.replace(/&/g,"%26");
+     html = html.replace(/@/g,"%40");
+     return html;
+   } 
+var showSource = exports.showSource = function (html) {
+    html = '' + html + '';
+    html = html.replace(/</g,"&#60;");
+    html = html.replace(/>/g,"&#62;");
+    //html = html.replace(/\n/g,"<br>");
+    
+    html =  '<div align="left"> <pre class="brush: js; html-script: true">' + html + '</pre></div>';
+    return html;
+} 
+   
+   
+
+/*//var fields={a:"a",b:"b",c:"c"};
+var fields=["a","b","c"];
+    forFields( fields,function (fld,key) {
+     console.log('forFields process_tags a: ', fld,key);           
+    });   
+process.exit(2);    */
+    
 //================================================tests
 /*
 var Result="abc,repack(cd,ef),ouqwui";

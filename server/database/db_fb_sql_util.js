@@ -61,7 +61,8 @@ var parse_error = function (zx, err, source, script) {
 			srcx = source.src_obj.srcinfo;
 		else
 			srcx = source.srcinfo;
-
+        if (srcx!==undefined)
+        {
 		var src = deepcopy(srcx);
 		if (src.source && src.source.length > 200)
 			src.source = zx.show_longstring(src.source);
@@ -77,6 +78,13 @@ var parse_error = function (zx, err, source, script) {
 		if (script !== undefined)
 			script_err.context = script.substr(script_err.col - 10, 20);
 		console.log('script_err source err:', script_err);
+        zx.error.log_syntax_warning(zx, 'script_err source err:', zx.err , zx.line_obj);
+        }
+        else
+        {
+        zx.error.log_syntax_warning(zx,'script_err source err:', zx.err , zx.line_obj);
+        }
+        
 	}
 
 	zx.err = script_err;

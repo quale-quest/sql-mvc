@@ -271,7 +271,7 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 
 	//merge with any class information
 	if (quale.as !== undefined) {
-		if (!quale.as.isArray)
+		if (!Array.isArray(quale.as)) 
 			quale.as = [].concat(quale.as);
 		quale.as.forEach(function (clss) {
 			if (zx.q.classes[clss] !== undefined) {

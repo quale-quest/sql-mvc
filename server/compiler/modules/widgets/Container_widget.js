@@ -93,7 +93,7 @@ var zxContainerOpen = function (zx, o) {
 		List : []
 	};
 	if (o.tab !== undefined) {
-		console.log('newcontianer tab: ',o.tab,newcontianer.Indx,zx.Container.TabLists );
+		//console.log('newcontianer tab: ',o.tab,newcontianer.Indx,zx.Container.TabLists );
 		newcontianer.List = o.tab;   
         if (zx.pass>1)
              newcontianer.List = zx.Container.TabLists[newcontianer.Indx] ;    

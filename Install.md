@@ -91,7 +91,7 @@ Edit the config.json (set server port etc..)
 
 
 or edit crontab and add the line :
->@reboot /usr/local/bin/sql-mvc forevere path_to_your_project_root
+>@reboot /usr/local/bin/sql-mvc forever path_to_your_project_root
 
 #Manuals
 Programmers Manual at https://github.com/quale-quest/sql-mvc/wiki

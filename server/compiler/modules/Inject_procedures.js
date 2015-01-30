@@ -41,7 +41,7 @@ exports.check_inline_link_procedure = function (zx, line_obj,debug) {
 	if ((zx.gets(line_obj.nonkeyd).length > 0)&&zx.injected.cross!==undefined) {
         var Code = zx.getA(line_obj.nonkeyd);
 		var name = zx.UniqueName(zx, line_obj, 'CondProc');
-		console.log('Inline button procedure:',Code,name,line_obj.form);
+		//console.log('Inline button procedure:',Code,name,line_obj.form);
         //console.trace("STACK 150115");
 		line_obj.execute = name;
 
