@@ -276,7 +276,7 @@ var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx,
 			//title
 			if (field.title === undefined)
 				field.title = field.name.replace(/\'/g, "");
-
+                
 			//find the primary key field
 			//console.log('find the primary key field :',field.name,field.pointer);
 			if (field.pointer === undefined) {
@@ -320,6 +320,9 @@ var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx,
 							return false;
 					});
 			}
+                
+            
+            
 		});
 		tcx.fields.push(r);
 	});
@@ -373,6 +376,7 @@ var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx,
 		//console.log('autoinsert_internal :',tcx.query);
 
 	}
+
 
 };
 
@@ -538,6 +542,28 @@ var formulatemodel = exports.formulatemodel = function (zx, cx, o) {
 	cx.fields = tcx.fields;
 	cx.query = tcx.query;
 
+    
+            
+                            
+	tcx.fields.forEach(function (forfield) {
+		forfield.cf.forEach(function (r) {
+			if (r.widget !== undefined) {   
+                zx.forFields( r.widget,function (field,key) {                                
+                //console.log('forFields( r.widget) : ',field,key,forfield.name);
+                    tcx.fields.some(function (srch) {
+                        if (srch.name.toLowerCase().trim()===field.toLowerCase().trim())
+                            {
+                               //console.log('forFields( r.widget)srch : ',key,'=',srch.indx,srch.name,forfield.name);       
+                               if (forfield.w===undefined) forfield.w={};
+                               forfield.w[key]=+srch.indx+1;  //+1 is to skip the table row number col                               
+                            }
+                    });
+                });    
+                }
+		});
+	});
+    
+    
 	tcx.fields.forEach(function (r) {
 		r.cf.forEach(function (r) {
 			zx.eachplugin(zx, "plug_field_check", zx.line_object, r);
@@ -704,7 +730,7 @@ exports.tag_form = function (zx, o) {
 		q = o.q.Table;
 	q.view = "form";
 	q.tablestyle = "Form";
-	console.log('tag_form:', o);
+	//console.log('tag_form:', o);
 	exec_query(zx, o, "Table");
 };
 
