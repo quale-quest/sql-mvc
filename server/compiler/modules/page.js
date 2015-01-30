@@ -290,8 +290,6 @@ var addFileToLinkFiles = function (zx, fn, obj, debugref) {
 };
 
 exports.RecurseParseFileToObject = function (zx, filename) {
-	var fn; //,debuglevel = 1;
-
 	//get the object, find an include file and repeat the find
 
 	zx.inputfilecount = 0;
@@ -311,11 +309,11 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 
 				obj[i] = bcb.parse(obj[i].ini_body, obj[i].srcinfo.filename, obj[i]);
 
-			} 
-            if (obj[i].body){
+			}
+			if (obj[i].body) {
 				//console.log('Quic RecurseParseFileToObject 172021 :',obj[i]);
 				obj[i] = zx.quic.parse(zx, obj[i], obj[i].body, obj[i].tag, true); //obj[i] here gets filled later...should really be made into 2 separate objects
-                //console.log('Quic RecurseParseFileToObject 172022 :');
+				//console.log('Quic RecurseParseFileToObject 172022 :');
 			}
 		} catch (e) {
 			zx.error.caught_exception(zx, e, " RecurseParseFileToObject mark-172031 ");
@@ -355,60 +353,106 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 		if (obj[i].tag.toLowerCase() === 'menu') {
 			//console.log('menu tag: ',obj[i] );
 			if (obj[i].form !== undefined) {
-				fn = obj[i].form[0];
-				addFileToLinkFiles(zx, fn, obj[i], 120016);
+				var menufile = obj[i].form[0];
+				addFileToLinkFiles(zx, menufile, obj[i], 120016);
 
 			}
 		}
 
 		if (obj[i].tag.toLowerCase() === 'include') {
-			fn = obj[i].file[0] + zx.app_incl_extn;
+			var file_name;
+			if (obj[i].file[0] === 'this') { //useful for displaying own source
+				obj[i].file[0] = zx.pages[zx.pgi].name;
+				console.log('include this tag : ', zx.pages[zx.pgi].name);
+			}
+            
+            
+            {
+				file_name = obj[i].file[0];
+				if (!fs.existsSync(file_name)) {
+					file_name = obj[i].file[0] + zx.app_incl_extn;
+					if (!fs.existsSync(file_name)) {
+						file_name = fileutils.locatefile(zx, obj[i].file[0]+ zx.app_incl_extn, zx.file_name, obj[i], 120014);
+						if (file_name !== "") {
+							file_name = file_name + zx.app_incl_extn;
+						}
+					}
+
+				}
+			}
 
 			//console.log('include tag : ', fn);
-			fn = fileutils.locatefile(zx, fn, zx.file_name, obj[i], 120014);
-			//WIP
-			if (fn !== "") {
-				var fn_clone = fn + zx.app_incl_extn;
-				appendToDepenance(zx, fn_clone);
-			}
-
-			//if (obj[i].srcinfo.file_stack===undefined) console.warn(':obj.srcinfo.file_stack===undefined ',obj[i] );
-			//console.log('include tag stack: ',obj[i] );
-			zx.file_stack = obj[i].srcinfo.file_stack.slice(0);
-			zx.file_stack.push({
-				filename : obj[i].srcinfo.filename,
-				start_line : obj[i].srcinfo.start_line
-			});
-			//console.log('include tag stack x:',obj[i] );
-			zx.includedfiles.push(zx.Current_file_name);
-			zx.includedfiles = zx.deduplicate(zx.includedfiles);
-			//console.log('include tag stack y:',obj[i] );
-			var obj2 = exports.ParseFileToObject(zx, fn + zx.app_extn);
-			//console.warn('include tag : file ', fn, JSON.stringify(obj2, null, 4).length);
-
-			if (obj2 === undefined) {
-				console.warn('include file could ot be read or found ', fn + zx.app_extn);
-				process.exit(33);
+			if (file_name === "") {
+				//file not found
+                console.log('file not found : ', obj[i].file[0]);
 			} else {
-				//console.warn('b4splice ',obj.length,obj2.length );
-				//http://fromanegg.com/post/43733624689/insert-an-array-of-values-into-an-array-in-javascript
 
-				obj[i].Block = 'Block-' + zx.BlockIndex;
-				var lobj = {
-					tag : "Unblock",
-					Label : ('Block-' + zx.BlockIndex),
-					srcinfo : {}
+				appendToDepenance(zx, file_name);
+	
+				zx.includedfiles.push(zx.Current_file_name);
+				zx.includedfiles = zx.deduplicate(zx.includedfiles);
 
-				};
-				obj2.push(lobj);
-				obj2.unshift(i + 1, 0);
-				Array.prototype.splice.apply(obj, obj2);
-				//console.warn('after splice ',obj.length,obj2.length );
-				//console.warn('splice input ',obj2);
+				if (obj[i].type === undefined || obj[i].type === 'quicc') {
+					//if (obj[i].srcinfo.file_stack===undefined) console.warn(':obj.srcinfo.file_stack===undefined ',obj[i] );
+					//console.log('include tag stack: ',obj[i] );
+					zx.file_stack = obj[i].srcinfo.file_stack.slice(0);
+					zx.file_stack.push({
+						filename : obj[i].srcinfo.filename,
+						start_line : obj[i].srcinfo.start_line
+					});
+					//console.log('include tag stack x:',obj[i] );
 
-				zx.BlockIndex++;
+					//console.log('include tag stack y:',obj[i] );
+					var obj2 = exports.ParseFileToObject(zx, file_name);
+					//console.warn('include tag : file ', file_name, JSON.stringify(obj2, null, 4).length);
+
+					if (obj2 === undefined) {
+						console.warn('include file could ot be read or found ', file_name);
+						process.exit(33);
+					} else {
+						//console.warn('b4splice ',obj.length,obj2.length );
+						//http://fromanegg.com/post/43733624689/insert-an-array-of-values-into-an-array-in-javascript
+
+						obj[i].Block = 'Block-' + zx.BlockIndex;
+						var lobj = {
+							tag : "Unblock",
+							Label : ('Block-' + zx.BlockIndex),
+							srcinfo : {}
+						};
+						obj2.push(lobj);
+						obj2.unshift(i + 1, 0);
+						Array.prototype.splice.apply(obj, obj2);
+						//console.warn('after splice ',obj.length,obj2.length );
+						//console.warn('splice input ',obj2);
+
+						zx.BlockIndex++;
+					}
+				}
+				
+				if (zx.gets(obj[i].type) === 'pre') {
+					var html = zx.showSource(fs.readFileSync(file_name));
+					console.warn('RecurseParseFileToObject include ',file_name,html );
+					//push as html block
+					var htmlobj = [i + 1, 0, {
+							tag : "html",
+							html : html,
+							srcinfo : {
+								source : 'html',
+								filename : obj[i].srcinfo.filename,
+								start_line : obj[i].srcinfo.start_line,
+								file_stack : zx.file_stack.slice(0),
+								//note:'mark1898321'
+							}
+						}
+					];
+					Array.prototype.splice.apply(obj, htmlobj);
+					zx.BlockIndex++;
+				}
+
+				if (obj[i].type === 'html') {}
+
+				if (obj[i].type === 'md') {}
 			}
-
 		}
 	}
 	//console.warn('final main  file ',filename, JSON.stringify(obj, null, 4).length );
