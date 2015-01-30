@@ -1,6 +1,6 @@
 {
 	"run_mode": "dev",
-    "monitor_mode":{"dev":"none","prod":"none","help":["check","gaze","none"]},
+    "monitor_mode":{"dev":"check","prod":"none","help":["check","gaze","none"]},
 	"run_settings":{
 		"dev":{"monitor_mode":"check", "help":["check","gaze","none"],
 				"url_page":true

@@ -4,7 +4,7 @@
 
 ##Example	
 This is a complete implementation of [todomvc.com](http://todomvc.com) functionality in 40 lines of code.
-Prerequisites : SQL,JSON,Regex and [mustache](https://mustache.github.io/mustache.5.html).
+Prerequisite knowledge : SQL,JSON,Regex and [mustache](https://mustache.github.io/mustache.5.html).
 
 Live Demo at http://todomvc.sql-mvc.com/, 
 
@@ -95,10 +95,9 @@ default framework and theme is just to give you a quicc start.
 
 
 ## Getting Started
-Install instructions at :
-https://github.com/quale-quest/sql-mvc/blob/master/Install.md
+Install instructions at : [Github - Install.md](https://github.com/quale-quest/sql-mvc/blob/master/Install.md)
 
-Programmers Manual at https://github.com/quale-quest/sql-mvc/wiki
+Programmers Manual at : [Github - wiki](https://github.com/quale-quest/sql-mvc/wiki)
 
 ## Developer Resources
 
