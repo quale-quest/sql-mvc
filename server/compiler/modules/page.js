@@ -431,7 +431,7 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 				
 				if (zx.gets(obj[i].type) === 'pre') {
 					var html = zx.showSource(fs.readFileSync(file_name));
-					console.warn('RecurseParseFileToObject include ',file_name,html );
+					//console.warn('RecurseParseFileToObject include ',file_name,html );
 					//push as html block
 					var htmlobj = [i + 1, 0, {
 							tag : "html",

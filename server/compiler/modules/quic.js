@@ -11,7 +11,7 @@ QUery Inline Code
  */
 
 //===========================================================
-var JSOL = require("../libs/jsol");
+var JSOL = require("../../lib/jsol");
 var extend = require('node.extend');
 var deepcopy = require('deepcopy');
 
