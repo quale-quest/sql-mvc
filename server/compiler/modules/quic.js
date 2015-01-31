@@ -254,7 +254,7 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 	//Parse the Quic object
 	var q_obj = {};
 	try {
-		q_obj = JSOL.parse(quics);
+		q_obj = JSOL.parse(quics,"var A='Action',E='Edit',V='View',L='Link',H='Hide',T='Type';");
 	} catch (e) {
 		console.log('JSOL.parse exception: ', quickinput, line_obj);
 		process.exit(2); //TODO
