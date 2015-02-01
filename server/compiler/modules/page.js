@@ -460,8 +460,6 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 };
 
 exports.start_up = function (zx) {
-	zx.model_defines = {};
-	zx.saving_models = '';
 	zx.end_of_block = "/>";
 	zx.end_of_block_regex = /\/>/g;
 

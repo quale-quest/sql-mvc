@@ -391,7 +391,8 @@ var seq_page = function (zx) {
     console.warn('\n\n\n=============================================================================Page ', zx.pages[zx.pgi].name);
     start_page_compiler(zx);
     zx.eachplugin(zx, "start_page", zx.pages[zx.pgi]);
-    
+	zx.eachplugin(zx, "init", zx.line_objects); //to be deprecated
+        
 
 	//var fn = zx.dbg.calcfilelocation(zx,zx.pages[zx.pgi])+zx.app_extn
 	try {

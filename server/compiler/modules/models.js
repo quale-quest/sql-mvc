@@ -121,6 +121,11 @@ exports.process_pass01 = function (zx, par) {
 				});
                 delete lineextn.use;
                 if (lineextn.save) delete lineextn.save;
+                if (lineextn.part_of_model) {
+                lineextn.part_of_model_used = lineextn.part_of_model;
+                delete lineextn.part_of_model;
+                }
+                
 				blocks.push(lineextn);
 
 			});
@@ -135,7 +140,7 @@ exports.process_pass01 = function (zx, par) {
                 zx.line_objects.splice(par.indx, 1);                
                 //console.log('use model removed  :',par.indx, rem);    
                 //console.log('use model insertArrayAt :',par.indx, par.line_objects);
-                if (name==='allbutton')fs.writeFileSync('output/debug2.json', JSON.stringify(zx.line_objects, null, 4));
+                //if (name==='allbutton')fs.writeFileSync('output/debug2.json', JSON.stringify(zx.line_objects, null, 4));
                 
                 //console.log('use model done insertArrayAt :',par.indx, par.line_objects.length);
 			}

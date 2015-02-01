@@ -17,9 +17,6 @@ exports.compile = function (zx, obj) {
 	zx.debug = 0;
 	zx.line_objects = obj;
 
-	zx.eachplugin(zx, "init", zx.line_objects); //to be deprecated
-    zx.eachplugin(zx, "start_page", zx.line_objects);
-
 	zx.pass_max = 5;
 	for (zx.pass = 1; zx.pass <= zx.pass_max; zx.pass += 1) {
 
