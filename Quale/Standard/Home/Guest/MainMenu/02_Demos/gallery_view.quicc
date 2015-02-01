@@ -13,7 +13,7 @@ NAME    --:{Action:"View",Type:"Hide"}
 		   filefield:"DisplayName",		  
 		   Target:"public"}}
 From GALLERY 
-where blob_id is not null and status<>'1'
+where blob_id is not null and status=''
 />
 
 

@@ -48,7 +48,7 @@ set here.todo_type='2';
 
 <#Container
 Style=Tab
-rem="----------------------------------------------------------------------------" tab=Info/>
+                                                                                         tab=Info/> 
 
 <h1>Info</h1>
 
@@ -59,10 +59,17 @@ rem="---------------------------------------------------------------------------
 ($select count(*) from MAIL where FROM_USER=session.id and SUBJECT='login log' $) actions from you 
 and ($select count(*) from MAIL where SUBJECT='login log' $) actions total (in this session).
 />
-<#NextContainer rem="----------------------------------------------------------" tab=Source_Code/>
+<#NextContainer                                                                   tab=Source_Code/>
+<#Container Style=Accordion                                                title=View/> 
 <#include type="pre" file="MainMenu/02_Demos/todo_mvc" />
+<#NextContainer                                                           title=Model/>
+<#include type="pre" file="Models/TodoModel" />
+<#NextContainer                                                      title=Controller/>
+<#include type="pre" file="Controllers/TodoController" />
 
-<#CloseContainer/>
+<#CloseContainer                                                                     />
+
+<#CloseContainer                                                                                 />
 <br>
 <br>
 <br> 
