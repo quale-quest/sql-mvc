@@ -1,20 +1,3 @@
-<pre process=md>
-#Install instructions at :
-https://github.com/quale-quest/sql-mvc/blob/master/Install.md
-
-Programmers Manual at https://github.com/quale-quest/sql-mvc/wiki
-
-
-
-<#:dropinmenu --{icon:"nav-icon addressbook-icon",title:"drop-in demo"}/>
-
-
-
-<#:link --{form:"Dashboard/Dashboard",title:"check the todo demo"}/>
-<#:button --{form:"Operator/Inbox",glymph:"box-outgoing-b",title:"Read mail"} />
-
-
-
-Thanks
+<#include type="md" file="./Install.md" />
 
 

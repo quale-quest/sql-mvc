@@ -88,6 +88,8 @@ fi
 
 else
     echo rebuilding 
+	
+	sql-mvc patch
 
 	rm -r  ${PROJECT_DIR}/output  2> /dev/null	 
 	find ${MONITOR[*]} -type f -name Index.quicc > ${DELTA_FILE}

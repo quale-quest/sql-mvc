@@ -66,7 +66,7 @@ var preProcess = function (zx, filename, str) {
 					}
 				});
 		}
-		//console.log( markdown.toHTML( "Hello *World*!" ) );
+		
 	}
 	return str;
 };
@@ -429,13 +429,24 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 					}
 				}
 				
+                
+                var Inject_html='';
 				if (zx.gets(obj[i].type) === 'pre') {
-					var html = zx.showSource(fs.readFileSync(file_name));
-					//console.warn('RecurseParseFileToObject include ',file_name,html );
-					//push as html block
+					Inject_html = zx.showSource(fs.readFileSync(file_name));					
+                }    
+				if (zx.gets(obj[i].type) === 'html') {
+					Inject_html = fs.readFileSync(file_name);					
+                }    
+				if (zx.gets(obj[i].type) === 'md') {
+					Inject_html = zx.markdown.preprocessor_md(zx,fs.readFileSync(file_name).toString());	
+                    //Inject_html = file_name;
+                    //console.warn('obj[i].type === md: ',file_name);
+                }    
+                if (Inject_html!=='') {
+                    //push as html block                  
 					var htmlobj = [i + 1, 0, {
 							tag : "html",
-							html : html,
+							html : Inject_html,
 							srcinfo : {
 								source : 'html',
 								filename : obj[i].srcinfo.filename,
@@ -449,9 +460,7 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 					zx.BlockIndex++;
 				}
 
-				if (obj[i].type === 'html') {}
 
-				if (obj[i].type === 'md') {}
 			}
 		}
 	}
