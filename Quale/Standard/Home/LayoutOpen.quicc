@@ -2,7 +2,7 @@
 <body>	
 
 <#xinclude file=Menu\SlideBar
-ifnotexists="select name from user_table_name where user_table_name.user_pk_field=user_pk_field and  user_keys_field containing 'SWB'"
+xifnotexists="select name from user_table_name where user_table_name.user_pk_field=user_pk_field and  user_keys_field containing 'SWB'"
 />	
 
 <div  id="wrapper"> <!--this should hold all content excluding footer -->

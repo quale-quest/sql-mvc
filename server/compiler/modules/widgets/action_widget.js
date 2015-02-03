@@ -59,6 +59,8 @@ var fileutils = require('../../../compiler/modules/fileutils.js');
 var path = require('path');
 var fs = require('fs');
 var page = require('../../modules/page.js');
+var hogan = require("hogan");
+
 exports.module_name='action_widget.js';
 
 var gets = require('../../zx.js').gets;
@@ -116,7 +118,11 @@ var zxAction = function (zx, o, type) { //type should be deprecated
 	{
 		//sub menu - increase a level - return title
 		zx.action.level++;
-		return action_style(zx, o, "ActionHead").replace("$Title$", zx.FirstBeauty(gets(o.title), gets(o.name)));
+        var result = action_style(zx, o, "ActionHead");
+        o.Title = zx.FirstBeauty(gets(o.title), gets(o.name));
+        result = hogan.compile(result).render(o);
+        
+		return result;
 	}
 
 	//if (o.form===undefined) return "";
@@ -133,12 +139,6 @@ var zxActionUrl = function (zx, o, type, QryUrl) {
 
 	//console.log('zxAction:',o);
 
-	var li_class = styleif(o.li_class, " class=\"{{pop}}\" ");
-	var IconSpan = styleif(o.icon, "<span class=\"{{pop}}\"></span>");
-	var Icon = styleif(o.glymph, "{{pop}}");
-
-	var RightSpan = "",
-	LeftSpan = "";
 
 	/*  majour issue here ...
 	this is not simple to convert the conext value substitution needs to be sql capable not jsut static text like above....
@@ -173,22 +173,24 @@ var zxActionUrl = function (zx, o, type, QryUrl) {
 	}
 	 */
 
+	o.li_class = styleif(o.li_class, " class=\"{{pop}}\" ");
+	o.IconSpan = styleif(o.icon, "<span class=\"{{pop}}\"></span>");
+	o.Icon = styleif(o.glymph, "{{pop}}");
+
+	o.RightSpan = "";
+	o.LeftSpan = o.IconSpan;
+     
 	//QryUrl should be complete // excluding the on click script
 	var result = action_style(zx, o, (zx.action.level <= 1) ? "ActionMain" : "ActionSub");
-	var titlestr = zx.Beautify(gets(o.title));
+	o.Title = zx.Beautify(gets(o.title)); //use proper
+    o.url = QryUrl;
+    o.Glymph = o.Icon;
+    
+    
+    result = hogan.compile(result).render(o);
+    //console.log('zxActionUrl 093805:',result, o);
+    
 	//console.log('zxActionx:',result,"QryUrl:",QryUrl,"titlestr:",titlestr,gets(o.title),o.title,"IconSpan:",IconSpan, o);
-	var compare = '';
-	while (compare !== result) {
-		compare = result;
-		result = result.replace("$Glymph$", Icon);
-		result = result.replace("$li_class$", li_class);
-		result = result.replace("$url$", QryUrl);
-		result = result.replace("$Title$", titlestr);
-
-		result = result.replace("$LeftSpan$", LeftSpan + IconSpan);
-		result = result.replace("$RightSpan$", RightSpan);
-		result = result.replace("$LinkElements$", "");
-	}
 
 	//console.log('zxActionz:',result, o);
 

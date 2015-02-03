@@ -4,7 +4,7 @@ speed/memory performance  is not important
 ease of use is important
  */
  
-var hogan = require("hogan")
+var hogan = require("hogan");
 exports.module_name='container_widget.js';
  
 var get_style = function (zx, o, Key) { //used for g960,container and notify  //this can be made common into a style plugin

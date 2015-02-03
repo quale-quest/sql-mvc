@@ -1,84 +1,21 @@
 {
-    "comment": "//eof",
 	
-	"ActionMain":"<span $li_class$><a href=\"#\" language=javascript onclick=\"$url$\" $LinkElements$ >$LeftSpan$ $Title$ $RightSpan$ </a></span>",
-	"LinkActionMain":"<span $li_class$><a href=\"#\" language=javascript onclick=\"$url$\" $LinkElements$ >$LeftSpan$ $Title$ $RightSpan$ </a></span>",
-
-	"ShortCutSlideActionDiv":"<div id=\"panel-right\" class=\"panel-close\"><span class=\"right-toggle\" title=\"Shortcut\">&nbsp;</span><ul class=\"shortcut-panel\">",
-	"ShortCutSlideActionEndDiv":"</ul></div>",
-	"ShortCutSlideActionMain":" <li $li_class$><a href=\"#\" title=\"$Title$\" language=javascript onclick=\"$url$\" $LinkElements$ >$LeftSpan$ </a></li>",
-
-	"ShortCutBarActionDiv":"<div id=\"shortcur-bar\" class=\"column\"><ul>",
-	"ShortCutBarActionEndDiv":"</ul></div>",
-	"ShortCutBarActionMain":" <li $li_class$><a href=\"#\" language=javascript onclick=\"$url$\" $LinkElements$ >$LeftSpan$ $Title$ $RightSpan$</a></li>",
-
-
-
-	"FootActionDiv":"<div id=\"footer-wrap\"><div id=\"footer\"><div class=\"footer-container\"><div class=\"footer-nav\"><ul>",
-	"FootActionEndDiv":"</ul></div><div class=\"copyright\">&copy; 2012 Xietel - All rights reserved</div></div><div id=\"goTop\"><a href=\"#\" class=\"tip-top\" title=\"Go Top\">Top</a></div></div></div>",
-	"FootActionMain":" <li $li_class$><a href=\"#\" language=javascript onclick=\"$url$\" $LinkElements$ >$LeftSpan$ $Title$ $RightSpan$</a></li>",
-
-
-
-
+    "G960Open": "<divid=\"content\"><div class=\"container_12\">\"G960First=\"<div class=\"grid_$grid$\">\"G960Next=\"</div><div class=\"grid_$grid$\">\"G960Clear=\"<div class=\"clear\"></div>\"G960Close=\"</div></div>\"",
+    "NotifyDiv": "<div class=\"notification-wrapinformation\"><spanclass=\"icon-information\">Information: </span>$Text$</div>",
+    "HelpNotifyDiv": "<div class=\"notification-wrapinformation\"><spanclass=\"icon-information\">Help: </span>$Text$</div>",
+    "InfromNotifyDiv": "<div class=\"notification-wrapinformation\"><spanclass=\"icon-information\">Information: </span>$Text$</div>",
+    "WarningNotifyDiv": "<div class=\"notification-wrapwarning\"><spanclass=\"icon-warning\">Warning: </span>$Text$</div>",
+    "SuccessNotifyDiv": "<div class=\"notification-wrapsuccess\"><spanclass=\"icon-success\">SUCCESS: </span>$Text$</div>",
+    "FailureNotifyDiv": "<div class=\"notification-wrapfailuer\"><spanclass=\"icon-failure\">FAILURE: </span>$Text$</div>",
+    "BriefNotifyDiv": "<scripttype=\"text/javascript\">$container=$(\"#container-n\").notify();create(\"default\",    {title: 'BriefNotification',text: '$Text$'});</script>",
+    "StickyNotifyDiv": "<scripttype=\"text/javascript\">$container=$(\"#container-n\").notify();create(\"sticky\",    {title: 'Notification',text: '$Text$'},{expires: false});</script>",
+    "StickyIconNotifyDiv": "<scripttype=\"text/javascript\">$container=$(\"#container-n\").notify();create(\"withIcon\",{title: 'Warning!',text: '$Text$',icon: '$Icon$'},{expires: false});</script>",
 
 	
-    "FormActionFieldView": "<a href= \"$CgiExe$/Page?X=$QueryRef$ \">hhhhhhhh$hrefdisplayvalue$</a>",
-    "HrefActionFieldView": "<a href= \"$PtrFieldValue$ \">ggggggg$hrefdisplayvalue$</a>",
-    "LrefActionFieldView": "<a href= \"zxvl:$host$__$linkref$ \">fffff$hrefdisplayvalue$</a>",
-    "jsActionFieldView": "<input type= \"button \" value= \"$hrefdisplayvalue$ \" onClick= \"javascript:$PtrFieldValue$ \" class= \"submit-button-login \" >",
-    "graphActionFieldView": " \"$CgiExe$/Page?X=$QueryRef$ \"",
-    "PlainTextFieldEdit": "<input type= \"text \" id='$id$' $onchange$  size= \"$size$ \" maxlength= \"$maxsize$ \" value= \"$displayvalue$ \">",
-    "DefaultRatingTextFieldEdit": "<div id= \"number \" class= \"fieldwrap \"></div>",
-    "TextFieldItem": "<input type= \"text \" id='$id$' $onchange$  size= \"$size$ \" maxlength= \"$maxsize$ \" value= \"$displayvalue$ \">",
-    "PlaceHolderFieldItem": "<input type= \"text \" id='$id$' $onchange$  size= \"$size$ \" maxlength= \"$maxsize$ \" placeholder= \"$displayvalue$ \">",
-
-
-    "todoDateSliderTextFieldEdit": "<div class= \"range-value \"><label for='$id$'></label><input type= \"text \" id='$id$' $onchange$ value= \"$displayvalue$ \" /></div><div id= \"sl$id$ \" class= \"handler \"></div>",
-    "todoDateSliderTextFieldEditScript": "$( \"#sl$id$ \").css('width',$size$0); $( \"#sl$id$ \").slider({value:  \"$displayvalue$ \", max: 10, step: 1, 'showMarkers' : true, change: function(event, ui) { $( \"#$id$ \").val( ui.value ); $( \"#$id$ \").trigger('change'); } });",
-    "BoxTextFieldEdit": "<textarea  type= \"text \" id='$id$' $onchange$  maxlength= \"$maxsize$ \" rows= \"10 \" cols= \"160 \" >$displayvalue$</textarea>",
-    "DataViewOnly": "0",
-    "DataNBSP": "1",
-    "DataisForm": "0",
-    "DataInherit": "",
-    "DataProduceDataTableTypes": "",
-    "DataHeadFieldFormat": "$field$$ContextButton$",
-    "DataBodyFieldFormat": "$field$$ContextButton$",
-    "DataBodyFieldSeperator": "",
-    "DataRecordSeperator": "$CRLF$",
-    "DataRecordTerminator": "",
-    "DataInvalidChars": "",
-    "DataTopTitle": "<p><b>{{name}}</b></p>",
-    
-    "DataHeadFieldSeperator": "",
-    "DataHeadFieldTitle": "<thscope=\"col\">$field$</th>",
-    "DataHeadFirstFieldTitle": "<thscope=\"col\">$field$</th>",
-    "FirstBlankDataHeadFirstFieldTitle": "<td></td>NOTUSED",
-    "DataFootTitle": "<tr>$record$</tr>",
-    "DataFootFieldSeperator": "",
-    "DataFootFieldTitle": "<td><b>$field$</b></td>",
-    "DataFootFirstFieldTitle": "<td><b>$field$</b></td>",
-    "FirstBlankDataFootFirstFieldTitle": "<td></td>NOTUSED",
-    "DataHeaderPaging": "<formautocomplete=\"off\"><tableid=\"$tid$\">$PageInput$</table></form>",
-    "DataRecord": "<tr>$record$</tr>",
-    "DataTHead": "$head$",
-    "DataGraph": "$graph$",
-    "DataDiv": "$Content$<scripttype=\"text/javascript\">$TableScripts$</script>",
-    "PlainDataInherit": "",
-    "PlainDataWrap": "<formautocomplete=\"off\"><tableid=\"$tid$\">{{{pop}}}</table></form>",
-    "DefaultDataInherit": "",
-    "DefaultDataWrap": "<div class=\"form-grid\"><formautocomplete=\"off\"class=\"leftLabel\"><tableid=\"$tid$\"class=\"display$SubStyle$\"><caption>$Caption$</caption>{{{pop}}}</table></form></div>",
-    "DefaultDataHideIfEmpty": "1",
-    "TableGraphDataTopTitle": "",
-    "TableGraphDataWrap": "<div><a href=\"#\"id=\"btn$tid$\"onclick=\"returnToggleThroughTables('$tid$');\"class=\"ChartTypeSpan\">Changetobargraph</a><tableid=\"$tid$\"><caption>$Caption$</caption>{{{pop}}}</table></div>",
-    "HtmlCodeDataInherit": "Concat",
-    "HtmlCodeDataEscapeHtml": "0",
-    "TableDataHeadFieldTitleSorted": "<td>$field$</td>",
-    "TableDataHeadFieldTitleCurrencySorted": "<td>$field$</td>",
-    "TableDataHeadFieldTitleNumberSorted": "<td>$field$</td>",
-    "TableDataHeadFieldTitleDateSorted": "<td>$field$</td>",
-    "TableDataHeadFieldTitleLinkSorted": "<td>$field$</td>",
 	
+"active commands from here":"",
+
+
 	
     "ContainerOpen": "<div class=\"widget-panel\"><div class=\"widget-top\">{{{LeftSpan}}}<h4>{{title}}</h4>{{RightSpan}}</div><div class=\"widget-content module\"><div class=\"content-block tbl-default\">",
     "ContainerClose": "</div></div></div>",
@@ -107,46 +44,35 @@
     
 
 
-    "G960Open": "<divid=\"content\"><div class=\"container_12\">\"G960First=\"<div class=\"grid_$grid$\">\"G960Next=\"</div><div class=\"grid_$grid$\">\"G960Clear=\"<div class=\"clear\"></div>\"G960Close=\"</div></div>\"",
-    "NotifyDiv": "<div class=\"notification-wrapinformation\"><spanclass=\"icon-information\">Information: </span>$Text$</div>",
-    "HelpNotifyDiv": "<div class=\"notification-wrapinformation\"><spanclass=\"icon-information\">Help: </span>$Text$</div>",
-    "InfromNotifyDiv": "<div class=\"notification-wrapinformation\"><spanclass=\"icon-information\">Information: </span>$Text$</div>",
-    "WarningNotifyDiv": "<div class=\"notification-wrapwarning\"><spanclass=\"icon-warning\">Warning: </span>$Text$</div>",
-    "SuccessNotifyDiv": "<div class=\"notification-wrapsuccess\"><spanclass=\"icon-success\">SUCCESS: </span>$Text$</div>",
-    "FailureNotifyDiv": "<div class=\"notification-wrapfailuer\"><spanclass=\"icon-failure\">FAILURE: </span>$Text$</div>",
-    "BriefNotifyDiv": "<scripttype=\"text/javascript\">$container=$(\"#container-n\").notify();create(\"default\",    {title: 'BriefNotification',text: '$Text$'});</script>",
-    "StickyNotifyDiv": "<scripttype=\"text/javascript\">$container=$(\"#container-n\").notify();create(\"sticky\",    {title: 'Notification',text: '$Text$'},{expires: false});</script>",
-    "StickyIconNotifyDiv": "<scripttype=\"text/javascript\">$container=$(\"#container-n\").notify();create(\"withIcon\",{title: 'Warning!',text: '$Text$',icon: '$Icon$'},{expires: false});</script>",
-
-
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-"active commands from here":"",
 "Buttons menus and  links - action widget":"comment",	
+	"ActionMain":"<span {{{li_class}}}><a href=\"#\" language=javascript onclick=\"{{{url}}}\" {{{LinkElements}}} >{{{LeftSpan}} {{{Title}}} {{{RightSpan}}} </a></span>",
+	"LinkActionMain":"<span {{{li_class}}}><a href=\"#\" language=javascript onclick=\"{{{url}}}\" {{{LinkElements}}} >{{{LeftSpan}} {{{Title}}} {{{RightSpan}}} </a></span>",
+    "ImageLinkActionMain":" <span><a href=\"#\" class=\"{{glymph}}\" language=javascript onclick=\"{{{url}}}\" {{{LinkElements}}} > {{{Title}}} {{{RightSpan}}}</a></span>",
+	"ButtonActionMain":"<span class=\"icon-wrap-lb\"><a href=\"#\"  language=javascript onclick=\"{{{url}}}\"  title=\"{{{Title}}}\"><span class=\"icon-block-black {{{Glymph}}}\"></span>{{{Title}}}</a></span>",
 
-	"ButtonActionMain":"<span class=\"icon-wrap-lb\"><a href=\"#\"  language=javascript onclick=\"$url$\"  title=\"$Title$\"><span class=\"icon-block-black $Glymph$\"></span>$Title$</a></span>",
-
-	"HeadBarActionMain":" <li $li_class$><a href=\"#\"  title=\"$Title$\" language=javascript onclick=\"$url$\" $LinkElements$ >$LeftSpan$  $RightSpan$</a></li>",
-	"UserBarActionMain":" <li $li_class$><a href=\"#\"  language=javascript onclick=\"$url$\" $LinkElements$ >$LeftSpan$ $Title$ $RightSpan$</a></li>",
-	"UserEditActionMain":" <span><a href=\"#\" class=\"p-edit\" language=javascript onclick=\"$url$\" $LinkElements$ > $Title$ $RightSpan$</a></span>",
-	
+	"HeadBarActionMain":" <li {{{li_class}}}><a href=\"#\"  title=\"{{{Title}}}\" language=javascript onclick=\"{{{url}}}\" {{{LinkElements}}} >{{{LeftSpan}}  {{{RightSpan}}}</a></li>",
+	"UserBarActionMain":" <li {{{li_class}}}><a href=\"#\"  language=javascript onclick=\"{{{url}}}\" {{{LinkElements}}} >{{{LeftSpan}}} {{{Title}}} {{{RightSpan}}}</a></li>",
 	
     "LBMenuActionDiv": "<div id=\"sidebar\"><ul id=\"sidenav\" class=\"menu collapsible\">",	
     "LBMenuActionEndDiv": "</ul></div>",
     "LBMenuActionEndSub": "</ul></li>",
-    "LBMenuActionMain": " <li $li_class$><a href=\"#\" language=javascript onclick=\"$url$\" $LinkElements$ >$LeftSpan$ $Title$ $RightSpan$ </a></li>",
-    "LBMenuActionSub": "    <li $li_class$><a href=\"#\" language=javascript onclick=\"$url$\" $LinkElements$ >$LeftSpan$  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $Title$ $RightSpan$ </a></li>",
-    "LBMenuActionHead": "<li><a href=\"#\"> $Title$ <span class=\"zxnav-right-icon file-exe\">&nbsp;</span></a><ul class=\"acitem\">",
+    "LBMenuActionMain": " <li {{{li_class}}}><a href=\"#\" language=javascript onclick=\"{{{url}}}\" {{{LinkElements}}} >{{{LeftSpan}}} {{{Title}}} {{{RightSpan}}} </a></li>",
+    "LBMenuActionSub": "    <li {{{li_class}}}><a href=\"#\" language=javascript onclick=\"{{{url}}}\" {{{LinkElements}}} >{{{LeftSpan}}}  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{{Title}}} {{{RightSpan}}} </a></li>",
+    "LBMenuActionHead": "<li><a href=\"#\"> {{{Title}}} <span class=\"zxnav-right-icon file-exe\">&nbsp;</span></a><ul class=\"acitem\">",
 
+	"ShortCutSlideActionDiv":"<div id=\"panel-right\" class=\"panel-close\"><span class=\"right-toggle\" title=\"Shortcut\">&nbsp;</span><ul class=\"shortcut-panel\">",
+	"ShortCutSlideActionEndDiv":"</ul></div>",
+	"ShortCutSlideActionMain":" <li {{{li_class}}}><a href=\"#\" title=\"{{{Title}}}\" language=javascript onclick=\"{{{url}}}\" {{{LinkElements}}} >{{{LeftSpan}}} </a></li>",
+
+	"ShortCutBarActionDiv":"<div id=\"shortcur-bar\" class=\"column\"><ul>",
+	"ShortCutBarActionEndDiv":"</ul></div>",
+	"ShortCutBarActionMain":" <li {{{li_class}}}><a href=\"#\" language=javascript onclick=\"{{{url}}}\" {{{LinkElements}}} >{{{LeftSpan}}} {{{Title}}} {{{RightSpan}}}</a></li>",
+	
+	"FootActionDiv":"<div id=\"footer-wrap\"><div id=\"footer\"><div class=\"footer-container\"><div class=\"footer-nav\"><ul>",
+	"FootActionEndDiv":"</ul></div><div class=\"copyright\">&copy; 2015 QualeQuest.com - All rights reserved</div></div><div id=\"goTop\"><a href=\"#\" class=\"tip-top\" title=\"Go Top\">Top</a></div></div></div>",
+	"FootActionMain":" <li {{{li_class}}}><a href=\"#\" language=javascript onclick=\"{{{url}}}\" {{{LinkElements}}} >{{{LeftSpan}}} {{{Title}}} {{{RightSpan}}}</a></li>",
+	
+	
  	
 "Base Element widgets":"comment",	
 	"View_Head": "{{widget.title}}",
@@ -490,6 +416,68 @@
 		
 	
 "Deprecate":"comment",			
+
+
+	
+	
+    "FormActionFieldView": "<a href= \"$CgiExe$/Page?X=$QueryRef$ \">hhhhhhhh$hrefdisplayvalue$</a>",
+    "HrefActionFieldView": "<a href= \"$PtrFieldValue$ \">ggggggg$hrefdisplayvalue$</a>",
+    "LrefActionFieldView": "<a href= \"zxvl:$host$__$linkref$ \">fffff$hrefdisplayvalue$</a>",
+    "jsActionFieldView": "<input type= \"button \" value= \"$hrefdisplayvalue$ \" onClick= \"javascript:$PtrFieldValue$ \" class= \"submit-button-login \" >",
+    "graphActionFieldView": " \"$CgiExe$/Page?X=$QueryRef$ \"",
+    "PlainTextFieldEdit": "<input type= \"text \" id='$id$' $onchange$  size= \"$size$ \" maxlength= \"$maxsize$ \" value= \"$displayvalue$ \">",
+    "DefaultRatingTextFieldEdit": "<div id= \"number \" class= \"fieldwrap \"></div>",
+    "TextFieldItem": "<input type= \"text \" id='$id$' $onchange$  size= \"$size$ \" maxlength= \"$maxsize$ \" value= \"$displayvalue$ \">",
+    "PlaceHolderFieldItem": "<input type= \"text \" id='$id$' $onchange$  size= \"$size$ \" maxlength= \"$maxsize$ \" placeholder= \"$displayvalue$ \">",
+
+
+    "todoDateSliderTextFieldEdit": "<div class= \"range-value \"><label for='$id$'></label><input type= \"text \" id='$id$' $onchange$ value= \"$displayvalue$ \" /></div><div id= \"sl$id$ \" class= \"handler \"></div>",
+    "todoDateSliderTextFieldEditScript": "$( \"#sl$id$ \").css('width',$size$0); $( \"#sl$id$ \").slider({value:  \"$displayvalue$ \", max: 10, step: 1, 'showMarkers' : true, change: function(event, ui) { $( \"#$id$ \").val( ui.value ); $( \"#$id$ \").trigger('change'); } });",
+    "BoxTextFieldEdit": "<textarea  type= \"text \" id='$id$' $onchange$  maxlength= \"$maxsize$ \" rows= \"10 \" cols= \"160 \" >$displayvalue$</textarea>",
+    "DataViewOnly": "0",
+    "DataNBSP": "1",
+    "DataisForm": "0",
+    "DataInherit": "",
+    "DataProduceDataTableTypes": "",
+    "DataHeadFieldFormat": "$field$$ContextButton$",
+    "DataBodyFieldFormat": "$field$$ContextButton$",
+    "DataBodyFieldSeperator": "",
+    "DataRecordSeperator": "$CRLF$",
+    "DataRecordTerminator": "",
+    "DataInvalidChars": "",
+    "DataTopTitle": "<p><b>{{name}}</b></p>",
+    
+    "DataHeadFieldSeperator": "",
+    "DataHeadFieldTitle": "<thscope=\"col\">$field$</th>",
+    "DataHeadFirstFieldTitle": "<thscope=\"col\">$field$</th>",
+    "FirstBlankDataHeadFirstFieldTitle": "<td></td>NOTUSED",
+    "DataFootTitle": "<tr>$record$</tr>",
+    "DataFootFieldSeperator": "",
+    "DataFootFieldTitle": "<td><b>$field$</b></td>",
+    "DataFootFirstFieldTitle": "<td><b>$field$</b></td>",
+    "FirstBlankDataFootFirstFieldTitle": "<td></td>NOTUSED",
+    "DataHeaderPaging": "<formautocomplete=\"off\"><tableid=\"$tid$\">$PageInput$</table></form>",
+    "DataRecord": "<tr>$record$</tr>",
+    "DataTHead": "$head$",
+    "DataGraph": "$graph$",
+    "DataDiv": "$Content$<scripttype=\"text/javascript\">$TableScripts$</script>",
+    "PlainDataInherit": "",
+    "PlainDataWrap": "<formautocomplete=\"off\"><tableid=\"$tid$\">{{{pop}}}</table></form>",
+    "DefaultDataInherit": "",
+    "DefaultDataWrap": "<div class=\"form-grid\"><formautocomplete=\"off\"class=\"leftLabel\"><tableid=\"$tid$\"class=\"display$SubStyle$\"><caption>$Caption$</caption>{{{pop}}}</table></form></div>",
+    "DefaultDataHideIfEmpty": "1",
+    "TableGraphDataTopTitle": "",
+    "TableGraphDataWrap": "<div><a href=\"#\"id=\"btn$tid$\"onclick=\"returnToggleThroughTables('$tid$');\"class=\"ChartTypeSpan\">Changetobargraph</a><tableid=\"$tid$\"><caption>$Caption$</caption>{{{pop}}}</table></div>",
+    "HtmlCodeDataInherit": "Concat",
+    "HtmlCodeDataEscapeHtml": "0",
+    "TableDataHeadFieldTitleSorted": "<td>$field$</td>",
+    "TableDataHeadFieldTitleCurrencySorted": "<td>$field$</td>",
+    "TableDataHeadFieldTitleNumberSorted": "<td>$field$</td>",
+    "TableDataHeadFieldTitleDateSorted": "<td>$field$</td>",
+    "TableDataHeadFieldTitleLinkSorted": "<td>$field$</td>",
+	
+
+
 	
 	"xViewScript": "",
 	
@@ -572,4 +560,5 @@
     "xxxFormDataInherit": "",
 
 	"zzzend":""
+	
 }
