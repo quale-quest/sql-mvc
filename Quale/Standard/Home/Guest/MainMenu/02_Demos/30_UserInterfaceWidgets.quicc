@@ -1,0 +1,83 @@
+<h1>These are some of the widgets that form part of the basic framework.</h1>
+<p>They can be extended and styled to make any user interface your require</p>
+
+
+
+<p>
+A link <#:link --{form:"Index",title:"Back to the first login page"}/> and a button to 
+<#:button --{form:"Operator/Inbox",glymph:"box-outgoing-b",title:"Read mail"}  /> </p>
+
+<p>Some i18n text and a context variable :  <b><#print You were here last at here.this_page_info/><b></p>
+
+<h2>A few containers</h2>
+<br>
+<#Container Style=Tab                                                                   title="A tab"/>
+A tab can contain any text or any other widget.
+
+
+<#NextContainer                                                          title="A tab in a tab"/> 
+	<h2>Text and stuff before the tab container</h2>
+	<#Container Style=Tab                                         title="Tab one"/>
+	This demonstrates the hierarchical container system, containers can be anything you imagine...
+	<#NextContainer                                                     title="Tab two"/>
+	Like all GUI, the containers are made from, html fragments which are named , 
+	<#NextContainer                                                   title="Tab three"/>
+	When you then want to use such a container you simply use style=name.
+	<#CloseContainer                                                                   />
+<h3>Text and stuff after the tab container</h3>
+
+
+<#NextContainer                                                            title="Accordion in a tab"/> 
+<h2>Text and stuff before the accordion container</h2>
+	<#Container Style=Accordion                                         title=Accordion_one/>
+	This demonstrates the hierarchical container system, containers can be anything you imagine...
+	<#NextContainer                                                     title=Accordion_two/>
+	Like all GUI, the containers are made from, html fragments which are named , 
+	<#NextContainer                                                   title=Accordion_three/>
+	When you then want to use such a container you simply use style=name.
+	<#CloseContainer                                                                       />
+<h3>Text and stuff after the accordion container</h3>
+
+<#NextContainer                                                          title="Collapsible in a tab"/> 
+<h2>Text and stuff before the Collapsible containers</h2>
+	<#Container Style=Collapsible                                         title="Collapsible one"/>
+	This demonstrates the hierarchical container system, containers can be anything you imagine...
+	<#NextContainer                                                       title="Collapsible two"/>
+	Like all GUI, the containers are made from, html fragments which are named , 
+	<#NextContainer                                                     title="Collapsible three"/>
+	When you then want to use such a container you simply use style=name.
+	<#CloseContainer/>
+<h3>Text and stuff after the Collapsible containers</h3>
+
+
+<#NextContainer                                                      title="Split container in a tab"/> 
+<h2>Text and stuff before the Split containers</h2>
+	<#Container Style=Split  percentage_width=30 />
+	This demonstrates the hierarchical container system, containers can be anything you imagine...
+	Like all GUI, the containers are made from, html fragments which are named , 
+	When you then want to use such a container you simply use style=name.
+	<#NextContainer percentage_width=20  />
+	And so easy to build..
+	<#NextContainer css="border: thin dotted red; margin: 3em" percentage_width=30 />
+	And to customise...
+	<#CloseContainer/>
+<h3>Text and stuff after the Split containers</h3>
+
+
+<#NextContainer                                                                   title="Source Code"/>
+<h1>This is all the code that makes up this page placed in 
+3 accordion containers</h1>
+<p>What we tend to do is white space pad the title field so it sits 
+far right to make it easier to identify. </p>
+	<#Container Style=Accordion                                                        title=View/> 
+     This source:
+    <#include type="pre" file="this" />
+    <#NextContainer                                                                    title=Model/>
+    This demo does not have a model, it is only some widgets.
+    <#NextContainer  													          title=Controller/>
+    This demo does not have a Controller, it is only some widgets.
+	<#CloseContainer/>
+<#CloseContainer/>
+
+
+<#:script set here.this_page_info=cast('now' as timestamp);/><br>

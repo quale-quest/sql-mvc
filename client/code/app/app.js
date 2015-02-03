@@ -63,43 +63,131 @@ var loginvalid = function (text) {
 };
 
 //===========================event initialisers - WIP to be moved to  some plugin location
-// the location sould probebly be a static js file per module being served from the web/cdn
+// the location should probably be a static js file per module being served from the web/cdn
+jQuery.collapsible = function(selector, identifier) {
+	
+	//toggle the div after the header and set a unique-cookie
+	$(selector).click(function() {
+		$(this).next().slideToggle('fast', function() {
+			if ( $(this).is(":hidden") ) {
+				//make persistent ..redo $.cookie($(this).prev().attr("id"), 'hide');
+				$(this).prev().children(".placeholder").removeClass("collapse").addClass("expand");
+			}
+			else {
+				//make persistent ..redo $.cookie($(this).prev().attr("id"), 'show');
+				$(this).prev().children(".placeholder").removeClass("expand").addClass("collapse");
+			}
+		});
+		return false;
+	}).next();
+
+	
+	//show that the header is clickable
+	$(selector).hover(function() {
+		$(this).css("cursor", "pointer");
+	});
+
+	/*
+	 * On document.ready: should the module be shown or hidden?
+	 */
+	var idval = 0;	//increment used for generating unique ID's
+	$.each( $(selector) , function() {
+
+		$($(this)).attr("id", "module_" + identifier + idval);	//give each a unique ID
+
+		if ( !$($(this)).hasClass("collapsed") ) {
+			$("#" + $(this).attr("id") ).append("<span class='placeholder collapse'></span>");
+		}
+		else if ( $($(this)).hasClass("collapsed") ) {
+			//by default, this one should be collapsed
+			$("#" + $(this).attr("id") ).append("<span class='placeholder expand'></span>");
+		}
+		
+		//what has the developer specified? collapsed or expanded?
+		if ( $($(this)).hasClass("collapsed") ) {
+			$("#" + $(this).attr("id") ).next().hide();
+			$("#" + $(this).attr("id") ).children("span").removeClass("collapse").addClass("expand");
+		}
+		else {
+			$("#" + $(this).attr("id") ).children("span").removeClass("expand").addClass("collapse");
+		}
+
+	//make persistent ..redo 
+    /*
+		if ( $.cookie($(this).attr("id")) == 'hide' ) {
+			$("#" + $(this).attr("id") ).next().hide();
+			$("#" + $(this).attr("id") ).children("span").removeClass("collapse").addClass("expand");
+		}
+		else if ( $.cookie($(this).attr("id")) == 'show' ) {
+			$("#" + $(this).attr("id") ).next().show();
+			$("#" + $(this).attr("id") ).children(".placeholder").removeClass("expand").addClass("collapse");
+		}
+	*/	
+
+		idval++;
+	});
+
+};
+
 var zxInitTabs = function () {
 	/*===================
 	TAB STYLE
 	===================*/
-
-	$(".tab-block").hide(); //Hide all content
+    var tab_index;
+    for(tab_index=0;tab_index<5;tab_index++)
+    {  
+    var GroupName="ContainerGroup"+tab_index;
+	$(".tab-block"+GroupName).hide(); //Hide all content
 	//currently this only works for 1 tab per page - this can be expanded
 
 	var zxindex = 1;
 	try {
-		zxindex = sessionStorage.getItem('PAGETAB-' + document.title);
+		zxindex = sessionStorage.getItem('PAGETAB-' + GroupName + '-' + qq_page_id);
 	} catch (e) {}
 
 	if (zxindex === undefined || zxindex === null)
 		zxindex = 1;
 
-	$(".mytabs li:nth-child(" + zxindex + ")").addClass("active").show(); //Activate the tab
-	$(".tab-block:nth-child(" + zxindex + ")").show(); //Show the tab content
+	$(".Tab"+GroupName+" li:nth-child(" + zxindex + ")").addClass("active").show(); //Activate the tab
+	$(".tab-block"+GroupName+":nth-child(" + zxindex + ")").show(); //Show the tab content
 
 	//On Click Event
-	$(".mytabs li").click(function () {
-		var zxindex = $(".mytabs li").index($(this)) + 1;
+	$(".Tab"+GroupName+" li").click(function () {
+        var group_name=$(this).parent().attr('class').match(/Tab(ContainerGroup\w)/)[1];
+        //console.log('Clicked'+qq_page_id);
+        //console.log('zxInitTabs click:', group_name );
+		var zxindex = $(".Tab"+group_name+" li").index($(this)) + 1;
 
-		$(".mytabs li").removeClass("active"); //Remove any "active" class
+		$(".Tab"+group_name+" li").removeClass("active"); //Remove any "active" class
 		$(this).addClass("active"); //Add "active" class to selected tab
-		$(".tab-block").hide(); //Hide all tab content
+		$(".tab-block"+group_name).hide(); //Hide all tab content
 
 		var activeTab = $(this).find("a").attr("href"); //Find the href attribute value to identify the active tab + content
 		$(activeTab).show(); //Fade in the active ID content
 
 		try {
-			sessionStorage.setItem('PAGETAB-' + document.title, (zxindex));
+			sessionStorage.setItem('PAGETAB-' + group_name + '-' + qq_page_id, (zxindex));
 		} catch (e) {}
 		return false;
 	});
+    }
+    
+    /*===================
+	LIST-ACCORDION
+	===================*/	  
 
+	$('.list-accordionClass').accordion({
+		header: ".title",
+        heightStyle: 'content',
+        collapsible: true
+	});
+    
+    /*======================
+	COLLAPSIBLE PANEL STYLE
+	========================*/
+	$.collapsible(".collapse-bar");
+    
+    
 };
 
 var zxInit_usermenu = function () {
@@ -303,6 +391,7 @@ var process_new_data = function (cx) {
 
 			qq_stache[cx.obj.Data.cid] = cx.obj.Data; //set global
 			console.log("qq_stache.cid  :", cx.obj.Data.cid,cx.obj.Stash);
+            qq_page_id = cx.obj.Stash;
 			var html = ss.tmpl[cx.obj.Stash].render(cx.obj.Data);
 			//console.log("cx.Data  :",cx.obj.Stash,cx.obj.Data);
 			$(cx.obj.Target).html(html);

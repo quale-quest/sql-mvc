@@ -123,50 +123,6 @@ var zxAction = function (zx, o, type) { //type should be deprecated
 	var QryRef = zx.dbg.link_from(zx, o);
 	var QryUrl = "return(zxnav(event," + QryRef + "));";
 
-	/*
-	create server side stored script for the link and a  reference to the link......
-	AS form  = ExtractQ(TagParams,"form");{
-	if (form==""){ //actions that have no forms are scipt actions - ie they pop a modal and returns to the same page
-	//return SqlButton(TagParams,0,1);
-
-
-	int Debug = (ExtractQ(TagParams,"debug")).ToIntDef(0);
-	SQLtraceView = (ExtractQ(TagParams,"debugsql")).ToIntDef(0);
-	int Refresh = (ExtractQ(TagParams,"refresh")).ToIntDef(1);
-	if (Debug)
-	result+= S "<br>Input:<pre>"+TagParams->Text + S "</pre>";
-
-	//all/most parameters would by now be extracted thus leaving a clean script if it is a script button
-	//remainder is a script statement
-	AS Script_text=TagParams->Text;
-	Script_text = PwSubstitute(Script_text);
-
-	if (Debug) result+= S "Output:<pre>"+Script_text + S "</pre>";
-	AS QryRef=S DataModule1->Ref2ShortQuery(
-	S "Pressed\nScriptButton\n"
-	+ Script_text +S "\n"
-	);
-	//          FT->JsOnClick
-	QryUrl =  (Refresh?(S "return SubmitChangesModal(") : (S "return SubmitOkModal("))  +QryRef +");";
-
-	}
-	else{//is a query
-	AS from  = ExtractQ(TagParams,"from");
-	AS where  = ExtractQ(TagParams,"where");
-	where = PwSubstitute(where);
-
-	AS QryRef=DataModule1->Ref2ShortQuery( //Ref2Query(
-	"Form=" + form
-	+ "\nFrom=\""+ from + "\""
-	+ "\nWhere=\""+where+S "\""
-	+ "\nBody=\""+TagParams->CommaText+"\"");
-
-
-
-	}
-	}//not save
-	 */
-
 	return zxActionUrl(zx, o, type, QryUrl);
 };
 
@@ -475,7 +431,12 @@ var tag_menu = exports.tag_menu = function (zx, o) {
 	//console.warn('MenuX:',o,ReplaceText);
 };
 
-exports.tag_link = exports.tag_menu;
+
+exports.tag_link = function (zx, o) {
+	if (o.style === undefined)
+		o.style = "Link";
+	exports.tag_menu(zx, o);
+};
 
 exports.tag_button = function (zx, o) {
 	if (o.style === undefined)

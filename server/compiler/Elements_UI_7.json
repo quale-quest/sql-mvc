@@ -1,10 +1,8 @@
 {
     "comment": "//eof",
 	
-	
-	"xActionMain":"<span $li_class$><a href=\"#\" language=javascript onclick=\"$url$\" $LinkElements$ >$LeftSpan$ aaaaa$Title$ $RightSpan$ </a></span>",
-	"xLinkActionMain":"<span $li_class$><a href=\"#\" language=javascript onclick=\"$url$\" $LinkElements$ >$LeftSpan$  bbbbbbb$Title$ $RightSpan$ </a></span>",
-	
+	"ActionMain":"<span $li_class$><a href=\"#\" language=javascript onclick=\"$url$\" $LinkElements$ >$LeftSpan$ $Title$ $RightSpan$ </a></span>",
+	"LinkActionMain":"<span $li_class$><a href=\"#\" language=javascript onclick=\"$url$\" $LinkElements$ >$LeftSpan$ $Title$ $RightSpan$ </a></span>",
 
 	"ShortCutSlideActionDiv":"<div id=\"panel-right\" class=\"panel-close\"><span class=\"right-toggle\" title=\"Shortcut\">&nbsp;</span><ul class=\"shortcut-panel\">",
 	"ShortCutSlideActionEndDiv":"</ul></div>",
@@ -90,22 +88,25 @@
     "ThinContainerClose": "</div></div></div>",
     "ThinContainerFirst": "First",
     "ThinContainerMaintainItemList": "0",
-    "CollapsableContainerOpen": "<div class=\"widget-panel\"><div class=\"widget-top collapse-bar\"><h4>{{title}}</h4>{{RightSpan}}</div><div class=\"widget-content module\"><div class=\"content-block tbl-default\">",
-    "CollapsableContainerClose": "</div></div></div>",
-    "CollapsableContainerMaintainItemList": "0",
-    "AccordionContainerOpen": "<div class=\"widget-panel\"><div class=\"widget-content module\"><div class=\"accordion-basic\" id=\"list-accordion\"><a class=\"title\">{{title}}{{RightSpan}}</a><div>",
+    "CollapsibleContainerOpen": "<div class=\"widget-panel\"><div class=\"widget-top collapse-bar\"><h4>{{title}}</h4>{{RightSpan}}</div><div class=\"widget-content module\"><div class=\"content-block tbl-default\">",
+    "CollapsibleContainerClose": "</div></div></div>",
+    "CollapsibleContainerMaintainItemList": "0",
+    "AccordionContainerOpen": "<div class=\"widget-panel\"><div class=\"widget-content module\"><div class=\"accordion-basic list-accordionClass\"><a class=\"title\">{{title}}{{RightSpan}}</a><div>",
     "AccordionContainerNext": "</div><a class=\"title\">{{title}}</a><div>",
     "AccordionContainerClose": "</div></div></div></div>",
     "AccordionContainerMaintainItemList": "0",	
-    "TabContainerOpen": "<div class=\"widget-panel\"><div class=\"widget-content module\"><div class=\"tabBlock\"><div class=\"widget-top\"><ul class=\"mytabs\">{{{TabList}}}</ul></div><div class=\"mytabContainer\"><div id=\"{{tabid}}\" class=\"tab-block\"><div class=\"tab-content\">",    
-    "TabContainerNext": "</div></div><div id=\"{{tabid}}\" class=\"tab-block\"><div class=\"tab-content\">",
-	"TabContainerItemList": "<li><a href=\"#{{tabid}}\">{{title}}</a></li>",
+    "TabContainerOpen": "<div class=\"widget-panel\"><div class=\"widget-content module\"><div class=\"tabBlock\"><div class=\"widget-top\"><ul class=\"mytabs TabContainerGroup{{container_groupid}}\">{{{TabList}}}</ul></div><div class=\"mytabContainer\"><div id=\"{{tabid}}\" class=\"tab-blockContainerGroup{{container_groupid}}\"><div class=\"tab-content\">",    
+    "TabContainerNext": "</div></div><div id=\"{{tabid}}\" class=\"tab-blockContainerGroup{{container_groupid}}\"><div class=\"tab-content\">",
+	"TabContainerItemList": "    <li><a href=\"#{{tabid}}\">{{title}}</a></li>",
     "TabContainerClose": "</div></div></div></div></div></div>",
     "TabContainerMaintainItemList": "1",
 	
-	
-	
-	
+    "SplitContainerOpen": "      <div STYLE=\"{{#css}}{{css}}{{/css}}{{^css}}border: thin solid black; margin: 1em{{/css}}; float: left; display: inline-block; {{#percentage_width}}width: {{percentage_width}}%{{/percentage_width}};\" >",	
+    "SplitContainerNext": "</div><div STYLE=\"{{#css}}{{css}}{{/css}}{{^css}}border: thin solid black; margin: 1em{{/css}}; float: left; display: inline-block; {{#percentage_width}}width: {{percentage_width}}%{{/percentage_width}};\" >",
+    "SplitContainerClose": "</div><div STYLE=\"clear: left;\"></div>",
+    
+
+
     "G960Open": "<divid=\"content\"><div class=\"container_12\">\"G960First=\"<div class=\"grid_$grid$\">\"G960Next=\"</div><div class=\"grid_$grid$\">\"G960Clear=\"<div class=\"clear\"></div>\"G960Close=\"</div></div>\"",
     "NotifyDiv": "<div class=\"notification-wrapinformation\"><spanclass=\"icon-information\">Information: </span>$Text$</div>",
     "HelpNotifyDiv": "<div class=\"notification-wrapinformation\"><spanclass=\"icon-information\">Help: </span>$Text$</div>",
