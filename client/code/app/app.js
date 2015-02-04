@@ -395,6 +395,9 @@ var process_new_data = function (cx) {
 			var html = ss.tmpl[cx.obj.Stash].render(cx.obj.Data);
 			//console.log("cx.Data  :",cx.obj.Stash,cx.obj.Data);
 			$(cx.obj.Target).html(html);
+//            $(cx.obj.Target).find("script").each(function(i) {
+//                    eval($(this).text()); --seems already to be executing scripts...
+//                });
 
 			//TODO-10002  Create a registration type function to register events to elements after fullstash loads
 

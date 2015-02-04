@@ -12,6 +12,15 @@ and an unknown link style falling back to a <#:link --{style:"unknown",form:"Ind
 
 <p>Some i18n text and a context variable :  <b><#print You were here last at here.this_page_info/><b></p>
 
+<#help a help message sent at here.this_page_info/>
+<#warning a warning message sent at here.this_page_info/>
+<#success a success message sent at here.this_page_info/>
+<#failure a failure message sent at here.this_page_info/>
+
+<#notify style=Brief icon=alert.png  title="Some brief icon notification" a notification with a icon where the icon is specified in the icon property and it will remain on screen for 5 seconds/>
+<#notify style=Sticky title="Some sticky notification" a sticky at here.this_page_info, you have to close it manually/>
+
+
 <h2>A few containers</h2>
 <br>
 <#Container Style=Tab                                                                   title="A tab"/>

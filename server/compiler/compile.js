@@ -221,6 +221,10 @@ var seq_main = function () {
 		zx.Container_widget = require('./modules/widgets/Container_widget.js');
 		zx.plugins.push(zx.Container_widget);
 
+		zx.notify_widget = require('./modules/widgets/notify_widget.js');
+		zx.plugins.push(zx.notify_widget);
+        
+        
 		zx.action_widget = require('./modules/widgets/action_widget.js');
 		zx.plugins.push(zx.action_widget);
 

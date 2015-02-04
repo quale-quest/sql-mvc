@@ -1,17 +1,8 @@
 {
 	
     "G960Open": "<divid=\"content\"><div class=\"container_12\">\"G960First=\"<div class=\"grid_$grid$\">\"G960Next=\"</div><div class=\"grid_$grid$\">\"G960Clear=\"<div class=\"clear\"></div>\"G960Close=\"</div></div>\"",
-    "NotifyDiv": "<div class=\"notification-wrapinformation\"><spanclass=\"icon-information\">Information: </span>$Text$</div>",
-    "HelpNotifyDiv": "<div class=\"notification-wrapinformation\"><spanclass=\"icon-information\">Help: </span>$Text$</div>",
-    "InfromNotifyDiv": "<div class=\"notification-wrapinformation\"><spanclass=\"icon-information\">Information: </span>$Text$</div>",
-    "WarningNotifyDiv": "<div class=\"notification-wrapwarning\"><spanclass=\"icon-warning\">Warning: </span>$Text$</div>",
-    "SuccessNotifyDiv": "<div class=\"notification-wrapsuccess\"><spanclass=\"icon-success\">SUCCESS: </span>$Text$</div>",
-    "FailureNotifyDiv": "<div class=\"notification-wrapfailuer\"><spanclass=\"icon-failure\">FAILURE: </span>$Text$</div>",
-    "BriefNotifyDiv": "<scripttype=\"text/javascript\">$container=$(\"#container-n\").notify();create(\"default\",    {title: 'BriefNotification',text: '$Text$'});</script>",
-    "StickyNotifyDiv": "<scripttype=\"text/javascript\">$container=$(\"#container-n\").notify();create(\"sticky\",    {title: 'Notification',text: '$Text$'},{expires: false});</script>",
-    "StickyIconNotifyDiv": "<scripttype=\"text/javascript\">$container=$(\"#container-n\").notify();create(\"withIcon\",{title: 'Warning!',text: '$Text$',icon: '$Icon$'},{expires: false});</script>",
-
 	
+
 	
 "active commands from here":"",
 
@@ -369,6 +360,19 @@
 			"<div class='titleqiui1gallery_box'>[[[{{field.w.DisplayName}}]]]</div></div></div>"],
     
 	
+
+	
+    "NotifyDiv": "<div class=\"notification-wrap information\"><span class=\"icon-information\">Information: </span>{{Text}}</div>",
+    "HelpNotifyDiv": "<div class=\"notification-wrap information\"><span class=\"icon-information\">Help: </span>{{Text}}</div>",
+    "InfromNotifyDiv": "<div class=\"notification-wrap information\"><span class=\"icon-information\">Information: </span>{{Text}}</div>",
+    "WarningNotifyDiv": "<div class=\"notification-wrap warning\"><span class=\"icon-warning\">Warning: </span>{{Text}}</div>",
+    "SuccessNotifyDiv": "<div class=\"notification-wrap success\"><span class=\"icon-success\">SUCCESS: </span>{{Text}}</div>",
+    "FailureNotifyDiv": "<div class=\"notification-wrap failuer\"><span class=\"icon-failure\">FAILURE: </span>{{Text}}</div>",
+	"BriefNotifyDiv": "<script type=\"text/javascript\">$(\"#container-n\").notify(\"create\", \"{{#icon}}withIcon{{/icon}}{{^icon}}sticky{{/icon}}\",{ title:'{{title}}', text:'{{Text}}' {{#icon}},icon:'qqui1/{{icon}}'{{/icon}} },{ });</script>",		
+	"StickyNotifyDiv": "<script type=\"text/javascript\">$(\"#container-n\").notify(\"create\", \"{{#icon}}withIcon{{/icon}}{{^icon}}sticky{{/icon}}\",{ title:'{{title}}', text:'{{Text}}' {{#icon}},icon:'qqui1/{{icon}}'{{/icon}} },{ expires:false });</script>",	
+
+
+
 	
     "xTodoDataHead": "$CRLF$<thead>{{{pop}}}</thead>",
 	"xTodoDataBody":"inherit:DataBody",
