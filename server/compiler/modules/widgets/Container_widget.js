@@ -6,6 +6,8 @@ ease of use is important
  
 var hogan = require("hogan");
 exports.module_name='container_widget.js';
+exports.tags=[{name:"container"},{name:"nextcontainer"},
+{name:"closecontainer"}];
  
 var get_style = function (zx, o, Key) { //used for g960,container and notify  //this can be made common into a style plugin
 	var Value = "";

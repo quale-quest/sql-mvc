@@ -62,6 +62,9 @@ var page = require('../../modules/page.js');
 var hogan = require("hogan");
 
 exports.module_name='action_widget.js';
+exports.tags=[{name:"menuscan_recurse"},{name:"menuend"},
+{name:"menustart"},{name:"menu"},{name:"link"},{name:"button"},
+{name:"sqlbutton"},{name:"scriptbutton"},{name:"dropinmenu"}];	
 
 var gets = require('../../zx.js').gets;
 	

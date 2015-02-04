@@ -5,6 +5,7 @@ ease of use is important
  */
 var hogan = require("hogan");
 exports.module_name = 'element_widget.js';
+exports.tags=[{name:"element"}];
 
 var zx;
 var getFieldStyleSub = function (CompoundKey) {

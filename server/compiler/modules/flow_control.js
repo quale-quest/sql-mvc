@@ -49,6 +49,8 @@ fullstach json format
  */
 
  exports.module_name='flow_control.js';
+ exports.tags=[{name:"ifblock"},{name:"elseblock"},
+{name:"unblock"},{name:"include"}];
  
 var append_conditional = function (a, b, pre, post) {
 	b.forEach(function (entry) {

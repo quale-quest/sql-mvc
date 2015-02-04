@@ -80,13 +80,6 @@ exports.done_div = function (/*zx, line_objects*/
 
 };
 
-exports.tag_xelement = function (zx, o) { //overrides or extends the ui
-	//console.log('tag_element name:',o.name,' el:',zx.gets(o.code));
-	var code = zx.gets(o.code);
-	code = code.replace(/!<=/g, ">");
-	zx.UIsl[o.name] = code;
-};
-
 exports.init = function (global_zx) {
 
 	//console.warn('init Element_widget:');

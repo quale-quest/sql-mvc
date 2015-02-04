@@ -6,6 +6,7 @@ ease of use is important
 //not used yet but will be
 
 exports.module_name='g960_widget.js';
+exports.tags=[{name:"g960"}];
 
 var get_style = function (zx, o, Key) { //used for g960,container and notify //this can be made common into a style plugin
 	var Value = "";

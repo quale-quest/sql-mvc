@@ -16,6 +16,7 @@ var extend = require('node.extend');
 var deepcopy = require('deepcopy');
 
 exports.module_name = 'quic.js';
+exports.tags=[{name:"eval"}];
 
 exports.remove_comments = function (zx, obj, str) {
 

@@ -33,6 +33,8 @@ var hogan = require("hogan");
 //var extend = require('node.extend');
 
 exports.module_name = 'table_widget.js';
+exports.tags=[{name:"softcodec"},{name:"table",complex:true},
+{name:"form",complex:true},{name:"list",complex:true},{name:"array",complex:true}];
 
 var assignfeature = exports.assignfeature = function (o, r, i, nameto, namefrom, defaultto) {
 	var ftl = String(zx.gets(o[namefrom])).split(',');

@@ -28,7 +28,10 @@ with 2 dictionaries
 var fs = require('fs');
 //var path = require('path');
 var fileutils = require('./fileutils.js');
+
 exports.module_name='Inject_Procedures.js';
+exports.tags=[{name:"inject_point"}];
+
 exports.check_inline_link_procedure = function (zx, line_obj,debug) {
 	//..if there is code to execute  inject it and set a when statement......
     //console.log('check_inline_link_procedure from 151927:',debug,line_obj.nonkeyd);

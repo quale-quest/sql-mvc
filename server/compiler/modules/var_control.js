@@ -41,6 +41,8 @@ this at the moment cannot evalute when left value changes in the simple expressi
 
  */
 exports.module_name='var_control.js';
+exports.tags=[{name:"assign"}];
+
 exports.NamedVariable = function (zx, line_obj, key, val, target_type, DebugContext) {
 	////assigns come in 2 variances, a)static text substitution, b)sql query results
 

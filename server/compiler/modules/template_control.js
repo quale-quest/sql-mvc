@@ -34,6 +34,8 @@ thus we must optimise this case to simple text substitutions
  */
 var path = require('path'); 
 exports.module_name='template_control';
+exports.tags=[{name:"console"},{name:"warn"},
+{name:"html"},{name:"print"}];
 
 exports.tag_console = function (zx, line_obj) {		
     console.warn("Log from :",path.basename(line_obj.srcinfo.filename),':',line_obj.srcinfo.start_line, " -------->",line_obj.nonkeyd);
@@ -48,7 +50,7 @@ exports.tag_html = function (zx, line_obj) {
 	zx.mt.lines.push(line_obj.html);
 	if (line_obj.html.indexOf("<script") >= 0) {
 		if (zx.pass === 1)
-			console.warn('Script found in template - this wont execute in DOM - rather use <#jscript tag : in file:', line_obj.filename);
+			console.warn('Script found in template - this might not execute in DOM - rather use <#jscript tag : in file:', line_obj.filename);
 	}
 };
 

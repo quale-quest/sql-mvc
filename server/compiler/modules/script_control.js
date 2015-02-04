@@ -31,6 +31,7 @@ thus we must optimise this case to simple text substitutions
  */
  
  exports.module_name='script_control.js';
+ exports.tags=[{name:"script"},{name:"procedure"}];
 
 var script_into = function (zx, line_obj, r) {
 

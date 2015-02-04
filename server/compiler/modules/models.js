@@ -5,6 +5,9 @@ ease of use is important
  */
 
 exports.module_name = 'models.js';
+exports.tags=[{name:"controller"},{name:"controllerdone"},
+{name:"use"},{name:"model"},{name:"modeldone"}];
+
 var deepcopy = require('deepcopy');
 var extend = require('node.extend');
 var fs = require('fs');
