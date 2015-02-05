@@ -6,7 +6,7 @@
 This is a complete implementation of [todomvc.com](http://todomvc.com) functionality in 40 lines of code.
 Prerequisite knowledge : SQL,JSON,Regex and [mustache](https://mustache.github.io/mustache.5.html).
 
-Live Demo at http://todomvc.sql-mvc.com/, 
+Live Demo at [todomvc.sql-mvc.com](http://todomvc.sql-mvc.com/) 
 
 ```
 <#:model

@@ -46,8 +46,11 @@ exports.tag_warn = function (zx, line_obj) {
 };
 
 exports.tag_html = function (zx, line_obj) {
-	// if (active_pass!=zx.pass) return true;
-	zx.mt.lines.push(line_obj.html);
+	
+    if (line_obj.html===undefined) {line_obj.html = zx.gets(line_obj.nonkeyd);
+   // console.warn('HTML  found in code template ',line_obj.html);
+    }
+	zx.mt.lines.push(zx.gets(line_obj.html));
 	if (line_obj.html.indexOf("<script") >= 0) {
 		if (zx.pass === 1)
 			console.warn('Script found in template - this might not execute in DOM - rather use <#jscript tag : in file:', line_obj.filename);

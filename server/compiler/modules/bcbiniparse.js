@@ -31,6 +31,7 @@ exports.parse = function (str, filename, obj) {
 	p;
 
 	str = str.trim();
+    var strb4=str;
 	var loops = 0;
 	var debuglevel = 0;
 
@@ -41,14 +42,15 @@ exports.parse = function (str, filename, obj) {
 	var tage = zx.delimof(str, [' ', '\n']);
 	var tag = str.substring(0, tage).trim();
 	str = str.substring(tage + 1).trim();
+    
 	//console.log('tag:', tag);
 
 	obj.tag = tag;
 	obj.srcinfo.filename = filename;
 	var nonkey = [];
 	while (str !== "") {
-		if (loops++ > 50)
-			console.log('\n\n\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n', str);
+		if (loops++ > 500)
+			console.log('\n\n\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXLoooping to many times',loops,' srtlength:',str.length);//, str);
 
 		var val = "",
 		key = "";
@@ -167,6 +169,10 @@ exports.parse = function (str, filename, obj) {
 		}
 
 	}
+    
+    if (loops > 500)
+			console.log('\n\n\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXLooped to many times\n', strb4);
+
 
 	obj.nonkeyd = nonkey;
 	//console.log('obj val:VVVVVVVVVVVVVVVVVVVVVVVVVVVVV\n',obj,"\n^^^^^^^^^^^^^^^^^^^^^^^^^^");

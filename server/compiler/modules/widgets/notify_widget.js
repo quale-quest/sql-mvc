@@ -12,7 +12,14 @@ var hogan = require("hogan");
 var gets = require('../../zx.js').gets;
 
 exports.module_name='notify_widget.js';
-exports.tags=[{name:"notify"},{name:"help"},{name:"infrom"},{name:"warning"},{name:"success"},{name:"failure"}];
+exports.tags=[{name:"notify",
+man_page:"General purpose notify pop up notifications.\n Usage: style=[brief|sticky] icon=image.png  title=\"\"  i18n _text"
+},{name:"help"   ,man_page:"Shows a help message with icon .\n Usage i18n _text"
+},{name:"infrom" ,man_page:"Shows a information message with icon .\n Usage i18n _text"
+},{name:"warning",man_page:"Shows a warning message with icon .\n Usage i18n _text"
+},{name:"success",man_page:"Shows a success message with icon .\n Usage i18n _text"
+},{name:"failure",man_page:"Shows a failure message with icon .\n Usage i18n _text"
+}];
 
 
 

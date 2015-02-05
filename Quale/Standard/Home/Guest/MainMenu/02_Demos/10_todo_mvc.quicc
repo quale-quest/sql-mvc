@@ -1,75 +1,63 @@
 
-
-
-
 <div align="center"> 
 <h1><a href="https://github.com/quale-quest/sql-mvc">SQL-MVC</a> example implementation of <a href="http://todomvc.com">todomvc.com</a></h1>
 <br><br><br>
 
-<#:button
---{save:"allbutton",title:"all"}
-set here.todo_type='';
+<#
+
+:button
+  --{save:"allbutton",title:"all"}
+  set here.todo_type='';
+
+:table
+	Select  --:{Title:"Make new records",from:"TODO_MVC",autoinsert:"top",tablestyle:"Todo"}
+	STATUS, --:{Action:"Edit",debug:0,autosave:yes}
+	NAME,   --:{Action:"Edit","placeholder":"What needs to be done (tab to save)","autosave":yes}
+	REF	    --:{Action:"View",Type:"Hide"}
+	From TODO_MVC 
+	where (owner=session.id and ( (here.todo_type='' and (status!='3' or status is null)) 
+	or( (status='' or status is null) and here.todo_type='1')or(status='1' and here.todo_type='2')))
+
+:print --{use:"todo.itemcount" }
+
+
+:button
+    --{use:"allbutton",title:"View all"}
+
+
+:button
+    --{title:"Active"}
+	set here.todo_type='1';
+
+:button
+	--{title:"Completed"}
+	set here.todo_type='2';
+
+use "todo.clear.button"
+
+html <div align="center"><br><br><br><br></div></div>	
+
+Container Style=Tab                                                                                tab=Info
+rem -------------------------------------------------------------------------------------------------------
+html <h1>Info</h1>
+
+print you were here last at here.this_page_info
+:script set here.this_page_info=cast('now' as timestamp);
+html <br>
+
+print ($select count(*) from MAIL where FROM_USER=session.id and SUBJECT='login log' $) actions from you 
+	and ($select count(*) from MAIL where SUBJECT='login log' $) actions total (in this session).
+
+NextContainer                                                                   tab=Source_Code
+Container Style=Accordion                                                title=View
+include type="pre" file="MainMenu/02_Demos/10_todo_mvc" 
+NextContainer                                                           title=Model
+include type="pre" file="Models/TodoModel" 
+NextContainer                                                      title=Controller
+include type="pre" file="Controllers/TodoController" 
+
+CloseContainer                                                                     
+
+CloseContainer                                                                                 
 />
-
-<#:table
-Select  --:{Title:"Make new records",from:"TODO_MVC",autoinsert:"top",tablestyle:"Todo"}
-STATUS, --:{Action:"Edit",debug:0,autosave:yes}
-NAME,   --:{Action:"Edit","placeholder":"What needs to be done (tab to save)","autosave":yes}
-REF	    --:{Action:"View",Type:"Hide"}
-From TODO_MVC 
-where (owner=session.id and ( (here.todo_type='' and (status!='3' or status is null)) 
-or( (status='' or status is null) and here.todo_type='1')or(status='1' and here.todo_type='2')))/>
-
-<#:print
---{use:"todo.itemcount" }
-/>
-
-<#:button
---{use:"allbutton",title:"View all"}
-/>
-
-<#:button
---{title:"Active"}
-set here.todo_type='1';
-/><#:button
---{title:"Completed"}
-set here.todo_type='2';
-/>
-<#use "todo.clear.button"/>
-
-
-
-<div align="center"> 
-<br><br><br><br>
-
-
-</div>	
-</div>	
-
-<#Container
-Style=Tab
-                                                                                         tab=Info/> 
-
-<h1>Info</h1>
-
-<#print you were here last at here.this_page_info/>
-<#:script set here.this_page_info=cast('now' as timestamp);/><br>
-
-<#print 
-($select count(*) from MAIL where FROM_USER=session.id and SUBJECT='login log' $) actions from you 
-and ($select count(*) from MAIL where SUBJECT='login log' $) actions total (in this session).
-/>
-<#NextContainer                                                                   tab=Source_Code/>
-<#Container Style=Accordion                                                title=View/> 
-<#include type="pre" file="MainMenu/02_Demos/10_todo_mvc" />
-<#NextContainer                                                           title=Model/>
-<#include type="pre" file="Models/TodoModel" />
-<#NextContainer                                                      title=Controller/>
-<#include type="pre" file="Controllers/TodoController" />
-
-<#CloseContainer                                                                     />
-
-<#CloseContainer                                                                                 />
-<br>
-<br>
-<br> 
+<br><br><br> 

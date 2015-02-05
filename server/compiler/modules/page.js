@@ -66,7 +66,7 @@ var preProcess = function (zx, filename, str) {
 					}
 				});
 		}
-		
+
 	}
 	return str;
 };
@@ -86,6 +86,42 @@ var check_user_table_name = function (zx, str) {
 	str = check_user_table(str, "user_password_field");
 	str = check_user_table(str, "user_keys_field");
 	return str;
+}
+
+var ParseIntoStatements = function (zx, compound_statement, objtype) {
+	var statements = [];
+
+	if (!objtype) {
+		if (compound_statement.substring(0, 4) == "test") {
+			//console.log('ParseIntoStatements: ', compound_statement);
+
+		}
+	}
+	var split = compound_statement.split(zx.all_tags_rx);
+	//console.log('ParseIntoStatements R: ', split);
+	if (split.length > 0) {
+		if (split.length == 1) {
+			statements.push({
+				statement : split[0]
+			});
+
+		} else {
+			//console.log('ParseIntoStatements X: ', split);//[0] ,' ...', split[1]);
+			split[1] = split[0] + split[1];
+
+			for (var i = 1; i < split.length; i += 2) //
+			{
+				statements.push({
+					statement : split[i] + split[i + 1]
+					//command : split[i],
+					//input : split[i + 1]
+				});
+				// console.log('ParseIntoStatements Z: ',i, split[i] + split[i + 1]);//[0] ,' ...', split[1]);
+			}
+		}
+	}
+	//console.log('ParseIntoStatements Y: ',statements);
+	return statements;
 }
 
 exports.ParseFileToObject = function (zx, filename, objtype) {
@@ -182,46 +218,54 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 			//console.log('itemCrCount:',itemCrCount,process.memoryUsage());
 			if (starts[i] === "<#") { //parse tags
 				//stop on >
+
+
 				s = starts[i + 1];
 				eob = s.indexOf(zx.end_of_block); //in strict mode this should be />
-				var tag_string = s.substring(0, eob < 0 ? s.length : eob);
+				var compound_statement = s.substring(0, eob < 0 ? s.length : eob).trim();
 
-				//parse into ini
-				//console.log('ParseFileToObject a:',line_obj);
-				var sourcestr = tag_string;
-				var line_obj = {};
-				line_obj.srcinfo = {};
-				//in case the parser needs to throw an error
-				line_obj.srcinfo.main_page_name = zx.main_page_name;
-				line_obj.srcinfo.file_stack = zx.file_stack.slice(0);
-				line_obj.srcinfo.filename = filename;
-				line_obj.srcinfo.source = sourcestr;
-				line_obj.srcinfo.start_line = crCount;
-				line_obj.srcinfo.start_col = col;
-				line_obj.srcinfo.current_tag_index = 0;
-				line_obj.tag = 'unknown123';
+				var Statements = ParseIntoStatements(zx, compound_statement, objtype)
+					//console.log('ParseFileToObject a:',Statements);
 
-				//console.log('ParseFileToObject b:',tag_string,line_obj);
-				var tage = zx.delimof(tag_string, [' ', '\n']);
-				if (tag_string.substr(0, 1) !== ":") {
-					//console.log('bcb a:',line_obj);
-					line_obj.ini_body = tag_string;
-					//console.log('bcb b:',line_obj);
-				} else {
-					line_obj.tag = tag_string.substring(1, tage).trim();
-					line_obj.body = tag_string.substring(tage + 1) //.trim(); //trim has been removed so the line numbers from models preserve in debug output
-				}
+					for (var is = 0; is < Statements.length; is++) {
+						var Statement = Statements[is].statement;
+						var sourcestr = compound_statement;
+						var line_obj = {};
+						line_obj.srcinfo = {};
+						//in case the parser needs to throw an error
+						line_obj.srcinfo.main_page_name = zx.main_page_name;
+						line_obj.srcinfo.file_stack = zx.file_stack.slice(0);
+						line_obj.srcinfo.filename = filename;
+						line_obj.srcinfo.source = sourcestr;
+						line_obj.srcinfo.start_line = crCount;
+						line_obj.srcinfo.start_col = col;
+						line_obj.srcinfo.current_tag_index = 0;
+						line_obj.tag = 'unknown123';
 
-				if ((objtype === undefined) || (objtype === line_obj.tag.toLowerCase())) {
-					blocks.push(line_obj);
-				}
+						//console.log('ParseFileToObject b:',Statement,line_obj);
+						var tage = zx.delimof(Statement, [' ', '\n']);
+						if (Statement.substr(0, 1) !== ":") {
+							//console.log('bcb Statement :',zx.show_longstring(Statement));
+							//console.log('bcb a:',line_obj);
+							line_obj.ini_body = Statement;
+							//console.log('bcb b:',line_obj);
+						} else {
+							//console.log('json Statement :',zx.show_longstring(Statement));
+							//console.log('  next Statement :',is,zx.show_longstring(Statements[is+1].statement));
+							line_obj.tag = Statement.substring(1, tage).trim();
+							line_obj.body = Statement.substring(tage + 1) //.trim(); //trim has been removed so the line numbers from models preserve in debug output
+						}
 
-				//console.log('bcb b2:',line_obj);
+						if ((objtype === undefined) || (objtype === line_obj.tag.toLowerCase())) {
+							blocks.push(line_obj);
+						}
+					}
+					//console.log('bcb b2:',line_obj);
 
-				//left over html on the next line
-				starts[i] = "<#" + tag_string + zx.end_of_block;
+					//left over html on the next line
+					starts[i] = "<#" + compound_statement + zx.end_of_block;
 				starts[i + 1] = s.substring(eob + zx.end_of_block.length);
-				itemCrCount = zx.counts(tag_string, "\n");
+				itemCrCount = zx.counts(compound_statement, "\n");
 			} else if (starts[i] === "<{") //json format - not used yet
 			{
 				//stop on >
@@ -364,15 +408,12 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 			if (obj[i].file[0] === 'this') { //useful for displaying own source
 				obj[i].file[0] = zx.pages[zx.pgi].name;
 				console.log('include this tag : ', zx.pages[zx.pgi].name);
-			}
-            
-            
-            {
+			} {
 				file_name = obj[i].file[0];
 				if (!fs.existsSync(file_name)) {
 					file_name = obj[i].file[0] + zx.app_incl_extn;
 					if (!fs.existsSync(file_name)) {
-						file_name = fileutils.locatefile(zx, obj[i].file[0]+ zx.app_incl_extn, zx.file_name, obj[i], 120014);
+						file_name = fileutils.locatefile(zx, obj[i].file[0] + zx.app_incl_extn, zx.file_name, obj[i], 120014);
 						if (file_name !== "") {
 							file_name = file_name + zx.app_incl_extn;
 						}
@@ -384,11 +425,11 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 			//console.log('include tag : ', fn);
 			if (file_name === "") {
 				//file not found
-                console.log('file not found : ', obj[i].file[0]);
+				console.log('file not found : ', obj[i].file[0]);
 			} else {
 
 				appendToDepenance(zx, file_name);
-	
+
 				zx.includedfiles.push(zx.Current_file_name);
 				zx.includedfiles = zx.deduplicate(zx.includedfiles);
 
@@ -428,22 +469,21 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 						zx.BlockIndex++;
 					}
 				}
-				
-                
-                var Inject_html='';
+
+				var Inject_html = '';
 				if (zx.gets(obj[i].type) === 'pre') {
-					Inject_html = zx.showSource(fs.readFileSync(file_name));					
-                }    
+					Inject_html = zx.showSource(fs.readFileSync(file_name));
+				}
 				if (zx.gets(obj[i].type) === 'html') {
-					Inject_html = fs.readFileSync(file_name);					
-                }    
+					Inject_html = fs.readFileSync(file_name);
+				}
 				if (zx.gets(obj[i].type) === 'md') {
-					Inject_html = zx.markdown.preprocessor_md(zx,fs.readFileSync(file_name).toString());	
-                    //Inject_html = file_name;
-                    //console.warn('obj[i].type === md: ',file_name);
-                }    
-                if (Inject_html!=='') {
-                    //push as html block                  
+					Inject_html = zx.markdown.preprocessor_md(zx, fs.readFileSync(file_name).toString());
+					//Inject_html = file_name;
+					//console.warn('obj[i].type === md: ',file_name);
+				}
+				if (Inject_html !== '') {
+					//push as html block
 					var htmlobj = [i + 1, 0, {
 							tag : "html",
 							html : Inject_html,
@@ -460,7 +500,6 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 					zx.BlockIndex++;
 				}
 
-
 			}
 		}
 	}
@@ -471,5 +510,30 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 exports.start_up = function (zx) {
 	zx.end_of_block = "/>";
 	zx.end_of_block_regex = /\/>/g;
+	var Keyword_API_md = '#Commands and reserverd keywords in the Quale language\n\n ';
 
+	zx.all_tags_str = '(';
+	zx.forFields(zx.plugins, function (plugin) {
+		zx.forFields(plugin.tags, function (keyword) {
+			zx.all_tags_str += '^:' + keyword.name + '|';
+			zx.all_tags_str += '^' + keyword.name + '|';
+			//keyword.rx = new RegExp('^' + keyword.name, "im");
+			// console.log('build regex for', (plugin.module_name || ' plugin has no name'), keyword);
+
+			Keyword_API_md += '\n\n##' + keyword.name;
+			Keyword_API_md += '\n\n' + keyword.man_page || ' - TBD';
+
+		});
+	});
+	zx.all_tags_str = zx.all_tags_str.slice(0, -1) + ')';
+	//console.log('build regex all tags', zx.all_tags_str);
+	zx.all_tags_rx = new RegExp(zx.all_tags_str, "img");
+
+	//console.log('Keyword_API_md:', Keyword_API_md);
+	try {
+		fs.mkdirSync("doc");
+	} catch (err) {}
+	try {
+		fs.writeFileSync('doc/Keywords.md', Keyword_API_md);
+	} catch (err) {}
 };
