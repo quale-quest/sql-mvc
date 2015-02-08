@@ -933,7 +933,7 @@ exports.unit_test_s = function (zx) {
 
 console.log(JSON.stringify(splitNoParen('123;456;789;(abc;(123;456;789);default;);999', ';'), null, 4));
 console.log(JSON.stringify(splitNoParen('123;456;789;(abc;(123;456;789) default;) 999', ';'), null, 4));
-process.exit(2);
+console.trace('process.exit(2) from test in updater : ');process.exit(2);//test
 }
 
 //var inputs = fs.readFileSync('test.txt', 'utf8');

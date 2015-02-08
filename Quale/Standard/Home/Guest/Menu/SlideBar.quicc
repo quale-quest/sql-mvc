@@ -6,7 +6,7 @@
 
 <#Menu 
 icon="shortcut-icon dboard-x-icon" 
-form=Dashboard\Dashboard 
+form=Dashboard/Dashboard 
 Title="Dashboard" />
 
 
@@ -15,7 +15,7 @@ Title="Dashboard" />
 <#Menux   
 refresh=1
 from=user_table_name where=user_pk_field=Operator.user_pk_field 
-form=Settings\Staff
+form=Settings/Staff
 Title="Staff"
 icon="shortcut-icon staff-x-icon"
 />
@@ -23,7 +23,7 @@ icon="shortcut-icon staff-x-icon"
 <#Menux   
 refresh=1
 from=user_table_name where=user_pk_field=Operator.user_pk_field 
-form=Settings\Numbers
+form=Settings/Numbers
 Title="Numbers"
 icon="shortcut-icon typo-x-icon"
 />
@@ -31,7 +31,7 @@ icon="shortcut-icon typo-x-icon"
 <#Menux   
 refresh=1
 from=user_table_name where=user_pk_field=Operator.user_pk_field 
-form=Reports\QuickReport
+form=Reports/QuickReport
 Title="QuickReport"
 icon="shortcut-icon QuickReport-x-icon"
 />
@@ -40,7 +40,7 @@ icon="shortcut-icon QuickReport-x-icon"
 <#Menux   
 refresh=1
 from=user_table_name where=user_pk_field=Operator.user_pk_field 
-form=Reports\DefinedReports
+form=Reports/DefinedReports
 Title="DefinedReports"
 icon="shortcut-icon Report-x-icon"
 />
@@ -48,7 +48,7 @@ icon="shortcut-icon Report-x-icon"
 <#Menux   
 refresh=1
 from=user_table_name where=user_pk_field=Operator.user_pk_field 
-form=Reports\RecentCalls
+form=Reports/RecentCalls
 Title="RecentCalls"
 icon="shortcut-icon PlayFile-x-icon"
 />
@@ -57,7 +57,7 @@ icon="shortcut-icon PlayFile-x-icon"
 <#Menux   
 refresh=1
 from=user_table_name where=user_pk_field=Operator.user_pk_field 
-form=Reports\BandwidthUse
+form=Reports/BandwidthUse
 Title="BandwidthUse"
 icon="shortcut-icon chart-x-icon"
 />			

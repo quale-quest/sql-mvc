@@ -321,7 +321,7 @@ var addFileToLinkFiles = function (zx, fn, obj, debugref) {
 		if (fn !== "") {
 			if (zx.Current_main_page_name.indexOf('SaleForm') >= 0) {
 				console.log('table adding SaleForm to linkfiles: ', ofn, zx.file_name, obj);
-				process.exit(44);
+				console.trace('process.exit(2) from addFileToLinkFiles : ');process.exit(44);
 			}
 
 			zx.linkfiles.push({
@@ -450,7 +450,7 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 
 					if (obj2 === undefined) {
 						console.warn('include file could ot be read or found ', file_name);
-						process.exit(33);
+						console.trace('process.exit(2) from RecurseParseFileToObject : ');process.exit(33);
 					} else {
 						//console.warn('b4splice ',obj.length,obj2.length );
 						//http://fromanegg.com/post/43733624689/insert-an-array-of-values-into-an-array-in-javascript

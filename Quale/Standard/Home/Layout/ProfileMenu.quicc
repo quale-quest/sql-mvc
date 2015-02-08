@@ -29,15 +29,15 @@
 			<div class="sub-menu">
 				<ul>
 <#xMenuScan file=UserMenu from=user_table_name where=user_pk_field=Operator.user_pk_field/>				
-				        <#Menu icon="icon-block-black cog-b" from=user_table_name where=user_pk_field=operator.user_pk_field form=Operator\Preferences Title="Preferences" Style=UserBar/>
-				        <#xMenu icon="icon-block-black info-about-b" from=user_table_name where=user_pk_field=Operator.user_pk_field form=Help\Main Title="Help?" Style=UserBar/>
-				        <#Menu icon="icon-block-black box-incoming-b" from=user_table_name where=user_pk_field=Operator.user_pk_field form=Operator\Inbox Title="Inbox" Style=UserBar/>
-				        <#xMenu icon="icon-block-black locked-tw-b" from=user_table_name where=user_pk_field=Operator.user_pk_field form=~\Layout\Operator\Logout Title="Logout" Style=UserBar/>
+				        <#Menu icon="icon-block-black cog-b" from=user_table_name where=user_pk_field=operator.user_pk_field form=Operator/Preferences Title="Preferences" Style=UserBar/>
+				        <#xMenu icon="icon-block-black info-about-b" from=user_table_name where=user_pk_field=Operator.user_pk_field form=Help/Main Title="Help?" Style=UserBar/>
+				        <#Menu icon="icon-block-black box-incoming-b" from=user_table_name where=user_pk_field=Operator.user_pk_field form=Operator/Inbox Title="Inbox" Style=UserBar/>
+				        <#xMenu icon="icon-block-black locked-tw-b" from=user_table_name where=user_pk_field=Operator.user_pk_field form=~/Layout/Operator/Logout Title="Logout" Style=UserBar/>
 				</ul>
 				<div class="admin-thumb">
 					<img src="../../images/qqui1/user-thumb1.png" alt="user" width="50" height="50">
 					
-					<#xMenu icon="p-edit" from=user_table_name where=user_pk_field=Operator.user_pk_field form=~\All\Operator\Profile Title="EditProfile" Style=UserEdit/>
+					<#xMenu icon="p-edit" from=user_table_name where=user_pk_field=Operator.user_pk_field form=~/All/Operator/Profile Title="EditProfile" Style=UserEdit/>
 				</div>
 			</div>
 		</div>

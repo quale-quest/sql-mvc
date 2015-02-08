@@ -4,24 +4,24 @@
 
 <#xMenu refresh=1 icon="sc-icon Save-swb"  Title="Save" broken - last onchange event does not fire. last update is not saved />
 
-<#Menux icon="sc-icon dashboard" from=Me where=ref=Operator.Ref form=Dashboard\Dashboard Title="Busy" />
+<#Menux icon="sc-icon dashboard" from=Me where=ref=Operator.Ref form=Dashboard/Dashboard Title="Busy" />
 
 <#Menu  
-form=Settings\Staff
+form=Settings/Staff
 Title="VoiceMail"
 icon="sc-icon userlist"
 />
 
 <#Menux   
 refresh=1
-form=Settings\Numbers
+form=Settings/Numbers
 Title="NoAnswer"
 icon="sc-icon tasklist"
 />
 
 <#Menux   
 refresh=1
-form=Reports\QuickReport
+form=Reports/QuickReport
 Title="InvalidData"
 icon="sc-icon reports-c"
 />
@@ -29,14 +29,14 @@ icon="sc-icon reports-c"
 
 <#Menux   
 refresh=1
-form=Reports\DefinedReports
+form=Reports/DefinedReports
 Title="DefinedReports"
 icon="sc-icon  content-c"
 />
 
 <#Menux   
 refresh=1
-form=Reports\RecentCalls
+form=Reports/RecentCalls
 Title="RecentCalls"
 icon="sc-icon PlayFile"
 />
@@ -44,13 +44,13 @@ icon="sc-icon PlayFile"
 
 <#Menux   
 refresh=1
-form=Reports\Uploads_and_bandwidth
+form=Reports/Uploads_and_bandwidth
 Title="BandwidthUse"
 icon="sc-icon satistics"
 />			
 			
 					
-<#Menux icon="sc-icon help-swb"  from=Me where=ref=Operator.Ref form=Help\Main Title="Help"/>
+<#Menux icon="sc-icon help-swb"  from=Me where=ref=Operator.Ref form=Help/Main Title="Help"/>
 
 
 <#MenuEnd/>

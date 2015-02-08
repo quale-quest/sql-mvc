@@ -365,7 +365,7 @@ var recurse_variable_expressions = function (zx, line_obj, varx, QryStr) {
 	do {
 		if (loopc++ > 100) {
 			console.log('CRASH: recurse_variable_expressions looping infintely: \n', QryStr, '\n', line_obj);
-			process.exit(2);
+			console.trace('process.exit(2) from CRASH: recurse_variable_expressions looping infintely : ');process.exit(2);
 		}
 		//console.log('recurse_variable_expressions do: \n', QryStr,"\n",result);
 		QryStr = result;
@@ -397,7 +397,7 @@ var recurse_variable_expressions = function (zx, line_obj, varx, QryStr) {
 					};
 					zx.variables.required[rfn.toLowerCase()] = v;
 					if (rfn.toLowerCase() === "operator.operator")
-						process.exit(2);
+                    {console.trace('process.exit(2) from operator.operator : ');process.exit(2);}
 				}
 
 			} else {
@@ -678,7 +678,7 @@ if (fld_obj.cf[0].pointer===undefined)
 
 	if (pointerfieldindex === undefined) {
 		console.log('!!!!!!!!!!!!!!!!!!!!!!!!No Primary key field for edit\n', pointerfieldindex, fld_obj, pkname, pointerfields);
-		process.exit(2); //TODO log and continue non destructive
+		{console.trace('process.exit(2) from No Primary key field for edit : ');process.exit(2); }//TODO log and continue non destructive
 	}
    fld_obj.cf[0].pkname = pkname;
     

@@ -428,7 +428,7 @@ var seq_page = function (zx) {
 
 	if (fn.indexOf('SaleForm') >= 0) {
 		console.log('compiling SaleForm to linkfiles: ', fn, zx.pages[zx.pgi]);
-		process.exit(44);
+		{console.trace('process.exit(2) from SaleForm : '); process.exit(44);}
 	}
 	if (fn === "") {
 		console.warn('file not found ', zx.Current_rel_file, fn);
@@ -615,7 +615,7 @@ console.log('compiler started');
 if (!fs.existsSync("Quale")) {
     // Do something
     console.log('The compiler must be run with the current working directory being the root of the project to be compiled.');
-    process.exit(2);
+    console.trace('process.exit(2) from existsSync Quale : '); process.exit(2);
 }
 
 Sync(function () {

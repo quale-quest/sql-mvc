@@ -260,7 +260,7 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 		q_obj = json_like.parse(quics,"var A='Action',E='Edit',V='View',L='Link',H='Hide',T='Type';");
 	} catch (e) {
 		console.log('json_like.parse exception: ', quics);
-		process.exit(2); //TODO
+		console.trace('process.exit(2) from script_breakpoint : '); process.exit(2); //TODO
 
 	}
 	//console.log('json_like.parse:',q_obj)//,":: : ",str);

@@ -301,7 +301,7 @@ var recurseMacroExpansion = function (zx, line_obj, varx, QryStr) {
 					};
 					zx.variables.required[r.content.toLowerCase()] = v;
 					if (r.content.toLowerCase() === "operator.operator")
-						process.exit(2);
+                    {console.trace('process.exit(2) from script_breakpoint : ');process.exit(2);}
 
 					if (zx.pass > 2) {
 						console.log('recurseMacroExpansion MISSSING VARIABLE !!!!!!!!!!!!!!!!!!!!!!!!!!! : {', r.content, '}'

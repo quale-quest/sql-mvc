@@ -205,7 +205,7 @@ var script_defaultmastertable = function (zx, line_obj, r) {
 var script_breakpoint = function (/*zx, line_obj, r*/
 ) {
 	//TODO add script break point debug info
-	process.exit(2); ///breakpoint in file
+	console.trace('process.exit(2) from script_breakpoint : '); process.exit(2); ///breakpoint in file
 };
 
 var script_debugscript = function (/*zx, line_obj, r*/
@@ -411,7 +411,7 @@ exports.ExtractFirstScript = function (o, r, debugmsg) {
 	}
 	//it should never reach here
 	console.log('ExtractFirstScript should never reach here: ', debugmsg, o, r, ftag);
-	process.exit(2);
+	console.trace('process.exit(2) from ExtractFirstScript : ');process.exit(2);
 	//it should never reach here
 	return false;
 };

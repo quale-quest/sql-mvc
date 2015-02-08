@@ -294,7 +294,7 @@ var parse3 = function (text) {
 			if (--max < 0) {
 				if (debug)
 					console.log('max exeeded - likely algorithom fault');
-				process.exit(2);
+				console.trace('process.exit(2) from sub_parse3 : '); process.exit(2);
 			}
 			if ((str.charCodeAt(right) === Space) && (right < str.length - 1)) {
 				while ((right < str.length - 1) && str.charCodeAt(right + 1) == Space) {
@@ -467,7 +467,7 @@ var parse3 = function (text) {
 	if (parse3count === parse3countMax)
 		console.log('parse3 done with :', parse3count, '"' + text + '"\n', o);
 	if (parse3count > parse3countMax)
-		process.exit(2); //slow inspect each element
+    {console.trace('process.exit(2) from (parse3count > parse3countMax) : '); process.exit(2);} //slow inspect each element
 
 	return o;
 };
@@ -492,7 +492,7 @@ var test = function (ref, text, lxon) {
 var parse_compare = function (text, context_vars) {
 
 	var o1 = parse_v1(text, context_vars);
-	var o3 = parse3(text, context_vars);
+	var o3 = parse3(text);
 	if (JSON.stringify(o1) !== JSON.stringify(o3)) {
 		console.log('parse_compare Failed: ', text, '\nref     :', JSON.stringify(o1, null, 4), '\n Result   :', JSON.stringify(o3, null, 4));
 		console.log('--------------------: ', text, '\n    ref_1   :', JSON.stringify(o1), '\n   Result_3 :', JSON.stringify(o3));
@@ -503,7 +503,7 @@ var parse_compare = function (text, context_vars) {
 
 var unit_test = function () {
 
-	parse3countMax = 100;
+	parse3countMax = 1000;
 
 	//console.log('start Quic JSOL2', JSOL2("a: 1, b: 2, \"quotedKey\": 3, 'aposQuotedKey': 4"));
 
@@ -615,6 +615,9 @@ var unit_test = function () {
 	test(reference, "Simple obj 20c", ' {   "Style": "Todo",     "placeholder": "Type here what to do",      "autosave"}');
     reference = {"Action":"Edit","placeholder":"What needs to be done (tab to save)","autosave":"yes"};
     test(reference, "Simple obj 20d", ' {Action:"Edit","placeholder":"What needs to be done (tab to save)","autosave":yes}');
+ 
+    reference =  {"icon":"icon-block-black box-incoming-b","from":"Z$USER","where":"id=Operator.id","form":"Operator/Inbox","Title":"Inbox","Style":"UserBar"};
+    test(reference, "Simple BCB 21a", ' icon="icon-block-black box-incoming-b" from=Z$USER where="id=Operator.id" form=Operator/Inbox Title="Inbox" Style=UserBar');
  
  
 	reference = {
