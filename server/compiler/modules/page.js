@@ -351,6 +351,7 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 		try {
 			if (obj[i].ini_body) {
 
+                console.warn('\n\nbcb.parse:', obj[i].ini_body);
 				obj[i] = bcb.parse(obj[i].ini_body, obj[i].srcinfo.filename, obj[i]);
 
 			}
@@ -530,10 +531,22 @@ exports.start_up = function (zx) {
 	zx.all_tags_rx = new RegExp(zx.all_tags_str, "img");
 
 	//console.log('Keyword_API_md:', Keyword_API_md);
+	var fn = 'doc/Keywords.md',
+	c;
 	try {
-		fs.mkdirSync("doc");
+		fs.mkdirSync("doc");		
 	} catch (err) {}
 	try {
-		fs.writeFileSync('doc/Keywords.md', Keyword_API_md);
+		c = fs.readFileSync(fn).toString();
+	} catch (err) {}    
+
+	try {
+		if (c !== Keyword_API_md) {
+			fs.writeFileSync(fn, Keyword_API_md);
+            console.log('updated Keyword_API_md:',c);
+            //process.exit();
+        }   
+
 	} catch (err) {}
+
 };

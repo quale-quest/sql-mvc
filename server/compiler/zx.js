@@ -485,20 +485,6 @@ exports.isObjectEmpty = function (array) { //http://stackoverflow.com/questions/
 	return true;
 };
 
-exports.JSOL2JSON = function (str) {
-
-	/*** note to start we use JSON parsing later we will use restricted JSOL
-	http://w3facility.info/question/safely-parsing-a-json-string-with-unquoted-keys/
-
-	hash.replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2":');
-	https://github.com/daepark/JSOL
-	 */
-
-	//simple parsing until later
-	//console.log("check this",'{see:"if",this:"works:here"}'.replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2":'));
-	return str.replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2":');
-};
-
 exports.CSVtoArray = function (text) { //http://www.quora.com/How-can-I-parse-a-CSV-string-with-Javascript
 	var re_valid = /^\s*(?:'[^'\\]*(?:\\[\S\s][^'\\]*)*'|"[^"\\]*(?:\\[\S\s][^"\\]*)*"|[^,'"\s\\]*(?:\s+[^,'"\s\\]+)*)\s*(?:,\s*(?:'[^'\\]*(?:\\[\S\s][^'\\]*)*'|"[^"\\]*(?:\\[\S\s][^"\\]*)*"|[^,'"\s\\]*(?:\s+[^,'"\s\\]+)*)\s*)*$/;
 	var re_value = /(?!\s*$)\s*(?:'([^'\\]*(?:\\[\S\s][^'\\]*)*)'|"([^"\\]*(?:\\[\S\s][^"\\]*)*)"|([^,'"\s\\]*(?:\s+[^,'"\s\\]+)*))\s*(?:,|$)/g;

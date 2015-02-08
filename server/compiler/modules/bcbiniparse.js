@@ -5,8 +5,9 @@ ease of use is important
  */
 
 var zx = require('../zx.js');
+var json_like = require("../../lib/json_like");
+var extend = require('node.extend');
 
-exports.parse = function (str, filename, obj) {
 	//tries to emulate bcb (borland c++ builder) tag includes
 	/*
 	strings with " can extend multiple lines,
@@ -27,27 +28,21 @@ exports.parse = function (str, filename, obj) {
 	//first get word no delimiters word=  else ignore
 	//   if next is " then escape upto next "
 
-	var vale,
-	p;
 
-	str = str.trim();
+
+var parse_bcb_body = function (str) {    
+    var loops = 0;
+    var nonkey = [];
+    var vale,
+	p;
     var strb4=str;
-	var loops = 0;
-	var debuglevel = 0;
+    var debuglevel = 0;
+    var obj={};
 
 	if (debuglevel > 5)
 		console.log('\n\n\n\nXZXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXBCB\n', str);
 
-	//tag
-	var tage = zx.delimof(str, [' ', '\n']);
-	var tag = str.substring(0, tage).trim();
-	str = str.substring(tage + 1).trim();
     
-	//console.log('tag:', tag);
-
-	obj.tag = tag;
-	obj.srcinfo.filename = filename;
-	var nonkey = [];
 	while (str !== "") {
 		if (loops++ > 500)
 			console.log('\n\n\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXLoooping to many times',loops,' srtlength:',str.length);//, str);
@@ -186,3 +181,42 @@ exports.parse = function (str, filename, obj) {
 	return obj;
 
 };
+
+
+
+var parse_bcb = function (str, filename, obj) {//while command line not just values
+
+	str = str.trim();
+	//tag
+	var tage = zx.delimof(str, [' ', '\n']);
+	var tag = str.substring(0, tage).trim();
+	str = str.substring(tage + 1).trim();
+    
+	//console.log('tag:', tag);
+	obj.tag = tag;
+	obj.srcinfo.filename = filename;
+
+    var more= parse_bcb_body(str);
+    //var more= parse_compare(str);
+    
+	obj = extend(obj, more); //second one has the priority
+    
+    return obj;
+}
+
+
+var parse_compare = function (text) {
+	var o1 = parse_bcb_body(text);
+	var o3 = json_like.parse(text);
+    
+	if (JSON.stringify(o1) !== JSON.stringify(o3)) {
+		console.log('parse_compare Failed: ', text, '\nref     :', JSON.stringify(o1, null, 4), '\n Result   :', JSON.stringify(o3, null, 4));
+		console.log('--------------------: ', text, '\n    ref_1   :', JSON.stringify(o1), '\n   Result_3 :', JSON.stringify(o3));
+		process.exit(2);
+	}
+	return o3;
+}
+
+exports.parse = parse_bcb ;
+
+

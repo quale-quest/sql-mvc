@@ -23,8 +23,6 @@ requires meta data for creating table widgets:
 The select statement can be either ini style select=,from=where=orderby=  or a "natural" sql statement.
 
 
-relaxed jsol notation - https://github.com/mbest/js-object-literal-parse
-or https://www.npmjs.org/package/jsonic
 
  */
 var zx = require('../../zx.js');

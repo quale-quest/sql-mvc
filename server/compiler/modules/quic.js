@@ -11,12 +11,14 @@ QUery Inline Code
  */
 
 //===========================================================
-var JSOL = require("../../lib/jsol");
+var json_like = require("../../lib/json_like");
 var extend = require('node.extend');
 var deepcopy = require('deepcopy');
 
 exports.module_name = 'quic.js';
 exports.tags=[{name:"eval"}];
+
+exports.debug=false;
 
 exports.remove_comments = function (zx, obj, str) {
 
@@ -255,13 +257,13 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 	//Parse the Quic object
 	var q_obj = {};
 	try {
-		q_obj = JSOL.parse(quics,"var A='Action',E='Edit',V='View',L='Link',H='Hide',T='Type';");
+		q_obj = json_like.parse(quics,"var A='Action',E='Edit',V='View',L='Link',H='Hide',T='Type';");
 	} catch (e) {
-		console.log('JSOL.parse exception: ', quickinput, line_obj);
+		console.log('json_like.parse exception: ', quics);
 		process.exit(2); //TODO
 
 	}
-	//console.log('JSOL.parse:',q_obj)//,":: : ",str);
+	//console.log('json_like.parse:',q_obj)//,":: : ",str);
 	//interpret/fixup some tokens in the object
 	tokenscheck_eachRecursive(q_obj);
 
@@ -315,9 +317,12 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 
 	if ((quale.name !== undefined) && (quale.name !== '') && (quale.table !== undefined) && (quale.table !== '')) {
 		//this is for reading back from existing models
-		if (quale.debug) {
+		if (quale.debug||exports.debug) {
 			console.log('AAAAAAAAAAAAAAAAAAAAAAA Quale context inheritance from quale:', tag, quale.table, ' . ', quale.name, quale);
-			console.log('BBBBBBBBBBBBBBBBBBBBBBB Quale context inheritance from contexts :', tag, quale.table, ' . ', quale.name, zx.q.contexts[quale.table][quale.name]);
+            console.trace('Callstack for Quale context inheritance from quale');
+            console.log('BBBBBBBBBBBBBBBBBBBBBBB Quale context inheritance from contexts :', Object.keys(zx.q.contexts));
+            console.log('BBBBBBBBBBBBBBBBBBBBBBB2 Quale context inheritance from contexts :', zx.q.contexts);
+			console.log('CCCCCCCCCCCCCCCCCCCCCCC Quale context inheritance from contexts :', zx.q.contexts[quale.table][quale.name]);
 		}
 		watch(zx, " at 134255 ");
         //console.log('quale z5 context:',quale ,' in ',Object.keys(zx.q.contexts));
@@ -352,13 +357,13 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 				if (zx.q.contexts[quale.context] === undefined)
 					zx.q.contexts[quale.context] = {};
 				if (quale.name !== undefined) {
-					if (quale.debug) {
+					if (quale.debug||exports.debug) {
 						console.log('Quale setting model fields :', quale.context, '.', quale.name, ':', quale);
 					}
 					zx.q.contexts[quale.context][quale.name] = extend(zx.q.contexts[quale.context][quale.name], deepcopy(quale));
 
 				} else {
-					if (quale.debug) {
+					if (quale.debug||exports.debug) {
 						console.log('Quale setting model table :', quale.context, ':', quale);
 					}
 					zx.q.contexts[quale.context].Table = extend(zx.q.contexts[quale.context].Table, deepcopy(quale));
@@ -367,7 +372,7 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 			}
 
 			if (quale['class'] !== undefined) {
-				if (quale.debug) {
+				if (quale.debug||exports.debug) {
 					console.log('Quale setting class :', quale['class'], ':', quale);
 				}
 				zx.q.classes[quale['class']] = extend(zx.q.classes[quale['class']], deepcopy(quale));
@@ -381,7 +386,7 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 
 		if (quale.name !== undefined) {
 			//fields
-			if (quale.debug) {
+			if (quale.debug||exports.debug) {
 				console.log('Quale setting local fields :', quale.name, ':', quale);
 			}
 			if (quale.append !== undefined) { //find an existing quale by name an append to it
@@ -416,7 +421,7 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 
 exports.Tag_eval = function (zx, line_obj, quickinput, quics) {
 	var q_obj = {};
-	q_obj = JSOL.parse(quics);
+	q_obj = json_like.parse(quics);
 	zx.q.ths.Tag = extend(zx.q.ths.Tag, q_obj);
 
 };
@@ -445,13 +450,18 @@ var disp_quic = function (zx, line_obj, str) {
 	console.log(" \ n------------------------------ \ n \ n ");
 };
 
-exports.unit_test = function () {
-	var zx = {};
+var unit_test = exports.unit_test = function () {
+    
+	
+    var zx = require('../zx.js');
+    zx.error = require('./error.js');
+	zx.error.start_up();
 
+    exports.start_up(zx);
 	exports.init(zx);
-
+    
 	var line_obj = {};
-	//line_obj = JSOL.parse(" {hello :  \ " test \ "}");
+	//line_obj = json_like.parse(" {hello :  \ " test \ "}");
 	console.log('start Quic', line_obj.hello);
 
 	disp_quic(zx, line_obj, "--:{regex:\"regex:/varchar/i\",Default_length:\"20\",length:\"regex:/(\\\\d+)/\",name:\"regex:/(\\\\w+)/\",base:\"text\"} --comment ");
@@ -464,15 +474,17 @@ exports.unit_test = function () {
 		"FLAG CHAR(10),				--:{as:\"Text\",name:\"Flag\"} --state change \n ");
 
 	//exports.parse(,,"--:{regex:/varchar/,length:scan_integer1,base=text}  ");
-
+    disp_quic(zx, line_obj, "CREATE TABLE TODO_MVC				--:{as:\"Table\"} ");
 
 	console.log('final Qualia:', zx.q);
 	console.log('final TODO_MVC:', zx.q.contexts.TODO_MVC);
 
-	console.log('regex\n:', "prev> CREATE \n TABLE TODO_MVC {..}".match(/create\s+table\s+(\w+)/i));
+	//console.log('regex\n:', "prev> CREATE \n TABLE TODO_MVC {..}".match(/create\s+table\s+(\w+)/i));
 	// console.log('regex:',"prev> CREATE TABLE TODO_MVC {..}".match(/(?<=\bcreate table\s)(\w+)/i) );
 
-	process.process.exit(2);
+	process.exit(2);
 };
 
-//test_quic();
+//unit_test();
+
+

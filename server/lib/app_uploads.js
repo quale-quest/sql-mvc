@@ -7,7 +7,7 @@ os = require('os');
 var fs = require('fs');
 var db = require("../../server/database/DatabasePool");
 var uuid = require('node-uuid');
-var JSOL = require("../lib/jsol"); //relocate to ./libs/
+var json_like = require("../lib/json_like"); //relocate to ./libs/
 var extend = require('node.extend');
 var fse = require('fs-extra');
 var deepcopy = require('deepcopy');
@@ -116,7 +116,7 @@ exports.ajax_upload_with_rpc_feedback = function (req, res) {
 						["cb", function (cx, inst, cb) {
                                 console.log('js if cx.r :', cx.r);
 								console.log('js if cx.dbref.conf.async :', cx.dbref.conf.async);
-								var quale = JSOL.parse(cx.r.code);
+								var quale = json_like.parse(cx.r.code);
 								console.log('js to check on what type of upload :', quale);
 								var fileinfo = {};
 								if (quale.Target) { //destination defined in the project config,json
