@@ -6,7 +6,7 @@
 sql update todo_mvc set status='3' where owner=session.id and (status='1');
 />
 
-<#controller save="todo.itemcount"/>
+<#controller(save="todo.itemcount")/>
 
 <#:print 
 --{if:"(select count(ref) from todo_mvc where owner=session.id and (status='' or status is null))!=1" }

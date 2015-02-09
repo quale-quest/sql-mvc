@@ -11,33 +11,33 @@
                                 <li  class="msg-save" ><a href="#"  title="Save Changes" language=javascript onclick="return(zxnav(event,0,0));"  >
                                 <span id="deltacounter1" class="new-alert">0</span></a></li>
 			
-			        <#Menux li-class="notify-alert" from=user_table_name where=user_pk_field=Operator.user_pk_field form=Index Title="Active Users" Style=HeadBar
-                                       rightspan=new-alert,"($elect count(*) from ..... $)"/>
+			        <#Menux (li-class="notify-alert" from=user_table_name where=user_pk_field=Operator.user_pk_field form=Index Title="Active Users" Style=HeadBar
+                                       rightspan=new-alert,"($elect count(*) from ..... $))"/>
                                        
-			        <#Menu li-class="msg-alert" 
+			        <#Menu (li-class="msg-alert" 
                     from="user_table_name" where=user_pk_field=Operator.user_pk_field 
                     form=Operator\Inbox
                     Title="Inbox" Style=HeadBar                                       
                     rightspan="new-alert,($elect count(*) from Mail where TO_USER=operator.user_pk_field$)"
-                    />
+                    )/>
 			</ul>
 		</div>
 		<div id="usermenu">
 
-			<a href="#" class="admin-user"><#print "#operator.user_name_field# "/><span class="user-icon"></span></a>
+			<a href="#" class="admin-user"><#print() #operator.user_name_field# /><span class="user-icon"></span></a>
 			
 			<div class="sub-menu">
 				<ul>
-<#xMenuScan file=UserMenu from=user_table_name where=user_pk_field=Operator.user_pk_field/>				
-				        <#Menu icon="icon-block-black cog-b" from=user_table_name where=user_pk_field=operator.user_pk_field form=Operator/Preferences Title="Preferences" Style=UserBar/>
-				        <#xMenu icon="icon-block-black info-about-b" from=user_table_name where=user_pk_field=Operator.user_pk_field form=Help/Main Title="Help?" Style=UserBar/>
-				        <#Menu icon="icon-block-black box-incoming-b" from=user_table_name where=user_pk_field=Operator.user_pk_field form=Operator/Inbox Title="Inbox" Style=UserBar/>
-				        <#xMenu icon="icon-block-black locked-tw-b" from=user_table_name where=user_pk_field=Operator.user_pk_field form=~/Layout/Operator/Logout Title="Logout" Style=UserBar/>
+<#xMenuScan (file=UserMenu from=user_table_name where=user_pk_field=Operator.user_pk_field)/>				
+				        <#Menu (icon="icon-block-black cog-b" from=user_table_name where=user_pk_field=operator.user_pk_field form=Operator/Preferences title="Preferences" Style=UserBar)/>
+				        <#xMenu (icon="icon-block-black info-about-b" from=user_table_name where=user_pk_field=Operator.user_pk_field form=Help/Main title="Help?" Style=UserBar)/>
+				        <#Menu (icon="icon-block-black box-incoming-b" from=user_table_name where=user_pk_field=Operator.user_pk_field form=Operator/Inbox title="Inbox" Style=UserBar)/>
+				        <#xMenu (icon="icon-block-black locked-tw-b" from=user_table_name where=user_pk_field=Operator.user_pk_field form=~/Layout/Operator/Logout title="Logout" Style=UserBar)/>
 				</ul>
 				<div class="admin-thumb">
 					<img src="../../images/qqui1/user-thumb1.png" alt="user" width="50" height="50">
 					
-					<#xMenu icon="p-edit" from=user_table_name where=user_pk_field=Operator.user_pk_field form=~/All/Operator/Profile Title="EditProfile" Style=UserEdit/>
+					<#xMenu (icon="p-edit" from=user_table_name where=user_pk_field=Operator.user_pk_field form=~/All/Operator/Profile title="EditProfile" Style=UserEdit)/>
 				</div>
 			</div>
 		</div>

@@ -1,5 +1,5 @@
 
-<#:model
+<#:model()
 
 --:{regex:"regex:/varchar/i",Default_length:"20",length:"regex:/(\\d+)/",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} --comment
 --:{regex:"regex:/create\\s+table/i",rl_context:"regex:/create\\s+table\\s+(\\w+)/i"}

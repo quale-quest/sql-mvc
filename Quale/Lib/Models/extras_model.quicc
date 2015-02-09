@@ -1,12 +1,12 @@
 
 
-<#list name=YesNo
+<#listx name=YesNo
 values="
 {"0":"No","1":"Yes",
 "":"ifblank:Yes"}
 "
 />
-<#list name=Ticked
+<#listx name=Ticked
 values="
 {"1":"",
 "":"ifblank:"}

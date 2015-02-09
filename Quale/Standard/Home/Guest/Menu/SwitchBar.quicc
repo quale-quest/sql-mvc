@@ -1,4 +1,4 @@
-<#Menu Name=Start Style=ShortCutBar />
+<#Menu (Name=Start Style=ShortCutBar) />
 
 
 
@@ -6,10 +6,10 @@
 
 <#Menux icon="sc-icon dashboard" from=Me where=ref=Operator.Ref form=Dashboard/Dashboard Title="Busy" />
 
-<#Menu  
+<#Menu  (
 form=Settings/Staff
 Title="VoiceMail"
-icon="sc-icon userlist"
+icon="sc-icon userlist")
 />
 
 <#Menux   

@@ -37,7 +37,7 @@ where blob_id is not null and status<>'3'
 
 
 <#NextContainer rem="----------------------------------------------------------" tab=NewPictures/>
-<#:script
+<#:scriptx
 --{if:"(select count(ref) from GALLERY where  blob_id is null)=0" }
 SQL INSERT INTO GALLERY (NAME, OWNER, STATUS)
 VALUES ('New', operator.id,  '');

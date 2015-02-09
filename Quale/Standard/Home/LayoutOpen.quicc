@@ -6,8 +6,8 @@ xifnotexists="select name from user_table_name where user_table_name.user_pk_fie
 />	
 
 <div  id="wrapper"> <!--this should hold all content excluding footer -->
-<#include file=~/Layout/ProfileMenu/>
-<#include file=~/Layout/Notify/>
+<#include(file=~/Layout/ProfileMenu)/>
+<#xxinclude(file=~/Layout/Notify)/>
 
 <#xinclude file=Menu/SwitchBar
 xifnotexists="select name from user_table_name where user_table_name.user_pk_field=operator.user_pk_field and  user_keys_field containing 'SWB'"
@@ -16,15 +16,21 @@ xifnotexists="select name from user_table_name where user_table_name.user_pk_fie
 
 <div id="container">
 
-<#:Menu --{name:"Start",style:"LBMenu"}/>
-<#Menu icon="nav-icon dboard-icon" from=user_table_name where=user_pk_field=Operator.user_pk_field form=Dashboard/Dashboard Title="Todo Demo"/>
+<#
+Menu (name:"Start",style:"LBMenu")
 
-<#:MenuScan --{menuname:"MainMenu"}/>
+Menu (icon="nav-icon dboard-icon" from=user_table_name where="user_pk_field=Operator.user_pk_field" form=Dashboard/Dashboard title="Todo Demo") 
 
-<#:Menu --{form:"Help/Main",title:"About"}/>
+MenuScan (menuname:"MainMenu")
+
+rem Menu{form=Dashboard/Dashboard xform:"Help/Main",title:"About" fromx=user_table_name wherex="user_pk_field=Operator.user_pk_field"}
+
+
+MenuEnd 
+
+/>
 
 <!--end  Menu1-->
-<#:MenuEnd />
 
 <!--end  Menu2-->
 

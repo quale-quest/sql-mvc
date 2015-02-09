@@ -2,11 +2,10 @@
 <div align="center"> 
 <h1><a href="https://github.com/quale-quest/sql-mvc">SQL-MVC</a> example implementation of <a href="http://todomvc.com">todomvc.com</a></h1>
 <br><br><br>
-
+Test 1
 <#
 
-:button
-  --{save:"allbutton",title:"all"}
+:button (save:"allbutton",title:"all")
   set here.todo_type='';
 
 :table
@@ -37,7 +36,7 @@ use "todo.clear.button"
 
 html <div align="center"><br><br><br><br></div></div>	
 
-Container Style=Tab                                                                                tab=Info
+Container --Style=Tab                                                                                tab=Info
 rem -------------------------------------------------------------------------------------------------------
 html <h1>Info</h1>
 
@@ -50,7 +49,7 @@ print ($select count(*) from MAIL where FROM_USER=session.id and SUBJECT='login 
 
 NextContainer                                                                   tab=Source_Code
 Container Style=Accordion                                                title=View
-include type="pre" file="MainMenu/02_Demos/10_todo_mvc" 
+include --:type="pre" file="MainMenu/02_Demos/10_todo_mvc" 
 NextContainer                                                           title=Model
 include type="pre" file="Models/TodoModel" 
 NextContainer                                                      title=Controller

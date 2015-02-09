@@ -188,16 +188,17 @@ var parse_bcb = function (str, filename, obj) {//while command line not just val
 
 	str = str.trim();
 	//tag
-	var tage = zx.delimof(str, [' ', '\n']);
-	var tag = str.substring(0, tage).trim();
-	str = str.substring(tage + 1).trim();
+	//var tage = zx.delimof(str, [' ', '\n']);
+	//var tag = str.substring(0, tage).trim();
+	//str = str.substring(tage + 1).trim();
     
 	//console.log('tag:', tag);
-	obj.tag = tag;
-	obj.srcinfo.filename = filename;
+	//obj.tag = tag;
+	//obj.srcinfo.filename = filename;
 
-    var more= parse_bcb_body(str);
-    //var more= parse_compare(str);
+    //var more= parse_bcb_body(str);
+    var more= parse_compare(str);
+    //var more= json_like.parse(str);
     
 	obj = extend(obj, more); //second one has the priority
     
@@ -208,11 +209,25 @@ var parse_bcb = function (str, filename, obj) {//while command line not just val
 var parse_compare = function (text) {
 	var o1 = parse_bcb_body(text);
 	var o3 = json_like.parse(text);
-    
+	if (o3===null) {
+		//console.log('parse_compare Failed: ', text, '\nref     :', JSON.stringify(o1, null, 4), '\n Result   :', JSON.stringify(o3, null, 4));
+		console.log('o3 null------------------: ', text, '\n    ref_1   :', JSON.stringify(o1));
+		//process.exit(2);
+        o3={};
+	}    
+    if (o3.array)
+    {
+        o3.nonkeyd=o3.array;
+        delete o3.array;
+    }
+        else
+    {
+    o3.nonkeyd=[];
+    }
 	if (JSON.stringify(o1) !== JSON.stringify(o3)) {
-		console.log('parse_compare Failed: ', text, '\nref     :', JSON.stringify(o1, null, 4), '\n Result   :', JSON.stringify(o3, null, 4));
+		//console.log('parse_compare Failed: ', text, '\nref     :', JSON.stringify(o1, null, 4), '\n Result   :', JSON.stringify(o3, null, 4));
 		console.log('--------------------: ', text, '\n    ref_1   :', JSON.stringify(o1), '\n   Result_3 :', JSON.stringify(o3));
-		process.exit(2);
+		//process.exit(2);
 	}
 	return o3;
 }

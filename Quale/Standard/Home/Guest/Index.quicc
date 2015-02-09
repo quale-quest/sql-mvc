@@ -1,5 +1,5 @@
 
-<#script
+<#script()
 
 UPDATE OR INSERT INTO MAIL (FROM_USER, STAMP,SUBJECT)
 VALUES (
@@ -19,4 +19,5 @@ VALUES (
 />
 
 
-<#include file=MainMenu/02_Demos/10_todo_mvc />
+<#include(file=MainMenu/02_Demos/10_todo_mvc) />
+<h1>test text</h1>

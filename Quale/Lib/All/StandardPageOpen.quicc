@@ -1,5 +1,5 @@
 
-<#script
+<#script ()
 
 declare overridemastertable varchar(100);
 declare linkby varchar(100);
@@ -29,6 +29,7 @@ into master select * ::-overridemastertable;
 	
 
 />
+
 <#xmodel_scan/>
 <#inject_point />
 

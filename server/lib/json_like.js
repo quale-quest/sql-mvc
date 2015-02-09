@@ -132,6 +132,7 @@ var forFields = exports.forFields = function (object, callback) {
 var Space = 32,
 Comma = 44,
 Semicolon = 59, //;
+Newline = 10,
 SingleQuote = 39,
 DoubleQuote = 34,
 BackTick = 34,
@@ -179,7 +180,7 @@ var isOpenArray = function (chr) {
 };
 
 var isDelimiter = function (chr) {
-	return (chr === Comma) || (chr === Space) || (chr === Semicolon);
+	return (chr === Comma) || (chr === Space) || (chr === Semicolon) || (chr === Newline) ;
 };
 
 var isAssigner = function (chr) {
@@ -190,7 +191,14 @@ var debug = 0;
 var parse3count = 0;
 var parse3countMax = 999999;
 
-var parse3 = function (text) {
+var parse4 = function (text) {
+    //debug=1;
+    return parse3(text,1);
+}
+var parse3 = function (text,extra_mode_par) {
+    //extra mode 1 : when the object closes, stop scanning and return the position in the string as scan_return_pos 
+    //extra mode 0 : continue scanning until the end of the string 
+    
 	// make sure text is a "string"
 	if (typeof text !== "string" || !text) {
 		return null;
@@ -200,6 +208,9 @@ var parse3 = function (text) {
 	var left = 0,
 	right = 0,
 	max = 99999;
+    var depth=0;
+    var extra_mode=extra_mode_par;
+    
 	var str = text.trim() + " "; //last delimiter to avoid an unnecessary code block
 	parse3count++;
 	if (debug)
@@ -247,7 +258,14 @@ var parse3 = function (text) {
 		} //quick over multiple spaces
 		//must leave the last spacespaces
 	};
-    
+              
+var past_space = function () {  
+					right++; //affect 10a if enabled
+                    skip_space_here();//wont skip any thing right is still on the colon                     
+                        //console.log('parse3 isAssigner space   :', left, right,':', str.charAt(right));
+                    left = right;
+                    right--;//compensate decrement for the increment at the end of the loop
+}    
     
 	var sub_parse3 = function (closing, current_object) {
 		if (debug)
@@ -261,7 +279,7 @@ var parse3 = function (text) {
 
 		var string_recieved = function (value) {
             
-            //console.log('string_recieved :',keyname,value );
+            if (debug) console.log('string_recieved :',keyname,value );
             
 			if (arrayObj) {
 				if (current_object.array === undefined)
@@ -321,7 +339,7 @@ var parse3 = function (text) {
 				if (chr !== Space)
 					nonSpaceCount++;
 				if (debug)
-					console.log('parse3 a:', left, right, chr, ':', str.charAt(right), nonSpaceCount);
+					console.log('parse3 a:', keyname,left, right, chr, ':', str.charAt(right), nonSpaceCount);
 
 				if (closing === chr) { //closer found
 					//..what to do with it 		//I have already been doing it
@@ -372,11 +390,7 @@ var parse3 = function (text) {
                       else
                       {                          
                       }
-					right++; //affect 10a if enabled
-                    skip_space_here();//wont skip any thing right is still on the colon                     
-                        //console.log('parse3 isAssigner space   :', left, right,':', str.charAt(right));
-                    left = right;
-                    right--;//compensate decrement for the increment at the end of the loop
+                    past_space();  
                                         
 					
 					if (debug)
@@ -387,7 +401,7 @@ var parse3 = function (text) {
 
 					key_or_value = str.substring(left, right - 1 + 1).trim();
 					if (debug)
-						console.log('parse3 isDelimiter      :', left, right, chr, ':', str.charAt(right), '   ', keyname, ":" + key_or_value + ":");
+						console.log('parse3 isDelimiter      :', left, right, chr, ':', str.charAt(right), '   {', keyname, ":" + key_or_value + "}");
 
 					if (!keyname) {
 						if (debug)
@@ -405,6 +419,10 @@ var parse3 = function (text) {
 						}
 					} else {
 						//this is not a quoted value
+                        if (left === right) {
+						key_or_value = SwitchOnValue;
+						arrayObj = 1;
+					    }
 						try {
 							var ival = +key_or_value;
                             if (!isNaN(ival)) 
@@ -434,7 +452,16 @@ var parse3 = function (text) {
 						}
 					}
 					left = right = right + 1;
+                    depth++;
 					sub_parse3(closing_for(chr), current_object);
+                    depth--;
+                    //console.log('parse3 returned from OpenObject   :', left, right, chr, ':', str.charAt(right), ":",extra_mode, depth,current_object);
+                    if ((depth===0)&&(extra_mode===1))  {
+                         current_object.object_ended_at = right;   
+                         //console.log('parse3 object_ended_at   :', current_object.object_ended_at);
+                         return;
+                    }
+                    
 					//skip_space();
 					left = right + 1;
 					keyname = null;
@@ -448,7 +475,10 @@ var parse3 = function (text) {
 					key_or_value = parse_quoted_string();
 					//key_or_value = str.substring(left, right - 1 + 1);
 					if (debug)
-						console.log('parse3 isQoute        :', left, right, chr, ':', str.charAt(right), keyname, ":", key_or_value);
+						console.log('parse3 isQoute          :', left, right, chr, ':', str.charAt(right), keyname, ":", key_or_value);
+                    past_space(); 
+					if (debug)
+						console.log('parse3 isQoute past_space:', left, right, chr, ':', str.charAt(right), keyname, ":", key_or_value);                    
 					if (keyname) {
 						string_recieved(key_or_value);
 					} else {
@@ -469,22 +499,25 @@ var parse3 = function (text) {
 	if (parse3count > parse3countMax)
     {console.trace('process.exit(2) from (parse3count > parse3countMax) : '); process.exit(2);} //slow inspect each element
 
+    if (debug)
+		console.log('parse3 done with : length=', text.length, '"' + text + '"\n', o);
 	return o;
 };
 
 var test = function (ref, text, lxon) {
-	var o = parse3(lxon);
-
+	var o = parse3(lxon,1);
+    if (o.object_ended_at) delete o.object_ended_at;
 	if (JSON.stringify(o) !== JSON.stringify(ref)) {
 		debug = true;
 		console.log('\n\n\n\n\n\n\n');
 		console.log('\n\n\n\n');
-		o = parse3(lxon);
+		o = parse3(lxon,1);
+        if (o.object_ended_at) delete o.object_ended_at;
 		console.log('Failed ', text, '\n Text     :', lxon, '\n Should be :', JSON.stringify(ref, null, 4), '\n Result   :', JSON.stringify(o, null, 4));
 		console.log('    :', JSON.stringify(o) + ";" + '\n     ', JSON.stringify(ref));
 		process.exit(2);
 	} else {
-		//if (debug)
+		if (debug)
 		console.log('Pass ', text);
 	}
 }
@@ -492,7 +525,8 @@ var test = function (ref, text, lxon) {
 var parse_compare = function (text, context_vars) {
 
 	var o1 = parse_v1(text, context_vars);
-	var o3 = parse3(text);
+	var o3 = parse3(text,1);
+    if (o3.object_ended_at) delete o3.object_ended_at;
 	if (JSON.stringify(o1) !== JSON.stringify(o3)) {
 		console.log('parse_compare Failed: ', text, '\nref     :', JSON.stringify(o1, null, 4), '\n Result   :', JSON.stringify(o3, null, 4));
 		console.log('--------------------: ', text, '\n    ref_1   :', JSON.stringify(o1), '\n   Result_3 :', JSON.stringify(o3));
@@ -531,6 +565,10 @@ var unit_test = function () {
 	};
 	test(reference, "Simple values  00d", "obj:'1'");
 
+    reference =  {"style":"warn","array":["you were here last at here.this_page_info    "],"you were here last at here.this_page_info    ":"on"};
+    test(reference, "Simple values  00e", "style=warn 'you were here last at here.this_page_info    '"); 
+    
+    
 	reference = {
 		obj : "sub"
 	};
@@ -553,6 +591,9 @@ var unit_test = function () {
 		obj : "on"
 	};
 	test(reference, "Simple obj 05", "obj");
+    
+    reference = {"array":["obj1","obj2","obj3"],"obj1":"on","obj2":"on","obj3":"on"};
+    test(reference, "Simple obj 05", "obj1 obj2 obj3");
 
 	//arrays
 	reference = {
@@ -563,6 +604,8 @@ var unit_test = function () {
 	test(reference, "Simple obj 05a", "obj,o2");
 	test(reference, "Simple obj 05b", "{obj,o2}");
 
+    
+    
 	//arrays and object mixed
 	reference = {
 		obj : true,
@@ -572,27 +615,31 @@ var unit_test = function () {
 	test(reference, "Simple obj 05c", "{obj:true,o2}");
 	test(reference, "Simple obj 05d", "{obj:'true',o2}");
 
+    //top terminating object
+     reference = {"array":["obj","o2","o3"],"obj":"on","o2":"on","o3":"on"};
+    test(reference, "Simple obj 06a", "{obj,o2,{o3}} text");
+    
 	//named  objects
 	reference = {
 		ab : {
 			cd : 12
 		}
 	};
-	test(reference, "Simple obj 10a", "ab:{cd:12}");
+	test(reference, "Simple obj 10a", "{ab:{cd:12}}");
 
 	//named array objects
-	test(reference, "Simple obj 10aa", "ab{cd:12}");
+	test(reference, "Simple obj 10aa", "{ab{cd:12}}");
 	reference = {
 		"ab" : {
 			"cd" : 12,
 			"sw" : true
 		}
 	};
-	test(reference, "Simple obj 10b", "ab{cd:12},sw=true");
-	test(reference, "Simple obj 10c", "ab{cd:12};sw=true");
-	test(reference, "Simple obj 10d", "ab{cd:12} ,sw=true");
-	test(reference, "Simple obj 10e", "ab{cd:12}, sw=true");
-	test(reference, "Simple obj 10f", "ab:{cd:12}, sw=true");
+	test(reference, "Simple obj 10b", "{ab{cd:12},sw=true}");
+    test(reference, "Simple obj 10c", "{ab{cd:12};sw=true}");
+	test(reference, "Simple obj 10d", "{ab{cd:12} ,sw=true}");
+	test(reference, "Simple obj 10e", "{ab{cd:12}, sw=true}");
+	test(reference, "Simple obj 10f", "{ab:{cd:12}, sw=true}");
 
 	//function
 	reference = {
@@ -601,7 +648,7 @@ var unit_test = function () {
 			cd : 12
 		}
 	};
-	test(reference, "Simple obj 11c", "ab(cd:12)");
+	test(reference, "Simple obj 11c", "{ab(cd:12)}");
 
 	//functional examples
 	reference = {
@@ -610,21 +657,27 @@ var unit_test = function () {
 		"array" : ["autosave"],
 		"autosave" : "on"
 	};
-	test(reference, "Simple obj 20a", "Style=Todo,placeholder:'Type here what to do' autosave");
-	test(reference, "Simple obj 20b", "Style=Todo,placeholder:'Type here what to do'; autosave");
+	test(reference, "Simple obj 20a", "{Style=Todo,placeholder:'Type here what to do' autosave}");
+	test(reference, "Simple obj 20b", "{Style=Todo,placeholder:'Type here what to do'; autosave}");
 	test(reference, "Simple obj 20c", ' {   "Style": "Todo",     "placeholder": "Type here what to do",      "autosave"}');
     reference = {"Action":"Edit","placeholder":"What needs to be done (tab to save)","autosave":"yes"};
     test(reference, "Simple obj 20d", ' {Action:"Edit","placeholder":"What needs to be done (tab to save)","autosave":yes}');
  
     reference =  {"icon":"icon-block-black box-incoming-b","from":"Z$USER","where":"id=Operator.id","form":"Operator/Inbox","Title":"Inbox","Style":"UserBar"};
-    test(reference, "Simple BCB 21a", ' icon="icon-block-black box-incoming-b" from=Z$USER where="id=Operator.id" form=Operator/Inbox Title="Inbox" Style=UserBar');
- 
+    test(reference, "Simple BCB 21a", '{ icon="icon-block-black box-incoming-b" from=Z$USER where="id=Operator.id" form=Operator/Inbox Title="Inbox" Style=UserBar}');
+    reference =   {"file":"~/All/StandardPageClose"};
+    test(reference, "Simple obj 21b", "(file=~/All/StandardPageClose)");
+
+    
  
 	reference = {
 		"regex" : "regex:/create\\s+table/i",
 		"rl_context" : "regex:/create\\s+table\\s+(\\w+)/i"
 	};
-	test(reference, "Simple obj 21a", ' {regex:"regex:/create\\\\s+table/i",rl_context:"regex:/create\\\\s+table\\\\s+(\\\\w+)/i"}');
+	test(reference, "Simple obj 21b", ' {regex:"regex:/create\\\\s+table/i",rl_context:"regex:/create\\\\s+table\\\\s+(\\\\w+)/i"}');
+    
+
+
 
 	//simple unexpected results
 	reference = {
@@ -641,7 +694,6 @@ unit_test();
 
 //choose the default parser
 //exports.parse = parse_v1;
-exports.parse = parse3;
+exports.parse = parse4;
 //exports.parse = parse_compare;
-
 //process.exit(2);

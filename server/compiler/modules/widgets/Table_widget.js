@@ -380,142 +380,6 @@ var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx,
 
 };
 
-var formulatemodel_ini = exports.formulatemodel_ini = function (zx, cx, tcx, o) {
-	cx.table = o;
-	//cx.name=zx.gets(o.name);
-	//cx.caption=zx.gets(o.caption);
-	//cx.debug=zx.gets(o.debug);
-	//cx.SubStyle=zx.gets(o.substyle);
-	//cx.Style=zx.gets(o.style);
-
-	//console.log('cx.table.:',cx.table);
-	cx.table.tablestyle = zx.gets(cx.table.tablestyle);
-
-	tcx.isform = tcx.isform || zx.gets(o.view).toLowerCase() === "form";
-
-	//var HideIfEmpty=zx.gets(o.virtual);
-	//var FolderName=zx.gets(o.FolderName);
-
-	//var buttons=zx.gets(o.buttons).split(',');  //buttons  - bottom left buttons - save,add,add5 and user defined
-	//var buttonscontext=zx.gets(o.context);             //used in the bottom left buttons widget to pass additional info to the widget
-	//var Options=zx.gets(o.Options).split(',');
-	//console.log('prep_query:');
-	prep_query(zx, cx, tcx, o);
-	//console.log('done prep_query:');
-	if (tcx.implied_pk_found === -1) {
-		//no pk found add it to query
-	}
-
-	//fill the fields from model sheet definitions
-	//fill  the fields from ini style models (where defined), or defaults
-	var form = zx.gets(o.form).split(','); //relates to link widgets
-	tcx.fields.forEach(function (r) {
-		var i = r.indx;
-
-		//this applies to titles or footer or data
-
-		assignfeature(o, r, i, "fieldorder", "fieldorder", i);
-		assignfeature(o, r, i, "pointer", "pointer", i);
-		//assignfeature(o,r,i,"codec","codec");
-		assignfeature(o, r, i, "to", "to", zx.gets(o.from));
-
-		assignfeature(o, r.cf[0], i, "title", "title", '' + r.name.replace(/\'/g, ""));
-		//assignfeature(o,r.cf[0],i,"codec","codec"); //dual...
-
-		assignfeature(o, r.cf[0], i, "substyle", "substyles", "");
-		assignfeature(o, r.cf[0], i, "size", "size", 20);
-		assignfeature(o, r.cf[0], i, "width", "width", 20);
-		//assignfeature(o,r,i,"totals","totals");
-		//assignfeature(o,r,i,"totals2","totals2");
-		assignfeature(o, r.cf[0], i, "methods", "methods", "v");
-
-		auto_assignfeature(o, r.cf[0], i);
-
-		r.cf.forEach(function (r) {
-			r.widget = "text";
-			r.Type = r.methods.substring(0, 1); //methods converto into type and action
-			r.List = r.methods.substring(1);
-			//console.log('methods ',r.Type,r.List);
-			if (r.Type === 'p') {
-				r.form = form.shift();
-				if (r.pointer === undefined)
-					r.pointer = i - 1;
-				if (r.pointer < 0) {
-					r.pointer = tcx.implied_pk;
-				}
-				update_pk_name(zx, tcx, r); //TODO - is this correct?? a pointer to another record affects this records primary key ..? does not seem right....
-				//if this is a bug it will only be affecting if the a pointer field is the last after some editing fields ... then the editing output would go to the wrong fields...if they exists in that table...
-
-			}
-			//else if (r.use_pk)
-			if ((r.Type === 'e') || (r.Type === 'l') || (r.Type === 's') || (r.Type === 't') || (r.Type === 'i') || (r.Type === 'r')) {
-				if (r.pointer === undefined)
-					r.pointer = tcx.implied_pk;
-				update_pk_name(zx, tcx, r);
-			}
-
-		});
-
-	});
-
-	if (tcx.implied_pk_found > 0)
-		tcx.fields[tcx.implied_pk_found].cf[0].Type = 'h';
-
-	tcx.fields.forEach(function (r) {
-		r.cf.forEach(function (r) {
-			//short-hands
-			//console.log('methods ',r.Type,r.List,(r.Type==='v' && r.List!=="") );
-			if (r.Type === '') {
-				r.Type = 'Text';
-				r.Action = 'View';
-			}
-			if (r.Type === 'v' && r.List !== "") {
-				r.Type = 'Lookup';
-				r.Action = 'View';
-			}
-			if (r.Type === 'v') {
-				r.Type = 'Text';
-				r.Action = 'View';
-			}
-			if (r.Type === 'p') {
-				r.Type = 'Link';
-				r.Action = 'Link';
-			}
-			if (r.Type === 'e') {
-				r.Type = 'Text';
-				r.Action = 'Edit';
-			}
-			if (r.Type === 'l') {
-				r.Type = 'Lookup';
-				r.Action = 'Edit';
-			} //xref 2 values
-			if (r.Type === 's') {
-				r.Type = 'Select';
-				r.Action = 'Edit';
-			} //just by one value
-			if (r.Type === 't') {
-				r.Type = 'Tick';
-				r.Action = 'Edit';
-			}
-			if (r.Type === 'i') {
-				r.Type = 'Pick';
-				r.Action = 'Edit';
-			}
-			if (r.Type === 'r') {
-				r.Type = 'Radio';
-				r.Action = 'Edit';
-			}
-			if (r.Type === 'h') {
-				r.Type = 'Hide';
-				r.Action = 'View';
-			} //headers and footers will override action with view
-		});
-
-		//  tcx.fields[i]=r;
-	});
-
-	//console.log('formulatemodel: ',tcx.query ,"\n",o,"\n=============================\n",tcx.fields,tcx.fields[0]);
-};
 
 var formulatemodel = exports.formulatemodel = function (zx, cx, o) {
 	// reads model from ini style or comment style
@@ -534,9 +398,9 @@ var formulatemodel = exports.formulatemodel = function (zx, cx, o) {
 	//console.log('Ini object:',o);
 
 	// console.log('formulatemodel implied_pk_name: ',tcx);
-	if (o.q === undefined)
-		formulatemodel_ini(zx, cx, tcx, o);
-	else
+	//if (o.q === undefined)
+	//	formulatemodel_ini(zx, cx, tcx, o);
+	//else
 		formulatemodel_quale(zx, cx, tcx, o);
 
 	cx.fields = tcx.fields;
