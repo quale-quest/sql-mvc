@@ -2,14 +2,14 @@
 
 /*
 Few of the tools I have looked at
-    http://pegjs.org/
-    https://www.npmjs.com/package/jsonic
-    https://github.com/mbest/js-object-literal-parse
+http://pegjs.org/
+https://www.npmjs.com/package/jsonic
+https://github.com/mbest/js-object-literal-parse
 
 
 purpose
 is to have a programmer friendly concise method of expressing complex data,
- that is similar to JSON,HTML properties and CSS properties.
+that is similar to JSON,HTML properties and CSS properties.
 
 JSON like parser
  **warning does not produce JSON compatible output - especially in regards to arrays
@@ -180,7 +180,7 @@ var isOpenArray = function (chr) {
 };
 
 var isDelimiter = function (chr) {
-	return (chr === Comma) || (chr === Space) || (chr === Semicolon) || (chr === Newline) ;
+	return (chr === Comma) || (chr === Space) || (chr === Semicolon) || (chr === Newline);
 };
 
 var isAssigner = function (chr) {
@@ -192,13 +192,13 @@ var parse3count = 0;
 var parse3countMax = 999999;
 
 var parse4 = function (text) {
-    //debug=1;
-    return parse3(text,1);
+	//debug=1;
+	return parse3(text, 1);
 }
-var parse3 = function (text,extra_mode_par) {
-    //extra mode 1 : when the object closes, stop scanning and return the position in the string as scan_return_pos 
-    //extra mode 0 : continue scanning until the end of the string 
-    
+var parse3 = function (text, extra_mode_par) {
+	//extra mode 1 : when the object closes, stop scanning and return the position in the string as scan_return_pos
+	//extra mode 0 : continue scanning until the end of the string
+
 	// make sure text is a "string"
 	if (typeof text !== "string" || !text) {
 		return null;
@@ -208,10 +208,10 @@ var parse3 = function (text,extra_mode_par) {
 	var left = 0,
 	right = 0,
 	max = 99999;
-    var depth=0;
-    var extra_mode=extra_mode_par;
-    
-	var str = text.trim() + " "; //last delimiter to avoid an unnecessary code block
+	var depth = 0;
+	var extra_mode = extra_mode_par;
+
+	var str = text.trim(); //last delimiter to avoid an unnecessary code block
 	parse3count++;
 	if (debug)
 		console.log('parse3 start with : length=', text.length, '"' + text + '"');
@@ -228,7 +228,8 @@ var parse3 = function (text,extra_mode_par) {
 		var quotechar = str.charAt(right);
 		var out = '';
 		++right;
-		for (; right < str.length; ++right) {
+		for (; right < str.length; ++right) //-1 is to remove a space at the end of the string added as a terminator
+		{
 			var chr = str.charAt(right);
 			if (localescaped) {
 				out += chr;
@@ -258,52 +259,75 @@ var parse3 = function (text,extra_mode_par) {
 		} //quick over multiple spaces
 		//must leave the last spacespaces
 	};
-              
-var past_space = function () {  
-					right++; //affect 10a if enabled
-                    skip_space_here();//wont skip any thing right is still on the colon                     
-                        //console.log('parse3 isAssigner space   :', left, right,':', str.charAt(right));
-                    left = right;
-                    right--;//compensate decrement for the increment at the end of the loop
-}    
-    
+
+	var past_space = function () {
+		right++; //affect 10a if enabled
+		skip_space_here(); //wont skip any thing right is still on the colon
+		//console.log('parse3 isAssigner space   :', left, right,':', str.charAt(right));
+		left = right;
+		right--; //compensate decrement for the increment at the end of the loop
+	}
+
 	var sub_parse3 = function (closing, current_object) {
 		if (debug)
 			console.log('sub_parse3 start with :', left, right, closing, current_object);
 		var key_or_value,
-		keyname;
+		keyname = null;
+		var keynameQuoted = false;
 		var scan_mode = looking_for_key_or_value;
 		var nonSpaceCount = 0;
 		var arrayObj = 0;
 		var escaped = 0;
 
-		var string_recieved = function (value) {
-            
-            if (debug) console.log('string_recieved :',keyname,value );
-            
+		var string_recieved = function (value, quoted) {
+			var ival;
+			if (debug)
+				console.log('string_recieved :', keyname, value, typeof value, quoted);
+
+			if (keyname === 'debug_json_like')
+				debug = true;
+			if (keyname === 'debug_json_like_off')
+				debug = false;
+
+			//transform non quoted strings
+			if (!quoted) {
+				value = value.trim();
+
+				if (value === "true")
+					value = true;
+				else {
+					try {
+						ival = +value;
+						if (debug)
+							console.log('string_recieved ival:', key_or_value, ival);
+						if (!isNaN(ival))
+							value = ival;
+					} catch (e) {}
+				}
+			}
+
 			if (arrayObj) {
 				if (current_object.array === undefined)
 					current_object.array = [];
 				current_object.array.push(keyname);
 			}
-			if (keyname) { //already has a key so this is the end of the value
 
-				if (typeof value != "number") {
-					value = value.trim();
-					if (value === "true")
-						value = true;
-				}
-
+			if (keyname !== null) { //already has a key so this is the end of the value
 				current_object[keyname] = value;
 				keyname = null;
+				keynameQuoted = false;
 			} else { //this must be the end of the key-name and start of the value in a te"xt"   short-cut
-                if (typeof value != "number") {
-				keyname = value.trim();
-                }
+				if (typeof value != "number") {
+					keyname = value;
+					keynameQuoted = false;
+				}
 			}
 			nonSpaceCount = 0;
 			left = right + 1;
-			arrayObj = 0
+			arrayObj = 0;
+			if (debug)
+				console.log('string_recieved done :', keyname, value);
+
 		};
 		//=========function:
 		if (debug)
@@ -312,7 +336,8 @@ var past_space = function () {
 			if (--max < 0) {
 				if (debug)
 					console.log('max exeeded - likely algorithom fault');
-				console.trace('process.exit(2) from sub_parse3 : '); process.exit(2);
+				console.trace('process.exit(2) from sub_parse3 : ');
+				process.exit(2);
 			}
 			if ((str.charCodeAt(right) === Space) && (right < str.length - 1)) {
 				while ((right < str.length - 1) && str.charCodeAt(right + 1) == Space) {
@@ -339,62 +364,62 @@ var past_space = function () {
 				if (chr !== Space)
 					nonSpaceCount++;
 				if (debug)
-					console.log('parse3 a:', keyname,left, right, chr, ':', str.charAt(right), nonSpaceCount);
+					console.log('parse3 a:', str.charAt(right), closing, keyname, left, right, chr, ':', nonSpaceCount);
 
 				if (closing === chr) { //closer found
 					//..what to do with it 		//I have already been doing it
-					key_or_value = str.substring(left, right - 1 + 1);
+					//it could be there is no key or value - just a close
+					if (left === right) { //just a close
+						if (keyname !== null) {
+							key_or_value = SwitchOnValue;
+							arrayObj = 1;
+							string_recieved(key_or_value, false);
+						}
+					} else {
+						key_or_value = str.substring(left, right - 1 + 1).trim();
 
-					if (debug)
-						console.log('parse3 closing === chr)   :', left, right, chr, ':', str.charAt(right), '{', keyname, ":", key_or_value, '}', str, o);
-					if (!keyname) {
-						if (left !== right) {
-							keyname = key_or_value;
+						if (debug)
+							console.log('parse3 closing === chr)   :', left, right, chr, ':', str.charAt(right), '{', keyname, ":", key_or_value, '}', str, o);
+						if (keyname === null) {
+							if (key_or_value) {
+								keyname = key_or_value;
+								keynameQuoted = false;
+								key_or_value = SwitchOnValue;
+								arrayObj = 1;
+							}
+							if (debug)
+								console.log('parse3 closing === chr) AOAOAO :', left, right, chr, ':', str.charAt(right), '   >{' + keyname + ":" + key_or_value + '}');
+						} else if (left === right) {
 							key_or_value = SwitchOnValue;
 							arrayObj = 1;
 						}
-						if (debug)
-							console.log('parse3 closing === chr) AOAOAO :', left, right, chr, ':', str.charAt(right), '   ', keyname, ":", key_or_value);
-					} else if (left === right) {
-						key_or_value = SwitchOnValue;
-						arrayObj = 1;
-					}
-                    
-						try {
-							var ival = +key_or_value;
-                            if (!isNaN(ival)) 
-							key_or_value = ival;
-						} catch (e) {}                    
-					string_recieved(key_or_value);
 
+						string_recieved(key_or_value, false);
+					}
 					return;
 				}
 
-				if (nonSpaceCount > 1 && isQoute(chr)) { // a quote in the middle of an unquoted word
+				if (nonSpaceCount > 1 && isQoute(chr)) { // a quote in the middle of an unquoted word = start of the next word
 					//this is the end of the unquoted part
 
 					key_or_value = str.substring(left, right - 1 + 1);
 					if (debug)
-						console.log('parse3 isQoute nspc>0   :', left, right, chr, ':', str.charAt(right), ":", key_or_value, str);
-					string_recieved(key_or_value);
+						console.log('parse3 isQoute nspc>0   :', left, right, chr, ':', str.charAt(right), ("{" + keyname + ":" + key_or_value + "}"), str);
+					string_recieved(key_or_value, false);
 					//continues at mark1
 				}
 				if (isAssigner(chr)) {
 					key_or_value = str.substring(left, right - 1 + 1);
 					if (debug)
 						console.log('parse3 isAssigner     :', left, right, chr, ':', str.charAt(right), '{', keyname, ":", key_or_value, "}", o);
-					if (left !== right) {//would ready have a key name
-						string_recieved(key_or_value);
-                        //right++; //affect 10a if enabled
-                    }
-                      else
-                      {                          
-                      }
-                    past_space();  
-                                        
-					
+					if (left !== right) { //would ready have a key name
+						string_recieved(key_or_value, false);
+						//right++; //affect 10a if enabled
+					} else {}
+					past_space();
+
 					if (debug)
-						console.log('parse3 isAssigner X   :', left, right, chr, ':', str.charAt(right), '{'+keyname+":"+key_or_value+"}");
+						console.log('parse3 isAssigner X   :', left, right, chr, ':', str.charAt(right), '{' + keyname + ":" + key_or_value + "}");
 					nonSpaceCount = 0;
 				}
 				if (isDelimiter(chr)) {
@@ -403,33 +428,29 @@ var past_space = function () {
 					if (debug)
 						console.log('parse3 isDelimiter      :', left, right, chr, ':', str.charAt(right), '   {', keyname, ":" + key_or_value + "}");
 
-					if (!keyname) {
+					if (keyname === null) {
 						if (debug)
 							console.log('parse3 isDelimiter AOXXXX :', left, right, chr, ':', str.charAt(right), '   {', keyname, ":" + key_or_value + "}", o);
 						if (key_or_value) {
 							keyname = key_or_value;
+							keynameQuoted = false;
 							key_or_value = SwitchOnValue;
 							arrayObj = 1;
 							if (debug)
-								console.log('parse3 isDelimiter AOAOAO :', left, right, chr, ':', str.charAt(right), '   ', keyname, ":", key_or_value);
-							string_recieved(key_or_value);
+								console.log('parse3 isDelimiter AOAOAO :', left, right, chr, ':', str.charAt(right), '   ', ("{" + keyname + ":" + key_or_value + "}"));
+							string_recieved(key_or_value, false);
 						} else {
 							skip_space();
 							left = right + 1;
 						}
 					} else {
 						//this is not a quoted value
-                        if (left === right) {
-						key_or_value = SwitchOnValue;
-						arrayObj = 1;
-					    }
-						try {
-							var ival = +key_or_value;
-                            if (!isNaN(ival)) 
-							key_or_value = ival;
-						} catch (e) {}
+						if (left === right) {
+							key_or_value = SwitchOnValue;
+							arrayObj = 1;
+						}
 
-						string_recieved(key_or_value);
+						string_recieved(key_or_value, false);
 					}
 
 					//right++; affect 05d
@@ -440,31 +461,43 @@ var past_space = function () {
 				if (isOpenObject(chr) || isOpenArray(chr)) {
 					key_or_value = str.substring(left, right - 1 + 1);
 					if (debug)
-						console.log('parse3 isOpenObject   :', left, right, chr, ':', str.charAt(right), ":", key_or_value);
-					if (!keyname)
+						console.log('parse3 isOpenObject   :', left, right, chr, ':', str.charAt(right), ("{" + keyname + ":" + key_or_value + "}"));
+					if ((keyname === null) && (left !== right)) {
 						keyname = key_or_value;
-					if (keyname) {
+						keynameQuoted = false;
+					}
+                    var sub_object=current_object;
+					if (keyname !== null) {
 						//new sub object
 						current_object[keyname] = {};
-						current_object = current_object[keyname];
+						sub_object = current_object[keyname];
 						if (chr === OpenBracket) {
-							current_object.Function = true;
+							sub_object.Function = true;
 						}
 					}
-					left = right = right + 1;
-                    depth++;
-					sub_parse3(closing_for(chr), current_object);
-                    depth--;
-                    //console.log('parse3 returned from OpenObject   :', left, right, chr, ':', str.charAt(right), ":",extra_mode, depth,current_object);
-                    if ((depth===0)&&(extra_mode===1))  {
-                         current_object.object_ended_at = right;   
-                         //console.log('parse3 object_ended_at   :', current_object.object_ended_at);
-                         return;
+                    else
+                    {
+                        if (debug)
+						console.log('parse3 isOpenObject  Anonymous onject starting -----------------:', left, right, chr, ':', str.charAt(right), ("{" + keyname + ":" + key_or_value + "}"));
                     }
-                    
+					left = right = right + 1;
+					depth++;
+					sub_parse3(closing_for(chr), sub_object);
+					depth--;
+					if (debug)
+						console.log('parse3 returned from OpenObject   :', left, right, chr, ':', str.charAt(right), ":", extra_mode, depth, sub_object);
+					if ((depth === 0) && (extra_mode === 1)) {
+						if (right < str.length - 1)
+							sub_object.object_ended_at = right + 1;
+						if (debug)
+							console.log('parse3 object_ended_at ------------------  :', sub_object.object_ended_at, str.length);
+						return;
+					}
+
 					//skip_space();
 					left = right + 1;
 					keyname = null;
+					keynameQuoted = false;
 
 				}
 
@@ -475,20 +508,41 @@ var past_space = function () {
 					key_or_value = parse_quoted_string();
 					//key_or_value = str.substring(left, right - 1 + 1);
 					if (debug)
-						console.log('parse3 isQoute          :', left, right, chr, ':', str.charAt(right), keyname, ":", key_or_value);
-                    past_space(); 
+						console.log('parse3 isQoute          :', left, right, chr, ':', str.charAt(right), ("{" + keyname + ":" + key_or_value + "}"));
+					past_space();
 					if (debug)
-						console.log('parse3 isQoute past_space:', left, right, chr, ':', str.charAt(right), keyname, ":", key_or_value);                    
-					if (keyname) {
-						string_recieved(key_or_value);
+						console.log('parse3 isQoute past_space:', left, right, chr, ':', str.charAt(right), ("{" + keyname + ":" + key_or_value + "}"));
+					if (keyname !== null) {
+						string_recieved(key_or_value, true);
 					} else {
 						keyname = key_or_value;
+						keynameQuoted = true;
 						left = right + 1;
 					}
 				}
 			}
 
 		}
+		key_or_value = str.substring(left, right + 1);
+		if (debug)
+			console.log('parse3 End loop :',
+				left, right, chr, ':', '{', keyname, ":", key_or_value, '}  from ->', str, o);
+		if (keyname === null) {
+			if (left !== right) {
+				keyname = key_or_value;
+				key_or_value = SwitchOnValue;
+				arrayObj = 1;
+			}
+		} else {
+			if (left === right) {
+				key_or_value = SwitchOnValue;
+				arrayObj = 1;
+			}
+
+		}
+
+		string_recieved(key_or_value, false);
+
 		return;
 
 	};
@@ -496,37 +550,42 @@ var past_space = function () {
 	sub_parse3(0, o);
 	if (parse3count === parse3countMax)
 		console.log('parse3 done with :', parse3count, '"' + text + '"\n', o);
-	if (parse3count > parse3countMax)
-    {console.trace('process.exit(2) from (parse3count > parse3countMax) : '); process.exit(2);} //slow inspect each element
+	if (parse3count > parse3countMax) {
+		console.trace('process.exit(2) from (parse3count > parse3countMax) : ');
+		process.exit(2);
+	} //slow inspect each element
 
-    if (debug)
+	if (debug)
 		console.log('parse3 done with : length=', text.length, '"' + text + '"\n', o);
 	return o;
 };
 
 var test = function (ref, text, lxon) {
-	var o = parse3(lxon,1);
-    if (o.object_ended_at) delete o.object_ended_at;
+	var o = parse3(lxon, 1);
+	//if (o.object_ended_at)
+	//	delete o.object_ended_at;
 	if (JSON.stringify(o) !== JSON.stringify(ref)) {
 		debug = true;
 		console.log('\n\n\n\n\n\n\n');
 		console.log('\n\n\n\n');
-		o = parse3(lxon,1);
-        if (o.object_ended_at) delete o.object_ended_at;
+		o = parse3(lxon, 1);
+		//if (o.object_ended_at)
+		//	delete o.object_ended_at;
 		console.log('Failed ', text, '\n Text     :', lxon, '\n Should be :', JSON.stringify(ref, null, 4), '\n Result   :', JSON.stringify(o, null, 4));
 		console.log('    :', JSON.stringify(o) + ";" + '\n     ', JSON.stringify(ref));
 		process.exit(2);
 	} else {
 		if (debug)
-		console.log('Pass ', text);
+			console.log('Pass ', text);
 	}
 }
 
 var parse_compare = function (text, context_vars) {
 
 	var o1 = parse_v1(text, context_vars);
-	var o3 = parse3(text,1);
-    if (o3.object_ended_at) delete o3.object_ended_at;
+	var o3 = parse3(text, 1);
+	if (o3.object_ended_at)
+		delete o3.object_ended_at;
 	if (JSON.stringify(o1) !== JSON.stringify(o3)) {
 		console.log('parse_compare Failed: ', text, '\nref     :', JSON.stringify(o1, null, 4), '\n Result   :', JSON.stringify(o3, null, 4));
 		console.log('--------------------: ', text, '\n    ref_1   :', JSON.stringify(o1), '\n   Result_3 :', JSON.stringify(o3));
@@ -565,10 +624,13 @@ var unit_test = function () {
 	};
 	test(reference, "Simple values  00d", "obj:'1'");
 
-    reference =  {"style":"warn","array":["you were here last at here.this_page_info    "],"you were here last at here.this_page_info    ":"on"};
-    test(reference, "Simple values  00e", "style=warn 'you were here last at here.this_page_info    '"); 
-    
-    
+	reference = {
+		"style" : "warn",
+		"array" : ["you were here last at here.this_page_info    "],
+		"you were here last at here.this_page_info    " : "on"
+	};
+	test(reference, "Simple values  00e", "style=warn 'you were here last at here.this_page_info    '");
+
 	reference = {
 		obj : "sub"
 	};
@@ -580,6 +642,9 @@ var unit_test = function () {
 	test(reference, "Simple obj 03a", "obj'sub'");
 	test(reference, "Simple obj 03b", "'obj'sub ");
 	test(reference, "Simple obj 03c", '"obj"sub ');
+	reference = {
+		obj : "sub"
+	};
 	test(reference, "Simple obj 03d", "obj'sub");
 
 	test(reference, "Simple obj 04a", "{obj: sub}");
@@ -591,9 +656,14 @@ var unit_test = function () {
 		obj : "on"
 	};
 	test(reference, "Simple obj 05", "obj");
-    
-    reference = {"array":["obj1","obj2","obj3"],"obj1":"on","obj2":"on","obj3":"on"};
-    test(reference, "Simple obj 05", "obj1 obj2 obj3");
+
+	reference = {
+		"array" : ["obj1", "obj2", "obj3"],
+		"obj1" : "on",
+		"obj2" : "on",
+		"obj3" : "on"
+	};
+	test(reference, "Simple obj 05", "obj1 obj2 obj3");
 
 	//arrays
 	reference = {
@@ -604,8 +674,6 @@ var unit_test = function () {
 	test(reference, "Simple obj 05a", "obj,o2");
 	test(reference, "Simple obj 05b", "{obj,o2}");
 
-    
-    
 	//arrays and object mixed
 	reference = {
 		obj : true,
@@ -613,12 +681,18 @@ var unit_test = function () {
 		o2 : "on"
 	};
 	test(reference, "Simple obj 05c", "{obj:true,o2}");
-	test(reference, "Simple obj 05d", "{obj:'true',o2}");
+	test(reference, "Simple obj 05d", "{obj : true ,o2}");
 
-    //top terminating object
-     reference = {"array":["obj","o2","o3"],"obj":"on","o2":"on","o3":"on"};
-    test(reference, "Simple obj 06a", "{obj,o2,{o3}} text");
-    
+	//top terminating object
+	reference = {
+		"array" : ["obj", "o2", "o3"],
+		"obj" : "on",
+		"o2" : "on",
+		"o3" : "on",
+		"object_ended_at" : 13
+	};
+	test(reference, "Simple obj 06a", "{obj,o2,{o3}} text");
+
 	//named  objects
 	reference = {
 		ab : {
@@ -631,12 +705,12 @@ var unit_test = function () {
 	test(reference, "Simple obj 10aa", "{ab{cd:12}}");
 	reference = {
 		"ab" : {
-			"cd" : 12,
-			"sw" : true
-		}
+			"cd" : 12			
+		},
+        "sw" : true
 	};
 	test(reference, "Simple obj 10b", "{ab{cd:12},sw=true}");
-    test(reference, "Simple obj 10c", "{ab{cd:12};sw=true}");
+	test(reference, "Simple obj 10c", "{ab{cd:12};sw=true}");
 	test(reference, "Simple obj 10d", "{ab{cd:12} ,sw=true}");
 	test(reference, "Simple obj 10e", "{ab{cd:12}, sw=true}");
 	test(reference, "Simple obj 10f", "{ab:{cd:12}, sw=true}");
@@ -660,25 +734,50 @@ var unit_test = function () {
 	test(reference, "Simple obj 20a", "{Style=Todo,placeholder:'Type here what to do' autosave}");
 	test(reference, "Simple obj 20b", "{Style=Todo,placeholder:'Type here what to do'; autosave}");
 	test(reference, "Simple obj 20c", ' {   "Style": "Todo",     "placeholder": "Type here what to do",      "autosave"}');
-    reference = {"Action":"Edit","placeholder":"What needs to be done (tab to save)","autosave":"yes"};
-    test(reference, "Simple obj 20d", ' {Action:"Edit","placeholder":"What needs to be done (tab to save)","autosave":yes}');
- 
-    reference =  {"icon":"icon-block-black box-incoming-b","from":"Z$USER","where":"id=Operator.id","form":"Operator/Inbox","Title":"Inbox","Style":"UserBar"};
-    test(reference, "Simple BCB 21a", '{ icon="icon-block-black box-incoming-b" from=Z$USER where="id=Operator.id" form=Operator/Inbox Title="Inbox" Style=UserBar}');
-    reference =   {"file":"~/All/StandardPageClose"};
-    test(reference, "Simple obj 21b", "(file=~/All/StandardPageClose)");
+	reference = {
+		"Action" : "Edit",
+		"placeholder" : "What needs to be done (tab to save)",
+		"autosave" : "yes"
+	};
+	test(reference, "Simple obj 20d", ' {Action:"Edit","placeholder":"What needs to be done (tab to save)","autosave":yes}');
 
-    
- 
+	reference = {
+		"icon" : "icon-block-black box-incoming-b",
+		"from" : "Z$USER",
+		"where" : "id=Operator.id",
+		"form" : "Operator/Inbox",
+		"Title" : "Inbox",
+		"Style" : "UserBar"
+	};
+	test(reference, "Simple BCB 21a", '{ icon="icon-block-black box-incoming-b" from=Z$USER where="id=Operator.id" form=Operator/Inbox Title="Inbox" Style=UserBar}');
+	reference = {
+		"file" : "~/All/StandardPageClose"
+	};
+	test(reference, "Simple obj 21b", "(file=~/All/StandardPageClose)");
+	reference = {
+		"list" : {
+			"name" : "YesNo",
+			"values" : {
+				"0" : "No",
+				"1" : "Yes",
+				"" : "ifblank:Yes"
+			}
+		}
+	};
+
+	test(reference, "Simple obj 21c", 'list{\n    "name": "YesNo",\n    "values": {\n        "0": "No",\n        "1": "Yes",\n        "": "ifblank:Yes"\n    }\n}');
+
 	reference = {
 		"regex" : "regex:/create\\s+table/i",
 		"rl_context" : "regex:/create\\s+table\\s+(\\w+)/i"
 	};
-	test(reference, "Simple obj 21b", ' {regex:"regex:/create\\\\s+table/i",rl_context:"regex:/create\\\\s+table\\\\s+(\\\\w+)/i"}');
-    
-
-
-
+	test(reference, "Simple obj 21d", ' {regex:"regex:/create\\\\s+table/i",rl_context:"regex:/create\\\\s+table\\\\s+(\\\\w+)/i"}');
+	reference = {
+		"abc" : 3,
+		"object_ended_at" : 7
+	};
+	test(reference, "Simple obj 21e", '  (abc:3) this script');
+	//test(reference, "Simple obj 21f",'{Action:"View",Type:"Gallery",width:"128",title:"File upload",Button:"Save it",widget:{DisplayName:"NAME",Target:"public"},Async:{ testing:1,           namefield:"BLOB_ID",		   filefield:"DisplayName",		  		   Target:"public"}}    ');
 	//simple unexpected results
 	reference = {
 		obj : "sub)"
@@ -690,6 +789,7 @@ var unit_test = function () {
 }
 
 parse3countMax = 99999;
+//debug = true;
 unit_test();
 
 //choose the default parser
@@ -697,3 +797,9 @@ unit_test();
 exports.parse = parse4;
 //exports.parse = parse_compare;
 //process.exit(2);
+
+
+
+
+
+

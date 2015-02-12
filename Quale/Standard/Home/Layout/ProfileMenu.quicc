@@ -17,7 +17,7 @@
 			        <#Menu (li-class="msg-alert" 
                     from="user_table_name" where=user_pk_field=Operator.user_pk_field 
                     form=Operator\Inbox
-                    Title="Inbox" Style=HeadBar                                       
+                    Title="Inbox" style=HeadBar
                     rightspan="new-alert,($elect count(*) from Mail where TO_USER=operator.user_pk_field$)"
                     )/>
 			</ul>
@@ -29,10 +29,10 @@
 			<div class="sub-menu">
 				<ul>
 <#xMenuScan (file=UserMenu from=user_table_name where=user_pk_field=Operator.user_pk_field)/>				
-				        <#Menu (icon="icon-block-black cog-b" from=user_table_name where=user_pk_field=operator.user_pk_field form=Operator/Preferences title="Preferences" Style=UserBar)/>
-				        <#xMenu (icon="icon-block-black info-about-b" from=user_table_name where=user_pk_field=Operator.user_pk_field form=Help/Main title="Help?" Style=UserBar)/>
-				        <#Menu (icon="icon-block-black box-incoming-b" from=user_table_name where=user_pk_field=Operator.user_pk_field form=Operator/Inbox title="Inbox" Style=UserBar)/>
-				        <#xMenu (icon="icon-block-black locked-tw-b" from=user_table_name where=user_pk_field=Operator.user_pk_field form=~/Layout/Operator/Logout title="Logout" Style=UserBar)/>
+				        <#Menu (icon="icon-block-black cog-b" from=user_table_name where=user_pk_field=operator.user_pk_field form=Operator/Preferences title="Preferences" style=UserBar)/>
+				        <#xMenu (icon="icon-block-black info-about-b" from=user_table_name where=user_pk_field=Operator.user_pk_field form=Help/Main title="Help?" style=UserBar)/>
+				        <#Menu (icon="icon-block-black box-incoming-b" from=user_table_name where=user_pk_field=Operator.user_pk_field form=Operator/Inbox title="Inbox" style=UserBar)/>
+				        <#xMenu (icon="icon-block-black locked-tw-b" from=user_table_name where=user_pk_field=Operator.user_pk_field form=~/Layout/Operator/Logout title="Logout" style=UserBar)/>
 				</ul>
 				<div class="admin-thumb">
 					<img src="../../images/qqui1/user-thumb1.png" alt="user" width="50" height="50">

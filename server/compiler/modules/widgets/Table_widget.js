@@ -31,8 +31,22 @@ var hogan = require("hogan");
 //var extend = require('node.extend');
 
 exports.module_name = 'table_widget.js';
-exports.tags=[{name:"softcodec"},{name:"table",complex:true},
-{name:"form",complex:true},{name:"list",complex:true},{name:"array",complex:true}];
+exports.tags = [{
+		name : "softcodec"
+	}, {
+		name : "table",
+		complex : true
+	}, {
+		name : "form",
+		complex : true
+	}, {
+		name : "list",
+		complex : true
+	}, {
+		name : "array",
+		complex : true
+	}
+];
 
 var assignfeature = exports.assignfeature = function (o, r, i, nameto, namefrom, defaultto) {
 	var ftl = String(zx.gets(o[namefrom])).split(',');
@@ -276,7 +290,7 @@ var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx,
 			//title
 			if (field.title === undefined)
 				field.title = field.name.replace(/\'/g, "");
-                
+
 			//find the primary key field
 			//console.log('find the primary key field :',field.name,field.pointer);
 			if (field.pointer === undefined) {
@@ -320,9 +334,7 @@ var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx,
 							return false;
 					});
 			}
-                
-            
-            
+
 		});
 		tcx.fields.push(r);
 	});
@@ -377,9 +389,7 @@ var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx,
 
 	}
 
-
 };
-
 
 var formulatemodel = exports.formulatemodel = function (zx, cx, o) {
 	// reads model from ini style or comment style
@@ -401,33 +411,46 @@ var formulatemodel = exports.formulatemodel = function (zx, cx, o) {
 	//if (o.q === undefined)
 	//	formulatemodel_ini(zx, cx, tcx, o);
 	//else
-		formulatemodel_quale(zx, cx, tcx, o);
+	formulatemodel_quale(zx, cx, tcx, o);
 
 	cx.fields = tcx.fields;
 	cx.query = tcx.query;
 
-    
-            
-                            
-	tcx.fields.forEach(function (forfield) {
-		forfield.cf.forEach(function (r) {
-			if (r.widget !== undefined) {   
-                zx.forFields( r.widget,function (field,key) {                                
-                //console.log('forFields( r.widget) : ',field,key,forfield.name);
-                    tcx.fields.some(function (srch) {
-                        if (srch.name.toLowerCase().trim()===field.toLowerCase().trim())
-                            {
-                               //console.log('forFields( r.widget)srch : ',key,'=',srch.indx,srch.name,forfield.name);       
-                               if (forfield.w===undefined) forfield.w={};
-                               forfield.w[key]=+srch.indx+1;  //+1 is to skip the table row number col                               
-                            }
-                    });
-                });    
-                }
+	//map widget fields to real fields
+	try {
+		tcx.fields.forEach(function (forfield) {
+			forfield.cf.forEach(function (r) {
+				if (r.widget !== undefined) {
+					zx.forFields(r.widget, function (field, key) {
+						//console.log('forFields( r.widget) : ', field, key, r);
+						try {
+							tcx.fields.some(function (srch) {
+
+								if (typeof field === 'string') {
+									//console.log('forFields( some) : ', srch, 'f:', field, ' ...', key, forfield.name);
+									if (srch.name.toLowerCase().trim() === field.toLowerCase().trim()) {
+										//console.log('forFields( r.widget)srch : ', key, '=', srch.indx, srch.name, forfield.name);
+										if (forfield.w === undefined)
+											forfield.w = {};
+										forfield.w[key] = +srch.indx + 1; //+1 is to skip the table row number col
+									}
+								}
+							});
+
+						} catch (e) {
+							zx.error.caught_exception(zx, e, " error in mapping widget field :" + field + " key:" + key + " for:" + forfield.name);
+							throw zx.error.known_error;
+						}
+
+					});
+				}
+			});
 		});
-	});
-    
-    
+	} catch (e) {
+		zx.error.caught_exception(zx, e, " error in mapping widget fields to real fields ");
+		throw zx.error.known_error;
+	}
+
 	tcx.fields.forEach(function (r) {
 		r.cf.forEach(function (r) {
 			zx.eachplugin(zx, "plug_field_check", zx.line_object, r);
@@ -604,14 +627,13 @@ exports.tag_list = function (zx, o) {
 	o.view = "list";
 	o.tablestyle = "List";
 
-	var values = zx.gets(o.values);
-	if (values !== "") {
-		if (values === "..")
-			values = zx.gets(o.nonkeyd);
-		values = values.replace(/\n/, " "); //1 line
-		//console.warn('tag_list values:', values);
+	var values = o.values;
+	if (values) {
 		var name = zx.gets(o.name);
-		zx.dbg.emit_mt_obj(zx, name, values);
+		if (values.array)
+			delete values.array;
+		//console.log('tag_list:',name,JSON.stringify(values) );
+		zx.dbg.emit_mt_obj(zx, name, JSON.stringify(values));
 		return;
 	}
 

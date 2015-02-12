@@ -1,25 +1,24 @@
 
 
-<#:button
+<#button()
 --{save:"todo.clear.button"}
 --{title:"Clear Completed",if:"(select count(ref) from todo_mvc where owner=session.id and status='1')!=0" }
 sql update todo_mvc set status='3' where owner=session.id and (status='1');
 />
 
-<#controller(save="todo.itemcount")/>
+<#controller(save="todo.itemcount")
 
-<#:print 
+print 
 --{if:"(select count(ref) from todo_mvc where owner=session.id and (status='' or status is null))!=1" }
 ($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $)
 items left
-/>
-<#:print 
+
+
+print 
 --{if:"(select count(ref) from todo_mvc where owner=session.id and (status='' or status is null))=1" }
 ($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $)
 item left
 
 />
-
-<#controllerdone/>
 
 

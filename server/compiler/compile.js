@@ -627,6 +627,7 @@ Sync(function () {
 	zx.pages = [];
 	zx.pages_addiing = [];
 	zx.plugins = [];
+    zx.debug_options = {};
 
 	zx.dbu = require('../database/db_fb_sql_util.js');
 	zx.plugins.push(zx.dbu);

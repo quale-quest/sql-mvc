@@ -18,6 +18,18 @@ undefined
 
 undefined
 
+##rem
+
+remark / comment.
+
+##todo
+
+todo comment.
+
+##disable
+
+disable some code.
+
 ##eval
 
 undefined
@@ -41,6 +53,18 @@ undefined
 ##modeldone
 
 undefined
+
+##model_show
+
+Will list all available models and controllers and print details of one named as the first paramanter into the web page.
+
+##debug
+
+Will enable additional console output for platform debugging.
+
+##compoundstatementdone
+
+Internal use - Reserved.
 
 ##g960
 

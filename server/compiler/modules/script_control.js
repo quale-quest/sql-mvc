@@ -446,8 +446,8 @@ exports.tag_script = function (zx, line_obj) {
 			var s = r.content.trim();
 			if (s === ';')
 				s = '';
-			if (s !== "") {
-				console.log('-------------------------tag_script unknown s,o,r : ', s, '\n', o, r);
+			if (s !== "" && s !== '()') {
+				console.log('-------------------------tag_script unknown s,o,r : {'+ s+ '}\n', o, r);
                 zx.error.log_syntax_warning(zx, "tag_script unknown :" , s, zx.line_obj);
 				//process.exit(2); //tag_script unknown
 			}

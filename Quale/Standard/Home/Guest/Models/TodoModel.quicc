@@ -1,7 +1,7 @@
 
 
 
-<#:model
+<#model
 
 CREATE TABLE TODO_MVC				--:{as:"Table"} 
 (

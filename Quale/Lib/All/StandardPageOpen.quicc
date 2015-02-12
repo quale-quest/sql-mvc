@@ -30,7 +30,5 @@ into master select * ::-overridemastertable;
 
 />
 
-<#xmodel_scan/>
-<#inject_point />
 
 <div cid={{cid}}> <!-- start of divine page -->

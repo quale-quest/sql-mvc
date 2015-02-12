@@ -1,20 +1,24 @@
 
 
-<#listx name=YesNo
-values="
-{"0":"No","1":"Yes",
-"":"ifblank:Yes"}
-"
-/>
-<#listx name=Ticked
-values="
-{"1":"",
-"":"ifblank:"}
-"
+<#
+list{
+    "name": "YesNo",
+    "values": {
+        "0": "No",
+        "1": "Yes",
+        "": "ifblank:Yes"
+    }
+}
+
+list{name=Ticked,values={
+	"1":"",
+	"":"ifblank:"
+	}}
+
 />
 
 
-<#:model
+<#model
 /********************* UDFS ***********************/
 DECLARE EXTERNAL FUNCTION ADDDAY
 TIMESTAMP, INTEGER

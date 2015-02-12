@@ -91,15 +91,17 @@ var check_user_table_name = function (zx, str) {
 
 var ParseIntoStatements = function (zx, compound_statement, objtype) {
 	var statements = [];
-
+    var compound_statement_debug=0;
 	if (!objtype) {
-		if (compound_statement.substring(0, 4) == "test") {
+		if (compound_statement.indexOf("xxxxdebug")>0) {
+               compound_statement_debug=1;
 			//console.log('ParseIntoStatements: ', compound_statement);
-
+           
 		}
 	}
 	var split = compound_statement.split(zx.all_tags_rx);
-	//console.log('ParseIntoStatements R: ', split);
+    if (compound_statement_debug)
+           console.log('\n\n\nParseIntoStatements R: ', split);
 	if (split.length > 0) {
 		if (split.length == 1) {
 			statements.push({
@@ -117,11 +119,13 @@ var ParseIntoStatements = function (zx, compound_statement, objtype) {
 					//command : split[i],
 					//input : split[i + 1]
 				});
-				// console.log('ParseIntoStatements Z: ',i, split[i] + split[i + 1]);//[0] ,' ...', split[1]);
+                if (compound_statement_debug)
+				 console.log('ParseIntoStatements Z: ',i, split[i] + split[i + 1]);//[0] ,' ...', split[1]);
 			}
 		}
 	}
-	//console.log('ParseIntoStatements Y: ',statements);
+    if (compound_statement_debug)
+	    console.log('ParseIntoStatements Y: ',statements);
 	return statements;
 }
 
@@ -192,7 +196,7 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 				else {
 					var br = fileutils.locateclosestbuildroot(zx, filename);
 					var qfilename = fileutils.changefileextn(br.filename, '');
-					concat_body += '<#include(file="' + qfilename + '") /> ';
+					concat_body += '<#include (file="' + qfilename + '") /> ';
 					//console.log('------------------------------ adding :', qfilename);
 				}
 			});
@@ -228,7 +232,8 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 				s = starts[i + 1];
 				eob = s.indexOf(zx.end_of_block); //in strict mode this should be />
 				var compound_statement = s.substring(0, eob < 0 ? s.length : eob).trim();
-
+                var compound_statement_debug=0;
+		        if (compound_statement.indexOf("xxxxx")>0)   compound_statement_debug=1;
 				var Statements = ParseIntoStatements(zx, compound_statement, objtype);
 				//console.log('ParseFileToObject a:', i, Statements.length);
 
@@ -238,20 +243,30 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 					//console.log('ParseFileToObject b:',Statement,line_obj);
 					var line_obj = {};
 					//var splits = Statement.match(/[:=]*\s*(\w+)\s*([\w\W]*)/);
-					var splits = Statement.match(/[:=]*\s*(\w+)\s*([\(\{\[])([\w\W]*)/);
-					//console.log('ParseFileToObject b:', is, Statements.length, splits);
+					var splits = Statement.match(/[:=]*\s*(\w+)\s*([\(\{\[])?([\w\W]*)/);
+                    //if (compound_statement_debug)
+					//    console.log('ParseFileToObject b:', is, Statements.length, splits);
 					if (splits) {
 						line_obj.tag = splits[1];
 						line_obj.json_parse = true;
-						line_obj.body = splits[2] + splits[3];
+						line_obj.body = (splits[2]||'') + splits[3];
 					} else {
 						splits = Statement.match(/[:=]*\s*(\w+)\s*(.*)/);
 						if (splits) {
 							line_obj.tag = splits[1];
 							line_obj.body = splits[2];
 						}
+                        else
+                        {
+                            console.log('\n\nParseFileToObject no splits:', is, Statements.length,Statements,"\n", splits);
+                        }
 
 					}
+                    //if (compound_statement_debug)
+					//    console.log('ParseFileToObject bb:', is, Statements.length, line_obj);
+                    
+                    //if (line_obj.tag==='count')
+                    //   console.log('\n\nParseFileToObject count:', is, Statements.length,Statements,"\n", splits);
 
 					if (splits) {
 
@@ -286,11 +301,24 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 					}
 				}
 				//console.log('bcb b2:',line_obj);
+                //    if (compound_statement_debug)
+				//	    console.log('ParseFileToObject bc:', blocks);                
+                if (Statements.length>1)
+                {
+                var eob_line_obj = {};
+                
+                eob_line_obj.tag = "compoundstatementdone";
+                eob_line_obj.srcinfo = {};
+                blocks.push(eob_line_obj);
+                }
+                 
 
 				//left over html on the next line
 				starts[i] = "<#" + compound_statement + zx.end_of_block;
 				starts[i + 1] = s.substring(eob + zx.end_of_block.length);
 				itemCrCount = zx.counts(compound_statement, "\n");
+                   // if (compound_statement_debug)
+				//	    console.log('ParseFileToObject bc:', blocks);                
 			} else if (starts[i] === "<{") //json format - not used yet
 			{
 				//stop on >
@@ -370,7 +398,7 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 	//console.warn('main  file 2obj ',filename);
 	console.warn('=======================================================================================================================================Making simple objects');
 	var obj = exports.ParseFileToObject(zx, filename);
-	console.warn('main  file ', filename, JSON.stringify(obj, null, 4).length);
+	//console.warn('main  file ', filename, JSON.stringify(obj, null, 4).length);
 	console.warn('=======================================================================================================================================Done Making simple objects, now parsing paramaters');
 	for (var i = 0; i < obj.length; i++) {
 		//console.warn('page-Tag ', i, obj.length, obj[i].tag);
@@ -391,8 +419,10 @@ exports.RecurseParseFileToObject = function (zx, filename) {
                 if (obj[i].json_parse)  {
 				var jl = json_like.parse(obj[i].body);
 				//console.log('Quic RecurseParseFileToObject 172021a :', jl);
+                 if (jl.debug_options) zx.debug_options=jl.debug_options;
+                
                 if (jl.object_ended_at){
-                   obj[i].body = obj[i].body.substring(jl.object_ended_at+1);
+                   obj[i].body = obj[i].body.substring(jl.object_ended_at);
                    //later... now it is good for debugging delete jl.object_ended_at;   
                 }
                 
@@ -449,10 +479,10 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 
 		if (obj[i].tag.toLowerCase() === 'include') {
 			var file_name;
-			// console.log('include this tag found onj : ', obj[i]);
+			 //console.log('include this tag found obj : ', obj[i]);
 			if (zx.gets(obj[i].file) === 'this') { //useful for displaying own source
-				zx.gets(obj[i].file) = zx.pages[zx.pgi].name;
-				console.log('include this tag : ', zx.pages[zx.pgi].name);
+				obj[i].file = zx.pages[zx.pgi].name;
+				//console.log('include this tag : ', zx.pages[zx.pgi].name);
 			} {
 				file_name = zx.gets(obj[i].file);
 				//console.log('include this tag found m: ', file_name);

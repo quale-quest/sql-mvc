@@ -6,13 +6,19 @@ ease of use is important
 
 exports.module_name = 'models.js';
 exports.tags=[{name:"controller"},{name:"controllerdone"},
-{name:"use"},{name:"model"},{name:"modeldone"}];
+{name:"use"},{name:"model"},{name:"modeldone"}
+    ,{name:"model_show",man_page:"Will list all available models and controllers and print details of one named as the first paramanter into the web page."}
+    ,{name:"debug",man_page:"Will enable additional console output for platform debugging."}
+    ,{name:"compoundstatementdone",man_page:"Internal use - Reserved."}
+
+];
 
 var deepcopy = require('deepcopy');
 var extend = require('node.extend');
 var fs = require('fs');
 
 exports.tag_controller = exports.tag_model = function (zx, line_obj) {
+    //console.log('tag_controller:',line_obj);
 	if (line_obj.save !== undefined)
 		return; //not interested in model save blocks
 	if (line_obj.q === undefined)
@@ -36,6 +42,10 @@ exports.tag_controller = exports.tag_model = function (zx, line_obj) {
 	//console.log('tag_model:',line_obj.nonkeyd );
 	//this must execute the actual ddl commands (using the db tool
 };
+exports.tag_controllerX  = function (zx, line_obj) {
+    //console.log('tag_controller:',line_obj );
+    return exports.tag_model(zx, line_obj);
+}
 
 exports.done_pass = function (zx, line_obj) {
 	if (zx.pass === 1) {
@@ -52,29 +62,50 @@ exports.tag_controllerdone = exports.tag_modeldone = function (zx, line_obj) {
 exports.tag_use = function (zx, line_obj) { //blank use in model inheritance
 };
 
+exports.tag_CompoundStatementDone = function (zx, line_obj) {
+	//console.log('tag_modeldone:',line_obj.nonkeyd );
+};
+
+
+exports.tag_debug = function (zx, line_obj) { 
+  //console.log('tag_debug:',zx.debug_options );  
+};
+
 //model code interpreted here in pass 0
 exports.tag_pass0_use = function (zx, line_obj) {
 
-	line_obj.use = zx.gets(line_obj.nonkeyd);
+    if (line_obj.array) line_obj.use = line_obj.array[0]; //one positional arg
+    
 	line_obj.nonkeyd = '';
-	//console.log('tag_pass0_use :', line_obj)
+	//console.log('tag_pass0_use :', line_obj.array);  //process.exit(2);
 };
 exports.tag_pass0_controller = exports.tag_pass0_model = function (zx, line_obj) {
 
 	if (line_obj.save !== undefined)
 		zx.saving_models = zx.gets(line_obj.save);
+    line_obj.ignore=true;
 	//console.log('tag_pass0_model :', line_obj)
 };
 exports.tag_pass0_controllerdone = exports.tag_pass0_modeldone = function (zx, line_obj) {
 	zx.saving_models = '';
 
-	//console.log('tag_pass0_modeldone :', line_obj)
+	//console.trace('tag_pass0_modeldone :', line_obj); process.exit(2);
 };
+
+exports.tag_compoundstatementdone = function (zx, line_obj) { //blank use in model inheritance
+};
+
+exports.tag_pass0_compoundstatementdone = exports.tag_pass0_modeldone = function (zx, line_obj) {
+	zx.saving_models = '';
+	//console.log('tag_pass0_compoundstatementdone :', line_obj);// process.exit(2);
+};
+
 
 exports.process_pass0 = function (zx, par) {
 	var name,
 	line_obj = par.line_obj;
-
+    if (line_obj.ignore) return;
+    
 	//this here is used more for controllers, saving/using buttons and others as model/contoller items
 	if ((line_obj.save !== undefined) || zx.saving_models !== '') {
 		//store this model
@@ -86,7 +117,7 @@ exports.process_pass0 = function (zx, par) {
 		if (zx.model_defines[name] === undefined)
 			zx.model_defines[name] = [];
 		zx.model_defines[name].push(line_obj);
-		//console.log('store model in :', name);//, line_obj);
+		//console.log('store model in :', name,zx.show_longstring(JSON.stringify(line_obj)));
 
 
 	} else {		
@@ -107,7 +138,7 @@ exports.process_pass01 = function (zx, par) {
 		if (models !== undefined) {
 			var linecopy = deepcopy(line_obj);
 			delete linecopy.use;
-			//console.log('use models in :', name, linecopy);
+			//console.log('use models in linecopy:', name, linecopy);
 			delete linecopy.tag;
 			delete linecopy.nonkeyd;
 			delete linecopy.q;
@@ -148,10 +179,25 @@ exports.process_pass01 = function (zx, par) {
                 //console.log('use model done insertArrayAt :',par.indx, par.line_objects.length);
 			}
 		}
-
+//process.exit(2);
 	}
 
 };
+
+exports.tag_model_show = function (zx, line_obj) { 
+var html,contrl ;
+ html = Object.keys(zx.model_defines)
+ if (line_obj.array) contrl = line_obj.array[0];
+ 
+ if (contrl)      
+     {
+         html += JSON.stringify(zx.model_defines[contrl], null, 4);
+     }
+
+zx.mt.lines.push("<pre>" + html + "</pre>");
+};
+
+
 
 exports.start_page = function (zx) {
 	zx.model_defines = {};
