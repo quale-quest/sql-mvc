@@ -108,6 +108,24 @@ ss.client.templateEngine.use(require('ss-hogan')); //, '/client/templates');
 if (ss.env === 'production')
 	ss.client.packAssets();
 
+ss.client.set({
+  onChange:
+  { DelayTime:2000,
+    GuardTime:3000,
+    Validate:function(path, event,action){ //needs fn wrapped else it does not add it to options
+    console.log('onChangeValidate :', path);    
+    return true;
+    },
+    Publish:function(path, event,action,pubs){ //needs fn wrapped else it does not add it to options
+    console.log('onChange.Publish :', action);      
+    //modify pubs if needed
+    return pubs;
+    }    
+  }});
+  
+
+
+
 //var bodyParser = require('body-parser');
 //ss.http.middleware.prepend( bodyParser() );
 
