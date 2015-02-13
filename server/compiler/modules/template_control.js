@@ -39,6 +39,7 @@ exports.tags=[{name:"console"},{name:"warn"},
 ,{name:"rem",man_page:"remark / comment."}
 ,{name:"todo",man_page:"todo comment."}
 ,{name:"disable",man_page:"disable some code."}
+,{name:"view",man_page:"Indicates screen output block."}
 ];
 
 exports.tag_console = function (zx, line_obj) {		
@@ -61,7 +62,7 @@ exports.tag_html = function (zx, line_obj) {
 	}
 };
 
-exports.tag_disable = exports.tag_todo = exports.tag_rem = function (zx, line_obj) {
+exports.tag_view = exports.tag_disable = exports.tag_todo = exports.tag_rem = function (zx, line_obj) {
 }
 
 exports.tag_print = function (zx, line_obj) {

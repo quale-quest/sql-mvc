@@ -3,11 +3,9 @@
 <h1><a href="https://github.com/quale-quest/sql-mvc">SQL-MVC</a> example implementation of <a href="http://todomvc.com">todomvc.com</a></h1>
 <br><br><br>
 
-<#
-:button (save:"allbutton",title:"all")
-  set here.todo_type='';
+<#view
 
-:table()
+table()
 	Select  --:{Title:"Make new records",from:"TODO_MVC",autoinsert:"top",tablestyle:"Todo"}
 	STATUS, --:{Action:"Edit",debug:0,autosave:yes}
 	NAME,   --:{Action:"Edit","placeholder":"What needs to be done (tab to save)","autosave":yes}
@@ -16,12 +14,10 @@
 	where (owner=session.id and ( (here.todo_type='' and (status!='3' or status is null)) 
 	or( (status='' or status is null) and here.todo_type='1')or(status='1' and here.todo_type='2')))
 
-
-
 use("todo.itemcount")
 
-button {use:"allbutton",title:"View all"}
-
+button (title:"View all")
+    set here.todo_type='';
 
 button {title:"Active"}
 	set here.todo_type='1';
@@ -31,10 +27,9 @@ button {title:"Completed"}
 
 use(todo.clear.button)
 
+
+
 html <div align="center"><br><br><br><br></div></div>	
-
-
-model_list(todo.itemcount)
 
 Container( style=Tab                                                                                tab=Info)
 rem -------------------------------------------------------------------------------------------------------

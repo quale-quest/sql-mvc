@@ -30,6 +30,10 @@ todo comment.
 
 disable some code.
 
+##view
+
+Indicates screen output block.
+
 ##eval
 
 undefined

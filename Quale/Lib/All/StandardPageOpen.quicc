@@ -30,5 +30,5 @@ into master select * ::-overridemastertable;
 
 />
 
-
+<#inject_point />
 <div cid={{cid}}> <!-- start of divine page -->
