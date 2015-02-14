@@ -189,7 +189,7 @@ var isAssigner = function (chr) {
 
 var debug = 0;
 var parse3count = 0;
-var parse3countMax = 999999;
+var parse3countMax = 999999999;
 
 var parse4 = function (text) {
 	//debug=1;
@@ -198,7 +198,7 @@ var parse4 = function (text) {
 var parse3 = function (text, extra_mode_par) {
 	//extra mode 1 : when the object closes, stop scanning and return the position in the string as scan_return_pos
 	//extra mode 0 : continue scanning until the end of the string
-
+    var openingBrace=false;
 	// make sure text is a "string"
 	if (typeof text !== "string" || !text) {
 		return null;
@@ -212,6 +212,13 @@ var parse3 = function (text, extra_mode_par) {
 	var extra_mode = extra_mode_par;
 
 	var str = text.trim(); //last delimiter to avoid an unnecessary code block
+    if (str.match(/^\s*[\[\{\(]/)) openingBrace=true;
+    if ((extra_mode === 1)&&!openingBrace) 
+    {
+        o.object_ended_at=0;
+        return o; //don't bother to parse, we only wanted the object in braces
+    }
+    
 	parse3count++;
 	if (debug)
 		console.log('parse3 start with : length=', text.length, '"' + text + '"');
@@ -555,6 +562,14 @@ var parse3 = function (text, extra_mode_par) {
 		process.exit(2);
 	} //slow inspect each element
 
+    
+    
+    if (o.object_ended_at === undefined) {
+        if (openingBrace) o.object_ended_at=str.length;
+        else o.object_ended_at=0;
+    }
+        
+    
 	if (debug)
 		console.log('parse3 done with : length=', text.length, '"' + text + '"\n', o);
 	return o;
@@ -562,15 +577,15 @@ var parse3 = function (text, extra_mode_par) {
 
 var test = function (ref, text, lxon) {
 	var o = parse3(lxon, 1);
-	//if (o.object_ended_at)
-	//	delete o.object_ended_at;
+	if (!o.object_ended_at)
+         console.log('json_line Failed with no object_ended_at for : ', text );
+	delete o.object_ended_at;
 	if (JSON.stringify(o) !== JSON.stringify(ref)) {
 		debug = true;
 		console.log('\n\n\n\n\n\n\n');
-		console.log('\n\n\n\n');
 		o = parse3(lxon, 1);
 		//if (o.object_ended_at)
-		//	delete o.object_ended_at;
+		delete o.object_ended_at;
 		console.log('Failed ', text, '\n Text     :', lxon, '\n Should be :', JSON.stringify(ref, null, 4), '\n Result   :', JSON.stringify(o, null, 4));
 		console.log('    :', JSON.stringify(o) + ";" + '\n     ', JSON.stringify(ref));
 		process.exit(2);
@@ -608,54 +623,54 @@ var unit_test = function () {
 	reference = {
 		obj : "\\"
 	};
-	test(reference, "Simple escapes 00a", "obj:'\\\\'");
+	test(reference, "Simple escapes 00a", "(obj:'\\\\')");
 
 	reference = {
 		obj : "\'"
 	};
-	test(reference, "Simple escapes 00b", "obj:'\\''");
+	test(reference, "Simple escapes 00b", "[obj:'\\'']");
 
 	reference = {
 		obj : 1
 	};
-	test(reference, "Simple values  00c", "obj:1");
+test(reference, "Simple values  00c", "{obj:1}");
 	reference = {
 		obj : "1"
 	};
-	test(reference, "Simple values  00d", "obj:'1'");
+	test(reference, "Simple values  00d", "{obj:'1'}");
 
 	reference = {
 		"style" : "warn",
 		"array" : ["you were here last at here.this_page_info    "],
 		"you were here last at here.this_page_info    " : "on"
 	};
-	test(reference, "Simple values  00e", "style=warn 'you were here last at here.this_page_info    '");
+	test(reference, "Simple values  00e", "(style=warn 'you were here last at here.this_page_info    ')");
 
 	reference = {
 		obj : "sub"
 	};
-	test(reference, "Simple obj 01a", "obj:sub");
-	test(reference, "Simple obj 01b", "obj: sub");
-	test(reference, "Simple obj 01c", "obj :sub");
-	test(reference, "Simple obj 01d", "obj : sub");
+	test(reference, "Simple obj 01a", "(obj:sub)");
+	test(reference, "Simple obj 01b", "(obj: sub)");
+	test(reference, "Simple obj 01c", "(obj :sub)");
+	test(reference, "Simple obj 01d", "(obj : sub)");
 
-	test(reference, "Simple obj 03a", "obj'sub'");
-	test(reference, "Simple obj 03b", "'obj'sub ");
-	test(reference, "Simple obj 03c", '"obj"sub ');
+	test(reference, "Simple obj 03a", "[obj'sub']");
+	test(reference, "Simple obj 03b", "['obj'sub ]");
+	test(reference, "Simple obj 03c", '["obj"sub ]');
 	reference = {
 		obj : "sub"
 	};
-	test(reference, "Simple obj 03d", "obj'sub");
+	test(reference, "Simple obj 03d", "[obj'sub']");
 
-	test(reference, "Simple obj 04a", "{obj: sub}");
-	test(reference, "Simple obj 04b", "[obj: sub]");
-	test(reference, "Simple obj 04b", "(obj: sub)");
+	test(reference, "Simple obj 04a", "[{obj: sub}]");
+	test(reference, "Simple obj 04b", "[[obj: sub]]");
+	test(reference, "Simple obj 04b", "[(obj: sub)]");
 
 	reference = {
 		array : ["obj"],
 		obj : "on"
 	};
-	test(reference, "Simple obj 05", "obj");
+	test(reference, "Simple obj 05", "[obj]");
 
 	reference = {
 		"array" : ["obj1", "obj2", "obj3"],
@@ -663,7 +678,7 @@ var unit_test = function () {
 		"obj2" : "on",
 		"obj3" : "on"
 	};
-	test(reference, "Simple obj 05", "obj1 obj2 obj3");
+	test(reference, "Simple obj 05", "[obj1 obj2 obj3]");
 
 	//arrays
 	reference = {
@@ -671,7 +686,7 @@ var unit_test = function () {
 		obj : "on",
 		o2 : "on"
 	};
-	test(reference, "Simple obj 05a", "obj,o2");
+	test(reference, "Simple obj 05a", "[obj,o2]");
 	test(reference, "Simple obj 05b", "{obj,o2}");
 
 	//arrays and object mixed
@@ -688,8 +703,8 @@ var unit_test = function () {
 		"array" : ["obj", "o2", "o3"],
 		"obj" : "on",
 		"o2" : "on",
-		"o3" : "on",
-		"object_ended_at" : 13
+		"o3" : "on"
+		
 	};
 	test(reference, "Simple obj 06a", "{obj,o2,{o3}} text");
 
@@ -765,7 +780,7 @@ var unit_test = function () {
 		}
 	};
 
-	test(reference, "Simple obj 21c", 'list{\n    "name": "YesNo",\n    "values": {\n        "0": "No",\n        "1": "Yes",\n        "": "ifblank:Yes"\n    }\n}');
+	test(reference, "Simple obj 21c", '(list{\n    "name": "YesNo",\n    "values": {\n        "0": "No",\n        "1": "Yes",\n        "": "ifblank:Yes"\n    }\n})');
 
 	reference = {
 		"regex" : "regex:/create\\s+table/i",
@@ -773,8 +788,7 @@ var unit_test = function () {
 	};
 	test(reference, "Simple obj 21d", ' {regex:"regex:/create\\\\s+table/i",rl_context:"regex:/create\\\\s+table\\\\s+(\\\\w+)/i"}');
 	reference = {
-		"abc" : 3,
-		"object_ended_at" : 7
+		"abc" : 3
 	};
 	test(reference, "Simple obj 21e", '  (abc:3) this script');
 	//test(reference, "Simple obj 21f",'{Action:"View",Type:"Gallery",width:"128",title:"File upload",Button:"Save it",widget:{DisplayName:"NAME",Target:"public"},Async:{ testing:1,           namefield:"BLOB_ID",		   filefield:"DisplayName",		  		   Target:"public"}}    ');
