@@ -287,31 +287,28 @@ var exec_qry = function (cx, qrys) {
 
 	if (cx.zx.config.db.schema_mode !== "slave") {
 		//console.log('exec_qry_cb.sync  :', qrys );
-		cx.zx.dbu.exec_qry_cb.sync(null, cx, "exec_qry", qrys, cx.zx.line_obj);
+		cx.zx.dbu.exec_qry_cb(cx, "exec_qry", qrys, cx.zx.line_obj);
 	}
 	delete cx.expect;
 };
 
 var dataset = function (zx, qrys) {//could use the one from sql_utils
-	var res = zx.dbu.dataset.future(null, {
-			zx : zx
-		}, "updater dataset", qrys, 0);
-	//console.log("dataset:" ,res.result);
-	return res.result;
+    //console.log("dataset:" ,qrys);
+	var result = zx.dbu.fetch_dataset(zx , "updater dataset", qrys);
+	//console.log("dataset:" ,result);
+	return result;
 };
 var singleton = function (zx, field, qrys) {//could use the one from sql_utils
-	var res = zx.dbu.dataset.future(null, {
-			zx : zx
-		}, "updater singleton", qrys, 0);
-
-	if (res.result[0] === undefined) {
-		console.log("singleton:", res.result);
+	var result = zx.dbu.fetch_dataset(zx, "updater singleton", qrys, 0);
+    //console.log("singleton res:" ,result);
+	if (result[0] === undefined) {
+		console.log("singleton:", result);
 	}
-	if (res.result[0][field] !== undefined) {
-		//console.log("singleton:" ,res.result[0][field].low_)
-		if (res.result[0][field].low_ === undefined)
-			return res.result[0][field];
-		return res.result[0][field].low_ + (res.result[0][field].high_ * 65536 * 65536);
+	if (result[0][field] !== undefined) {
+		//console.log("singleton:" ,result[0][field].low_)
+		if (result[0][field].low_ === undefined)
+			return result[0][field];
+		return result[0][field].low_ + (result[0][field].high_ * 65536 * 65536);
 	} else
 		return '';
 };
@@ -493,6 +490,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 		var qrystr = block.q;
 		//console.log('blocks.forEach GENERATOR:',qrystr.match(/\s*CREATE\s+GENERATOR\s/i) );
 		//statements that would be used in the make script
+        //console.log('blocks.forEach subs:',qrystr.substring(0,50));
 
 
 		qrystr = qrystr.replace(/^ALTER\s+PROCEDURE\s/i, "CREATE PROCEDURE ");
@@ -627,7 +625,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			block.order = 2300;
 		} else {
 
-        
+            //console.log('blocks.forEach else:',qrystr.substring(0,50));
             var qrystrx = comment_suppress(qrystr).trim()
             block.order = 9999;
             if (qrystrx===''||qrystrx===';')
@@ -649,7 +647,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 
 		block.qrystr = qrystr;
 		block.Hash = zx.ShortHash(qrystr);
-		//console.log('Update block, :',block.order, block.qrystr );
+		//console.log('Update block, :',block.order);//, block.qrystr );
 		LineNr += block.src.l;
 		//exports.show_DDL(zx,"working",blocks);
 	});
@@ -809,7 +807,7 @@ function full_updgade(zx, ddl_filename_prefix) {
 }
 
 exports.Backup_DDL = function (zx, reflect, backup) {
-	var result = zx.dbu.extract_dll.sync(null, zx);
+	var result = zx.dbu.extract_dll(zx);
 	//console.log('extract_dll result is ',str.ddl);
 	console.log('extract_dll result is ', result.err);
 	if (backup) {
@@ -906,7 +904,7 @@ exports.unit_test = function (zx) {
 	exports.Execute_DDL(zx, " / home / xie01 / Sites / sql / sql - mvc / install / demo_db_dll_x.sql ");
 	//dropTriggers(zx);
 
-	var result = zx.dbu.extract_dll.sync(null, zx);
+	var result = zx.dbu.extract_dll(zx);
 	//console.log('extract_dll result is ',str.ddl);
 	console.log('extract_dll result is ', result.err);
 

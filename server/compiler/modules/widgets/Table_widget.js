@@ -212,14 +212,14 @@ var prep_query = function (zx, cx, tcx, o) {
 	if (pass === 1) {
 		//cannot verify table fields on the first pass for  new database because the model would not have been committed yet
 	} else {
-		var res = zx.dbu.getquery_info.future(null, zx, "validate_table", queryx, o);
-		//console.log('Query result is ',res.result);
-		if (res.result.status === "err") {
+		var res = zx.dbu.getquery_info(zx, "validate_table", queryx, o);
+		//console.log('Query result is ',res);
+		if (res.status === "err") {
 			console.log('>>>>>>>>>>>>>>>Throwing known error (2)');
 			throw zx.error.known_error;
 		}
-		tcx.field_details = res.result.output;
-		tcx.param_details = res.result.input;
+		tcx.field_details = res.output;
+		tcx.param_details = res.input;
 
 		//process.exit(2);
 		// tcx.field_details

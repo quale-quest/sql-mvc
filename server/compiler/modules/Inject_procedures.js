@@ -60,15 +60,16 @@ exports.check_inline_link_procedure = function (zx, line_obj,debug) {
 		};
 		if (line_obj.form !== undefined)
 			obj.form = line_obj.form;
-		//console.log('check_inline_link_procedure compare :',myname,name,zx.injected.cross.cmp,obj);
+		//console.log('check_inline_link_procedure comparea :',myname,name,zx.injected.cross.cmp,obj);
 		if (zx.injected.cross.src[myname] === undefined)
 			zx.injected.cross.src[myname] = {};
-		//console.log('check_inline_link_procedure compare :',myname,name,zx.injected.cross.src[myname][name],obj);
+		//console.log('check_inline_link_procedure compareb :',myname,name,zx.injected.cross.src[myname][name],obj);
 
 		zx.injected.cross.src[myname][name] = obj;
 
 		if (zx.injected.cross.tar[target_name] === undefined)
 			zx.injected.cross.tar[target_name] = {};
+        //console.log('check_inline_link_procedure compareC :',myname,name,zx.injected.cross.src[myname][name],obj);
 		if (zx.injected.cross.tar[target_name][myname] === undefined)
 			zx.injected.cross.tar[target_name][myname] = {};
 		zx.injected.cross.tar[target_name][myname][name] = {
@@ -76,16 +77,26 @@ exports.check_inline_link_procedure = function (zx, line_obj,debug) {
 			name : name
 		};
 
+        //console.log('check_inline_link_procedure compareE :',myname,name,zx.injected.cross.src[myname][name],obj);
 		if (line_obj.form !== undefined) {
 			var same = false;
-			if (zx.injected.cross.cmp[name] !== undefined)
+            //console.log('check_inline_link_procedure compareF :',name,zx.injected.cross);
+			if (zx.injected.cross.cmp)
+            {
+             // console.log('check_inline_link_procedure compareF2 :',name,zx.injected.cross);  
+              if (zx.injected.cross.cmp[name] !== undefined)
+                {
+                //console.log('check_inline_link_procedure compareG1 :',name,zx.injected.cross.cmp);    
 				same = (zx.injected.cross.cmp[name].nonkeyd.toString() === obj.nonkeyd.toString());
-			//console.log('check_inline_link_procedure compare code:',same,zx.injected.cross.cmp[name].nonkeyd,obj.nonkeyd);
+                } 
+            }
+            //console.log('check_inline_link_procedure compareF3 :',name,zx.injected.cross);
+			//console.log('\n\nXXXXXXXXXXXXXXXXXXXXXXcheck_inline_link_procedure compare code:',same);//,zx.injected.cross.cmp[name].nonkeyd,obj.nonkeyd);
 			if (!same) {
 				var fn = fileutils.locatefile(zx, target_name, zx.file_name, obj, 120049);
 				fn += zx.app_extn;
 				zx.queue_file_to_be_compiled(zx, fn);
-				// console.log('done checking  queue_file_to_be_compiled:');
+				//console.log('done checking  queue_file_to_be_compiled:');
 			}
 		}
 		//console.log('Inline button procedure list:',zx.injected.inject_procedures);

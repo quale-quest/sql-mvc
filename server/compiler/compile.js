@@ -89,7 +89,7 @@ var dirxww = 493;
 
 var fsx = require('node-fs');
 
-var Sync = require('sync'); // https://github.com/ybogdanov/node-sync
+//var Sync = require('sync'); // https://github.com/ybogdanov/node-sync
 
 var fileutils = require('./modules/fileutils.js');
 
@@ -408,8 +408,19 @@ var seq_page = function (zx) {
 		//process.exit(2);
 
 
-		var result = zx.dbu.databaseUtils.sync(null, zx.root_folder, zx.pages[zx.pgi].name, zx.pages[zx.pgi].name);
-		zx.conf = result[1].conf; //.rambase;
+		var result,done=false;
+        zx.dbu.databaseUtils(zx.root_folder, zx.pages[zx.pgi].name, zx.pages[zx.pgi].name
+        ,function cb(err,res,rambase){
+            //console.warn('database connecting on config AA',err,res,rambase);
+              zx.conf = rambase.conf;
+              //result = res;
+              done=true;
+              
+            
+        } );
+        while(!done) { require('deasync').runLoopOnce();}
+      
+		 //.rambase;
 		//console.warn('database synced on config A',result);
 		//console.warn('database synced on config ',JSON.stringify(zx.conf, null, 4) );
         
@@ -546,7 +557,7 @@ var seq_page = function (zx) {
 		} else {}
 
 		console.log('validate_script...........................................', zx.main_page_name, JSON.stringify(script, null, 4).length);
-		var valid = zx.dbu.validate_script.sync(null, zx, zx.main_page_name, script);
+		var valid = zx.dbu.validate_script(zx, zx.main_page_name, script);
 		//console.log('validate_script...........................................',valid);
 		//if (valid.result) {};
 		//console.log('validate_scriptxxx-----------------------------',valid);
@@ -564,6 +575,7 @@ var seq_page = function (zx) {
 			fs.writeFileSync(lokfn, errtxt); //for easy debugging - when this file reloads it means there was an error
 
 		} else {
+            console.log('Script failed to validate :',valid);
             script = zx.sql.testhead + script + zx.sql.testfoot;
             fs.writeFileSync(zx.error_file_name, script);
 			if (valid.message.match(/count of column list and variable list do not match/)) {
@@ -618,7 +630,7 @@ if (!fs.existsSync("Quale")) {
     console.trace('process.exit(2) from existsSync Quale : '); process.exit(2);
 }
 
-Sync(function () {
+//Sync(function () {
 
 	//	for (var i = 0; i < 25; i++)
 	//		console.log('');
@@ -651,5 +663,5 @@ Sync(function () {
 	zx.eachplugin(zx, "shut_down", 0);
 	//console.log("shut_down");
 	zx.dbu.exit();
-});
+//});
 //eof

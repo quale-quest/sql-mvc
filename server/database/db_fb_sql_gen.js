@@ -508,7 +508,7 @@ exports.link_from = function (zx, line_obj) {
 		from = '';
 
 	var PAGE_PARAMS = '';
-
+    //console.log('run_procedure_a: ',line_obj );
 	zx.Inject_procedures.check_inline_link_procedure(zx, line_obj,'link_from');
     //console.log('run_procedure_: ' );
 	var proc = zx.gets(line_obj.execute);
@@ -570,7 +570,7 @@ exports.link_from_table = function (zx, fld_obj) {
 	}
 
 	zx.Inject_procedures.check_inline_link_procedure(zx, fld_obj.cf[0],'link_from_table');
-    //console.log('run_procedure_ table: ' );
+    console.log('run_procedure_ table: ' );
     
 
 if (fld_obj.cf[0].pointer===undefined)
