@@ -47,6 +47,8 @@ var notify = exports.tag_notify = function (zx, line_obj) {
     var template=get_style(zx, line_obj,"NotifyDiv");
 
     line_obj.Text=zx.expressions.TextWithEmbededExpressions(zx, line_obj, line_obj.nonkeyd, "mt", "tag_help");	
+    line_obj.Text = line_obj.Text.replace(/\n/g,' ');
+    //console.warn('tag_notify:',line_obj.Text);
     var result = hogan.compile(template).render(line_obj);
     zx.mt.lines.push(result);
     

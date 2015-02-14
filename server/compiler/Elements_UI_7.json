@@ -22,8 +22,9 @@
     "AccordionContainerOpen": "<div class=\"widget-panel\"><div class=\"widget-content module\"><div class=\"accordion-basic list-accordionClass\"><a class=\"title\">{{title}}{{RightSpan}}</a><div>",
     "AccordionContainerNext": "</div><a class=\"title\">{{title}}</a><div>",
     "AccordionContainerClose": "</div></div></div></div>",
-    "AccordionContainerMaintainItemList": "0",	
-    "TabContainerOpen": "<div class=\"widget-panel\"><div class=\"widget-content module\"><div class=\"tabBlock\"><div class=\"widget-top\"><ul class=\"mytabs TabContainerGroup{{container_groupid}}\">{{{TabList}}}</ul></div><div class=\"mytabContainer\"><div id=\"{{tabid}}\" class=\"tab-blockContainerGroup{{container_groupid}}\"><div class=\"tab-content\">",    
+    "AccordionContainerMaintainItemList": "0",
+
+    "TabContainerOpen": "<div class=\"widget-panel\"><div class=\"widget-content module\" style=\"overflow: visible;\"><div class=\"tabBlock\"><div class=\"widget-top\"><ul class=\"mytabs TabContainerGroup{{container_groupid}}\">{{{TabList}}}</ul></div><div class=\"mytabContainer\"><div id=\"{{tabid}}\" class=\"tab-blockContainerGroup{{container_groupid}}\"><div class=\"tab-content\">",
     "TabContainerNext": "</div></div><div id=\"{{tabid}}\" class=\"tab-blockContainerGroup{{container_groupid}}\"><div class=\"tab-content\">",
 	"TabContainerItemList": "    <li><a href=\"#{{tabid}}\">{{title}}</a></li>",
     "TabContainerClose": "</div></div></div></div></div></div>",
