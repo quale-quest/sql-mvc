@@ -139,8 +139,8 @@ button(title:"Clear Completed") sql update todo_mvc set status='3' where owner=o
 
 ##Step three
 
-Now we see there are some operations that we are likely to be reused in the future on other views,
-so it is best we move some them a controller.
+Now we see there are some operations that are likely to be reused in the future on other views,
+so it is best if we move some of them to a controller.
 The controllers are centralised repository of operations that can be performed on the model,
 
 ```

@@ -2,7 +2,9 @@
 
 **Paradigm inversion - write web applications in SQL instead of JavaScript.**
 
-SQL-MVC is quite different to anything else out there, don't have preconceived notions, and don't limit your thinking by 
+**Latest change log: Improved Syntax and Fixed an Installer dependency that broke the install from about the 7th of Feb.**
+
+SQL-MVC is quite different to anything else out there, so don't have preconceived notions, and don't limit your thinking by 
 applying your current paradigm's best practices to SQL-MVC as it is a complete rethink of the development stack.
 
 This is not a toy, it is the culmination of many years of work, being re-implemented in an updated open source project.
@@ -12,6 +14,7 @@ release - a lot of stuff is not 100% polished or even to spec,
 try and pick up the key points we are trying to demonstrate not shortcomings or bugs
  (although all feedback is welcome). *
  
+
 
 ##Example	
 This is a complete implementation of [todomvc.com](http://todomvc.com) functionality in 40 lines of code.

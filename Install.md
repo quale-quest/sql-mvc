@@ -1,9 +1,10 @@
 
-#npm Linux (ubuntu 14):
-**Instructions for other OS'es to follow - but you get the idea.**
-[Install-windows here](https://github.com/quale-quest/sql-mvc/blob/master/Install-windows.md)
-[Install-linux from git here](https://github.com/quale-quest/sql-mvc/blob/master/doc/Install-git.md)
+#Install with npm :
 
+Windows users : first google : "install ubuntu 14  vm on windows"
+Mac users : first google : "install ubuntu 14  vm on OS X"
+
+Linux users :
 
 sudo su # if you are not already root   
 
@@ -75,10 +76,10 @@ npm install -g forever
 #Enjoy
 Open our browser to localhost:3000 and view the demo app
 
-Edit and play with the demo page : /Quale/Standard/Home/Guest/Dashboard/Dashboard-Include.quicc
+Edit and play with the demo page : /Quale/Standard/Home/Guest/MainMenu/02_Demos/10_todo_mvc.quicc
 the changes you make will automatically be updated to your browser.
 
-Compiler error output can be viewd by pressing ctrl-q in the application page.
+Compiler error output can be viewed by pressing ctrl-q in the application page.
 And it will be on the console running the ./dev_server.sh
 and also in the file: output/error_log.json
 
