@@ -366,6 +366,8 @@ exports.tag_menuscan = function (zx, o) {
 						var level = zx.action;
 
 						parts.forEach(function (name, i) {
+                            if (name.substring(0,1)!=='_')
+                            {
 							//console.warn('    tag_menuscan level:',i,parts.length,name,level.menu[name]);
 							if (level.menu[name] === undefined) {
 								//console.warn('    tag_menuscan level creating >>>>>>>>>>>>:',name,' in ',level);
@@ -387,6 +389,7 @@ exports.tag_menuscan = function (zx, o) {
 							var newlevel = level.menu[name];
 							//console.warn('    tag_menuscan level acc:',JSON.stringify(zx.action.menu, null, 4));
 							level = newlevel;
+                        }
 						});
 					}
 

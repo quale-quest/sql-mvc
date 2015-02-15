@@ -2,37 +2,24 @@
 
 **Paradigm inversion - write web applications in SQL instead of JavaScript.**
 
+SQL-MVC is quite different to anything else out there, don't have preconceived notions, and don't limit your thinking by 
+applying your current paradigm's best practices to SQL-MVC as it is a complete rethink of the development stack.
+
+This is not a toy, it is the culmination of many years of work, being re-implemented in an updated open source project.
+
+*Alpha version 0.0 Notice: When evaluating SQL-MVC keep in mind this project is still version 0.0.x- alpha/preview  
+release - a lot of stuff is not 100% polished or even to spec,
+try and pick up the key points we are trying to demonstrate not shortcomings or bugs
+ (although all feedback is welcome). *
+ 
+
 ##Example	
-This is a complete implementation of [todomvc.com](http://todomvc.com) functionality in 50 lines of code.
-Prerequisite knowledge : SQL,JSON,Regex and [mustache](https://mustache.github.io/mustache.5.html).
+This is a complete implementation of [todomvc.com](http://todomvc.com) functionality in 40 lines of code.
+Prerequisite knowledge : SQL,JSON and [mustache](https://mustache.github.io/mustache.5.html).
 
 Live Demo at [todomvc.sql-mvc.com](http://todomvc.sql-mvc.com/) 
 
 ```
-<#view
-table()
-	Select  --:{Title:"Make new records",from:"TODO_MVC",autoinsert:"top",tablestyle:"Todo"}
-	STATUS, --:{Action:"Edit",debug:0,autosave:yes}
-	NAME,   --:{Action:"Edit","placeholder":"What needs to be done (tab to save)","autosave":yes}
-	REF	    --:{Action:"View",Type:"Hide"}
-	From TODO_MVC 
-	where (owner=session.id and ( (here.todo_type='' and (status!='3' or status is null)) 
-	or( (status='' or status is null) and here.todo_type='1')or(status='1' and here.todo_type='2')))
-
-use("todo.itemcount")
-
-button (title:"View all")
-    set here.todo_type='';
-
-button {title:"Active"}
-	set here.todo_type='1';
-
-button {title:"Completed"}
-	set here.todo_type='2';
-
-use(todo.clear.button)
-/>
-
 <#model
 CREATE TABLE TODO_MVC				--:{as:"Table"} 
 (
@@ -40,29 +27,39 @@ CREATE TABLE TODO_MVC				--:{as:"Table"}
   NAME VARCHAR(100),				--:{as:"Text",size:40,title:"todo",onupdate:"owner=session.id"}  
   OWNER VARCHAR(40),				--:{Type:"Hide"}
   STATUS VARCHAR(10) default ''    	--:{Type:"Pick",List:"Ticked",onupdate:"owner=session.id"}  
-);
-/>
+);/>
 
 <#controller(todo.clear.button)
-button()
---{title:"Clear Completed",if:"(select count(ref) from todo_mvc where owner=session.id and status='1')!=0" }
-sql update todo_mvc set status='3' where owner=session.id and (status='1');
-/>
-
+button(title:"Clear Completed",if:"(select count(ref) from todo_mvc where owner=session.id and status='1')!=0" )
+sql update todo_mvc set status='3' where owner=session.id and (status='1');/>
 
 <#controller(todo.itemcount)
-print 
---{if:"(select count(ref) from todo_mvc where owner=session.id and (status='' or status is null))!=1" }
-($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $)
-items left
+print (if:"(select count(ref) from todo_mvc where owner=session.id and (status='' or status is null))!=1" )
+($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $) items left
 
-print 
---{if:"(select count(ref) from todo_mvc where owner=session.id and (status='' or status is null))=1" }
-($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $)
-item left
+print(if:"(select count(ref) from todo_mvc where owner=session.id and (status='' or status is null))=1" )
+($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $) item left/>
+
+<#view
+table()
+	Select  --:{Title:"Make new records",from:TODO_MVC,autoinsert:top,tablestyle:Todo}
+	STATUS, --:{Action:Edit,debug:0,autosave:yes}
+	NAME,   --:{Action:Edit,placeholder:"What needs to be done (tab to save)",autosave:yes}
+	REF	    --:{Action:View,Type:Hide}
+	From TODO_MVC 
+	where (owner=session.id and ( (here.todo_type='' and (status!='3' or status is null)) 
+	or( (status='' or status is null) and here.todo_type='1')or(status='1' and here.todo_type='2')))
+
+use(todo.itemcount)
+
+button(title:"View all") set here.todo_type='';
+
+button(title:"Active")   set here.todo_type='1';
+
+button(title:"Completed") set here.todo_type='2';
+
+use(todo.clear.button)
 />
-
-
 ```
 
 ##How does SQL-MVC work?
@@ -106,6 +103,8 @@ default framework and theme is just to give you a quicc start.
 
 
 ## Getting Started
+Tutorials at : [Github - Tutorials.md](https://github.com/quale-quest/sql-mvc/blob/master/doc/Tutorials.md)
+
 Install instructions at : [Github - Install.md](https://github.com/quale-quest/sql-mvc/blob/master/Install.md)
 
 Programmers Manual at : [Github - wiki](https://github.com/quale-quest/sql-mvc/wiki)
@@ -129,10 +128,4 @@ Interested in contributing to SQL-MVC?
 SQL-MVC is a commercial open source project, It is free as in speech
 but not free as in beer, but cheap as in peanuts.
 
-	
-## Alpha version 0.0.1 Notice: 
-When evaluating SQL-MVC keep in mind this project is still version 0.0.x- alpha/preview  
-release - a lot of stuff is not 100% polished or even to spec,
-try and pick up the key points we are trying to demonstrate not shortcomings or bugs
- (although all feedback is welcome).
  

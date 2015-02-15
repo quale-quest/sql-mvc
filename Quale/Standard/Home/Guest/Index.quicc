@@ -19,4 +19,8 @@ VALUES (
 />
 
 
+<div align="center"> 
+<h3>This entire web application, with layout, menu`s, user administration, demo`s and documentation is build with SQL-MVC.</h3>
+<br>
+This is the<br>
 <#include(file=MainMenu/02_Demos/10_todo_mvc) />

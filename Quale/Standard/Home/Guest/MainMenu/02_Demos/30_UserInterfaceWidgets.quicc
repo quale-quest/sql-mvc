@@ -3,6 +3,7 @@
 
 
 
+
 <p>
 A link <#:link(form:"Index",title:"Back to the welcome page")/> and a button to 
 <#button(form:"Operator/Inbox",glymph:"box-outgoing-b",title:"Read mail")  /> 
