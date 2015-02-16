@@ -1,63 +1,80 @@
 {
-	"run_mode": "dev",
-    "monitor_mode":{"dev":"check","prod":"none","help":["check","gaze","none"]},
-	"run_settings":{
-		"dev":{"monitor_mode":"check", "help":["check","gaze","none"],
-				"url_page":true
-		      },
-	    "prod":{
-		       "monitor_mode":"none"
-			   }
-			   },
-			   
-	"debugkey":"",
-	"serve_port": "3000",	
-	"first": 300,
-	"db": {
-		"dialect": "fb25",
-		"server": "127.0.0.1",
-		"database": "/var/db/demo_db.fdb",
-		"username": "using the value from authfile",
-		"password": "using the value from authfile",
-		"authfile": "/etc/firebird/2.5/SYSDBA.password",
-        "schema_mode":"master",
-		"xschema_rebuild":"always",
-        "schema_rebuild":"onchange",
-		"schema_alter_fields":"yes",
-		"schema_reorder_fields":"yes",
-		
-		"platform_user_table": {
-			"user_table_name": "Z$USER",
-			"user_display_field": "name",
-			"user_pk_field": "id",
-			"user_name_field": "name",
-			"user_password_field": "passwd",
-			"user_keys_field": "key_list"
-		},
-		"pk": "ref"
-	},
-	"email": {		
-	},
-	"async": {
-		"database": {
-		},
-		"public": {
-			"url": "/files?",
-			"path" : "./database/files",
-			"filename":"uuid.v4",
-			"extension":"original"
-		},
-		"protected": {
-		    "url": "/locked?",
-			"path" : "./database/protected",
-			"filename":"uuid.v4",
-			"extension":"original"
-		}
-	},	
-	"cdn": {
-		"server": "localhost",
-		"publish": {
-			"url": "localfoldername"
-		}
-	}
+    "run_mode": "dev",
+    "run_settings": {
+        "dev": {
+            "monitor_mode": "check",
+            "help": [
+                "check",
+                "gaze",
+                "none"
+            ],
+            "db_create": "yes",
+            "url_page": true,
+            "serve_port": "3000",
+            "debugkey": ""
+        },
+        "c9": {
+            "monitor_mode": "check",
+            "db_create": "yes",
+            "url_page": true,
+            "serve_port": "8080",
+            "debugkey": ""
+        },
+        "prod": {
+            "db_create": "yes",
+            "monitor_mode": "none",
+            "serve_port": "80"
+        },
+        "windows": {
+            "db_create": "yes",
+            "monitor_mode": "gaze",
+            "serve_port": "3000"
+        }
+    },
+    "first": 300,
+    "db": {
+        "dialect": "fb25",
+        "server": "127.0.0.1",
+        "database": "/var/db/demo_db.fdb",
+        "username": "using the value from authfile",
+        "password": "using the value from authfile",
+        "authfile": "/etc/firebird/2.5/SYSDBA.password",
+        "useUDF": "no",
+        "schema_mode": "master",
+        "xschema_rebuild": "always",
+        "schema_rebuild": "onchange",
+        "schema_alter_fields": "yes",
+        "schema_reorder_fields": "yes",
+        "platform_user_table": {
+            "user_table_name": "Z$USER",
+            "user_display_field": "name",
+            "user_pk_field": "id",
+            "user_name_field": "name",
+            "user_password_field": "passwd",
+            "user_keys_field": "key_list"
+        },
+        "pk": "ref"
+    },
+    "email": {},
+    "async": {
+        "database": {},
+        "public": {
+            "url": "/files?",
+            "path": "./database/files",
+            "filename": "uuid.v4",
+            "extension": "original"
+        },
+        "protected": {
+            "url": "/locked?",
+            "path": "./database/protected",
+            "filename": "uuid.v4",
+            "extension": "original"
+        }
+    },
+    "cdn": {
+        "server": "localhost",
+        "publish": {
+            "url": "localfoldername"
+        }
+    }
 }

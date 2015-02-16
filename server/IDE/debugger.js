@@ -70,10 +70,8 @@ exports.ProcessDebugRequest = function (cmds) {
 
 	// dev mode can debug with key not set, or short key, production mode the key must be at least 8 chars.
 	var oktodebug = false;
-	if ((config.run_mode === "dev") && (config.debugkey === cmds.auth))
+	if ((config.run.debugkey!==undefined)&&(config.run.debugkey === cmds.auth))
 		oktodebug = true;
-	if ((config.run_mode !== "dev") && (config.debugkey.length < 8))
-		oktodebug = false;
 	if (!oktodebug)
 		return '<pre>Not Authorised' + '</pre>';
 

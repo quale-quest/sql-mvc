@@ -135,10 +135,12 @@ ss.client.set({
 var server = http.Server(ss.http.middleware);
 var config = JSON.parse(require('fs').readFileSync('Quale/Config/config.json').toString());
 config.run=config.run_settings[config.run_mode];
-server.listen(config.serve_port);
+console.log('serveClient config.run.serve_port:', config.run.serve_port);
+server.listen(config.run.serve_port);
+
 
 //start qq file monitor if in dev mode
-if (config.monitor_mode[config.run_mode] === "check") { //Develop Debug Demo Production
+if (config.run_settings[config.run_mode].monitor_mode === "check") { //Develop Debug Demo Production
 	app_util.run_monitor(1000);
 }
 

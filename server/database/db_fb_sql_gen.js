@@ -441,8 +441,24 @@ exports.makeexpression = function (zx, line_obj, varx) {
 	return result; //varx.source;//expr;
 };
 
+exports.F_F2J = function (zx, line_obj, str) {
+    //console.log('exports.F_F2J  1: ',zx);
+    if (zx.config.db.useUDF === "yes") return "Z$F_F2J(" + str + ")";
+    else return "'\"'||REPLACE(coalesce(" + str + ",''),'\"','\\\"')||'\"'";    
+}
+
+exports.F_F2SQL = function (zx, line_obj, str) {
+    //console.log('exports.F_SQL  1: ',zx);
+    if (zx.config.db.useUDF === "yes") return "Z$F_F2SQL(" + str + ")";
+    else return "''''||REPLACE(coalesce(" + str + ",''),'''','''''')||''''";    
+}
+
+
+
 exports.EmitVariable = function (zx, line_obj, bid) {
-	emit(zx, line_obj, "res=res||',``" + bid + "``:'||Z$F_F2J(" + bid + ");", "");
+    
+    
+	emit(zx, line_obj, "res=res||',``" + bid + "``:'||"+exports.F_F2J(zx, line_obj, bid)+";", "");
 	return line_obj;
 };
 
@@ -585,7 +601,9 @@ if (fld_obj.cf[0].pointer===undefined)
     //console.log('run_procedure_as : ',proc );
 	if ((proc !== undefined) && (proc !== "")) {
 		PAGE_PARAMS = PAGE_PARAMS + "||'run_procedure=''" + proc + "'';";
-		PAGE_PARAMS = PAGE_PARAMS + "run_procedure_pk='||Z$F_F2SQL(:F" + fld_obj.cf[0].pointer + ")||';";
+		PAGE_PARAMS = PAGE_PARAMS + "run_procedure_pk='||"+exports.F_F2SQL(zx, zx.line_obj,":F" + fld_obj.cf[0].pointer )+"||';";
+        //PAGE_PARAMS = PAGE_PARAMS + "run_procedure_pk='||Z$F_F2SQL(:F" + fld_obj.cf[0].pointer + ")||';";
+        
 		var param = zx.gets(fld_obj.cf[0].param);
 		if ((param !== undefined) && (param !== ""))
 			PAGE_PARAMS = PAGE_PARAMS + "run_procedure_param=''" + param + "'';";
@@ -703,8 +721,9 @@ if (fld_obj.cf[0].pointer===undefined)
 
 			var expressed_value = zx.expressions.ConstantExpressions(zx, zx.line_obj, val, "postback");
 			//console.log('TARGET_VALUES expr:',expressed_value);
-
-			TARGET_VALUES += "||','||Z$F_F2SQL(" + expressed_value + ")";
+            TARGET_VALUES += "||','||" + exports.F_F2SQL(zx, zx.line_obj,expressed_value ) + "";
+			//TARGET_VALUES += "||','||Z$F_F2SQL(" + expressed_value + ")";
+            
 		}
 	}
  
@@ -827,7 +846,10 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 		if (widget.method === 'hide')
 			sql += comma + "``hide``";
 		else
-			sql += comma + "'||Z$F_F2J(SUBSTRING(:f" + i + " FROM 1 FOR 254))||'";
+            sql += comma + "'||"+exports.F_F2J(zx, line_obj,"SUBSTRING(:f" + i + " FROM 1 FOR 254)")+"||'";
+			//sql += comma + "'||"+"Z$F_F2J(SUBSTRING(:f" + i + " FROM 1 FOR 254))"+"||'";
+            
+        
 		//sql += comma + "``'||replace(coalesce(:f"+i+",''),'``','\\``')||'``"; //other dbs can also work without udf's
 
 		if (widget.postback !== undefined) {
@@ -866,7 +888,7 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 
 	sql += aclose;
 	sql += recordseperator;
-	sql += "res=res||coalesce(row,'row_element_is_null')||'';";
+	sql += "res=res||coalesce(row,'\"row_element_is_null\"')||'';";
 
 	emit(zx, 0, open + '\nfor ' + queryx + into + " do \n begin", "");
 	emit(zx, 0, "" + SoftCodecs + "", "");

@@ -107,7 +107,7 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 		//console.log("isql_extract_dll_cmdln :",rambase.isql_extract_dll_cmdln);
 
 		var fn = fb.attach;
-		if (conf.run_mode === "dev")
+		if (conf.run.db_create==="yes")
 			fn = fb.attachOrCreate;
 
 		fn({
