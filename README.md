@@ -108,10 +108,10 @@ default framework and theme is just to give you a quicc start.
 # SQL-MVC Getting_Started,
 
 ##Cloud 9 IDE
-[Github - Quick and easy to get going](https://github.com/quale-quest/sql-mvc/blob/master/doc/Install-cloud9.md)
+[Quick and easy to get going](https://github.com/quale-quest/sql-mvc/blob/master/doc/Install-cloud9.md)
 
 ##Tutorials at :
-[Github - Install.md](https://github.com/quale-quest/sql-mvc/blob/master/doc/Tutorials.md)
+[Tutorials.md](https://github.com/quale-quest/sql-mvc/blob/master/doc/Tutorials.md)
 
  
 ##Programmers Manual at : 
@@ -120,7 +120,7 @@ default framework and theme is just to give you a quicc start.
 
 
 ##Install instructions for the hardcore Linux / Node developer at :
- [Github - Install.md](https://github.com/quale-quest/sql-mvc/blob/master/doc/Install-linux.md)
+[Install.md](https://github.com/quale-quest/sql-mvc/blob/master/doc/Install-linux.md)
 
 
 

@@ -5,7 +5,8 @@ To get started, first sign up for a free account on cloud 9 https://c9.io/
 
 Go to your dashboard.
 
-Create a new "Hosted" workspace, 
+Create a new "Hosted" workspace,
+ 
 ![Create a new Workspace](https://github.com/quale-quest/sql-mvc/blob/master/doc/c9/c9_1.png "New workspace")
 
 Set the name of your workspace as sql-mvc , leave the workspace privacy as open (free accounts only allow open workspaces)
@@ -13,17 +14,20 @@ leave the Hosting as "Hosted", and select "node.js" install :
 ![Name your new Workspace](https://github.com/quale-quest/sql-mvc/blob/master/doc/c9/c9_2.png "Name your workspace")
 
 
-Select the workspace under "MY PROJECTS" and click "Start editing" (in green)
+Your workspace will "process" for a few seconds and when it is ready you may select the 
+workspace under "MY PROJECTS" and click "Start editing" (in green)
 ![Select the sql-mvc Workspace](https://github.com/quale-quest/sql-mvc/blob/master/doc/c9/c9_3.png "Select workspace")
 
-Your workspace will load.
-At the bottom of the work space there will be an open bash terminal:
+Your workspace will load, then at the bottom of the work space there will be an open bash terminal:
 ![terminal](https://github.com/quale-quest/sql-mvc/blob/master/doc/c9/c9_terminal.png "terminal")
 
 
 Get the install script
+
 >wget https://github.com/quale-quest/sql-mvc/raw/master/install/cloud9.sh
+
 Run the install script
+
 >bash cloud9.sh
 
 The installer will run until, firebird pauses with a message (or two) prompting  "more", just press enter,
@@ -34,8 +38,8 @@ Then it will run some more...and once done (or in future ) you can run the appli
 > cd demo-app/;sudo node app.js
 
 The application will start running and compile the web pages, once done:
-
 Check the application URL, click on "Share" on the top right.
+
 ![Click share](https://github.com/quale-quest/sql-mvc/blob/master/doc/c9/c9_share_1.png "Click share")
 
 And check the Application URL.
