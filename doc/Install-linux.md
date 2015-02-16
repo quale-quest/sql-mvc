@@ -1,8 +1,8 @@
 
 #Install with npm :
 
-Windows users : first google : "install ubuntu 14  vm on windows"
-Mac users : first google : "install ubuntu 14  vm on OS X"
+Windows and Mac users : 
+[Github - Use-cloud9.md](https://github.com/quale-quest/sql-mvc/blob/master/doc/Install-cloud9.md)
 
 Linux users :
 

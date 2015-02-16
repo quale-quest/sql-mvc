@@ -105,12 +105,24 @@ default framework and theme is just to give you a quicc start.
 * Planned support for JavaScript stored procedure engine, to enable no-sql, sqlite and off-line applications.
 
 
-## Getting Started
-Tutorials at : [Github - Tutorials.md](https://github.com/quale-quest/sql-mvc/blob/master/doc/Tutorials.md)
+# SQL-MVC Getting_Started,
 
-Install instructions at : [Github - Install.md](https://github.com/quale-quest/sql-mvc/blob/master/Install.md)
+##Cloud 9 IDE
+[Github - Quick and easy to get going](https://github.com/quale-quest/sql-mvc/blob/master/doc/Install-cloud9.md)
 
-Programmers Manual at : [Github - wiki](https://github.com/quale-quest/sql-mvc/wiki)
+##Tutorials at :
+[Github - Install.md](https://github.com/quale-quest/sql-mvc/blob/master/doc/Tutorials.md)
+
+ 
+##Programmers Manual at : 
+[Github - wiki](https://github.com/quale-quest/sql-mvc/wiki)
+
+
+
+##Install instructions for the hardcore Linux / Node developer at :
+ [Github - Install.md](https://github.com/quale-quest/sql-mvc/blob/master/doc/Install-linux.md)
+
+
 
 ## Developer Resources
 

@@ -214,6 +214,8 @@ As you can see from this example, it could compile just as easily into a native 
 
 #Next
 
-Next step...Tutorial basic 2 ....[more control]()
+Next step... Better Models [Github - Better_Model](https://github.com/quale-quest/sql-mvc/blob/master/doc/Tutorial_Better_Model.md)
 
+##List of tutorials at :
+[Github - Tutorials home](https://github.com/quale-quest/sql-mvc/blob/master/doc/Tutorials.md)
 
