@@ -18,18 +18,20 @@ Select the workspace under "MY PROJECTS" and click "Start editing" (in green)
 
 Your workspace will load.
 At the bottom of the work space there will be an open bash terminal:
+![terminal](https://github.com/quale-quest/sql-mvc/blob/master/doc/c9/c9_terminal.png "terminal")
+
 
 Get the install script
->wget (https://github.com/quale-quest/sql-mvc/blob/master/install/cloud9.sh
-
+>wget https://github.com/quale-quest/sql-mvc/raw/master/install/cloud9.sh
 Run the install script
 >bash cloud9.sh
 
-The firebird installer will pause with a message (or two) prompting  "more", just press enter,
+The installer will run until, firebird pauses with a message (or two) prompting  "more", just press enter,
 then it will prompt for a password, just press enter (This is fine - it is all secure).
+![Firebird prompt](https://github.com/quale-quest/sql-mvc/blob/master/doc/c9/c9_fb.png "Firebird prompt")
 
-Once done (or in future ) run the application with :
-> sudo node app.js
+Then it will run some more...and once done (or in future ) you can run the application with :
+> cd demo-app/;sudo node app.js
 
 The application will start running and compile the web pages, once done:
 

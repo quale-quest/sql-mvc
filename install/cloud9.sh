@@ -6,7 +6,7 @@ sudo service firebird2.5-classic start
 sudo ln -s /home/ubuntu/.nvm/v0.10.35/bin/node /usr/bin/nodejs
 
 npm install -g socketstream
-npm install -g sql-mvc -tag beta
+npm install -g sql-mvc
 
 sql-mvc new demo-app c9
 cd demo-app
