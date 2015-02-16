@@ -15,23 +15,27 @@ leave the Hosting as "Hosted", and select "node.js" install :
 
 
 Your workspace will "process" for a few seconds and when it is ready you may select the 
-workspace under "MY PROJECTS" and click "Start editing" (in green)
+workspace under "MY PROJECTS" 
+
 ![Select the sql-mvc Workspace](https://github.com/quale-quest/sql-mvc/blob/master/doc/c9/c9_3.png "Select workspace")
+
+and click "Start editing" (in green)
 
 Your workspace will load, then at the bottom of the work space there will be an open bash terminal:
 ![terminal](https://github.com/quale-quest/sql-mvc/blob/master/doc/c9/c9_terminal.png "terminal")
 
 
-Get the install script
+Execute the following to get the install script
 
 >wget https://github.com/quale-quest/sql-mvc/raw/master/install/cloud9.sh
 
-Run the install script
+The to tun the install script
 
 >bash cloud9.sh
 
 The installer will run until, firebird pauses with a message (or two) prompting  "more", just press enter,
 then it will prompt for a password, just press enter (This is fine - it is all secure).
+
 ![Firebird prompt](https://github.com/quale-quest/sql-mvc/blob/master/doc/c9/c9_fb.png "Firebird prompt")
 
 Then it will run some more...and once done (or in future ) you can run the application with :
@@ -42,20 +46,24 @@ Check the application URL, click on "Share" on the top right.
 
 ![Click share](https://github.com/quale-quest/sql-mvc/blob/master/doc/c9/c9_share_1.png "Click share")
 
-And check the Application URL.
+And check the Application URL in the dialogue box.
+
 ![Check the Application URL and where it if you wish](https://github.com/quale-quest/sql-mvc/blob/master/doc/c9/c9_share_2.png "URL")
 
-Share the URL publicly if you want others to also be able connect to it.
 
-Open the URL in a new browser.
+
+Open the URL in a new browser window.
 
 Now you will see the application run - exactly the same as the sql-mvc.com site.
 
 To play around, go to the directory tree, navigate to demo-app/Quale/Standard/Home/Guest/MainMenu/02_demos/10_todo_mvc.quicc
-![Edit](https://github.com/quale-quest/sql-mvc/blob/master/doc/c9/c9_edit.png "Edit")
 
-edit this file, after the <#view add 
+![and Edit](https://github.com/quale-quest/sql-mvc/blob/master/doc/c9/c9_edit_1.png "Edit")
+
+edit this file, and after the **<#view** line add 
+
 > warning this is just the start
+
 then save with <ctrl-s>, you will notice the file compiling and your web browser 
 will reload the page with the change automatically.
 
