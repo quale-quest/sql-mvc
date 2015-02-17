@@ -10,7 +10,7 @@ Create a new "Hosted" workspace,
 ![Create a new Workspace](https://github.com/quale-quest/sql-mvc/blob/master/doc/c9/c9_1.png "New workspace")
 
 Set the name of your workspace as sql-mvc , leave the workspace privacy as open (free accounts only allow open workspaces)
-leave the Hosting as "Hosted", and select "node.js" install :
+leave the Hosting as "Hosted", and **select node.js install** :
 ![Name your new Workspace](https://github.com/quale-quest/sql-mvc/blob/master/doc/c9/c9_2.png "Name your workspace")
 
 
@@ -64,10 +64,10 @@ edit this file, and after the **<#view** line add
 
 > warning this is just the start
 
-then save with <ctrl-s>, you will notice the file compiling and your web browser 
+then save with *ctrl-s*, you will notice the file compiling and your web browser 
 will reload the page with the change automatically.
 
-Now follow the tutorials on writing a basic 
+Now follow the tutorials on writing a basic application
  at : [Github - Tutorial_basic_1](https://github.com/quale-quest/sql-mvc/blob/master/doc/Tutorial_basic_1.md)
 
 Or check a list of tutorials at :
