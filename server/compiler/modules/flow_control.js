@@ -183,19 +183,19 @@ exports.eval_cond = function (zx, line_obj, conditionals) {
 exports.EmitCondition = function (zx, line_obj) {
 	//compiles conditional db script
 	//this is conditional so we need to emit a value to moustache also
-	var bid = "";
+	var local_immediate_block_id  = "";
 	if (line_obj.Block === undefined) { //not a goto block
 		zx.vid++;
-		bid = "F" + zx.vid;
-		zx.fc.bid = bid;
-        if (debug) console.log('zx.fc.bid = bid: ',bid);
+		local_immediate_block_id  = "F" + zx.vid;
+		zx.fc.immediate_block_id  = local_immediate_block_id ;
+        if (debug) console.log('zx.fc.immediate_block_id  = immediate_block_id : ',local_immediate_block_id );
 	} else { //goto block
-		bid = line_obj.Block;
-		zx.fc.blockactive[bid] = true;
+		local_immediate_block_id  = line_obj.Block;
+		zx.fc.blockactive[local_immediate_block_id ] = true;
 	}
 
-	zx.mt.lines.push("{{#" + bid + "}}");
-	zx.dbg.EmitConditionAndBegin(zx, line_obj, bid);
+	zx.mt.lines.push("{{#" + local_immediate_block_id  + "}}");
+	zx.dbg.EmitConditionAndBegin(zx, line_obj, local_immediate_block_id );
 
 	return line_obj;
 };
@@ -230,18 +230,18 @@ exports.tag_ifblock = function (zx, o) {
 };
 
 exports.elseblock = function (zx, line_obj) {
-	zx.mt.lines.push("{{/" + zx.fc.bid + "}}");
+	zx.mt.lines.push("{{/" + zx.fc.immediate_block_id  + "}}");
 	zx.dbg.elseblock(zx, line_obj);
-	zx.mt.lines.push("{{#^" + zx.fc.bid + "}}");
+	zx.mt.lines.push("{{#^" + zx.fc.immediate_block_id  + "}}");
 	return line_obj;
 };
 
 exports.implicid_unblock = function (zx, line_obj) {
-	if (zx.fc.bid !== undefined) { //immediate blocks can only last 1 instruction
+	if (zx.fc.immediate_block_id  !== undefined) { //immediate blocks can only last 1 instruction
 		zx.dbg.unblock(zx, line_obj);
 
-		zx.mt.lines.push("{{/" + zx.fc.bid + "}}");
-		delete zx.fc.bid;
+		zx.mt.lines.push("{{/" + zx.fc.immediate_block_id  + "}}");
+		delete zx.fc.immediate_block_id ;
 		return true;
 	}
 
@@ -251,11 +251,11 @@ exports.implicid_unblock = function (zx, line_obj) {
 
 exports.explicid_unblock = function (zx, line_obj) {
 	if (!exports.implicid_unblock(zx, line_obj)) {
-		var bid = line_obj.Label;
-		//console.log('unblock: ',bid,zx.fc.blockactive,zx.fc.blockactive[bid]);
+		var local_immediate_block_id  = line_obj.Label;
+		//console.log('unblock: ',local_immediate_block_id ,zx.fc.blockactive,zx.fc.blockactive[local_immediate_block_id ]);
 		zx.dbg.unblock(zx, line_obj);
-		if (zx.fc.blockactive[bid] !== undefined) {
-			zx.mt.lines.push("{{/" + bid + "}}");
+		if (zx.fc.blockactive[local_immediate_block_id ] !== undefined) {
+			zx.mt.lines.push("{{/" + local_immediate_block_id  + "}}");
 		}
 
 	}
