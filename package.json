@@ -11,6 +11,7 @@
     "node": ">= 0.8.0"
   },
   "dependencies": {
+    "busboy": "^0.2.9",
     "colors": "= 1.0.3",
     "commander": "^2.6.0",
     "deasync": "0.0.10",
@@ -19,13 +20,15 @@
     "fs-extra": "*",
     "hogan": "^1.0.2",
     "marked": "^0.3.2",
+	"mime-types": "^2.0.9",
     "node-firebird": "0.1.4",
     "node-fs": "^0.1.7",
     "node-uuid": "^1.4.2",
     "node.extend": "^1.1.3",
     "socketstream": "0.3.x",
     "ss-hogan": "0.1.x",
-    "ss-stylus": "^0.1.9"    
+    "ss-stylus": "^0.1.9",
+    "temp": "^0.8.1"	
   },
   "repository": {
     "type": "git",

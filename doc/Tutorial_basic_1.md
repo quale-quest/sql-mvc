@@ -15,7 +15,7 @@ their own files, so they can be reused between different views.
 
 ##Step one
 
-First we create a model, the model will contain additional information about what the fields are supposed to 
+First we create a model (or follow along with the one in todo_mvc), the model will contain additional information about what the fields are supposed to 
 be used for and  how they should be used (Qualia).
 
 Presume a simple use case, like a list of todo items,
@@ -36,7 +36,7 @@ When a quale is set to a value other than a single word it must be wrapped in qu
 
 Each of the fields on the left gets their SQL definition like VARCHAR(40) and their additional model qualia after the '--'.
 
-The qualia is explained as follows:
+This qualia is explained as follows:
 
 1. *as:"Table"* sets that this is a Table Model we are creating.
 2. *as:pk* indicates the primary key, in order for a table to be update-able it must have a unique primary key.
@@ -66,7 +66,7 @@ table()
 />
 ```
 
-The *table()* statement will compile a table view based on the query, the ,*autoinsert* adds a new record position to the top of the table.
+The *table()* statement will compile a table view based on the query, the *autoinsert* adds a new record position to the top of the table.
 The SQL code again is the left part of the *--* and the right part is the additional qualia.
 The compiler will substitute the context variables (*operator.* and *here.*) with their runtime values, but other
 than that, this code would execute directly in a SQL console. In fact when doing complex queries, with many joins,

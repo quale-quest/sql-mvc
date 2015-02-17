@@ -49,9 +49,14 @@ fullstach json format
  */
 
  exports.module_name='flow_control.js';
- exports.tags=[{name:"ifblock"},{name:"elseblock"},
-{name:"unblock"},{name:"include"}];
+ exports.tags=[
+ {name:"ifblock"},
+ {name:"elseblock"},
+{name:"unblock"},
+{name:"include"}
+];
  
+ var debug=false;
 var append_conditional = function (a, b, pre, post) {
 	b.forEach(function (entry) {
 		a.push({
@@ -144,11 +149,11 @@ exports.is_conditional = function (zx, o) {
 	return true; //conditions exist
 };
 
-exports.conditionals = function (zx, line_obj) {
+exports.checkForEmbeddedIf = function (zx, line_obj) {
 
 	//database
 	// if (line_obj.tag=='table')
-	//   console.log('conditionals is :',line_obj);
+	//   console.log('checkForEmbeddedIf is :',line_obj);
 	if (!exports.is_conditional(zx, line_obj)) { //no conditions
 		//unconditional block - this does not have a end label
 
@@ -183,6 +188,7 @@ exports.EmitCondition = function (zx, line_obj) {
 		zx.vid++;
 		bid = "F" + zx.vid;
 		zx.fc.bid = bid;
+        if (debug) console.log('zx.fc.bid = bid: ',bid);
 	} else { //goto block
 		bid = line_obj.Block;
 		zx.fc.blockactive[bid] = true;
@@ -201,6 +207,26 @@ exports.beginblock = function (zx, line_obj) {
 	}
 
 	return line_obj;
+};
+
+exports.tag_ifblock = function (zx, o) {
+	//unnamed blocks, and named blocks
+	// no real code most the work is done by the common conditional tags
+    debug=true;
+    if (debug) console.log('tag_ifblock: ',o.Block,'...',o);
+    
+	if (o["if"] !== undefined) { //make the database query and add it to if(not) exists list
+		append_conditional(o.and_if, zx.getA(o["if"]), ' not '); //this is correct - negative test
+        
+    exports.eval_start(zx, zx.line_obj);
+	if (zx.line_obj.and_if.length > 0) {
+		//produce the db script code to resolve the query
+		exports.eval_cond(zx, zx.line_obj, zx.line_obj.and_if);
+	}
+
+	exports.EmitCondition(zx, zx.line_obj);        
+        
+	}
 };
 
 exports.elseblock = function (zx, line_obj) {
@@ -222,6 +248,7 @@ exports.implicid_unblock = function (zx, line_obj) {
 	return false;
 };
 
+
 exports.explicid_unblock = function (zx, line_obj) {
 	if (!exports.implicid_unblock(zx, line_obj)) {
 		var bid = line_obj.Label;
@@ -233,13 +260,6 @@ exports.explicid_unblock = function (zx, line_obj) {
 
 	}
 	return line_obj;
-};
-
-exports.tag_ifblock = function (/*zx, o*/
-) {
-	//unnamed blocks, and named blocks
-	// no real code most the work is done by the common conditional tags
-
 };
 
 exports.tag_elseblock = function (zx, o) {
@@ -260,7 +280,7 @@ exports.tag_include = function (/*zx, o*/
 exports.start_item = function (zx, line_obj) {
 	//if (active_pass!=zx.pass) return true;
 	//console.warn('Flowcontrol start_item :' );
-	exports.conditionals(zx, line_obj);
+	exports.checkForEmbeddedIf(zx, line_obj);
 };
 exports.done_item = function (zx, line_obj) {
 	//if (active_pass!=zx.pass) return true;
@@ -272,12 +292,14 @@ exports.start_pass = function (zx, line_objects) {
 	line_objects.forEach(function (line_obj) {
 		line_obj.and_if = [];
 	});
+    debug=false;
 };
 
 exports.init = function (zx) {
 	//each type of database generator would be different ,//including noSQL
 	zx.fc = {};
 	zx.fc.blockactive = {};
+    
 };
 exports.done = function (/*zx, line_objects*/
 ) {};
