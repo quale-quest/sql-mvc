@@ -11,9 +11,18 @@ Once Could 9 has loaded right click on "run-cloud9.sh" in the file tree and say 
 
 ![run-cloud9.sh](https://github.com/quale-quest/sql-mvc/blob/master/doc/c9/c9_01.png "run-cloud9.sh")
 
-As it runs, installer will prompt 3 times, just press enter.
+As it runs, installer will prompt a few times, just press enter.
 
-Once done it will show you the instructions to open the url in a new browser window.
+Once done, it will show you the instructions to open the URL in a new browser window.
+To get the application URL, click on "Share" on the top right.
+
+![Click share](https://github.com/quale-quest/sql-mvc/blob/master/doc/c9/c9_share_1.png "Click share")
+
+And note the application URL in the dialogue box:
+
+![Check the Application URL and where it if you wish](https://github.com/quale-quest/sql-mvc/blob/master/doc/c9/c9_share_2.png "URL")
+
+
 
 Now you will see the application run - exactly the same as the sql-mvc.com site.
 

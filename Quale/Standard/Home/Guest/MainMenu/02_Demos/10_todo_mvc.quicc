@@ -4,13 +4,6 @@
 <br>
 
 <#view
-
-ifblock
---{if:"(select count(ref) from todo_mvc where owner=session.id and (status='' or status is null))!=9" }
-($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $)
-items left
-
-
 table()
 	Select  --:{Title:"Make new records",from:"TODO_MVC",autoinsert:"top",tablestyle:"Todo"}
 	STATUS, --:{Action:"Edit",debug:0,autosave:yes}
