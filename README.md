@@ -106,16 +106,19 @@ default framework and theme is just to give you a quicc start.
 
 
 
-# SQL-MVC Getting_Started,
+# SQL-MVC Getting Started,
 
 ##Cloud 9 IDE
+
 [Quick and easy to get going](https://github.com/quale-quest/sql-mvc-c9/blob/master/README.md)
 
 ##Tutorials at :
+
 [Tutorials.md](https://github.com/quale-quest/sql-mvc/blob/master/doc/Tutorials.md)
 
  
 ##Programmers Manual at : 
+
 [Github - wiki](https://github.com/quale-quest/sql-mvc/wiki)
 
 
