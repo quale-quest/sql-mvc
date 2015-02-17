@@ -105,10 +105,11 @@ default framework and theme is just to give you a quicc start.
 * Planned support for JavaScript stored procedure engine, to enable no-sql, sqlite and off-line applications.
 
 
+
 # SQL-MVC Getting_Started,
 
 ##Cloud 9 IDE
-[Quick and easy to get going](https://github.com/quale-quest/sql-mvc/blob/master/doc/Install-cloud9.md)
+[Quick and easy to get going](https://github.com/quale-quest/sql-mvc-c9/blob/master/README.md)
 
 ##Tutorials at :
 [Tutorials.md](https://github.com/quale-quest/sql-mvc/blob/master/doc/Tutorials.md)
