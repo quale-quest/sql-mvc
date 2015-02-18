@@ -132,7 +132,7 @@ var indent = function (zx) {
 	return zx.indent(zx.sql.dent);
 };
 
-var emit = function (zx, line_obj, statement /*, comment*/
+var emit = function (zx, line_obj, statement , comment
 ) {
 
 	if (zx.debug > 3) {
@@ -148,13 +148,17 @@ var emit = function (zx, line_obj, statement /*, comment*/
 
 		if (zx.debug > 4)
 			ObjText = " line_obj:" + JSON.stringify(line_obj);
-		var full = String(zx.mt.stack) + indent(zx) + statement + "/*" + BlockText + LabelText + " " + ObjText + "*/";
+		var full = String(zx.mt.stack) + indent(zx) + statement + "/*" + (comment||'') + BlockText + LabelText + " " + ObjText + "*/";
 		zx.sql.script.push(full);
 		zx.sql.filelinemap.push(line_obj);
 		if (zx.debug_conditional_structure > 4)
 			zx.mt.lines.push("<--" + full + "-->");
 	} else {
-		zx.sql.script.push(statement);
+        comment=undefined; //disable the debug output
+        if ((comment===undefined)||(comment===""))
+		   zx.sql.script.push(statement);
+       else
+           zx.sql.script.push(statement + " --"+comment);
 		zx.sql.filelinemap.push(line_obj);
 	}
 };
@@ -210,6 +214,12 @@ exports.eval_start = function (zx, line_obj) {
 	return line_obj;
 };
 
+exports.emit_comment = function (zx,comment) {
+	//compiles sql
+	emit(zx, zx.line_obj, "  ", comment);
+	return zx.line_obj;
+};
+
 exports.eval_cond = function (zx, line_obj, conditionals) {
 	//compiles sql
 	conditionals.forEach(function (entry) {
@@ -223,13 +233,13 @@ exports.eval_cond = function (zx, line_obj, conditionals) {
 	return conditionals;
 };
 
-exports.EmitConditionAndBegin = function (zx, line_obj, bid) {
+exports.EmitConditionAndBegin = function (zx, line_obj, bid,comment) {
 	//compiles sql
 
 	//this is conditional so we need to emit a value to fullstash also
 	emit(zx, line_obj, "res=res||',``" + bid + "``:'||iif(cond<>0,'[``true``]','[]')||'';", "");
 	emit(zx, line_obj, "if (cond<>0) then ", "");
-	emit(zx, line_obj, "begin", "");
+	emit(zx, line_obj, "begin",' '+ comment);
 	zx.sql.dent += 4;
 
 	return line_obj;
@@ -254,11 +264,11 @@ exports.elseblock = function (zx, line_obj) {
 	return line_obj;
 };
 
-exports.unblock = function (zx, line_obj) {
+exports.unblock = function (zx, line_obj,comment) {
 	//compiles sql
 
 	zx.sql.dent -= 4;
-	emit(zx, line_obj, "end  ", "");
+	emit(zx, line_obj, "end  ",comment);
 
 	return line_obj;
 };

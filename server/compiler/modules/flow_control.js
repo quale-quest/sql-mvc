@@ -48,12 +48,15 @@ fullstach json format
 
  */
 
- exports.module_name='flow_control.js';
- exports.tags=[
- {name:"ifblock"},
- {name:"elseblock"},
-{name:"unblock"},
-{name:"include"}
+exports.module_name='flow_control.js';
+exports.tags=[
+{name:"ifblock",dontparseparam:true,man_page:"Alias for ifquery."},
+{name:"ifquery",dontparseparam:true,man_page:"a conditional execution against the database wrap the SQL in ()."},
+{name:"elseblock",man_page:"Alias for elsequery."},
+{name:"elsequery",man_page:"Every ifquery may have one optional elsequery."},
+{name:"unblock",man_page:"Alias for endquery."},
+{name:"endquery",man_page:"Every ifquery must have one endquery to signify the end of the conditional."},
+{name:"include",man_page:"Include a quicc file from the inheretance tree."}
 ];
  
  var debug=false;
@@ -154,6 +157,11 @@ exports.checkForEmbeddedIf = function (zx, line_obj) {
 	//database
 	// if (line_obj.tag=='table')
 	//   console.log('checkForEmbeddedIf is :',line_obj);
+
+    if ((line_obj.tag=='ifblock')||(line_obj.tag=='ifquery')) {
+	   //console.log('checkForEmbeddedIf ifblock  :');
+       return;
+    }
 	if (!exports.is_conditional(zx, line_obj)) { //no conditions
 		//unconditional block - this does not have a end label
 
@@ -188,14 +196,14 @@ exports.EmitCondition = function (zx, line_obj) {
 		zx.vid++;
 		local_immediate_block_id  = "F" + zx.vid;
 		zx.fc.immediate_block_id  = local_immediate_block_id ;
-        if (debug) console.log('zx.fc.immediate_block_id  = immediate_block_id : ',local_immediate_block_id );
+        if (debug) console.log('zx.fc.immediate_block_id  = immediate_block_id 195852 : ',local_immediate_block_id );
 	} else { //goto block
 		local_immediate_block_id  = line_obj.Block;
 		zx.fc.blockactive[local_immediate_block_id ] = true;
 	}
 
 	zx.mt.lines.push("{{#" + local_immediate_block_id  + "}}");
-	zx.dbg.EmitConditionAndBegin(zx, line_obj, local_immediate_block_id );
+	zx.dbg.EmitConditionAndBegin(zx, line_obj,local_immediate_block_id,'123:'+ local_immediate_block_id+" : " + line_obj.tag );
 
 	return line_obj;
 };
@@ -203,42 +211,57 @@ exports.EmitCondition = function (zx, line_obj) {
 exports.beginblock = function (zx, line_obj) {
 	//compiles sql   if there is no goto this wont begin a real block
 	if (line_obj.Block !== undefined) {
-		zx.dbg.EmitUnconditionalBegin(zx, line_obj);
+		zx.dbg.EmitUnconditionalBegin(zx, line_obj,'125:'+ " : " + line_obj.tag );
 	}
 
 	return line_obj;
 };
 
-exports.tag_ifblock = function (zx, o) {
+exports.tag_ifquery = exports.tag_ifblock = function (zx, o) {
 	//unnamed blocks, and named blocks
 	// no real code most the work is done by the common conditional tags
-    debug=true;
-    if (debug) console.log('tag_ifblock: ',o.Block,'...',o);
+    //console.log('tag_ifblock: ',o.nonkeyd);
+    //debug=true;
+    //if (debug) console.log('tag_ifblock: ',o.Block,'...',o);
     
-	if (o["if"] !== undefined) { //make the database query and add it to if(not) exists list
-		append_conditional(o.and_if, zx.getA(o["if"]), ' not '); //this is correct - negative test
-        
+    o.nonkeyd = o.nonkeyd.trim();
+    //console.log('tag_ifblock nonkeyd: ',o.nonkeyd);    
+    if ((o.nonkeyd)&&(o.nonkeyd!=''))
+	    append_conditional(o.and_if, ["("+o.nonkeyd+")"], ' not '); //this is correct - negative test
+    
     exports.eval_start(zx, zx.line_obj);
 	if (zx.line_obj.and_if.length > 0) {
 		//produce the db script code to resolve the query
 		exports.eval_cond(zx, zx.line_obj, zx.line_obj.and_if);
 	}
+    else {
+        console.log('tag_ifquery: has no conditionals !!!! ');
+    }
 
 	exports.EmitCondition(zx, zx.line_obj);        
-        
-	}
+     
+    zx.fc.block_stack.push(zx.fc.immediate_block_id);
+    zx.fc.blockactive[zx.fc.immediate_block_id ] = true;
+    //console.log('tag_ifquery: block_stack  ', zx.fc.block_stack);
+    delete zx.fc.immediate_block_id;
+	
 };
 
 exports.elseblock = function (zx, line_obj) {
-	zx.mt.lines.push("{{/" + zx.fc.immediate_block_id  + "}}");
+    var local_immediate_block_id = zx.fc.immediate_block_id;
+    if (local_immediate_block_id===undefined)
+        local_immediate_block_id = zx.fc.block_stack[zx.fc.block_stack.length-1];  
+	zx.mt.lines.push("{{/" + local_immediate_block_id  + "}}");
 	zx.dbg.elseblock(zx, line_obj);
-	zx.mt.lines.push("{{#^" + zx.fc.immediate_block_id  + "}}");
+	zx.mt.lines.push("{{^" + local_immediate_block_id  + "}}");
 	return line_obj;
 };
 
 exports.implicid_unblock = function (zx, line_obj) {
+    
 	if (zx.fc.immediate_block_id  !== undefined) { //immediate blocks can only last 1 instruction
-		zx.dbg.unblock(zx, line_obj);
+        zx.dbg.emit_comment(zx,"implicid_unblock : "+zx.fc.immediate_block_id+" : " + line_obj.tag);
+		zx.dbg.unblock(zx, line_obj,"imp "+line_obj.tag);
 
 		zx.mt.lines.push("{{/" + zx.fc.immediate_block_id  + "}}");
 		delete zx.fc.immediate_block_id ;
@@ -250,10 +273,18 @@ exports.implicid_unblock = function (zx, line_obj) {
 
 
 exports.explicid_unblock = function (zx, line_obj) {
+    zx.dbg.emit_comment(zx,"explicid_unblock : "+zx.fc.block_stack.length+" : " + line_obj.tag);
+    //console.log('explicid_unblock: block_stack  ', line_obj.Label, zx.fc.block_stack);
 	if (!exports.implicid_unblock(zx, line_obj)) {
 		var local_immediate_block_id  = line_obj.Label;
-		//console.log('unblock: ',local_immediate_block_id ,zx.fc.blockactive,zx.fc.blockactive[local_immediate_block_id ]);
-		zx.dbg.unblock(zx, line_obj);
+        if (line_obj.Label===undefined){
+            local_immediate_block_id = zx.fc.block_stack.pop();
+            if (local_immediate_block_id===undefined)
+                console.trace('could not unblock: ');
+        }
+        
+		//console.trace('unblock: ',local_immediate_block_id ,zx.fc.blockactive,zx.fc.blockactive[local_immediate_block_id ]);
+		zx.dbg.unblock(zx, line_obj,"expl "+line_obj.tag + " : " + local_immediate_block_id);
 		if (zx.fc.blockactive[local_immediate_block_id ] !== undefined) {
 			zx.mt.lines.push("{{/" + local_immediate_block_id  + "}}");
 		}
@@ -262,13 +293,13 @@ exports.explicid_unblock = function (zx, line_obj) {
 	return line_obj;
 };
 
-exports.tag_elseblock = function (zx, o) {
+exports.tag_elsequery = exports.tag_elseblock = function (zx, o) {
 
 	//if (active_pass!=zx.pass) return;
 	exports.elseblock(zx, o);
 };
 
-exports.tag_unblock = function (zx, o) {
+exports.tag_endquery = exports.tag_unblock = function (zx, o) {
 	//if (active_pass!=zx.pass) return;
 	//console.log('unblock Tag ',i,o );
 	exports.explicid_unblock(zx, o);
@@ -293,6 +324,7 @@ exports.start_pass = function (zx, line_objects) {
 		line_obj.and_if = [];
 	});
     debug=false;
+    zx.fc.block_stack = [];
 };
 
 exports.init = function (zx) {

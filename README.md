@@ -37,11 +37,11 @@ button(title:"Clear Completed",if:"(select count(ref) from todo_mvc where owner=
 sql update todo_mvc set status='3' where owner=session.id and (status='1');/>
 
 <#controller(todo.itemcount)
-print (if:"(select count(ref) from todo_mvc where owner=session.id and (status='' or status is null))!=1" )
-($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $) items left
-
-print(if:"(select count(ref) from todo_mvc where owner=session.id and (status='' or status is null))=1" )
-($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $) item left/>
+ifquery ((select count(ref) from todo_mvc where owner=session.id and (status='' or status is null))!=1)
+print () ($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $) items left
+elsequery
+print () ($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $) item left
+endquery/>
 
 <#view
 table()

@@ -178,19 +178,31 @@ undefined
 
 ##ifblock
 
-undefined
+Alias for ifquery.
+
+##ifquery
+
+a conditional execution against the database wrap the SQL in ().
 
 ##elseblock
 
-undefined
+Alias for elsequery.
+
+##elsequery
+
+Every ifquery may have one optional elsequery.
 
 ##unblock
 
-undefined
+Alias for endquery.
+
+##endquery
+
+Every ifquery must have one endquery to signify the end of the conditional.
 
 ##include
 
-undefined
+Include a quicc file from the inheretance tree.
 
 ##inject_point
 

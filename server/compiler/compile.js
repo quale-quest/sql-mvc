@@ -539,6 +539,7 @@ var seq_page = function (zx) {
 		script = script.replace(/\/\*\*\*\//g, ':');
 
 		var mtscript = zx.mt.lines.join('\n'); //fix: to remove the artificial \n we must make take input \n 's as part of the source - so the output template is formatted the same as the input
+        fs.writeFileSync(ofn + '.mt', mtscript);
 		//validate this using a prepare command
 		//err=zx.dbu.check_script(script);//runs the script, map the error back to a template file and line
 		//output the error, sql line, template file and line

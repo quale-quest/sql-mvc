@@ -416,6 +416,12 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 			if (obj[i].body) {
 				//console.log('Quic RecurseParseFileToObject 172021 :', obj[i]);
 
+                if (zx.tag_attr[ obj[i].tag.toLowerCase() ] && zx.tag_attr[ obj[i].tag.toLowerCase() ].dontparseparam===true) {
+                    //console.log('Quic RecurseParseFileToObject dontparseparam 172029m :',obj[i].body);
+                    obj[i].nonkeyd = obj[i].body;
+                }
+                else {
+                
                 if (obj[i].json_parse)  {
 				var jl = json_like.parse(obj[i].body);
 				//console.log('Quic RecurseParseFileToObject 172021a :', jl);
@@ -429,7 +435,7 @@ exports.RecurseParseFileToObject = function (zx, filename) {
                 //later... now it is good for debugging delete obj[i].json_parse;
                 obj[i] = extend(obj[i], jl); //second one has the priority
                 }
-
+                }
 				obj[i] = zx.quic.parse(zx, obj[i], obj[i].body, obj[i].tag, true); //obj[i] here gets filled later...should really be made into 2 separate objects
 				//console.log('Quic RecurseParseFileToObject 172022 :', obj[i]);
 			}
@@ -541,10 +547,10 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 						//console.warn('b4splice ',obj.length,obj2.length );
 						//http://fromanegg.com/post/43733624689/insert-an-array-of-values-into-an-array-in-javascript
 
-						obj[i].Block = 'Block-' + zx.BlockIndex;
+						obj[i].Block = 'IncludeFileBlock-' + zx.BlockIndex;
 						var lobj = {
 							tag : "Unblock",
-							Label : ('Block-' + zx.BlockIndex),
+							Label : ('IncludeFileBlock-' + zx.BlockIndex),
 							srcinfo : {}
 						};
 						obj2.push(lobj);
@@ -601,6 +607,7 @@ exports.start_up = function (zx) {
 	var Keyword_API_md = '#Commands and reserverd keywords in the Quale language\n\n ';
 
 	zx.all_tags_str = '(';
+    zx.tag_attr={};
 	zx.forFields(zx.plugins, function (plugin) {
 		zx.forFields(plugin.tags, function (keyword) {
 			zx.all_tags_str += '^:' + keyword.name + '|';
@@ -610,7 +617,8 @@ exports.start_up = function (zx) {
 
 			Keyword_API_md += '\n\n##' + keyword.name;
 			Keyword_API_md += '\n\n' + keyword.man_page || ' - TBD';
-
+            
+            zx.tag_attr[ keyword.name ] = keyword;
 		});
 	});
 	zx.all_tags_str = zx.all_tags_str.slice(0, -1) + ')';
