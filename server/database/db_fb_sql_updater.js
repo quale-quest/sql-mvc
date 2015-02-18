@@ -590,6 +590,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			DECLARE_PROCEDURE.method = "DECLARE_PROCEDURE";
 			DECLARE_PROCEDURE.order = 850;
 			DECLARE_PROCEDURE.qrystr = qrystr;
+            DECLARE_PROCEDURE.Hash = zx.ShortHash(qrystr);
 			blocks.push(DECLARE_PROCEDURE);
 			block.order = 1500;
 		} else if (qrystr.match(/ALTER\s+PROCEDURE\s/i)) {
@@ -682,7 +683,10 @@ exports.Sort_DDL = function (zx, blocks) {
 	var build_str = [];
 	blocks.forEach(function (block, i) {
 		var qrystr = block.qrystr;
-        Hash += block.Hash; 
+        Hash += +block.Hash; 
+        if (block.Hash===undefined) 
+            console.log('block.Hash===undefined :', block);
+        
 		if (block.method === 'DECLARE_PROCEDURE')
 			qrystr = "DECLARE" + zx.show_longstring(qrystr);
 		build_str.push(" BORDER:" + block.order + " BNR:" + block.src.BlockNr + " method:" + block.method + " SRC:" + qrystr);
@@ -809,7 +813,7 @@ function full_updgade(zx, ddl_filename_prefix) {
 exports.Backup_DDL = function (zx, reflect, backup) {
 	var result = zx.dbu.extract_dll(zx);
 	//console.log('extract_dll result is ',str.ddl);
-	console.log('extract_dll result is ', result.err);
+	//console.trace('backup extract_dll result is ', result.err);
 	if (backup) {
 		var d = new Date();
 		var df = (1900 + d.getYear()) + '_' + d.getMonth() + '_' + d.getDate() + ' ' + d.getHours() + '_' + d.getMinutes() + '_' + d.getSeconds();
@@ -847,7 +851,7 @@ exports.update = function (zx) {
        }
     
 	if ((exports.lastHash === null) || (exports.lastHash !== B.Hash) || (zx.config.db.schema_rebuild==="always")) {
-		//console.log('exports.Execute_DDL hashed:');
+		console.log('exports.Execute_DDL hashed:',exports.lastHash,"\n   B.Hash 210425:",B.Hash);
 		exports.Backup_DDL(zx, 0, 1); //audit trail
 		//exports.show_DDL(zx, "After sort b4 exec ", exports.blocks);
 		exports.Execute_DDL(zx, exports.blocks, 0);
@@ -906,7 +910,7 @@ exports.unit_test = function (zx) {
 
 	var result = zx.dbu.extract_dll(zx);
 	//console.log('extract_dll result is ',str.ddl);
-	console.log('extract_dll result is ', result.err);
+	console.log('unit test extract_dll result is ', result.err);
 
 	//process.exit(2);
 

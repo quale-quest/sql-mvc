@@ -2,7 +2,6 @@
 
 
 <#model
-
 CREATE TABLE GALLERY		     	--:{as:"Table"} 
 (
   REF VARCHAR(40),					--:{as:"pk"}
@@ -13,23 +12,4 @@ CREATE TABLE GALLERY		     	--:{as:"Table"}
   BLOB_ID   VARCHAR(100)			--:{Type:"Gallery"}
   
 );
-
-
-
-
-SET TERM ^ ;
-CREATE TRIGGER GALLERY_BI FOR GALLERY ACTIVE
-BEFORE INSERT POSITION 0
-AS
-BEGIN
-  if (new.ref is null) then
-     select ref from Z$GEN_PK(1) into new.ref;
-	 
-END^
-SET TERM ; ^
-
-/******************** TRIGGERS ********************/
 />
-
-
-

@@ -50,6 +50,9 @@ exports.tag_controller  = function (zx, line_obj) {
 exports.done_pass = function (zx, line_obj) {
 	if (zx.pass === 1) {
 		//console.log(' model db_update.update:');
+
+        zx.dbg.AutoMaticDLL(zx,line_obj);
+
 		zx.db_update.update(zx);
 		//console.log(' model db_update.update done:');
 	}

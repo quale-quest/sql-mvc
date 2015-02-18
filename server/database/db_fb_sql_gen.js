@@ -1065,6 +1065,31 @@ return zx.dbu.getPageIndexNumber(zx,name);
 //return CurrentPageIndex;
 }
 
+var make_pk_seq = function (zx,NAME,FIELD) {
+var triggerscript=
+["SET TERM ^ ;",
+"CREATE TRIGGER AI_"+NAME+"_BI FOR "+NAME+" ACTIVE",
+"BEFORE INSERT POSITION 0",
+"AS",
+"BEGIN",
+"  if (new."+FIELD+" is null) then",
+"     select ref from Z$GEN_PK(1) into new."+FIELD+";",
+"END^",
+"SET TERM ; ^"].join('\n');
+
+//console.log('triggerscript : ',triggerscript);
+return triggerscript;
+}
+
+exports.AutoMaticDLL = function (zx,line_obj) {
+ //console.log('sqlgen_fb AutoMaticDLL: ',zx.sql.triggers);   
+ zx.forFields(zx.sql.triggers, function (trigger) {
+   var pk_seq = make_pk_seq(zx,trigger.Table,trigger.Field);
+   //console.log('    sqlgen_fb AutoMaticDLL for : ',trigger.Table,trigger.Field,pk_seq.substring(0,80));   
+   zx.db_update.Prepare_DDL(zx, null, pk_seq, line_obj)
+ });
+}
+
 exports.init = function (zx) {
 	//each type of database generator would be different ,//including noSQL
 	//console.log('init sqlgen_fb: ');
@@ -1085,4 +1110,5 @@ exports.init = function (zx) {
     zx.sql.sub_proc_index = 1;
 	//     zx.sql.engine='node-fb';
 	//     zx.sql.engine='flamerobin';
+    zx.sql.triggers =[];
 };

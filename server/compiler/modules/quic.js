@@ -157,7 +157,7 @@ exports.parse = function (zx, line_obj, str, tag,Quale_eval) {
 	line_obj = extend(line_obj, zx.q.ths.Tag);
 	line_obj.nonkeyd = str;
 	delete zx.q.ths.Tag;
-
+    
 	return line_obj;
 };
 
@@ -407,7 +407,13 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 			if (zx.q.ths.names === undefined)
 				zx.q.ths.names = {};
 			zx.q.ths.names[quale.table + '.' + quale.name] = quale.indx;
-
+                
+             var qr =zx.q.ths.Fields[quale.indx];                
+            if (qr.fb_trigger) {
+                //console.log('Quic_eval fb_trigger found :',qr);  
+                zx.sql.triggers.push({Table:qr.table,Field:qr.name});        
+            }
+            
 			//zx.q.ths.FieldOrder[quale.indx]= zx.q.ths[quale.name];
 
 		} else {

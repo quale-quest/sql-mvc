@@ -2,7 +2,7 @@
 
 **Paradigm inversion - write web applications in SQL instead of JavaScript.**
 
-**Latest change log: Improved Syntax and Fixed an Installer dependency that broke the install from about the 7th of Feb.**
+**Recent change log: Improved Syntax and added cloud9 install.**
 
 SQL-MVC is quite different to anything else out there, so don't have preconceived notions, and don't limit your thinking by 
 applying your current paradigm's best practices to SQL-MVC as it is a complete rethink of the development stack.

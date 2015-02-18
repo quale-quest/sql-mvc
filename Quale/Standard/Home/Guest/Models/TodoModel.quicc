@@ -13,17 +13,6 @@ CREATE TABLE TODO_MVC				--:{as:"Table"}
 
 
 
-SET TERM ^ ;
-CREATE TRIGGER TODO_MVC_BI FOR TODO_MVC ACTIVE
-BEFORE INSERT POSITION 0
-AS
-BEGIN
-  if (new.ref is null) then
-     select ref from Z$GEN_PK(1) into new.ref;
-END^
-SET TERM ; ^
-/******************** TRIGGERS ********************/
-
 />
 
 

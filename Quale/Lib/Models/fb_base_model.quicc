@@ -3,7 +3,7 @@
 
 --:{regex:"regex:/varchar/i",Default_length:"20",length:"regex:/(\\d+)/",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} --comment
 --:{regex:"regex:/create\\s+table/i",rl_context:"regex:/create\\s+table\\s+(\\w+)/i"}
---:{class:"pk",Type:"Hide",Action:"Hide",PrimaryKey:true}
+--:{class:"pk",Type:"Hide",Action:"Hide",PrimaryKey:true,fb_trigger:true}
 --:{class:"fk",Type:"Link",Action:"Link"}
 
 
