@@ -3,7 +3,7 @@
 speed/memory performance  is not important
 ease of use is important
  */
-var hogan = require("hogan"), fs = require("fs");
+var fs = require("fs");
 var deepcopy = require('deepcopy');
 var extend = require('node.extend');
 
@@ -23,12 +23,12 @@ exports.check_Async_Binary_Fields = function (zx, fld, line_object) {
 			//console.log('check_Async_Binary_Fields fn - ' + filename);
 			var sql = fs.readFileSync(filename, 'utf8');
 			//console.log('check_Async_Binary_Fields fn - ' + sql);
-			var template = hogan.compile(sql);
+
 			var lcx = deepcopy(fld.f.Async);
 			lcx.table = fld.f.to;
 			lcx.pkf = fld.f.pkname;
 			lcx.sp_number = 1;
-			var sql = template.render(lcx);
+			var sql = zx.hogan_ext.compile_render(zx, lcx , sql);
 
 			//console.log('check_Async_Binary_Fields fn - ' + sql);
 

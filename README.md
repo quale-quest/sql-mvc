@@ -7,7 +7,8 @@
 SQL-MVC is quite different to anything else out there, so don't have preconceived notions, and don't limit your thinking by 
 applying your current paradigm's best practices to SQL-MVC as it is a complete rethink of the development stack.
 
-This is not a toy, it is the culmination of many years of work, being re-implemented in an updated open source project.
+This is not a toy,it is under full-time active development and it is the 
+culmination of many years of work, being re-implemented in an updated open source project.
 
 *Alpha version 0.0 Notice: When evaluating SQL-MVC keep in mind this project is still version 0.0.x- alpha/preview  
 release - a lot of stuff is not 100% polished or even to spec,
@@ -17,6 +18,7 @@ try and pick up the key points we are trying to demonstrate not shortcomings or 
 
 
 ##Example	
+
 This is a complete implementation of [todomvc.com](http://todomvc.com) functionality in 40 lines of code.
 Prerequisite knowledge : SQL,JSON and [mustache](https://mustache.github.io/mustache.5.html).
 
@@ -66,6 +68,7 @@ use(todo.clear.button)
 ```
 
 ##How does SQL-MVC work?
+
 * The compiler takes your application code which is little more 
 than a few SQL statements, directives and properties and produces:
   1. All the database code as a single stored procedure, to be run to produce JSON output.
@@ -77,6 +80,7 @@ When the two are combined in the browser !!voila!!.
 default framework and theme is just to give you a quicc start.
 
 ###Super fast Development:	
+
 * Write web applications with little more than a few SQL statements
 * DRY (don't repeat yourself), Inheritance, Auto-Menus and more further reduces development time.
 * Drop-in and plug-in modules allow easy use and customisation of common application functionality.
@@ -88,6 +92,7 @@ default framework and theme is just to give you a quicc start.
 * Security implied by design rather than explicit configuration.
 
 ###Super fast Runtime:
+
 * All database queries are amalgamated into a single database stored procedure call. 
 * the JSON from the database is retrieved in one BLOB (Less chatter to the DB).
 * Almost no middle-ware processing.	
@@ -101,6 +106,7 @@ default framework and theme is just to give you a quicc start.
 * Subscribe to events to do partial refreshes when changes are posted to database objects by other users.
 
 ###Other features
+
 * Database drivers available for Firebird SQL, support planned for : MySQL, SQL Server, Oracle, NuoDB.
 * Planned support for JavaScript stored procedure engine, to enable no-sql, sqlite and off-line applications.
 
@@ -144,6 +150,7 @@ Interested in contributing to SQL-MVC?
 
 
 ## Licensing
+
 SQL-MVC is a commercial open source project, It is free as in speech
 but not free as in beer, but cheap as in peanuts.
 

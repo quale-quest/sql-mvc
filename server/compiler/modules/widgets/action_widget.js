@@ -59,7 +59,7 @@ var fileutils = require('../../../compiler/modules/fileutils.js');
 var path = require('path');
 var fs = require('fs');
 var page = require('../../modules/page.js');
-var hogan = require("hogan");
+
 
 exports.module_name='action_widget.js';
 exports.tags=[{name:"menuscan_recurse"},{name:"menuend"},
@@ -123,7 +123,8 @@ var zxAction = function (zx, o, type) { //type should be deprecated
 		zx.action.level++;
         var result = action_style(zx, o, "ActionHead");
         o.Title = zx.FirstBeauty(gets(o.title), gets(o.name));
-        result = hogan.compile(result).render(o);
+        //result = hogan.compile(result).render(o);
+        result =  zx.hogan_ext.compile_render(zx, o , result); 
         
 		return result;
 	}
@@ -190,7 +191,8 @@ var zxActionUrl = function (zx, o, type, QryUrl) {
     o.Glymph = o.Icon;
     
     
-    result = hogan.compile(result).render(o);
+    //result = hogan.compile(result).render(o);
+    result =  zx.hogan_ext.compile_render(zx, o , result); 
     //console.log('zxActionUrl 093805:',result, o);
     
 	//console.log('zxActionx:',result,"QryUrl:",QryUrl,"titlestr:",titlestr,gets(o.title),o.title,"IconSpan:",IconSpan, o);

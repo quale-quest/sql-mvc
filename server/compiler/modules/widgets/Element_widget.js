@@ -3,7 +3,7 @@
 speed/memory performance  is not important
 ease of use is important
  */
-var hogan = require("hogan");
+
 exports.module_name = 'element_widget.js';
 exports.tags=[{name:"element"}];
 
@@ -172,9 +172,9 @@ var fieldSubItem = function (cx, FT) {
 			tt = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Main");
 			//console.log('fieldSubItem A2: ',FT.SubStyle,FT.cf[0].Type,"Field",FT.cf[0].Action,ts);
 			if (tt !== '') {
-
-				template = hogan.compile(tt);
-				FieldHtml = template.render(cx); //pop
+				//template = hogan.compile(tt);
+				//FieldHtml = template.render(cx); //pop
+                FieldHtml =  zx.hogan_ext.compile_render(zx, cx , tt); 
 			}
 			//console.log('fieldSubItem link: ',FieldHtml);
 			//process.exit(2);
@@ -190,8 +190,9 @@ var fieldSubItem = function (cx, FT) {
 			tt = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Main");
 			if (tt !== '') {
 
-				template = hogan.compile(tt);
-				FieldHtml = '' + template.render(cx); //pop
+				//template = hogan.compile(tt);
+				//FieldHtml = '' + template.render(cx); //pop
+                FieldHtml =  zx.hogan_ext.compile_render(zx, cx , tt); 
 			}
 			//console.log('fieldSubItem B2: ',FieldHtml,tt,FT);
 		} else {
@@ -199,8 +200,9 @@ var fieldSubItem = function (cx, FT) {
 			tt = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Main");
 			//console.log('fieldSubItem C1: ', tt);
 			if (tt !== '') {
-				template = hogan.compile(tt);
-				FieldHtml = template.render(cx); //pop
+				//template = hogan.compile(tt);
+				//FieldHtml = template.render(cx); //pop
+                FieldHtml =  zx.hogan_ext.compile_render(zx, cx , tt); 
 			}
 			//console.log('fieldSubItem C2: ', FieldHtml, tt, FT);
 		}
@@ -237,9 +239,11 @@ var formatField = function (cx, FT /*, itemindex*/
 		/*div wraps individual radios all into one*/
 		try {
 			var ts = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Div");
-			var template = hogan.compile(ts);
+			//var template = hogan.compile(ts);
             //console.log('template.render(cx): -----------------------------------',cx.field);
-			cx.pop = '' + template.render(cx); //pop
+			//cx.pop = '' + template.render(cx); //pop
+            cx.pop =  zx.hogan_ext.compile_render(zx, cx , ts);  
+            
 		} catch (e) {
 			zx.error.caught_exception(zx, e, " formatField -120555, hogan fragment : " + JSON.stringify(ts) + "\ncx: " + JSON.stringify(cx));
 			throw zx.error.known_error;
@@ -248,8 +252,9 @@ var formatField = function (cx, FT /*, itemindex*/
 		//console.log('fieldSubItem X2: ',ts,cx.pop);
 
 		//this is produces scripts for executing after the page has loaded
-		template = hogan.compile(getFieldStyle(cx, FT.substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Script"));
-		cx.TableFieldScripts += template.render(cx); //cs.id displayvalue size maxsize value variable ContextHelp
+		//template = hogan.compile(getFieldStyle(cx, FT.substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Script"));        
+		//cx.TableFieldScripts += template.render(cx); //cs.id displayvalue size maxsize value variable ContextHelp
+        cx.TableFieldScripts += zx.hogan_ext.compile_render(zx, cx , getFieldStyle(cx, FT.substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Script"));  
 
 	} //h
 

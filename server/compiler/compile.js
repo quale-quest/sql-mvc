@@ -215,6 +215,9 @@ var seq_main = function () {
 
 		zx.plugins.push(page);
 
+		zx.hogan_ext = require('./modules/hogan_ext.js');
+		zx.plugins.push(zx.hogan_ext);        
+        
 		zx.Container_widget = require('./modules/widgets/G960_widget.js');
 		zx.plugins.push(zx.Container_widget);
 

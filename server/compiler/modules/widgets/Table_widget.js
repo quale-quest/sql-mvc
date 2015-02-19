@@ -26,7 +26,7 @@ The select statement can be either ini style select=,from=where=orderby=  or a "
 
  */
 var zx = require('../../zx.js');
-var hogan = require("hogan");
+
 //var deepcopy = require('deepcopy');
 //var extend = require('node.extend');
 
@@ -482,21 +482,9 @@ var exec_query = function (zx, o, QueryType) {
 	//zx.mt.lines.push(ReplaceText);
 	//console.log('\n\n\nexec_query: ');//,o,ReplaceText,zx.mt.lines );
 
-
-	var cx = {
-		"proper" : function () {
-			return function (val) {
-				var template = hogan.compile(val);
-				var Result = template.render(cx);
-				var res = zx.Beautify(String(Result));
-				//console.log('properproperproperproperproperproperproperproperproperproperproperproper:',res);
-				return res;
-			};
-		}
-
-	};
-	//TODO make a method to pluginto here
+    //TODO make a method to pluginto here
 	//TODO make this plugins available to ($ select...$)
+    var cx = {};
 	cx.zx = zx; //short hand
 
 	zx.sql.cidi += 1;
@@ -725,8 +713,8 @@ var table_style = function (cx, Key) {
 	StyleTemplate = StyleTemplate.trim();
 
 	StyleTemplate = StyleTemplate.replace("$CRLF$", "\n");
-	var template = hogan.compile(StyleTemplate);
-	var Result = template.render(cx);
+    //console.log('properproperproperproperproperproperproperproperproperproperproperproper xxxxxx:',StyleTemplate);
+	var Result = zx.hogan_ext.compile_render(zx, cx , StyleTemplate);
 	//console.log("table_style hogan:",Key,">>",cx.pop,">>",StyleTemplate,">>",Result);
 
 

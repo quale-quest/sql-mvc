@@ -4,7 +4,7 @@ speed/memory performance  is not important
 ease of use is important
  */
 
-var hogan = require("hogan");
+
 
 /*
 - debugging facility
@@ -676,8 +676,9 @@ exports.edit_from_table = function (zx, cx, fld_obj) {
 					zx.error.log_NoSoftCodec_warning(cx.zx, "NoSoftCodec Decoder: 1:", codecname, 0);
 				else {
 					decoder = decoder.decoder;
-					var template = hogan.compile(decoder);
-					var FieldSQL = template.render(fld_obj); //pop
+					//var template = hogan.compile(decoder);
+					//var FieldSQL = template.render(fld_obj); //pop
+                    var FieldSQL =  zx.hogan_ext.compile_render(zx, fld_obj , decoder); 
 					Soft_decode = FieldSQL;
 
 				}
@@ -877,8 +878,9 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 					zx.error.log_NoSoftCodec_warning(cx.zx, "NoSoftCodec: 1:", widget.f.softcodec, 0);
 				else {
 					encoder = encoder.encoder;
-					var template = hogan.compile(encoder);
-					var FieldSQL = template.render(widget); //pop
+					//var template = hogan.compile(encoder);
+					//var FieldSQL = template.render(widget); //pop
+                    var FieldSQL =  zx.hogan_ext.compile_render(zx, widget , encoder); 
 					SoftCodecs += "\n    " + FieldSQL; //encoder encodes in reverse to the decoder
 				}
 			}

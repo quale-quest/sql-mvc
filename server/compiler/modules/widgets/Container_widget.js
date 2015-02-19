@@ -4,7 +4,7 @@ speed/memory performance  is not important
 ease of use is important
  */
  
-var hogan = require("hogan");
+
 exports.module_name='container_widget.js';
 exports.tags=[{name:"container"},{name:"nextcontainer"},
 {name:"closecontainer"}];
@@ -39,7 +39,8 @@ var zxContainerSubst = function (zx, o, Result) {
 	if (Result.indexOf("{{tabid}}") > 0) 		
 		zx.Container.Stack[0].Item++;
     //console.log('zxContainerSubst : ',Result,o);
-    Result = hogan.compile(Result).render(o);
+    Result = zx.hogan_ext.compile_render(zx, o , Result);  
+
     //console.log('zxContainerSubst done: ',Result);
 	Result = Result.replace(/\$CRLF$/g, "\n");
 	return Result;
@@ -84,7 +85,7 @@ var zxContainerOpen = function (zx, o) {
         var item = get_style(zx, o, "ContainerItemList");
         //console.log('zxContainerOpen items: ',tab_item);
         item = item.replace(/\$CRLF$/g, "\n");
-        content += hogan.compile(item).render(tab_item);
+        content += zx.hogan_ext.compile_render(zx, tab_item , item);  
 	}
     }
     

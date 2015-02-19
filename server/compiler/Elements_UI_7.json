@@ -369,8 +369,8 @@
     "WarningNotifyDiv": "<div class=\"notification-wrap warning\"><span class=\"icon-warning\">Warning: </span>{{Text}}</div>",
     "SuccessNotifyDiv": "<div class=\"notification-wrap success\"><span class=\"icon-success\">SUCCESS: </span>{{Text}}</div>",
     "FailureNotifyDiv": "<div class=\"notification-wrap failuer\"><span class=\"icon-failure\">FAILURE: </span>{{Text}}</div>",
-	"BriefNotifyDiv": "<script type=\"text/javascript\">$(\"#container-n\").notify(\"create\", \"{{#icon}}withIcon{{/icon}}{{^icon}}sticky{{/icon}}\",{ title:'{{title}}', text:'{{Text}}' {{#icon}},icon:'qqui1/{{icon}}'{{/icon}} },{ });</script>",		
-	"StickyNotifyDiv": "<script type=\"text/javascript\">$(\"#container-n\").notify(\"create\", \"{{#icon}}withIcon{{/icon}}{{^icon}}sticky{{/icon}}\",{ title:'{{title}}', text:'{{Text}}' {{#icon}},icon:'qqui1/{{icon}}'{{/icon}} },{ expires:false });</script>",	
+	"BriefNotifyDiv":  "<script type=\"text/javascript\">$(\"#container-n\").notify(\"create\", \"{{#icon}}withIcon{{/icon}}{{^icon}}sticky{{/icon}}\",{ title:'{{title}}', text:{{#quotes}}{{#marked}}{{{Text}}}{{/marked}}{{/quotes}} {{#icon}},icon:'qqui1/{{icon}}'{{/icon}} },{ });</script>",		
+	"StickyNotifyDiv": "<script type=\"text/javascript\">$(\"#container-n\").notify(\"create\", \"{{#icon}}withIcon{{/icon}}{{^icon}}sticky{{/icon}}\",{ title:'{{title}}', text:{{#quotes}}{{#marked}}{{{Text}}}{{/marked}}{{/quotes}} {{#icon}},icon:'qqui1/{{icon}}'{{/icon}} },{ expires:false });</script>",	
 
 
 

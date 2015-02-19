@@ -4,6 +4,10 @@
 <br>
 
 <#view
+
+notify (style=Brief title="Built with SQL-MVC") 
+This entire web application, with layout, menu's, user administration, demo's and documentation is build with SQL-MVC.
+
 table()
 	Select  --:{Title:"Make new records",from:"TODO_MVC",autoinsert:"top",tablestyle:"Todo"}
 	STATUS, --:{Action:"Edit",debug:0,autosave:yes}
