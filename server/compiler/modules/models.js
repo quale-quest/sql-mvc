@@ -124,12 +124,53 @@ exports.tag_pass0_compoundstatementdone = exports.tag_pass0_modeldone = function
 	//console.log('tag_pass0_compoundstatementdone :', line_obj);// process.exit(2);
 };
 
+
+var controller_subsitiution = function (zx, obj, str) {
+    if (!str) return str;
+    
+    var maxcount=100;
+	var matched = str.match(/controller\.([\w\.]+)/);
+    if (!matched) return str;
+	
+	while (matched&&maxcount-->0) {
+        var val='';
+        console.log('controller_subsitiution matched:', matched);
+        var models = zx.model_defines[matched[1]];
+        if (models)
+            models.forEach(function (model) {
+                if (model.body) {
+                    val = val + model.body.trim()
+                    console.log('embedded controller models.forEach:', model.body.trim());                
+                }    
+        });
+        
+        var len=('controller.').length + matched[1].length;
+        //console.log('use controller matched:', matched);
+		//console.log('use controller matched index :', matched.index,matched[1],val);
+        str=str.substring(0,matched.index) + val + str.substring(matched.index+len) 
+        //console.log('use controller substituted :', matched.index,matched[1],val);
+        matched = str.match(/controller\.([\w\.]+)/);
+	}
+   
+    
+    return str;
+    //process.exit(2);
+
+}
+
+
 exports.process_pass0 = function (zx, par) {
 	var name,
 	line_obj = par.line_obj;
 	if (line_obj.ignore)
 		return;
 
+    line_obj.nonkeyd = controller_subsitiution(zx, line_obj, line_obj.nonkeyd);
+    line_obj.body = controller_subsitiution(zx, line_obj, line_obj.body);
+	if (line_obj.q)
+		line_obj.q.query = controller_subsitiution(zx, line_obj, line_obj.q.query);
+	
+    
 	//this here is used more for controllers, saving/using buttons and others as model/contoller items
 	if ((line_obj.save !== undefined) || zx.saving_models !== '') {
 		//store this model

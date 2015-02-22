@@ -5,19 +5,21 @@ button()
 sql update todo_mvc set status='3' where owner=session.id and (status='1');
 />
 
-
+<#controller(todo.items) 
+($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $)
+/>
 
 <#controller(todo.itemcountsub)
-ifquery ((select count(ref) from todo_mvc where owner=session.id and (status='' or status is null))!=1)
-print () ($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $) items left
+ifquery (controller.todo.items!=1)
+print () controller.todo.items items left
 elsequery
-print () ($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $) item left
+print () 1 item left
 endquery
 />
 
 
 <#controller(todo.itemcount,max=5)
-ifquery ((select count(ref) from todo_mvc where owner=session.id and (status='' or status is null))>parameter.max)
+ifquery (controller.todo.items>parameter.max)
 print () To many items left
 elsequery
 use(todo.itemcountsub)
