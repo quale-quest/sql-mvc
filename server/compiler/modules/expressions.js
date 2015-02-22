@@ -137,6 +137,11 @@ var TagTypes =
 		"close" : "",
 		"method" : "getter",
 		"addback" : false
+	}, {
+		"open" : "key.",
+		"close" : "",
+		"method" : "getter",
+		"addback" : false
 	}
 ];
 var TagTypeStartSelect = {
@@ -246,6 +251,12 @@ var recurseMacroExpansion = function (zx, line_obj, varx, QryStr) {
 	//this handles macro substitution, and is independent of the dbe used
 	//   makeexpression is very similar but does the actual variable expression evaluation
 
+    if ((QryStr.substr(0,2)==='((')&&(QryStr.substr(-2)==='))'))
+    {
+        //console.log('recurseMacroExpansion removing supurfulous braces :', QryStr);
+        QryStr= QryStr.slice(1,-1);
+        //console.log('recurseMacroExpansion removing supurfulous braces :', QryStr); //process.exit(2);
+    }
 	var o = {},
 	r = {},
 	v,
@@ -354,7 +365,7 @@ var recurseMacroExpansion = function (zx, line_obj, varx, QryStr) {
 						field : r.content.split('.')[1]
 					};
 					result += zx.dbg.emit_variable_getter(zx, line_obj, v, "expression variable_getter");
-					//console.log('getter.method: ', v,result,varx.target_type);
+					//console.log('getter.method: ', v,'///',result,'///',varx.target_type);
 				}
 			} else {
 				//result += "<CC"+r.content+'vvv'+r.method+"CC>";

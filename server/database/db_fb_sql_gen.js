@@ -1026,7 +1026,7 @@ exports.done_pass = function (zx /*, line_objects*/
 
 var get_variable_table_expression = function (v) {
 	var where;
-	switch (v.table) {
+	switch (v.table) {        
 	case 'here': {
 			where = ":operator$ref||'-'||:page_name_hash||'-" + v.field + "'";
 		}
@@ -1049,13 +1049,31 @@ var get_variable_table_expression = function (v) {
 
 exports.emit_variable_setter = function (zx, line_obj, v, comment) {
 	var where = get_variable_table_expression(v);
+    if (where)
+    {
 	var statement = "UPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),(" + v.params + ")) matching (REF);";
 	emit(zx, line_obj, statement, comment);
+    }
+    else
+    {
+        //setting read only or invalid context 
+    }
 };
 exports.emit_variable_getter = function (zx, line_obj, v /*, comment*/
 ) {
+    if (v.table === 'key') {
+        var keyquery="exists(select * from "
+           + zx.conf.db.platform_user_table.user_table_name
+           + " where " + zx.conf.db.platform_user_table.user_pk_field + "=:operator$ref "
+           + " and " + zx.conf.db.platform_user_table.user_keys_field + " containing '" + v.field + ",'"
+           +")"
+        //console.log('emit_variable_getter key : ',keyquery); //process.exit(2);
+		return keyquery;
+    }
+    
 	var where = get_variable_table_expression(v);
-	if ((v.table = 'session') && (v.field === 'id'))
+    
+	if ((v.table === 'session') && (v.field === 'id'))
 		return "(:z$sessionid)";
 	var result = "(coalesce((select first 1 valu from Z$VARIABLES where Z$VARIABLES.REF=" + where + "),''))";
 	return result;

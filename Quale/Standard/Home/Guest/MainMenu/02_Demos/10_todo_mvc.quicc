@@ -5,10 +5,12 @@
 
 <#view
 
-ifquery (session.show_menu='') 
+ifquery (not key.admin)
+ifquery (session.shown_message_at_start='') 
 notify (style=Brief title="Built with SQL-MVC") 
 This entire web application, with layout, menu's, user administration, demo's and documentation is build with SQL-MVC.
-script set session.show_menu=1
+script set session.shown_message_at_start=1
+endquery
 endquery
 
 table()
