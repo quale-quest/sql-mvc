@@ -134,13 +134,13 @@ var controller_subsitiution = function (zx, obj, str) {
 	
 	while (matched&&maxcount-->0) {
         var val='';
-        console.log('controller_subsitiution matched:', matched);
+        //console.log('controller_subsitiution matched:', matched);
         var models = zx.model_defines[matched[1]];
         if (models)
             models.forEach(function (model) {
                 if (model.body) {
                     val = val + model.body.trim()
-                    console.log('embedded controller models.forEach:', model.body.trim());                
+                    //console.log('embedded controller models.forEach:', model.body.trim());                
                 }    
         });
         

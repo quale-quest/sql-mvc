@@ -362,6 +362,14 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 					}
 					zx.q.contexts[quale.context][quale.name] = extend(zx.q.contexts[quale.context][quale.name], deepcopy(quale));
 
+                    var table=quale.table; //this code my be buggy when it comes to multiple models on the same tabble....
+                    if (!table)  table=quale.context; //with multiple models on the same table we will need a way sto know the name of the real table to do auto pk code.
+                    var qr =zx.q.contexts[table][quale.name];
+                    if (qr.fb_trigger) {
+                        //console.log('Quicc model with pk :',qr,table);
+                        zx.sql.triggers.push({Table:table,Field:qr.name});
+                    }
+
 				} else {
 					if (quale.debug||exports.debug) {
 						console.log('Quale setting model table :', quale.context, ':', quale);
@@ -377,7 +385,7 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 				}
 				zx.q.classes[quale['class']] = extend(zx.q.classes[quale['class']], deepcopy(quale));
 			}
-
+            
 		}
 	} else { //use in table or other tags
 
@@ -411,7 +419,7 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
              var qr =zx.q.ths.Fields[quale.indx];                
             if (qr.fb_trigger) {
                 //console.log('Quic_eval fb_trigger found :',qr);  
-                zx.sql.triggers.push({Table:qr.table,Field:qr.name});        
+                //zx.sql.triggers.push({Table:qr.table,Field:qr.name});        
             }
             
 			//zx.q.ths.FieldOrder[quale.indx]= zx.q.ths[quale.name];

@@ -1101,8 +1101,33 @@ var triggerscript=
 return triggerscript;
 }
 
+
+function compare_triggers(a,b) {
+  if (a.Table < b.Table)
+     return -1;
+  if (a.Table > b.Table)
+    return 1;
+  if (a.Field < b.Field)
+     return -1;
+  if (a.Field > b.Field)
+    return 1;
+  return 0;
+}
+
+
 exports.AutoMaticDLL = function (zx,line_obj) {
- //console.log('sqlgen_fb AutoMaticDLL: ',zx.sql.triggers);   
+
+    zx.sql.triggers.sort(compare_triggers);
+
+    for(var i = 1; i < zx.sql.triggers.length; ){
+        if(zx.sql.triggers[i-1] == zx.sql.triggers[i]){
+            zx.sql.triggers.splice(i, 1);
+        } else {
+            i++;
+        }
+    } 
+ 
+ //console.log('sqlgen_fb AutoMaticDLL: ',zx.sql.triggers);    
  zx.forFields(zx.sql.triggers, function (trigger) {
    var pk_seq = make_pk_seq(zx,trigger.Table,trigger.Field);
    //console.log('    sqlgen_fb AutoMaticDLL for : ',trigger.Table,trigger.Field,pk_seq.substring(0,80));   

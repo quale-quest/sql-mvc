@@ -851,7 +851,7 @@ exports.update = function (zx) {
        }
     
 	if ((exports.lastHash === null) || (exports.lastHash !== B.Hash) || (zx.config.db.schema_rebuild==="always")) {
-		console.log('exports.Execute_DDL hashed:',exports.lastHash,"\n   B.Hash 210425:",B.Hash);
+		//console.log('exports.Execute_DDL hashed:',exports.lastHash,"\n   B.Hash 210425:",B.Hash);
 		exports.Backup_DDL(zx, 0, 1); //audit trail
 		//exports.show_DDL(zx, "After sort b4 exec ", exports.blocks);
 		exports.Execute_DDL(zx, exports.blocks, 0);
