@@ -136,17 +136,8 @@ default framework and theme is just to give you a quicc start.
 
 ## Developer Resources
 
-Building an application with SQL-MVC?
-
-* Announcement list: sign up at http://www.sql-mvc.com/
-* Ask a question: http://stackoverflow.com/questions/tagged/sql-mvc
-* SQL-MVC help and discussion mailing list: https://groups.google.com/group/sql-mvc-talk
 * Git hub https://github.com/quale-quest/sql-mvc
-
-Interested in contributing to SQL-MVC?
-
-* Core platform & framework design mailing list: https://groups.google.com/group/sql-mvc-core
-* Contribution guidelines: https://github.com/sql-mvc/tree/devel/Contributing.md
+* SQL-MVC help and discussion mailing list: https://groups.google.com/group/sql-mvc-talk
 
 
 ## Licensing

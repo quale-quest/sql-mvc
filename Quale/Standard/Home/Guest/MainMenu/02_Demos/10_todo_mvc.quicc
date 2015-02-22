@@ -17,7 +17,7 @@ table()
 	where (owner=session.id and ( (here.todo_type='' and (status!='3' or status is null)) 
 	or( (status='' or status is null) and here.todo_type='1')or(status='1' and here.todo_type='2')))
 
-use("todo.itemcount")
+use("todo.itemcount",max=6)
 
 button (title:"View all")
     set here.todo_type='';

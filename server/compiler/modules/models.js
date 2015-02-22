@@ -95,7 +95,8 @@ exports.tag_pass0_use = function (zx, line_obj) {
 		line_obj.use = line_obj.array[0]; //one positional arg
 
 	line_obj.nonkeyd = '';
-	//console.log('tag_pass0_use :', line_obj.array);  //process.exit(2);
+	if (line_obj.testing)
+		console.log('tag_pass0_use :', line_obj); //process.exit(2);
 };
 exports.tag_pass0_model = function (zx, line_obj) {
 	line_obj.ignore = true;
@@ -107,7 +108,7 @@ exports.tag_pass0_controller = function (zx, line_obj) {
 		if (line_obj.array !== undefined)
 			zx.saving_models = zx.gets(line_obj.array[0]);
 	}
-	line_obj.ignore = true;
+	//i now wan this as the first quert line_obj.ignore=true;
 };
 exports.tag_pass0_controllerdone = exports.tag_pass0_modeldone = function (zx, line_obj) {
 	zx.saving_models = '';
@@ -148,6 +149,27 @@ exports.process_pass0 = function (zx, par) {
 	}
 }
 
+var local_subsitiution = function (zx, obj, str) {
+    if (!str) return str;
+    var maxcount=100;
+	var matched = str.match(/parameter\.(\w+)/);
+    if (!matched) return str;
+	
+	while (matched&&maxcount-->0) {
+        var val=obj[matched[1]]||'';
+        var len=('parameter.').length + matched[1].length;
+        //console.log('use controller matched:', matched);
+		//console.log('use controller matched index :', matched.index,matched[1],val);
+        str=str.substring(0,matched.index) + val + str.substring(matched.index+len) 
+        //console.log('use controller substituted :', matched.index,matched[1],val);
+        matched = str.match(/parameter\.(\w+)/);
+	}
+    //console.log('use controller substituted complete :', str);
+    return str;
+    //process.exit(2);
+
+}
+
 exports.process_pass01 = function (zx, par) {
 	var name,
 	blocks = [],
@@ -155,6 +177,9 @@ exports.process_pass01 = function (zx, par) {
 	//console.log(' process_pass01 :', par.line_obj.use);
 	if (line_obj.use !== undefined) //combine the stored module with the new values
 	{
+		if (line_obj.testing)
+			console.log('process_pass01 use:', line_obj);
+
 		name = zx.gets(line_obj.use);
 		var models = zx.model_defines[name];
 		//console.log('use models in :', name, Object.keys(zx.model_defines));
@@ -169,22 +194,41 @@ exports.process_pass01 = function (zx, par) {
 				var modelcopy = deepcopy(model);
 				delete modelcopy.srcinfo;
 
-				var lineextn = extend(modelcopy, linecopy); //second one has the priority
-				//if (lineextn.tag === 'table')
-				//console.log('use model in each :', name, lineextn);
-				lineextn.srcinfo.file_stack.push({
-					filename : model.filename,
-					start_line : model.start_line
-				});
-				delete lineextn.use;
-				if (lineextn.save)
-					delete lineextn.save;
-				if (lineextn.part_of_model) {
-					lineextn.part_of_model_used = lineextn.part_of_model;
-					delete lineextn.part_of_model;
-				}
+				if (modelcopy.tag === "controller") {
+					linecopy = extend(modelcopy, linecopy); //second one has the priority
+					delete linecopy.tag;
+					delete linecopy.nonkeyd;
+					delete linecopy.q;
+				} else {
 
-				blocks.push(lineextn);
+					if (line_obj.testing)
+					    console.log('process_pass01 each:', modelcopy);
+
+					var lineextn = extend(modelcopy, linecopy); //second one has the priority
+
+					if (line_obj.testing && line_obj.q.query)
+						console.log('-------------------------------\nuse model in each :', name, lineextn.q.query);
+
+					lineextn.srcinfo.file_stack.push({
+						filename : model.filename,
+						start_line : model.start_line
+					});
+					delete lineextn.use;
+					if (lineextn.save)
+						delete lineextn.save;
+					if (lineextn.part_of_model) {
+						lineextn.part_of_model_used = lineextn.part_of_model;
+						delete lineextn.part_of_model;
+					}
+
+					lineextn.body = local_subsitiution(zx, lineextn, lineextn.body);
+					if (lineextn.q)
+						lineextn.q.query = local_subsitiution(zx, lineextn, lineextn.q.query);
+					lineextn.nonkeyd = local_subsitiution(zx, lineextn, lineextn.nonkeyd);
+                    //console.log('-------------------------------\nblocks.push(lineextn) :', lineextn.nonkeyd);
+
+					blocks.push(lineextn);
+				}
 
 			});
 			if (blocks.length > 0) {
