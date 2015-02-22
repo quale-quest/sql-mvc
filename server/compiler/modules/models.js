@@ -174,15 +174,15 @@ exports.process_pass01 = function (zx, par) {
 	var name,
 	blocks = [],
 	line_obj = par.line_obj;
-	//console.log(' process_pass01 :', par.line_obj.use);
-	if (line_obj.use !== undefined) //combine the stored module with the new values
+	//console.log(' process_pass01 :', par.line_obj.tag, ' use:',par.line_obj.use,' part of:',line_obj.part_of_model);
+	if ((line_obj.use !== undefined)&&(line_obj.part_of_model===undefined)) //combine the stored module with the new values
 	{
 		if (line_obj.testing)
 			console.log('process_pass01 use:', line_obj);
 
 		name = zx.gets(line_obj.use);
 		var models = zx.model_defines[name];
-		//console.log('use models in :', name, Object.keys(zx.model_defines));
+		//console.log('use models in :', name, Object.keys(zx.model_defines),' sm:',zx.saving_models);
 		if (models !== undefined) {
 			var linecopy = deepcopy(line_obj);
 			delete linecopy.use;
@@ -213,7 +213,7 @@ exports.process_pass01 = function (zx, par) {
 						filename : model.filename,
 						start_line : model.start_line
 					});
-					delete lineextn.use;
+
 					if (lineextn.save)
 						delete lineextn.save;
 					if (lineextn.part_of_model) {
@@ -239,7 +239,7 @@ exports.process_pass01 = function (zx, par) {
 				//console.log('use model insert  :',par.indx, blocks);
 				zx.insertArrayAt(zx.line_objects, par.indx + 1, blocks);
 				//var rem =
-				zx.line_objects.splice(par.indx, 1);
+				zx.line_objects.splice(par.indx, 1); //remove the current use statement
 				//console.log('use model removed  :',par.indx, rem);
 				//console.log('use model insertArrayAt :',par.indx, par.line_objects);
 				//if (name==='allbutton')fs.writeFileSync('output/debug2.json', JSON.stringify(zx.line_objects, null, 4));
