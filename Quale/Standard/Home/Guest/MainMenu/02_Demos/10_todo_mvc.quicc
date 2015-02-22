@@ -5,8 +5,11 @@
 
 <#view
 
+ifquery (session.show_menu='') 
 notify (style=Brief title="Built with SQL-MVC") 
 This entire web application, with layout, menu's, user administration, demo's and documentation is build with SQL-MVC.
+script set session.show_menu=1
+endquery
 
 table()
 	Select  --:{Title:"Make new records",from:"TODO_MVC",autoinsert:"top",tablestyle:"Todo"}
