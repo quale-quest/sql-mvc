@@ -2,7 +2,12 @@
 
 **Paradigm inversion - write web applications in SQL instead of JavaScript.**
 
-**Recent change log: Improved Syntax and added cloud9 install.**
+In 1991 Oracle added a few extensions to SQL to create Procedural SQL, so now we have added a 
+few extensions to Procedural SQL, to create Application SQL - it is that simple.
+
+**Recent change log: Improved Syntax and added cloud9 install, faster compile.**
+
+
 
 SQL-MVC is quite different to anything else out there, so don't have preconceived notions, and don't limit your thinking by 
 applying your current paradigm's best practices to SQL-MVC as it is a complete rethink of the development stack.
@@ -10,10 +15,10 @@ applying your current paradigm's best practices to SQL-MVC as it is a complete r
 This is not a toy,it is under full-time active development and it is the 
 culmination of many years of work, being re-implemented in an updated open source project.
 
-*Alpha version 0.0 Notice: When evaluating SQL-MVC keep in mind this project is still version 0.0.x- alpha/preview  
-release - a lot of stuff is not 100% polished or even to spec,
+*Alpha version 0.0 Notice: When evaluating SQL-MVC keep in mind this project is still version 0.0.x- alpha/preview release 
+- the GUI looks old and clunky, but it is fully customisable and will be modernised, a lot of stuff is not 100% polished or even to spec,
 try and pick up the key points we are trying to demonstrate not shortcomings or bugs
- (although all feedback is welcome). *
+ (although all feedback is welcome). We expect to reach Beta version in May *
  
 
 

@@ -3,7 +3,7 @@
 speed/memory performance  is not important
 ease of use is important
  */
-
+var fs = require('fs');
 exports.module_name = 'element_widget.js';
 exports.tags=[{name:"element"}];
 
@@ -296,10 +296,34 @@ exports.done_div = function (/*zx, line_objects*/
 
 };
 
+exports.shut_down = function (zx) {    
+    var str='';
+    
+    zx.forFields(zx.UIsl, function (el,key) {
+        //console.log('ul element name:',key,' el:',el);
+        var es=zx.gets(el,'\n    ');
+        es = es.replace(/\/>/g, "\\#>");
+        //console.log('ul element name:',key,' el:',es);
+        str = str +"\n\nelement("+key+")\n    "+es;
+    });
+    //console.log('ul element str:',str);
+    fs.writeFileSync(zx.output_folder + 'elements.quicc',"<#"+str+"/>" );
+}
+
+exports.start_up = function (zx) {
+    zx.UIsl = {};
+
+	//zx.UIsl = require('../../Elements_UI_7.json');
+}
+
 exports.tag_element = function (zx, o) { //overrides or extends the ui
-	//console.log('tag_element name:',o.name,' el:',zx.gets(o.code));
-	var code = zx.gets(o.code);
-	code = code.replace(/!<=/g, ">");
+    if (zx.pass!==1) return;
+    if (!o.name) o.name=o.array[0];
+    if (!o.name) return;
+    var code = o.body.trim();    
+    code = code.replace(/!<=/g, ">");
+    code = code.replace(/\\#>/g, "\/>");
+	//console.log('tag_element name:',o.name,code);//.name,' el:',zx.gets(o.code));
 	zx.UIsl[o.name] = code;
 };
 

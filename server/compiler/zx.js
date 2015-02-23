@@ -199,14 +199,17 @@ exports.indent = function (dent) {
 	return str;
 };
 
-exports.gets = function (val) {
+exports.gets = function (val,sep) {
 	if (val === undefined)
 		return "";
 	if (Array.isArray(val))
-		val = val.join(' ');
+		val = val.join(sep||' ');
 	if (val === undefined)
 		return "";
-	return val.trim();
+    if (typeof val == 'string' || val instanceof String)
+        return val.trim();
+    else
+        return JSON.stringify(val);
 };
 
 exports.getA = function (val) {
@@ -659,6 +662,11 @@ var showSource = exports.showSource = function (html) {
     
     html =  '<div align="left"> <pre class="brush: js; html-script: true">' + html + '</pre></div>';
     return html;
+} 
+   
+
+var padRight = exports.padRight = function (text,length) {
+    return text+Array(l-text.length+1).join(" ")
 } 
    
    

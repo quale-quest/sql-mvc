@@ -192,7 +192,7 @@ var parse3count = 0;
 var parse3countMax = 999999999;
 
 var parse4 = function (text) {
-	//debug=1;
+	//debug=1;    
 	return parse3(text, 1);
 }
 var parse3 = function (text, extra_mode_par) {
@@ -203,7 +203,7 @@ var parse3 = function (text, extra_mode_par) {
 	if (typeof text !== "string" || !text) {
 		return null;
 	}
-
+    parse3count = 0;
 	var o = {};
 	var left = 0,
 	right = 0,

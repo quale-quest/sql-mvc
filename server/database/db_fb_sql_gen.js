@@ -670,12 +670,11 @@ exports.edit_from_table = function (zx, cx, fld_obj) {
 			if (codecname !== "") {
 				var decoder = zx.softcodecs[codecname];
 				if (decoder === undefined)
-					decoder = zx.UIsl["SoftCodec-" + codecname];
+					decoder = zx.UIsl["SoftCodec-decoder-" + codecname];
 
 				if (decoder === undefined)
 					zx.error.log_NoSoftCodec_warning(cx.zx, "NoSoftCodec Decoder: 1:", codecname, 0);
 				else {
-					decoder = decoder.decoder;
 					//var template = hogan.compile(decoder);
 					//var FieldSQL = template.render(fld_obj); //pop
                     var FieldSQL =  zx.hogan_ext.compile_render(zx, fld_obj , decoder); 
@@ -873,11 +872,10 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 			if (widget.f.softcodec !== "") {
 				var encoder = zx.softcodecs[widget.f.softcodec];
 				if (encoder === undefined)
-					encoder = zx.UIsl["SoftCodec-" + widget.f.softcodec];
+					encoder = zx.UIsl["SoftCodec-encoder-" + widget.f.softcodec];
 				if (encoder === undefined)
 					zx.error.log_NoSoftCodec_warning(cx.zx, "NoSoftCodec: 1:", widget.f.softcodec, 0);
 				else {
-					encoder = encoder.encoder;
 					//var template = hogan.compile(encoder);
 					//var FieldSQL = template.render(widget); //pop
                     var FieldSQL =  zx.hogan_ext.compile_render(zx, widget , encoder); 

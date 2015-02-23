@@ -164,9 +164,7 @@ var seq_main = function () {
 
 		//console.log('start main', Date());
 
-		zx.UIsl = {};
 
-		zx.UIsl = require('./Elements_UI_7.json');
 		//console.log('Require zx.UIsl:', zx.UIsl);
 
 		zx.default_pk_name = 'ref';
@@ -381,12 +379,16 @@ var get_model_files = function (zx, path) {
 	var filelist_c = fileutils.getDropinFileList(zx, re, path, zx.line_obj, 130129);
 	re = new RegExp('^MC.', "i");
 	var filelist_d = fileutils.getDropinFileList(zx, re, path, zx.line_obj, 130130);
-
+	re = new RegExp('^Elements', "i");
+	var filelist_e = fileutils.getDropinFileList(zx, re, path, zx.line_obj, 130130);
+    
+    
     //console.warn('got model_files for --M:',filelist_m);
     //console.warn('got model_files for --C:',filelist_c);
     //console.warn('got model_files for --D:',filelist_d);
+    //console.warn('got model_files for --E:',filelist_e);
 	
-    var list = filelist_c.concat(filelist_m, filelist_d);
+    var list = filelist_c.concat(filelist_m, filelist_d,filelist_e);
     //console.warn('got model_files for --:',list);
 
 	return list;

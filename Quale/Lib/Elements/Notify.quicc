@@ -1,0 +1,25 @@
+<#
+element(NotifyDiv)
+    <div class="notification-wrap information"><span class="icon-information">Information: </span>{{Text}}</div>
+
+element(HelpNotifyDiv)
+    <div class="notification-wrap information"><span class="icon-information">Help: </span>{{Text}}</div>
+
+element(InfromNotifyDiv)
+    <div class="notification-wrap information"><span class="icon-information">Information: </span>{{Text}}</div>
+
+element(WarningNotifyDiv)
+    <div class="notification-wrap warning"><span class="icon-warning">Warning: </span>{{Text}}</div>
+
+element(SuccessNotifyDiv)
+    <div class="notification-wrap success"><span class="icon-success">SUCCESS: </span>{{Text}}</div>
+
+element(FailureNotifyDiv)
+    <div class="notification-wrap failuer"><span class="icon-failure">FAILURE: </span>{{Text}}</div>
+
+element(BriefNotifyDiv)
+    <script type="text/javascript">$("#container-n").notify("create", "{{#icon}}withIcon{{/icon}}{{^icon}}sticky{{/icon}}",{ title:'{{title}}', text:{{#quotes}}{{#marked}}{{{Text}}}{{/marked}}{{/quotes}} {{#icon}},icon:'qqui1/{{icon}}'{{/icon}} },{ });</script>
+
+element(StickyNotifyDiv)
+    <script type="text/javascript">$("#container-n").notify("create", "{{#icon}}withIcon{{/icon}}{{^icon}}sticky{{/icon}}",{ title:'{{title}}', text:{{#quotes}}{{#marked}}{{{Text}}}{{/marked}}{{/quotes}} {{#icon}},icon:'qqui1/{{icon}}'{{/icon}} },{ expires:false });</script>
+/>
