@@ -45,7 +45,7 @@
         "xschema_rebuild": "always",
         "schema_rebuild": "onchange",
         "schema_alter_fields": "yes",
-        "schema_reorder_fields": "yes",
+        "schema_reorder_fields": "no",
         "platform_user_table": {
             "user_table_name": "Z$USER",
             "user_display_field": "name",

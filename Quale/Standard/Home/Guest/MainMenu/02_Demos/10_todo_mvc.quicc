@@ -1,18 +1,7 @@
-
 <div align="center"> 
-<h1><a href="https://github.com/quale-quest/sql-mvc">SQL-MVC</a> example implementation of <a href="http://todomvc.com">todomvc.com</a></h1>
-<br>
+<h1><a href="https://github.com/quale-quest/sql-mvc">SQL-MVC</a> example implementation of <a href="http://todomvc.com">todomvc.com</a></h1><br>
 
 <#view
-
-ifquery (not key.admin)
-ifquery (session.shown_message_at_start='') 
-notify (style=Brief title="Built with SQL-MVC") 
-This entire web application, with layout, menu's, user administration, demo's and documentation is build with SQL-MVC.
-script set session.shown_message_at_start=1
-endquery
-endquery
-
 table()
 	Select  --:{Title:"Make new records",from:"TODO_MVC",autoinsert:"top",tablestyle:"Todo"}
 	STATUS, --:{Action:"Edit",debug:0,autosave:yes}
@@ -34,8 +23,6 @@ button {title:"Completed"}
 	set here.todo_type='2';
 
 use(todo.clear.button)
-
-
 
 html <div align="center"><br><br><br><br></div></div>	
 
