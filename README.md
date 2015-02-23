@@ -15,8 +15,8 @@ applying your current paradigm's best practices to SQL-MVC as it is a complete r
 This is not a toy,it is under full-time active development and it is the 
 culmination of many years of work, being re-implemented in an updated open source project.
 
-*Alpha version 0.0 Notice: When evaluating SQL-MVC keep in mind this project is still version 0.0.x- alpha/preview release 
-- the GUI looks old and clunky, but it is fully customisable and will be modernised, a lot of stuff is not 100% polished or even to spec,
+*Alpha version 0.0 Notice: When evaluating SQL-MVC keep in mind this project is still version 0.0.x- alpha/preview release.
+The GUI looks old and clunky, but it is fully customisable and will be modernised, a lot of stuff is not 100% polished or even to spec,
 try and pick up the key points we are trying to demonstrate not shortcomings or bugs
  (although all feedback is welcome). We expect to reach Beta version in May *
  
