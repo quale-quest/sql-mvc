@@ -3,7 +3,7 @@
 **Paradigm inversion - write web applications in SQL instead of JavaScript.**
 
 In 1991 Oracle added a few extensions to SQL to create Procedural SQL, so now we have added a 
-few extensions to Procedural SQL, to create Application SQL - it is that simple.
+few more extensions to SQL, to create QUery Application Language Extensions (QUALE) - it is that simple.
 
 **Recent change log: Improved Syntax and added cloud9 install, faster compile.**
 

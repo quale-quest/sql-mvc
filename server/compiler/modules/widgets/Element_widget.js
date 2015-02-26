@@ -166,7 +166,7 @@ var fieldSubItem = function (cx, FT) {
 		if (FT.cf[0].Action === 'Link') //
 		{
 			//console.log('fieldSubItem A: ',cx.pop,FT);
-			cx.QryOffset = zx.dbg.link_from_table(cx.zx, FT);
+			cx.QryOffset = zx.dbg.link_from_table(cx.zx,cx, FT);
 			//  cx.QryUrl = "return(zxnav(event,{{0}},"+QryOffset+"));";
 
 			tt = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Main");

@@ -5,9 +5,11 @@ declare overridemastertable varchar(100);
 declare linkby varchar(100);
 declare field$name varchar(41);
 declare operator$ref varchar(41);
+declare PK_FIELD_NAME varchar(41);
+
 
 sql overridemastertable=null;
-select field_name,valu,query from Z$PK_CACHE where master=:pki and indx=:pkf into :field$name,:overridemastertable,:linkby;
+select field_name,valu,query,PK_FIELD_NAME from Z$PK_CACHE where master=:pki and indx=:pkf into :field$name,:overridemastertable,:linkby,:PK_FIELD_NAME;
 select operator_ref from Z$CONTEXT where pk = :pki into :operator$ref;
 execute overridemastertable;
 sql overridemastertable=COALESCE(overridemastertable,'#defaultmastertable#');
@@ -17,15 +19,20 @@ into operator select * from user_table_name where user_table_name.user_pk_field=
 INSERT INTO Z$CONTEXT (PK, TSTAMP, OPERATOR_REF, ID,Linked_from_cid,Linked_from_indx) 
 VALUES (:cid,'now',:operator$ref ,:z$sessionid ,:pki,:pkf);
 
+if (field$name = '') then 
+  sql overridemastertable=' from '||:overridemastertable||'';
+else
+begin  
 if (field$name='click') then 
     begin
 	   sql overridemastertable=' from '||:overridemastertable||' where '||:linkby;
 	end   
 else
-		sql overridemastertable=' from '||:overridemastertable||' where ref='''||:linkby||'''';
-	
-
-into master select * ::-overridemastertable;	
+    begin
+		sql overridemastertable=' from '||:overridemastertable||' where '||:PK_FIELD_NAME||' = '''||REPLACE(:linkby,'''','''''')||''''  ;
+	end   	
+end
+into master select first 1 * ::-overridemastertable;	
 	
 
 />

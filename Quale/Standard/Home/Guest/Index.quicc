@@ -16,11 +16,10 @@ VALUES (
 
 />
 
-<div align="center"> 
-<h1><a href="https://github.com/quale-quest/sql-mvc">SQL-MVC</a> example implementation of <a href="http://todomvc.com">todomvc.com</a></h1>
-<br>
-
 <#view
+Container(style=Center)
+notify(style=Heading) 
+<a href="https://github.com/quale-quest/sql-mvc">SQL-MVC</a> example implementation of <a href="http://todomvc.com">todomvc.com</a>
 
 ifquery (not key.admin)
 ifquery (session.shown_message_at_start='') 
@@ -52,7 +51,7 @@ button {title:"Completed"}
 
 use(todo.clear.button)
 
-
+CloseContainer
 
 html <div align="center"><br><br><br><br></div></div>	
 

@@ -562,7 +562,32 @@ exports.link_from = function (zx, line_obj) {
 	return zx.sql.cidi;
 };
 
-exports.link_from_table = function (zx, fld_obj) {
+var check_pointer = function (zx,cx,fld_obj) {
+        
+    if (fld_obj.cf[0].pointer===undefined)
+    {
+
+        zx.error.log_SQL_fail (zx, "no primary key for edit ","You must select(and mark) the primary key as part of the query, in order to edit a field in the table", fld_obj, zx.line_obj);
+        throw zx.error.known_error;
+    }
+	var pointerfieldindex = fld_obj.cf[0].pointer;
+	//console.log('pointerfieldindex a:',fld_obj.cf[0].pointer,cx.fields[ pointerfieldindex ]);
+	var pointerfields = cx.fields[pointerfieldindex].name;
+	//console.log('=================================\n',pointerfields );
+	var pkname = pointerfields.split(' ')[0];
+	if (pkname === 'INSERT_REF')
+		pkname = 'REF'//This refers to the pk of the "Z$INSERTREF" Table
+
+	if (pointerfieldindex === undefined) {
+		console.log('!!!!!!!!!!!!!!!!!!!!!!!!No Primary key field for edit\n', pointerfieldindex, fld_obj, pkname, pointerfields);
+		{console.trace('process.exit(2) from No Primary key field for edit : ');process.exit(2); }//TODO log and continue non destructive
+	}
+   fld_obj.cf[0].pkname = pkname;
+	return pkname;
+};
+
+
+exports.link_from_table = function (zx,cx, fld_obj) {
 	// optimal back-end storage of likns are important -
 	//  currently we use basic tables -- this will be optimised - to in memory or redis type tables.
 	//  remember these tables may have a very short life....as soon as we move to the next page they are gone.....
@@ -606,6 +631,7 @@ if (fld_obj.cf[0].pointer===undefined)
     throw zx.error.known_error;
 }
 
+    var pkname = check_pointer(zx,cx,fld_obj);
     
 	var proc = zx.gets(fld_obj.cf[0].execute);
     //console.log('run_procedure_as : ',proc );
@@ -623,9 +649,14 @@ if (fld_obj.cf[0].pointer===undefined)
 
 	//this will happen in the table loop and inserts the value of the pointer field, it
 
-	var links = "INSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,TARGET,QUERY, PAGE_PARAMS)" +
+	var links = "INSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS)" +
 		"VALUES (:cid,:tfid,'tfid','" + from +
-		"', '" + zx.Current_main_page_name + "', :F" + fld_obj.cf[0].pointer + " ," + PAGE_PARAMS + ");tfid=tfid+1;";
+        "','" + pkname +
+		"', '" + zx.Current_main_page_name + "', "+
+        
+        ":F" + fld_obj.cf[0].pointer 
+        
+        + " ," + PAGE_PARAMS + ");tfid=tfid+1;";
 	//console.log('link_from_table links: ',links,fld_obj.cf[0] );
 	fld_obj.postback = links;
 	fld_obj.tfidOffset = zx.tfidOffset;
@@ -690,25 +721,7 @@ exports.edit_from_table = function (zx, cx, fld_obj) {
 	//needs pk to update on and the field that should be updated
 	//console.log('=================================\n',fld_obj );
 
-if (fld_obj.cf[0].pointer===undefined)
-{
-
-    zx.error.log_SQL_fail (zx, "no primary key for edit ","You must select(and mark) the primary key as part of the query, in order to edit a field in the table", fld_obj, zx.line_obj);
-    throw zx.error.known_error;
-}
-	var pointerfieldindex = fld_obj.cf[0].pointer;
-	//console.log('pointerfieldindex a:',fld_obj.cf[0].pointer,cx.fields[ pointerfieldindex ]);
-	var pointerfields = cx.fields[pointerfieldindex].name;
-	//console.log('=================================\n',pointerfields );
-	var pkname = pointerfields.split(' ')[0];
-	if (pkname === 'INSERT_REF')
-		pkname = 'REF'//This refers to the pk of the "Z$INSERTREF" Table
-
-	if (pointerfieldindex === undefined) {
-		console.log('!!!!!!!!!!!!!!!!!!!!!!!!No Primary key field for edit\n', pointerfieldindex, fld_obj, pkname, pointerfields);
-		{console.trace('process.exit(2) from No Primary key field for edit : ');process.exit(2); }//TODO log and continue non destructive
-	}
-   fld_obj.cf[0].pkname = pkname;
+    var pkname = check_pointer(zx,cx,fld_obj);
     
     var baserecord_ref=zx.async_data.check_Async_Binary_Fields(zx,fld_obj);
 
@@ -740,7 +753,7 @@ if (fld_obj.cf[0].pointer===undefined)
 	var links = "INSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS,TARGET_FIELDS,TARGET_VALUES,baserecord)" +
 		"VALUES (:cid,:tfid,'updateonpk','" + /*valu*/
 		from +
-		"','" + pkname + "', '" + fld_obj.name + "', :F" + pointerfieldindex + " ,'" + Soft_decode + "' ,'" + TARGET_FIELDS + "'," + TARGET_VALUES + ","+baserecord_ref+");tfid=tfid+1;";
+		"','" + pkname + "', '" + fld_obj.name + "', :F" + fld_obj.cf[0].pointer + " ,'" + Soft_decode + "' ,'" + TARGET_FIELDS + "'," + TARGET_VALUES + ","+baserecord_ref+");tfid=tfid+1;";
 	//console.log('=================================\n',fld_obj, pkname );
 	// process.exit(2);
 	//done the postback must also be informed of any softcodec required

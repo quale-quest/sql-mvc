@@ -110,7 +110,7 @@ var assignFromText = function (zx, line_obj, txt, target_type) {
 
 	//..special handling....
 	if (val.indexOf('#defaultmastertable#') > 0) {
-		val = val.replace(/#defaultmastertable#/g, zx.defaultmastertable);
+		val = val.replace(/#defaultmastertable#/g, zx.conf.db.platform_user_table.user_table_name);
 	}
 	if (zx.defaultmastertable === undefined)
 		process.exit(2);

@@ -1,0 +1,36 @@
+<div align="center"> 
+<h1>Other To-do items in the same session</h1>
+<br>
+
+<#view
+master(TODO_MVC)
+
+form()
+	Select  --:{Title:"For session ",from:"TODO_MVC",tablestyle:"ToDo"}
+	OWNER   --:{title:"Also in session",Type:"View"}
+	From TODO_MVC 
+    where (ref=master.ref)
+
+
+table()
+	Select  --:{Title:"Make new records",from:"TODO_MVC",tablestyle:"DT"}
+	first 100
+	STATUS, --:{}
+	NAME,   --:{}
+	OWNER,   --:{Type:"Hide"}
+	REF	    --:{}	
+	From TODO_MVC 
+    where (owner=master.owner)
+
+button (title:"View all")
+    set here.todo_type='';
+
+button {title:"Active"}
+	set here.todo_type='1';
+
+button {title:"Completed"}
+	set here.todo_type='2';
+
+use(todo.source_files)	                                                                       
+/>
+

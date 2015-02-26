@@ -27,3 +27,31 @@ endquery
 />
 
 
+<#controller(todo.source_files)	
+html <div align="center"><br><br><br><br></div></div>	
+
+Container( style=Tab                                                                                tab=Info)
+rem -------------------------------------------------------------------------------------------------------
+html <h1>Info</h1>
+
+print() you were here last at here.this_page_info
+script() set here.this_page_info=cast('now' as timestamp);
+html() <br>
+
+print() ($select count(*) from MAIL where FROM_USER=session.id and SUBJECT='login log' $) actions from you 
+	and ($select count(*) from MAIL where SUBJECT='login log' $) actions total (in this session).
+
+NextContainer                                                                   (tab=Source_Code)
+Container (style=Accordion                                                title=View)
+include (type="pre" file="this" )
+NextContainer                                                           (title=Model)
+include (type="pre" file="Models/TodoModel" )
+NextContainer                                                      (title=Controller)
+include (type="pre" file="Controllers/TodoController" )
+
+CloseContainer                                                                     
+
+CloseContainer                                                                                 
+/>
+
+

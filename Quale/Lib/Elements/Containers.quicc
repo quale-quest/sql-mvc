@@ -1,6 +1,7 @@
 
 <#
 
+
 element(ContainerOpen)
     <div class="widget-panel"><div class="widget-top">{{{LeftSpan}}}<h4>{{title}}</h4>{{RightSpan}}</div><div class="widget-content module"><div class="content-block tbl-default">
 
@@ -9,10 +10,20 @@ element(ContainerClose)
 
 element(ContainerFirst)
     First
+	
+	
 
 element(ContainerMaintainItemList)
     0
 
+	
+element(CenterContainerOpen)
+    <div align="center">
+element(CenterContainerClose)
+    </div>
+	
+
+	
 element(ThinContainerOpen)
     <div class="widget-panel"><div class="widget-clear">{{{LeftSpan}}}<h4>{{title}}</h4>{{RightSpan}}</div><div class="widget-content module"><div class="content-block tbl-default">
 

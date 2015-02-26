@@ -1,0 +1,19 @@
+
+<#view
+master(TODO_MVC)
+
+html <div align="center"><h1>
+print Other To-do items in the same session(master.owner)
+html </h1></div>
+
+table()
+	Select  --:{Title:"Make new records",from:"TODO_MVC",tablestyle:"DT"}
+	STATUS, --:{}
+	NAME,   --:{}
+	OWNER,   --:{Type:"Hide"}
+	REF	    --:{}	
+	From TODO_MVC 
+    where (owner=master.owner)
+	
+use(todo.source_files)	
+/>

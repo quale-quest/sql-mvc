@@ -31,7 +31,11 @@ thus we must optimise this case to simple text substitutions
  */
  
  exports.module_name='script_control.js';
- exports.tags=[{name:"script"},{name:"procedure"}];
+ exports.tags=[
+ {name:"script"},
+ {name:"procedure"},
+ {name:"master"}
+ ];
 
 var script_into = function (zx, line_obj, r) {
 
@@ -84,7 +88,7 @@ var script_into = function (zx, line_obj, r) {
 
 		var complex = false;
 		if (params.indexOf('#defaultmastertable#') > 0) {
-			params = params.replace(/#defaultmastertable#/g, zx.defaultmastertable);
+			params = params.replace(/#defaultmastertable#/g, zx.conf.db.platform_user_table.user_table_name);
 		}
 		if (params.indexOf('::') > 0) {
 			params = params.replace(/::/g, ':');
@@ -416,6 +420,13 @@ exports.ExtractFirstScript = function (o, r, debugmsg) {
 	return false;
 };
 
+exports.tag_master = function (zx, o) {
+    if (zx.pass!==1) return;
+    if (!o.table) o.table=o.array[0];
+    if (!o.table) return;
+    zx.overridemastertable = o.table;    
+}
+
 exports.tag_script = function (zx, line_obj) {
 	// if (active_pass!=zx.pass) return true;
 	//other scripts only run once
@@ -430,7 +441,7 @@ exports.tag_script = function (zx, line_obj) {
 	o.left = o.left.replace(/\n/, " "); //1 line
 
 	if (o.left.indexOf('#defaultmastertable#') > 0) {
-		o.left = o.left.replace(/#defaultmastertable#/g, zx.defaultmastertable);
+		o.left = o.left.replace(/#defaultmastertable#/g, zx.conf.db.platform_user_table.user_table_name);
 		//console.log('-------------------------tag_script o.left : ', o.left);
 		//process.exit(2);
 	}
@@ -477,7 +488,7 @@ exports.done_item = function (/*zx, line_obj*/
 exports.init = function (zx) {
 	//
 	//console.log('init script: ');
-
+	
 	zx.defaultmastertable = 'me'; //default if no real file is found - me
 	delete zx.overridemastertable; //overwrites what ever file is found - allow me or real file
 
