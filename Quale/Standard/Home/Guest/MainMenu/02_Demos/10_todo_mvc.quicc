@@ -1,11 +1,9 @@
 
-
-
 <#view
 
-html <div align="center"><h1>
-html Total entries per session
-html </h1></div>
+dropinmenu (icon:"nav-icon invoice-icon",title:"Todo Reports")
+
+notify(style=Heading) html Total entries per session
 
 table()
 	Select  --:{Title:"View existing records",from:"TODO_MVC",tablestyle:"DT"}

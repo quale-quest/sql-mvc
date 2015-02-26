@@ -211,6 +211,7 @@ var seq_main = function () {
 		zx.models = require('./modules/models.js');
 		zx.plugins.push(zx.models);
 
+        zx.page=page;
 		zx.plugins.push(page);
 
 		zx.hogan_ext = require('./modules/hogan_ext.js');

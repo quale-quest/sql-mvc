@@ -258,7 +258,7 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 						}
                         else
                         {
-                            console.log('\n\nParseFileToObject no splits:', is, Statements.length,Statements,"\n", splits);
+                            //console.log('\n\nParseFileToObject no splits:', is, Statements.length,Statements,"\n", splits);
                         }
 
 					}
@@ -303,7 +303,7 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 				//console.log('bcb b2:',line_obj);
                 //    if (compound_statement_debug)
 				//	    console.log('ParseFileToObject bc:', blocks);                
-                if (Statements.length>1)
+                if ((Statements.length>1)&&(objtype === undefined))
                 {
                 var eob_line_obj = {};
                 
@@ -387,6 +387,38 @@ var addFileToLinkFiles = function (zx, fn, obj, debugref) {
 	}
 };
 
+exports.check_json_parse = function (zx, obj) {
+              
+    if (obj.json_parse)  {
+                //console.log('Quic RecurseParseFileToObject 172021a0 :');
+				var jl = json_like.parse(obj.body);
+				//console.log('Quic RecurseParseFileToObject 172021a :', jl);
+                 if (jl.debug_options) zx.debug_options=jl.debug_options;
+                
+                if (jl.object_ended_at){
+                   obj.body = obj.body.substring(jl.object_ended_at);
+                   //later... now it is good for debugging delete jl.object_ended_at;   
+                }
+                //console.log('Quic RecurseParseFileToObject 172021c :', jl);
+                //later... now it is good for debugging delete obj[i].json_parse;
+                obj = extend(obj, jl); //second one has the priority
+                //console.log('Quic RecurseParseFileToObject 172021z :', obj);
+    }
+    return obj;            
+}
+
+exports.check_json_parse_array = function (zx, objs) {
+     //console.log(' check_json_parse_array 120807a0 :', objs);
+    for (var i = 0; i < objs.length; i++) {        
+        //console.log(' check_json_parse_array 120807a :', objs[i]);
+        objs[i] = exports.check_json_parse(zx,objs[i]);
+        //console.log(' check_json_parse_array 120807m :', objs[i]);
+    };
+    
+  //console.log(' check_json_parse_array 120807z :', objs);  
+  return objs;
+}
+                
 var MaxIncludes = 0;
 exports.RecurseParseFileToObject = function (zx, filename) {
 	//get the object, find an include file and repeat the find
@@ -422,19 +454,8 @@ exports.RecurseParseFileToObject = function (zx, filename) {
                 }
                 else {
                 
-                if (obj[i].json_parse)  {
-				var jl = json_like.parse(obj[i].body);
-				//console.log('Quic RecurseParseFileToObject 172021a :', jl);
-                 if (jl.debug_options) zx.debug_options=jl.debug_options;
-                
-                if (jl.object_ended_at){
-                   obj[i].body = obj[i].body.substring(jl.object_ended_at);
-                   //later... now it is good for debugging delete jl.object_ended_at;   
-                }
-                
-                //later... now it is good for debugging delete obj[i].json_parse;
-                obj[i] = extend(obj[i], jl); //second one has the priority
-                }
+                obj[i] = exports.check_json_parse(zx,obj[i]);
+
                 }
 				obj[i] = zx.quic.parse(zx, obj[i], obj[i].body, obj[i].tag, true); //obj[i] here gets filled later...should really be made into 2 separate objects
 				//console.log('Quic RecurseParseFileToObject 172022 :', obj[i]);

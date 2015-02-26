@@ -241,6 +241,7 @@ var tag_menuscan_recurse = function (zx, o, menuhdr) {
 			//console.warn('tag_menuscan_recurse open sub:', p, i, JSON.stringify(item, null, 4), fn);
 			if (fs.existsSync(fn)) {
 				menu_objs = page.ParseFileToObject(zx, fn, "dropinmenu");
+                menu_objs = zx.page.check_json_parse_array(zx,menu_objs);
 				//console.warn('tag_menuscan_recurse menu_objs aa:', JSON.stringify(menu_objs, null, 4));
 			}
 
@@ -269,9 +270,9 @@ var tag_menuscan_recurse = function (zx, o, menuhdr) {
 			if (item.filename !== undefined) { //menu item
 				//console.warn('tag_menuscan_recurse menu item:',JSON.stringify(item, null, 4));
 				delete o.name; //make sure it default to a item
-				fn = item.filename.replace(path.extname(item.filename), '');
+				fn = item.filename.replace(path.extname(item.filename), '');                
 				menu_objs = page.ParseFileToObject(zx, item.filename, "dropinmenu");
-				//console.warn('tag_menuscan_recurse menu_objs bb:',menu_objs,' into ',zx.line_obj_current_tag_index);
+                menu_objs = zx.page.check_json_parse_array(zx,menu_objs);
 				//produce the menu item
 
 				var br = fileutils.locateclosestbuildroot(zx, fn);
@@ -288,7 +289,7 @@ var tag_menuscan_recurse = function (zx, o, menuhdr) {
 					tag_menu(zx, o);
 				} else { //defined in the file
 
-
+                    //console.warn('tag_menuscan_recurse file:',menu_objs);
 					for (var indx = 0; indx < menu_objs.length; indx++) {
                         if (menu_objs[indx].title === undefined)
                             menu_objs[indx].title = o.title;
