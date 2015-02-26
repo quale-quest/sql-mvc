@@ -32,7 +32,7 @@ html <div align="center"><br><br><br><br></div></div>
 
 Container( style=Tab                                                                                tab=Info)
 rem -------------------------------------------------------------------------------------------------------
-html <h1>Info</h1>
+notify(style=Heading) Info
 
 print() you were here last at here.this_page_info
 script() set here.this_page_info=cast('now' as timestamp);
@@ -43,10 +43,13 @@ print() ($select count(*) from MAIL where FROM_USER=session.id and SUBJECT='logi
 
 NextContainer                                                                   (tab=Source_Code)
 Container (style=Accordion                                                title=View)
+print <b>This source file is <u>here.thisfile</u>:</b>
 include (type="pre" file="this" )
 NextContainer                                                           (title=Model)
+print This source file is Models/TodoModel :
 include (type="pre" file="Models/TodoModel" )
 NextContainer                                                      (title=Controller)
+print This source file is Controllers/TodoController :
 include (type="pre" file="Controllers/TodoController" )
 
 CloseContainer                                                                     

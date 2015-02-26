@@ -501,7 +501,12 @@ exports.TextWithEmbededExpressions = function (zx, line_obj, QryStr, dest, Conte
 	var result = "";
 	while (zx.expressions.ExtractFirstOne(zx, o, r, 1600502)) {
 		whilec++;
-		//console.log('TextWithEmbededExpressions o,r : ', o, r);
+        if (r.content === 'here.thisfile')
+            {
+		     //console.log('TextWithEmbededExpressions o,r : ', o, r);
+             result += '' + zx.pages[zx.pgi].name;
+            }
+        else {
 		if (r.method === "constant") {
 			result += r.content;
 			// console.log('TextWithEmbededExpressions push htnl : ', r.content);
@@ -531,6 +536,7 @@ exports.TextWithEmbededExpressions = function (zx, line_obj, QryStr, dest, Conte
 				result += ":" + varx.key + " ";
 			//zx.mt.lines.push("eval(" + varx.key+ " as " + varx.source + ")");
 		}
+        }
 		o.left = o.right;
 	}
 

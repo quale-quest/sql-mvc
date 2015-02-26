@@ -1,4 +1,13 @@
+<#
+Container(style=Center)
+notify(style=Heading) Info
 
-<#include(file=MainMenu/02_Demos/10_todo_mvc) />
+print() you were here last at here.this_page_info
+script() set here.this_page_info=cast('now' as timestamp);
+html() <br>
 
-          
+print() ($select count(*) from MAIL where FROM_USER=session.id and SUBJECT='login log' $) actions from you 
+	and ($select count(*) from MAIL where SUBJECT='login log' $) actions total (in this session).
+
+CloseContainer
+/>          

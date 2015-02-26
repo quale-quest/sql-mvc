@@ -21,6 +21,8 @@ Container(style=Center)
 notify(style=Heading) 
 <a href="https://github.com/quale-quest/sql-mvc">SQL-MVC</a> example implementation of <a href="http://todomvc.com">todomvc.com</a>
 
+
+
 ifquery (not key.admin)
 ifquery (session.shown_message_at_start='') 
 notify (style=Brief title="Built with SQL-MVC") 
@@ -53,32 +55,10 @@ use(todo.clear.button)
 
 CloseContainer
 
-html <div align="center"><br><br><br><br></div></div>	
-
-Container( style=Tab                                                                                tab=Info)
-rem -------------------------------------------------------------------------------------------------------
-html <h1>Info</h1>
-
-print() you were here last at here.this_page_info
-script() set here.this_page_info=cast('now' as timestamp);
-html() <br>
-
-print() ($select count(*) from MAIL where FROM_USER=session.id and SUBJECT='login log' $) actions from you 
-	and ($select count(*) from MAIL where SUBJECT='login log' $) actions total (in this session).
-
-NextContainer                                                                   (tab=Source_Code)
-Container (style=Accordion                                                title=View)
-include (type="pre" file="MainMenu/02_Demos/10_todo_mvc" )
-NextContainer                                                           (title=Model)
-include (type="pre" file="Models/TodoModel" )
-NextContainer                                                      (title=Controller)
-include (type="pre" file="Controllers/TodoController" )
-
-CloseContainer                                                                     
-
-CloseContainer                                                                                 
+use(todo.source_files)
+                                                                         
 />
 
 
-<br><br><br> 
+
 

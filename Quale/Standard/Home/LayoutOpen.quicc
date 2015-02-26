@@ -19,7 +19,7 @@ xifnotexists="select name from user_table_name where user_table_name.user_pk_fie
 <#
 Menu (name:"Start",style:"LBMenu")
 
-Menu (icon="nav-icon dboard-icon" from=user_table_name where="user_pk_field=Operator.user_pk_field" form=Dashboard/Dashboard title="Todo Demo") 
+Menu (icon="nav-icon dboard-icon" from=user_table_name where="user_pk_field=Operator.user_pk_field" form=Dashboard/Dashboard title="Dashboard") 
 
 MenuScan (menuname:"MainMenu")
 

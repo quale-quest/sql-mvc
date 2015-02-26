@@ -3,7 +3,7 @@
 
 dropinmenu (icon:"nav-icon invoice-icon",title:"Todo Reports")
 
-notify(style=Heading) html Total entries per session
+notify(style=Heading) Total entries per session
 
 table()
 	Select  --:{Title:"View existing records",from:"TODO_MVC",tablestyle:"DT"}
@@ -17,9 +17,9 @@ table()
 	or( (status='' or status is null) and here.todo_type='1')or(status='1' and here.todo_type='2')))
 	group by Owner
 
-html <div align="center"><h1>
-print (style="CentreHeading") All To Do Items
-html </h1></div>
+
+notify (style="Heading") All To Do Items
+
 
 table()
 	Select  --:{Title:"View existing records",from:"TODO_MVC",tablestyle:"DT"}
