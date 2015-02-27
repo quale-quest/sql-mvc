@@ -22,12 +22,9 @@ notify(style=Heading)
 <a href="https://github.com/quale-quest/sql-mvc">SQL-MVC</a> example implementation of <a href="http://todomvc.com">todomvc.com</a>
 
 
-
 ifquery (not key.admin)
-ifquery (session.shown_message_at_start='') 
-notify (style=Brief title="Built with SQL-MVC") 
-This entire web application, with layout, menu's, user administration, demo's and documentation is build with SQL-MVC.
-script set session.shown_message_at_start=1
+ifquery (once.session_showmessageatstartX) 
+notify (style=Brief title="Built with SQL-MVC") This entire web application, with layout, menu's, user administration, demo's and documentation is build with SQL-MVC.
 endquery
 endquery
 

@@ -133,6 +133,11 @@ var TagTypes =
 		"method" : "getter",
 		"addback" : false
 	}, {
+		"open" : "once.",
+		"close" : "",
+		"method" : "getter",
+		"addback" : false
+	}, {
 		"open" : "my.",
 		"close" : "",
 		"method" : "getter",

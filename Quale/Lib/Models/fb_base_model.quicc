@@ -499,7 +499,36 @@ END^
 SET TERM ; ^
 
 
-
+SET TERM ^ ;
+CREATE PROCEDURE Z$ONCE (
+    CONTEXT VARCHAR(80),
+    INITIAL_TIMES INTEGER,
+    PROGRESSIVE_TIMES INTEGER,
+    MAX_TIMES INTEGER )
+RETURNS (
+    DO_SHOW INTEGER )
+AS
+DECLARE VARIABLE counter integer=0; 
+BEGIN
+  /* This is to popup once and/or occationally remind the user of some action 
+     It also has a "_disable" Context that will disable the reminder
+  */ 
+  Do_Show=0;
+  select first 1 valu from Z$VARIABLES where Z$VARIABLES.REF=:context||'_disable' into :counter;
+  if (:counter=0) THEN  
+      BEGIN
+            select first 1 valu from Z$VARIABLES where Z$VARIABLES.REF=:context into :counter;
+            UPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES (:context,:counter+1) matching (REF);
+            if (:counter<:Max_times) THEN
+            begin
+                if (:counter<:Initial_times) then Do_Show=1;
+                if (MOD(:counter,:Progressive_times)=0) then Do_Show=1;
+            end            
+      END       
+    
+  suspend;
+END^
+SET TERM ; ^
 
 
 INSERT MATCHING NON_MATCH;

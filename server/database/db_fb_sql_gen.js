@@ -1043,7 +1043,7 @@ var get_variable_table_expression = function (v) {
 		}
 		break;
 	case 'session': {
-			where = ":operator$ref||'-'||:z$sessionid||'-" + v.field + "'";
+			where = "'session-'||:operator$ref||'-'||:z$sessionid||'-" + v.field + "'";
 		}
 		break;
 	case 'my': {
@@ -1081,11 +1081,22 @@ exports.emit_variable_getter = function (zx, line_obj, v /*, comment*/
         //console.log('emit_variable_getter key : ',keyquery); //process.exit(2);
 		return keyquery;
     }
+
+
+    if (v.table === 'once') {
+        
+        v.table = v.field.split('_')[0];
+        v.field = v.field.split('_')[1];
+        var where = get_variable_table_expression(v);
+        var oresult = "((SELECT DO_SHOW FROM Z$ONCE ("+where+", 1, 100, 1))=1)";           
+		return oresult;
+    }
     
 	var where = get_variable_table_expression(v);
     
 	if ((v.table === 'session') && (v.field === 'id'))
 		return "(:z$sessionid)";
+    
 	var result = "(coalesce((select first 1 valu from Z$VARIABLES where Z$VARIABLES.REF=" + where + "),''))";
 	return result;
 };
