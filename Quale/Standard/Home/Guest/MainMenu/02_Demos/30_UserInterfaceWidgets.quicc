@@ -5,13 +5,13 @@
 
 
 <p>
-A link <#:link(form:"Index",title:"Back to the welcome page")/> and a button to 
-<#button(form:"Operator/Inbox",glymph:"box-outgoing-b",title:"Read mail")  /> 
-and an unknown link style falling back to a <#:link --{style:"unknown",form:"Index",title:" basic link back to the welcome page"}/> </p>
-<p>A image link used as a tick <#link (style:"ImageLink",glymph:"p-approve",title:"Yes I can")/> 
+A link <#:link(form:"Index",title:"Back to the welcome page")#> and a button to 
+<#button(form:"Operator/Inbox",glymph:"box-outgoing-b",title:"Read mail")  #> 
+and an unknown link style falling back to a <#:link --{style:"unknown",form:"Index",title:" basic link back to the welcome page"}#> </p>
+<p>A image link used as a tick <#link (style:"ImageLink",glymph:"p-approve",title:"Yes I can")#> 
 </p>
 
-<p>Some i18n text and a context variable :  <b><#print You were here last at here.this_page_info/><b></p>
+<p>Some i18n text and a context variable :  <b><#print You were here last at here.this_page_info#><b></p>
 
 <#
 
@@ -91,8 +91,8 @@ CloseContainer
 
 CloseContainer
 
-/>
+#>
 
 
-<#script set here.this_page_info=cast('now' as timestamp);/><br>
+<#script set here.this_page_info=cast('now' as timestamp);#><br>
 

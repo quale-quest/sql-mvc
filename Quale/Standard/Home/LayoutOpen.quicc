@@ -3,15 +3,15 @@
 
 <#xinclude file=Menu/SlideBar
 xifnotexists="select name from user_table_name where user_table_name.user_pk_field=user_pk_field and  user_keys_field containing 'SWB'"
-/>	
+#>	
 
 <div  id="wrapper"> <!--this should hold all content excluding footer -->
-<#include(file=~/Layout/ProfileMenu)/>
-<#include(file=~/Layout/Notify)/>
+<#include(file=~/Layout/ProfileMenu)#>
+<#include(file=~/Layout/Notify)#>
 
 <#xinclude file=Menu/SwitchBar
 xifnotexists="select name from user_table_name where user_table_name.user_pk_field=operator.user_pk_field and  user_keys_field containing 'SWB'"
-/>	
+#>	
 
 
 <div id="container">
@@ -28,7 +28,7 @@ rem Menu{form=Dashboard/Dashboard xform:"Help/Main",title:"About" fromx=user_tab
 
 MenuEnd 
 
-/>
+#>
 
 <!--end  Menu1-->
 
@@ -37,7 +37,7 @@ MenuEnd
 <!--end  Menu3-->
 <div id="content"><div style="margin-left:4px;" class="container_12">
 
-<#xG960 />
+<#xG960 #>
 
 
 

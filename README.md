@@ -37,18 +37,18 @@ CREATE TABLE TODO_MVC				--:{as:"Table"}
   NAME VARCHAR(100),				--:{as:"Text",size:40,title:"todo",onupdate:"owner=session.id"}  
   OWNER VARCHAR(40),				--:{Type:"Hide"}
   STATUS VARCHAR(10) default ''    	--:{Type:"Pick",List:"Ticked",onupdate:"owner=session.id"}  
-);/>
+);#>
 
 <#controller(todo.clear.button)
 button(title:"Clear Completed",if:"(select count(ref) from todo_mvc where owner=session.id and status='1')!=0" )
-sql update todo_mvc set status='3' where owner=session.id and (status='1');/>
+sql update todo_mvc set status='3' where owner=session.id and (status='1');#>
 
 <#controller(todo.itemcount)
 ifquery ((select count(ref) from todo_mvc where owner=session.id and (status='' or status is null))!=1)
 print () ($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $) items left
 elsequery
 print () ($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $) item left
-endquery/>
+endquery#>
 
 <#view
 table()
@@ -69,7 +69,7 @@ button(title:"Active")   set here.todo_type='1';
 button(title:"Completed") set here.todo_type='2';
 
 use(todo.clear.button)
-/>
+#>
 ```
 
 ##How does SQL-MVC work?

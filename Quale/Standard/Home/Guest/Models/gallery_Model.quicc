@@ -12,4 +12,4 @@ CREATE TABLE GALLERY		     	--:{as:"Table"}
   BLOB_ID   VARCHAR(100)			--:{Type:"Gallery"}
   
 );
-/>
+#>

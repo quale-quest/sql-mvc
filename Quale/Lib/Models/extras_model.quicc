@@ -15,7 +15,7 @@ list{name=Ticked,values={
 	"":"ifblank:"
 	}}
 
-/>
+#>
 
 
 <#model
@@ -138,5 +138,5 @@ INSERT INTO Z$DICTIONARY (NAME,CONTEXT,INDX,VALU,EXTRA,BIN) values ('Friday','Da
 
 
 
-/>
+#>
 

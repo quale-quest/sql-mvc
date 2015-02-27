@@ -63,7 +63,7 @@ element(Edit_Main)
     {{#field.f.size}}size="{{field.f.size}}"{{/field.f.size}} 
     {{#field.f.maxlength}}maxlength="{{field.f.maxlength}}"{{/field.f.maxlength}} 
     onchange="zxd(event,[[0]],{{QryOffset}});" 
-    value="[[{{pop}}]]" \#></div>
+    value="[[{{pop}}]]" \></div>
 
 element(Edit_Div)
     {{{pop}}}
@@ -204,14 +204,14 @@ element(DatepickerTextFieldEdit_Main)
      onchange="zxd(event,[[0]],{{QryOffset}});" 
     {{#field.f.autosave}}data-autosave="{{field.f.autosave}}"{{/field.f.autosave}} 
     type="text" 
-    value="[[[codec_date({{pop}})]]]" \#>
+    value="[[[codec_date({{pop}})]]]" />
 
 element(DatetimepickerTextFieldEdit_Main)
     <input class= "datetimepicker"  title="{{widget.title}}" 
      onchange="zxd(event,[[0]],{{QryOffset}});" 
     {{#field.f.autosave}}data-autosave="{{field.f.autosave}}"{{/field.f.autosave}} 
     type="text" 
-    value="[[[codec_stamp({{pop}})]]]" \#>
+    value="[[[codec_stamp({{pop}})]]]" />
 
 element(DatepickerTextFieldView_Head)
     inherit:View_Head
@@ -245,7 +245,7 @@ element(SliderTextFieldEdit_Main)
     {{#field.f.autosave}}data-autosave="{{field.f.autosave}}"{{/field.f.autosave}} 
     class= "SlideValueDisplay " 
     value= "[[[{{pop}}]]]" 
-    \#>
+    />
     </div><div class= "handler "></div>
 
 element(SliderTextFieldEdit_Script)
@@ -284,7 +284,7 @@ element(UploadFieldView_Main)
     <img src='{{{field.f.url}}}[[[{{pop}}]]]' alt='[[[{{pop}}]]]' title='[[[{{pop}}]]]' 
      {{#field.f.width}}width="{{field.f.width}}"{{/field.f.width}}
      {{#field.f.height}}rows="{{field.f.height}}"{{/field.f.height}}
-    \#>
+    />
 
 	
-/>
+#>

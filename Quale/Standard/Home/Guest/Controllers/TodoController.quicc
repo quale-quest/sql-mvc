@@ -3,11 +3,11 @@
 button()
 --{title:"Clear Completed",if:"(select count(ref) from todo_mvc where owner=session.id and status='1')!=0" }
 sql update todo_mvc set status='3' where owner=session.id and (status='1');
-/>
+#>
 
 <#controller(todo.items) 
 ($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $)
-/>
+#>
 
 <#controller(todo.itemcountsub)
 ifquery (controller.todo.items!=1)
@@ -15,7 +15,7 @@ print () controller.todo.items items left
 elsequery
 print () 1 item left
 endquery
-/>
+#>
 
 
 <#controller(todo.itemcount,max=5)
@@ -24,7 +24,7 @@ print () To many items left
 elsequery
 use(todo.itemcountsub)
 endquery
-/>
+#>
 
 
 <#controller(todo.source_files)	
@@ -55,6 +55,6 @@ include (type="pre" file="Controllers/TodoController" )
 CloseContainer                                                                     
 
 CloseContainer                                                                                 
-/>
+#>
 
 

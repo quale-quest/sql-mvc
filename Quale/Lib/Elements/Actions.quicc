@@ -63,4 +63,4 @@ element(FootActionEndDiv)
 element(FootActionMain)
     <li {{{li_class}}}><a href="#" language=javascript onclick="{{{url}}}" {{{LinkElements}}} >{{{LeftSpan}}} {{{Title}}} {{{RightSpan}}}</a></li>
 
-/>
+#>

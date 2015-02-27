@@ -84,7 +84,7 @@ element(GalleryFieldView_Main)
     <img src='{{{field.f.url}}}[[[{{pop}}]]]' alt='[[[{{pop}}]]]' title='[[[{{pop}}]]]' 
      {{#field.f.width}}width="{{field.f.width}}"{{/field.f.width}}
      {{#field.f.height}}rows="{{field.f.height}}"{{/field.f.height}}
-    \#>
+    />
     <div class='titleqiui1gallery_box'>[[[{{field.w.DisplayName}}]]]</div></div></div>
 
-/>
+#>

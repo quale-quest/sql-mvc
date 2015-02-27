@@ -12,4 +12,4 @@ element(SoftCodec-encoder-Kg)
 element(SoftCodec-decoder-Kg)
     select cast( cast( (cast(replace(cast(? as varchar(256)),' kg','') as float))*1000.0 as integer )  as varchar(256)) from rdb$database
 
-/>
+#>

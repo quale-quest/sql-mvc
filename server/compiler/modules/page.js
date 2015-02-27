@@ -189,24 +189,24 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 
 		if (zx.inputfilecount === 1) { //only on the first file
 			//wrap in library scripts && wrap in local layout
-			var concat_body = "<#include(file=~/All/StandardPageOpen) /> ";
+			var concat_body = "<#include(file=~/All/StandardPageOpen) #> ";
 			//console.log('building include files : ',zx.model_files);
 			zx.model_files.reverse().forEach(function (filename) {
 				if (fs.statSync(filename).isDirectory()) {}
 				else {
 					var br = fileutils.locateclosestbuildroot(zx, filename);
 					var qfilename = fileutils.changefileextn(br.filename, '');
-					concat_body += '<#include (file="' + qfilename + '") /> ';
+					concat_body += '<#include (file="' + qfilename + '") #> ';
 					//console.log('------------------------------ adding :', qfilename);
 				}
 			});
 
 			//console.log('------------------------------ finding :', zx.inputfilecount,concat_body);
 			concat_body +=
-			"<#include(file=LayoutOpen)/> " +
+			"<#include(file=LayoutOpen)#> " +
 			body +
-			"<#include(file=LayoutClose)/> " +
-			"<#include(file=~/All/StandardPageClose)/> ";
+			"<#include(file=LayoutClose)#> " +
+			"<#include(file=~/All/StandardPageClose)#> ";
 			body = concat_body;
 			//console.log('Main Body : ',body);
 		}
@@ -230,7 +230,7 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 
 
 				s = starts[i + 1];
-				eob = s.indexOf(zx.end_of_block); //in strict mode this should be />
+				eob = s.indexOf(zx.end_of_block); //in strict mode this should be #>
 				var compound_statement = s.substring(0, eob < 0 ? s.length : eob).trim();
                 var compound_statement_debug=0;
 		        if (compound_statement.indexOf("xxxxx")>0)   compound_statement_debug=1;
@@ -623,8 +623,8 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 };
 
 exports.start_up = function (zx) {
-	zx.end_of_block = "/>";
-	zx.end_of_block_regex = /\/>/g;
+	zx.end_of_block = "#>";
+	zx.end_of_block_regex = /#>/g;
 	var Keyword_API_md = '#Commands and reserverd keywords in the Quale language\n\n ';
 
 	zx.all_tags_str = '(';

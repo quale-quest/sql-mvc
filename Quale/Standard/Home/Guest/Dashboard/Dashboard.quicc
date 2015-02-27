@@ -10,4 +10,4 @@ print() ($select count(*) from MAIL where FROM_USER=session.id and SUBJECT='logi
 	and ($select count(*) from MAIL where SUBJECT='login log' $) actions total (in this session).
 
 CloseContainer
-/>          
+#>          

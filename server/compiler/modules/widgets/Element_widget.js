@@ -302,7 +302,7 @@ exports.shut_down = function (zx) {
     zx.forFields(zx.UIsl, function (el,key) {
         //console.log('ul element name:',key,' el:',el);
         var es=zx.gets(el,'\n    ');
-        es = es.replace(/\/>/g, "\\#>");
+        //es = es.replace(/\/>/g, "\\#>");
         //console.log('ul element name:',key,' el:',es);
         str = str +"\n\nelement("+key+")\n    "+es;
     });
@@ -322,7 +322,7 @@ exports.tag_element = function (zx, o) { //overrides or extends the ui
     if (!o.name) return;
     var code = o.body.trim();    
     code = code.replace(/!<=/g, ">");
-    code = code.replace(/\\#>/g, "\/>");
+    //code = code.replace(/\\#>/g, "\/>");
 	//console.log('tag_element name:',o.name,code);//.name,' el:',zx.gets(o.code));
 	zx.UIsl[o.name] = code;
 };

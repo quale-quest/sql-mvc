@@ -9,7 +9,7 @@
 <#:button
 --{save:"allbutton",title:"all"}
 set here.todo_type='';
-/>
+#>
 
 <#:table
 Select  --:{Title:"Make new records",from:"TODO_MVC",autoinsert:"top",tablestyle:"Todo"}
@@ -18,24 +18,24 @@ NAME,   --:{Action:"Edit","placeholder":"What needs to be done (tab to save)","a
 REF	    --:{Action:"View",Type:"Hide"}
 From TODO_MVC 
 where (owner=session.id and ( (here.todo_type='' and (status!='3' or status is null)) 
-or( (status='' or status is null) and here.todo_type='1')or(status='1' and here.todo_type='2')))/>
+or( (status='' or status is null) and here.todo_type='1')or(status='1' and here.todo_type='2')))#>
 
 <#:print
 --{use:"todo.itemcount" }
-/>
+#>
 
 <#:button
 --{use:"allbutton",title:"View all"}
-/>
+#>
 
 <#:button
 --{title:"Active"}
 set here.todo_type='1';
-/><#:button
+#><#:button
 --{title:"Completed"}
 set here.todo_type='2';
-/>
-<#use "todo.clear.button"/>
+#>
+<#use "todo.clear.button"#>
 
 
 
@@ -44,12 +44,12 @@ set here.todo_type='2';
 
 <h1>Info</h1>
 
-<#print you were here last at here.this_page_info/>
-<#:script set here.this_page_info=cast('now' as timestamp);/><br>
+<#print you were here last at here.this_page_info#>
+<#:script set here.this_page_info=cast('now' as timestamp);#><br>
 <#print 
 ($select count(*) from MAIL where FROM_USER=session.id and SUBJECT='login log' $) actions from you 
 and ($select count(*) from MAIL where SUBJECT='login log' $) actions total (in this session).
-/>
+#>
 
 </div>	
 </div>	

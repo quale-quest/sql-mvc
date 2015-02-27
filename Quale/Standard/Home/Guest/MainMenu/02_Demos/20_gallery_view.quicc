@@ -80,7 +80,7 @@ NextContainer (rem="----------------------------------------------------------" 
 include(type="pre",file="this")
 CloseContainer
 
-/>
+#>
 </div>	
 <br>
 <br>

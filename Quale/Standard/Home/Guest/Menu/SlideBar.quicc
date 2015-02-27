@@ -1,13 +1,13 @@
 
-<#Menu Name=Start Style=ShortCutSlide />
-<#Menu icon="shortcut-icon save-x-element"  Title="Save" />
+<#Menu Name=Start Style=ShortCutSlide #>
+<#Menu icon="shortcut-icon save-x-element"  Title="Save" #>
 
-<#MenuScan menuname=SlideBar Icons="shortcut-icon typo-x-icon," from=user_table_name where=user_pk_field=Operator.user_pk_field />
+<#MenuScan menuname=SlideBar Icons="shortcut-icon typo-x-icon," from=user_table_name where=user_pk_field=Operator.user_pk_field #>
 
 <#Menu 
 icon="shortcut-icon dboard-x-icon" 
 form=Dashboard/Dashboard 
-Title="Dashboard" />
+Title="Dashboard" #>
 
 
 
@@ -18,7 +18,7 @@ from=user_table_name where=user_pk_field=Operator.user_pk_field
 form=Settings/Staff
 Title="Staff"
 icon="shortcut-icon staff-x-icon"
-/>
+#>
 
 <#Menux   
 refresh=1
@@ -26,7 +26,7 @@ from=user_table_name where=user_pk_field=Operator.user_pk_field
 form=Settings/Numbers
 Title="Numbers"
 icon="shortcut-icon typo-x-icon"
-/>
+#>
 
 <#Menux   
 refresh=1
@@ -34,7 +34,7 @@ from=user_table_name where=user_pk_field=Operator.user_pk_field
 form=Reports/QuickReport
 Title="QuickReport"
 icon="shortcut-icon QuickReport-x-icon"
-/>
+#>
 
 
 <#Menux   
@@ -43,7 +43,7 @@ from=user_table_name where=user_pk_field=Operator.user_pk_field
 form=Reports/DefinedReports
 Title="DefinedReports"
 icon="shortcut-icon Report-x-icon"
-/>
+#>
 
 <#Menux   
 refresh=1
@@ -51,7 +51,7 @@ from=user_table_name where=user_pk_field=Operator.user_pk_field
 form=Reports/RecentCalls
 Title="RecentCalls"
 icon="shortcut-icon PlayFile-x-icon"
-/>
+#>
 
 
 <#Menux   
@@ -60,10 +60,10 @@ from=user_table_name where=user_pk_field=Operator.user_pk_field
 form=Reports/BandwidthUse
 Title="BandwidthUse"
 icon="shortcut-icon chart-x-icon"
-/>			
+#>			
 			
 					
-<#Menux icon="shortcut-icon help-x-element"  from=user_table_name where=user_pk_field=Operator.user_pk_field form=Stub Title="Help"/>
+<#Menux icon="shortcut-icon help-x-element"  from=user_table_name where=user_pk_field=Operator.user_pk_field form=Stub Title="Help"#>
 
 
-<#MenuEnd/>
+<#MenuEnd#>
