@@ -15,7 +15,8 @@ their own files, so they can be reused between different views.
 
 ##Step one
 
-First we create a model (or follow along with ProjectRoot/Quale/Standard/Home/Guest/Models/TodoModel.quicc), 
+First we create a model file in directory `ProjectRoot/Quale/Standard/Home/Guest/Models/*.quicc` 
+(or follow along with or edit `TodoModel.quicc`), 
 the model will contain additional information about what the fields are supposed to 
 be used for and  how they should be used (Qualia).
 
@@ -53,7 +54,7 @@ to be different than the SQL field attributes.
 ##Step two
 
 We create an experimental view, of what we want to do with the model, wrapped in <#view ... #>
-( similar to ProjectRoot/Quale/Standard/Home/Guest/Index.quicc )
+( edit file : `ProjectRoot/Quale/Standard/Home/Guest/Index.quicc` )
 
 ```
 <#view
@@ -144,7 +145,7 @@ button(title:"Clear Completed") sql update todo_mvc set status='3' where owner=o
 Now we see there are some operations that are likely to be reused in the future on other views,
 so it is best if we move some of them to a controller.
 The controllers are centralised repository of operations that can be performed on the model,
-( similar to ProjectRoot/Quale/Standard/Home/Guest/Controllers/TodoController.quicc )
+( in directory : `ProjectRoot/Quale/Standard/Home/Guest/Controllers/`  similar to file `TodoController.quicc` )
 
 ```
 <#controller(todo.clear.button)
