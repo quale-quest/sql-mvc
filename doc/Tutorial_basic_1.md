@@ -28,10 +28,10 @@ CREATE TABLE TODO_MVC				--:{as:Table}
   NAME VARCHAR(100),				--:{as:Text,size:40,title:todo,onupdate:"owner=operator.id"}  
   OWNER VARCHAR(40),				--:{Type:Hide}
   STATUS VARCHAR(10) default ''    	--:{Type:Pick,List:Ticked,onupdate:"owner=operator.id"}  
-);/>
+);#>
 ```
 
-We wrap the SQL create table statement in a <# .../> and in the comments (--) we add Qualia.
+We wrap the SQL create table statement in a <# ... #> and in the comments (--) we add Qualia.
 When a quale is set to a value other than a single word it must be wrapped in quotes, like the onupdate.
 
 Each of the fields on the left gets their SQL definition like VARCHAR(40) and their additional model qualia after the '--'.
@@ -51,7 +51,7 @@ to be different than the SQL field attributes.
 
 ##Step two
 
-We create an experimental view, of what we want to do with the model, wrapped in <#view ... />
+We create an experimental view, of what we want to do with the model, wrapped in <#view ... #>
 
 ```
 <#view
@@ -63,7 +63,7 @@ table()
 	From TODO_MVC 
 	where (owner=operator.id and ( (here.todo_type='' and (status!='3' or status is null)) 
 	or( (status='' or status is null) and here.todo_type='1')or(status='1' and here.todo_type='2')))
-/>
+#>
 ```
 
 The *table()* statement will compile a table view based on the query, the *autoinsert* adds a new record position to the top of the table.
@@ -97,7 +97,7 @@ You can set the context variables with simple buttons like: [more on setting and
 button(title:"View all") set here.todo_type='';
 button(title:"Active")   set here.todo_type='1';
 button(title:"Completed") set here.todo_type='2';
-/>
+#>
 ```
 
 In addition to simple set statements on the context variables,
@@ -133,7 +133,7 @@ button(title:"View all") set here.todo_type='';
 button(title:"Active")   set here.todo_type='1';
 button(title:"Completed") set here.todo_type='2';	
 button(title:"Clear Completed") sql update todo_mvc set status='3' where owner=operator.id and (status='1')		
-/>
+#>
 ```
 
 
@@ -147,14 +147,14 @@ The controllers are centralised repository of operations that can be performed o
 <#controller(todo.clear.button)
 button(title:"Clear Completed")
 sql update todo_mvc set status='3' where owner=session.id and (status='1');
-/>
+#>
 
 <#controller(todo.itemcount)
 print There are ($select count(*) from todo_mvc where owner=operator.id and (status='' or status is null) $) items left	
-/>
+#>
 ```
 
-Here are two controllers, each wrapped in <# .../> , Each has a name, and use a naming convention of model.purpose.control.
+Here are two controllers, each wrapped in <# ... #> , Each has a name, and use a naming convention of model.purpose.control.
 
 So now in the view we can say :
 
@@ -175,15 +175,15 @@ CREATE TABLE TODO_MVC				--:{as:Table}
   NAME VARCHAR(100),				--:{as:Text,size:40,title:todo,onupdate:"owner=operator.id"}  
   OWNER VARCHAR(40),				--:{Type:Hide}
   STATUS VARCHAR(10) default ''    	--:{Type:Pick,List:Ticked,onupdate:"owner=operator.id"}  
-);/>
+);#>
 
 <#controller(todo.clear.button)
 button(title:"Clear Completed") sql update todo_mvc set status='3' where owner=session.id and (status='1');
-/>
+#>
 
 <#controller(todo.itemcount) 
 print There are ($select count(*) from todo_mvc where owner=operator.id and (status='' or status is null) $) items left	
-/>
+#>
 
 <#view
 table()
@@ -204,7 +204,7 @@ button(title:"Active")   set here.todo_type='1';
 button(title:"Completed") set here.todo_type='2';
 
 use(todo.clear.button)
-/>
+#>
 ```
 
 ##Platform agnostic
