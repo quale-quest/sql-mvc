@@ -2,7 +2,7 @@
     "run_mode": "dev",
     "run_settings": {
         "dev": {
-            "monitor_mode": "none",
+            "monitor_mode": "check",
             "help": [
                 "check",
                 "gaze",

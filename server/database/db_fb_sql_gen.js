@@ -532,7 +532,7 @@ exports.link_from = function (zx, line_obj) {
 	var from = zx.gets(line_obj.from);
 	if (from === undefined)
 		from = '';
-
+	
 	var PAGE_PARAMS = '';
     //console.log('run_procedure_a: ',line_obj );
 	zx.Inject_procedures.check_inline_link_procedure(zx, line_obj,'link_from');
@@ -550,7 +550,8 @@ exports.link_from = function (zx, line_obj) {
 	}
 
 	var links = "INSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,TARGET,QUERY, PAGE_PARAMS)" +
-		"VALUES (:cid," + zx.sql.cidi + ",'click'," + fb_AsString(from) + ", " + fb_AsString(zx.Current_main_page_name) + "," + (wherex /*+" "+ zx.gets(line_obj.nonkeyd)..check above TODO note*/
+		"VALUES (:cid," + zx.sql.cidi + ",'click'," + fb_AsString(from) + ", " + 
+        fb_AsString(zx.Current_main_page_name.replace(/\\/g, "/")) + "," + (wherex /*+" "+ zx.gets(line_obj.nonkeyd)..check above TODO note*/
 		) + "," +
 		"'" + PAGE_PARAMS + "');  ";
 	//console.log('=================================\n',
@@ -606,7 +607,7 @@ exports.link_from_table = function (zx,cx, fld_obj) {
 		from = fld_obj.to;
 	if (from === undefined)
 		from = '';
-
+	
 	//pass many fields as master parameters to the sub form useful when aggregating across many fields
 	// TODO - have a way of reading this fields from the sub form - they are not accessible from the master at the moment.
 	var PAGE_PARAMS = "''";
@@ -652,7 +653,7 @@ if (fld_obj.cf[0].pointer===undefined)
 	var links = "INSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS)" +
 		"VALUES (:cid,:tfid,'tfid','" + from +
         "','" + pkname +
-		"', '" + zx.Current_main_page_name + "', "+
+		"', '" + zx.Current_main_page_name.replace(/\\/g, "/") + "', "+
         
         ":F" + fld_obj.cf[0].pointer 
         

@@ -1,30 +1,35 @@
 
 #Windows experimental
 
-**at the moment this does not work **
-
-The issue is we use a old version of node-firebird , because we have a issue with reading blobs 
-on the new version, however , on windows the old version seems to have a problem with committing transactions......
-
-This will require further investigations...
-
-Up to now we have :
-
-
-This is based on windows XP, adjust as needed.
-The pre compiled dll is 32 bit I don't know if 64bit server will run with this DLL.
+**Running on windows, but installer is not refined.**
 
 This installation guide is far from perfected , 
 so it may cause a lot more pain than needed,
 promise it will be worth it in the end.
 
+##Testes on Windows 7, should work in 8, 10.
+
 ##Firebird
 
-Install:
+1. Install with the default settings from :
+http://www.firebirdsql.org/en/firebird-2-5/  either win2 or win64 bit version 
+* http://sourceforge.net/projects/firebird/files/firebird-win32/2.5.3-Release/Firebird-2.5.3.26780_0_Win32.exe/download
+* http://sourceforge.net/projects/firebird/files/firebird-win64/2.5.3-Release/Firebird-2.5.3.26780_0_x64.exe/download
 
-1. http://www.firebirdsql.org/en/get-started/
-2. http://www.flamerobin.org/
+Optional Install:
+http://www.flamerobin.org/
 
+
+##Node
+
+Install node from:
+
+1. http://nodejs.org/download/
+
+
+
+
+No longer needed : 
 ##Node and gyp
 
 Install :
