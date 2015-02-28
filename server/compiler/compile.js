@@ -178,7 +178,7 @@ var seq_main = function () {
 		zx.depends = {};
 		zx.mainfiles = [];
 		zx.BlockIndex = 0;
-		zx.root_folder = path.resolve(path.join('./Quale/')) + '/';
+		zx.root_folder = path.resolve(path.join('.'+path.sep+'Quale'+path.sep)) + path.sep;
 		//console.log('zx.root_folder :', zx.root_folder);
 		zx.build_roots = ["Config", "Custom", "Standard", "Lib", ""];
 		//if dev mode zx.build_roots.unshift("sandbox");

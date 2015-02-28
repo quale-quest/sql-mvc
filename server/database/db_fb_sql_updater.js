@@ -811,6 +811,7 @@ function full_updgade(zx, ddl_filename_prefix) {
 }
 
 exports.Backup_DDL = function (zx, reflect, backup) {
+    if (!zx.config.db.schema_backup) return;
 	var result = zx.dbu.extract_dll(zx);
 	//console.log('extract_dll result is ',str.ddl);
 	//console.trace('backup extract_dll result is ', result.err);

@@ -43,11 +43,13 @@ git clone https://github.com/quale-quest/sql-mvc.git   * or "clone in desktop"
 cd into the folder
 npm install
 
-copy Patches\ss-hogan\new_compiler.js  ..\node_modules\ss-hogan\node_modules\hogan.js\lib\compiler.js
-copy Patches\ss-hogan\new_client.js   ..\node_modules\ss-hogan\client.js
-copy Patches\ss-hogan\new_engine.js   ..\node_modules\ss-hogan\engine.js
-copy Patches\marked\new_marked.js   ..\node_modules\marked\lib\marked.js 
-copy Patches\emoji\new_emoji.js  ..\node_modules\emoji\lib\emoji.js
+cd install
+copy Patches\ss-hogan\new_compiler.js  ..\node_modules\ss-hogan\node_modules\hogan.js\lib\compiler.js /y
+copy Patches\ss-hogan\new_client.js   ..\node_modules\ss-hogan\client.js /y
+copy Patches\ss-hogan\new_engine.js   ..\node_modules\ss-hogan\engine.js /y
+copy Patches\marked\new_marked.js   ..\node_modules\marked\lib\marked.js /y
+copy Patches\emoji\new_emoji.js  ..\node_modules\emoji\lib\emoji.js /y
+cd ..
 ```
 
 ##pre-compiled UDF
@@ -57,8 +59,8 @@ copy server\udf\q_UDFLibC.dll  "C:\Program Files\Firebird\Firebird_2_5\UDF"
 ##set configuration
 
 ```
-edit Quale/Config/config.json
-set "monitor_mode":{"dev":"none",
+edit Quale\Config\config.json
+set "dev":{"monitor_mode":"none",
 add "windows":"yes",
 
 in db record:
@@ -71,9 +73,9 @@ set "authfile": "",
 		
 ##manually build the demo index page.
 
-cd server/compiler
 
-node compile.js app Home/Guest Index
+
+node  server\compiler\compile.js app Home/Guest Index
 
 --this only compiles a single page...the the auto compiler not working yet
 

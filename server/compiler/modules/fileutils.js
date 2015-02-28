@@ -144,7 +144,7 @@ function getFiles(dir, files_, regex) { //regular recursive search
 		if (!files.hasOwnProperty(i))
 			continue;
 		var name = files[i];
-		var pathname = dir + '/' + name;
+		var pathname = path.join(dir , name);
 		if (fs.statSync(pathname).isDirectory()) {
 			getFiles(pathname, files_, regex);
 		} else {
@@ -192,7 +192,7 @@ function inheritFiles(dir, files_, root, regex_prefix, regex_extn, debug) { //ba
 	}
 
 	if (dir.length > root.length)
-		inheritFiles(path.resolve(dir + '/..'), files_, root, regex_prefix);
+		inheritFiles(path.resolve(path.join(dir ,'..')), files_, root, regex_prefix);
         
     // console.log('inheritFiles found list:',files_);    
 	return files_;

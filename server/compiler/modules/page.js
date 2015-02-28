@@ -196,6 +196,7 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 				else {
 					var br = fileutils.locateclosestbuildroot(zx, filename);
 					var qfilename = fileutils.changefileextn(br.filename, '');
+                    qfilename = qfilename.replace(/\\/g,'/');
 					concat_body += '<#include (file="' + qfilename + '") #> ';
 					//console.log('------------------------------ adding :', qfilename);
 				}
