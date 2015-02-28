@@ -8,6 +8,8 @@ var fb = require("node-firebird");
 var fs = require('fs');
 var path = require('path');
 var util = require('util');
+var os = require('os');
+var extend = require('node.extend');
 
 exports.connections = {};
 
@@ -45,14 +47,28 @@ exports.load_config = function (root_folder, Application) {
 	//console.log("Config file from : ", search); //,fileContents);
     //console.trace("Stack!")
 
-	var conf = {};
-	if (fileContents !== "")
-       {
-		conf = JSON.parse(fileContents);
-        conf.run=conf.run_settings[conf.run_mode];
-        }
+	var conf = exports.check_run_mode(fileContents);        
 
 	return conf;
+}
+
+exports.check_run_mode = function (str) {
+    var config;
+	try {
+		config = JSON.parse(str);
+	} catch (e) {
+		console.log("WARN Error parsing config.quicc :", e);
+		process.exit(2);
+	}
+
+	//console.log("check_run_mode a : ", config);
+	if (config.run_mode === "auto")
+		config.run_mode = os.platform().substring(0, 3);
+	config.run = config.run_settings[config.run_mode];
+    config.db = extend(config.db, config.run.db); //second one has the priority
+	//console.log("check_run_mode c: ", config);	process.exit(2);
+    
+	return config;
 }
 
 exports.LocateDatabasePool = function (connectionID) {

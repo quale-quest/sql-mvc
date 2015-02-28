@@ -8,8 +8,7 @@ var path = require('path');
 var jt = require('./json_tree');
 var ss = require('socketstream');
 
-var config = JSON.parse(require('fs').readFileSync('Quale/Config/config.json').toString());
-config.run=config.run_settings[config.run_mode];
+var config = db.check_run_mode(require('fs').readFileSync('Quale/Config/config.json').toString());
 
 //http://stackoverflow.com/questions/2218999/remove-duplicates-from-an-array-of-objects-in-javascript
 function arrayContains(arr, val, equals) {

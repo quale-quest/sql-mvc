@@ -1,7 +1,7 @@
 {
-    "run_mode": "dev",
+    "run_mode": "lin",
     "run_settings": {
-        "dev": {
+        "lin": {
             "monitor_mode": "check",
             "help": [
                 "check",
@@ -13,6 +13,22 @@
             "serve_port": "3000",
             "debugkey": ""
         },
+        "win": {
+            "db_create": "yes",
+            "monitor_mode": "none",
+            "serve_port": "3000",
+            "db": {
+                "database": "demo_db.fdb",
+                "username": "sysdba",
+                "password": "masterkey"                
+            }
+        },
+        "dar": {
+            "db_create": "yes",
+            "monitor_mode": "none",
+            "serve_port": "3000",
+            "note":"this has not been checked yet"
+        },
         "c9": {
             "monitor_mode": "check",
             "db_create": "yes",
@@ -23,12 +39,10 @@
         "prod": {
             "db_create": "yes",
             "monitor_mode": "none",
-            "serve_port": "80"
-        },
-        "windows": {
-            "db_create": "yes",
-            "monitor_mode": "gaze",
-            "serve_port": "3000"
+            "serve_port": "80",
+            "db": {
+                "schema_backup": 1
+            }
         }
     },
     "first": 300,
@@ -36,7 +50,7 @@
         "dialect": "fb25",
         "server": "127.0.0.1",
         "database-old": "/var/db/demo_db.fdb",
-		"database":"/var/lib/firebird/2.5/data/demo_db.fdb",
+        "database": "/var/lib/firebird/2.5/data/demo_db.fdb",
         "username": "using the value from authfile",
         "password": "using the value from authfile",
         "authfile": "/etc/firebird/2.5/SYSDBA.password",
@@ -44,7 +58,7 @@
         "schema_mode": "master",
         "xschema_rebuild": "always",
         "schema_rebuild": "onchange",
-		"schema_backup" : 1,
+        "schema_backup": 0,
         "schema_alter_fields": "yes",
         "schema_reorder_fields": "no",
         "platform_user_table": {

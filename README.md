@@ -5,7 +5,7 @@
 In 1991 Oracle added a few extensions to SQL to create Procedural SQL, so now we have added a 
 few more extensions to SQL, to create QUery Application Language Extensions (QUALE) - it is that simple.
 
-**Recent change log: Improved Syntax and added cloud9 install, faster compile.**
+**Recent change log: Windows Install WIP, Improved Syntax, cloud9 install, faster compile.**
 
 
 
@@ -122,6 +122,11 @@ default framework and theme is just to give you a quicc start.
 ##Cloud 9 IDE
 
 [Quick and easy to get going](https://github.com/quale-quest/sql-mvc-c9/blob/master/README.md)
+
+##Windows
+
+[Work in progress](https://github.com/quale-quest/sql-mvc/blob/master/doc/Install-windows.md)
+
 
 ##Tutorials at :
 

@@ -133,8 +133,8 @@ ss.client.set({
 
 // Start web server
 var server = http.Server(ss.http.middleware);
-var config = JSON.parse(require('fs').readFileSync('Quale/Config/config.json').toString());
-config.run=config.run_settings[config.run_mode];
+var config = db.check_run_mode(require('fs').readFileSync('Quale/Config/config.json').toString());
+
 console.log('serveClient config.run.serve_port:', config.run.serve_port);
 server.listen(config.run.serve_port);
 
