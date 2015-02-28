@@ -1,5 +1,5 @@
 {
-    "run_mode": "lin",
+    "run_mode": "auto",
     "run_settings": {
         "lin": {
             "monitor_mode": "check",
@@ -20,7 +20,8 @@
             "db": {
                 "database": "demo_db.fdb",
                 "username": "sysdba",
-                "password": "masterkey"                
+                "password": "masterkey",
+                "authfile": ""
             }
         },
         "dar": {
