@@ -65,11 +65,11 @@ exports.tag_controller = function (zx, line_obj) {
 exports.done_pass = function (zx, line_obj) {
 	if (zx.pass === 1) {
 		//console.log(' model db_update.update:');
-        console.log('Prepareing DDL:');
+        //console.log('Prepareing DDL:');
 		zx.dbg.AutoMaticDLL(zx, line_obj);
-        console.log('Executing DDL:');
+        //console.log('Executing DDL:');
 		zx.db_update.update(zx);
-        console.log('Done DDL:');
+        //console.log('Done DDL:');
 		//console.log(' model db_update.update done:');
 	}
 };

@@ -424,7 +424,9 @@ var seq_page = function (zx) {
               
             
         } );
-        while(!done) { require('deasync').runLoopOnce();}
+        while(!done) { 
+          require('deasync').sleep(15);
+        }
       
 		 //.rambase;
 		//console.warn('database synced on config A',result);

@@ -868,8 +868,10 @@ exports.update = function (zx) {
 		exports.Backup_DDL(zx, 0, 1); //audit trail
 	    //console.log('exports.Execute_DDL hashed aaa:');	
 		//exports.show_DDL(zx, "After sort b4 exec ", exports.blocks);
-	    //console.log('exports.Execute_DDL hashed bbb:');		
+	    //console.log('exports.Execute_DDL hashed bbb:');	
+        console.log('Update DDL :')        
 		exports.Execute_DDL(zx, exports.blocks, 0);
+        console.log('Update DDL done :');		
         //console.log('exports.Execute_DDL hashed ccc:');			
 		exports.Backup_DDL(zx, 1, 0); //reflection.sql
         //console.log('exports.Execute_DDL hashed ddd:');	
