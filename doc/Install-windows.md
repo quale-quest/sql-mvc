@@ -21,16 +21,20 @@ Install node from:
 
 
 ##Install SQL-MVC from npm
-right click and run the "node js command prompt" (Back command link not the green node Icon) as administrator
+right click and run the "node js command prompt" (Black c:\ command link, not the green node Icon) **as administrator**
 
 ![run-node as admin](https://github.com/quale-quest/sql-mvc/blob/master/doc/win/win-run-as-admin.png "run node as admin")
 >mkdir and cd /some project folder
+
 >npm install sql-mvc
+
 >cd node-modules/sql-mvc
 
 ##manually build the app.
 
 >node  server\compiler\compile.js app Home/Guest all
+
+Run the server
 
 >node app.js
 
@@ -38,10 +42,13 @@ Windows will warn about opening the firewall, allow node all access.
 
 Open a browser to localhost:3000
 
-##Edit the Index.quicc file and models/controllers.
-but manually rebuild the app again with 
+##Edit
+
+the file Quale\Standard\Home\Guest\Index.quicc  and models/controllers, but open a second command window and 
+manually rebuild the app again with 
 
 >node  server\compiler\compile.js app Home/Guest all
+
 
 
 ** windows automated installer to follow soon **
