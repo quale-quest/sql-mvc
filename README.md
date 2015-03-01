@@ -125,7 +125,7 @@ default framework and theme is just to give you a quicc start.
 
 ##Windows
 
-[Work in progress](https://github.com/quale-quest/sql-mvc/blob/master/doc/Install-windows.md)
+[Manual windows install](https://github.com/quale-quest/sql-mvc/blob/master/doc/Install-windows.md)
 
 
 ##Tutorials at :
