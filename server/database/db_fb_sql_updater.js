@@ -282,7 +282,9 @@ function dll_blocks_seperate_term(inputs, src_obj) { //splits the input into blo
 var exec_qry = function (cx, qrys) {
 
 	exports.write_log.push(qrys);
+	//fs.writeFileSync(zx.output_folder + 'build.sql', exports.write_log.join(''));
 	//console.log('exports.write_log.push  :', qrys);
+    console.log('exec : ', qrys);
 	//console.log('exports.write_log.push  :', cx.zx.line_obj.srcinfo );
 
 	if (cx.zx.config.db.schema_mode !== "slave") {
@@ -299,6 +301,7 @@ var dataset = function (zx, qrys) {//could use the one from sql_utils
 	return result;
 };
 var singleton = function (zx, field, qrys) {//could use the one from sql_utils
+    //console.log("singleton qrys:" ,qrys);
 	var result = zx.dbu.fetch_dataset(zx, "updater singleton", qrys, 0);
     //console.log("singleton res:" ,result);
 	if (result[0] === undefined) {
@@ -468,6 +471,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 	var insertmatchingfield = '';
 	var insertmatchingblock;
 	var verbosity = 10;
+    var block,bi;
 
 	//exports.input_audit.push(inputsx);
 	//exports.input_audit.push(JSON.stringify(line_obj,null,4));//.start_line + ' ' + line_obj.filename);
@@ -475,7 +479,10 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 	exports.input_audit.push(JSON.stringify(blocks, null, 4)); //.start_line + ' ' + line_obj.filename);
 
 	//exports.show_DDL(zx,"Creating",blocks);
-	blocks.forEach(function (block, bi) {
+
+	for (var ixx = 0, max = blocks.length; ixx < max; ixx += 1) {	
+	    bi=ixx;
+		block=blocks[bi];
 		LineNr += block.src.o;
 		BlockNr++;
 
@@ -484,7 +491,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			block.src.LineNr = LineNr;
 		block.src.BlockNr = BlockNr;
 
-		//console.log('blocks.forEach  :', LineNr, block);
+		//console.log('blocks.forEach  :', LineNr, bi);
 		//if (verbosity > 2)
 		//	console.log(" Preview DDL from line preview: ",  block.src.LineNr, ' for ', block.src.l + 1, ' lines');
 		var qrystr = block.q;
@@ -504,6 +511,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 				qrystr = "";
 			}
 			block.order = 100;
+		
 		} else if (qrystr.match(/CREATE\s+ROLE\s/)) {
 			block.expect = /335544351/;
 			block.order = 200;
@@ -645,13 +653,13 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			}
             }
 		}
-
+        //console.log('Update block q2, :',block.order);
 		block.qrystr = qrystr;
 		block.Hash = zx.ShortHash(qrystr);
 		//console.log('Update block, :',block.order);//, block.qrystr );
 		LineNr += block.src.l;
 		//exports.show_DDL(zx,"working",blocks);
-	});
+	}
 
 	//console.log('Prepare_DDL blocks.length :', blocks.length);
 	//exports.show_DDL(zx,"Adding",blocks);
@@ -681,6 +689,7 @@ exports.Sort_DDL = function (zx, blocks) {
 	});
 	var Hash = 0;
 	var build_str = [];
+	var build_exec_str = [];
 	blocks.forEach(function (block, i) {
 		var qrystr = block.qrystr;
         Hash += +block.Hash; 
@@ -690,10 +699,12 @@ exports.Sort_DDL = function (zx, blocks) {
 		if (block.method === 'DECLARE_PROCEDURE')
 			qrystr = "DECLARE" + zx.show_longstring(qrystr);
 		build_str.push(" BORDER:" + block.order + " BNR:" + block.src.BlockNr + " method:" + block.method + " SRC:" + qrystr);
+		build_exec_str.push(qrystr);
 	});
 	return {
 		Hash : Hash,
-		build_str : build_str.join('\n')
+		build_str : build_str.join('\n'),
+		build_exec_str : build_exec_str.join('\n\n'),
 	};
 };
 var DECLARE_PROCEDURE = function (cx, qrystr) {
@@ -841,6 +852,7 @@ exports.update = function (zx) {
 	var B = exports.Sort_DDL(zx, exports.blocks);
 
 	fs.writeFileSync(zx.output_folder + 'prebuild.sql', B.build_str);
+	fs.writeFileSync(zx.output_folder + 'prebuild_exec.sql', B.build_exec_str);
 	//console.log('exports.Sort_DDL length:', exports.blocks.length,exports.lastHash,Hash);
 	//exports.show_DDL(zx,"Afer Write",exports.blocks);
     
@@ -852,11 +864,16 @@ exports.update = function (zx) {
        }
     
 	if ((exports.lastHash === null) || (exports.lastHash !== B.Hash) || (zx.config.db.schema_rebuild==="always")) {
-		//console.log('exports.Execute_DDL hashed:',exports.lastHash,"\n   B.Hash 210425:",B.Hash);
+	    //console.log('exports.Execute_DDL hashed:',exports.lastHash,"\n   B.Hash 210425:",B.Hash);
 		exports.Backup_DDL(zx, 0, 1); //audit trail
+	    //console.log('exports.Execute_DDL hashed aaa:');	
 		//exports.show_DDL(zx, "After sort b4 exec ", exports.blocks);
+	    //console.log('exports.Execute_DDL hashed bbb:');		
 		exports.Execute_DDL(zx, exports.blocks, 0);
+        //console.log('exports.Execute_DDL hashed ccc:');			
 		exports.Backup_DDL(zx, 1, 0); //reflection.sql
+        //console.log('exports.Execute_DDL hashed ddd:');	
+        //process.exit(2);		
 	}
 	//console.log('exports.write_log.length  :', exports.write_log.length);
 	exports.lastHash = B.Hash;

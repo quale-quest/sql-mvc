@@ -1,6 +1,6 @@
 {
   "name": "sql-mvc",
-  "version": "0.0.59",
+  "version": "0.0.60",
   "description": "Paradigm inversion-write web applications in SQL instead of JavaScript",
   "main": "./index.js",
   "scripts": {
@@ -42,6 +42,8 @@
 	"application",
 	"framework",	
 	"platform",
+	"windows",
+	"linux",
     "firebird",
     "Oracle",
     "NuoDB",

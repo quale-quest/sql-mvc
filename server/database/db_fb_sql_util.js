@@ -14,6 +14,8 @@ this provides data base utility functions to the compiler, at compile time.
 
 var db = require("../../server/database/DatabasePool");
 //var Sync = require('sync');
+var deasync = require('deasync');
+var deasync_const=15; //with this number being to small( 7 or less) deasync sometimes hangs on the wait loop, increse if it is still an issue
 
 var connection = {};
 var deepcopy = require('deepcopy');
@@ -132,7 +134,8 @@ exports.getquery_info = function (zx, name, script, line_obj) {
         });
     
 	while (!done) {
-		require('deasync').runLoopOnce();
+		deasync.runLoopOnce();
+		deasync.sleep(deasync_const);
 	}
     return data;
 }    
@@ -230,7 +233,8 @@ exports.validate_script = function (zx, name, script) {
 	});
 	
 	while (!done) {
-		require('deasync').runLoopOnce();
+		deasync.runLoopOnce();
+		deasync.sleep(deasync_const);
 	}
     //console.log("validate_script:" ,result);
 	return result;
@@ -277,7 +281,8 @@ exports.fetch_dataset = function (zx,name, qrys) {
 	});
 	
 	while (!done) {
-		require('deasync').runLoopOnce();
+		deasync.runLoopOnce();
+		deasync.sleep(deasync_const);
 	}
     //console.log("fetch_dataset:" ,result);
 	return result;
@@ -356,7 +361,8 @@ exports.exec_qry_cb = function (cx, name, script, line_obj) {
         });
     
     while (!done) {
-		require('deasync').runLoopOnce();
+		deasync.runLoopOnce();
+		deasync.sleep(deasync_const);
 	}
     
   return  result;
@@ -409,7 +415,8 @@ exports.write_script = function (zx, real, spi, name, script, code) {
         });
     
     while (!done) {
-		require('deasync').runLoopOnce();
+		deasync.runLoopOnce();
+		deasync.sleep(deasync_const);
 	}
     
 	if (spi !== null)
@@ -615,7 +622,8 @@ exports.extract_dll = function (zx) {
         });
     
 	while (!done) {
-		require('deasync').runLoopOnce();
+		deasync.runLoopOnce();
+		deasync.sleep(deasync_const);
 	}
     return data;
 }    

@@ -1,5 +1,7 @@
 
-#Windows experimental
+#Windows manual install (experimental)
+
+** windows automated installer to follow soon **
 
 **Running on windows, but installer is not refined.**
 
@@ -7,7 +9,7 @@ This installation guide is far from perfected ,
 so it may cause a lot more pain than needed,
 promise it will be worth it in the end.
 
-##Testes on Windows 7, should work in 8, 10.
+##Testing..(WIP) on Windows 7, should work in 8, 10.
 
 ##Firebird
 
@@ -27,7 +29,21 @@ Install node from:
 1. http://nodejs.org/download/
 
 
+#SQL-MVC from npm
+right click and run the "node js command prompt" (Back command link not the green node Icon) as administrator
 
+![run-node as admin](https://github.com/quale-quest/sql-mvc/blob/master/doc/win/win-run-as-admin.png "run node as admin")
+cd /some project folder
+npm install sql-mvc
+cd sql-mvc
+cd node-modules/sql-mvc
+
+##manually build the demo index page.
+
+node  server\compiler\compile.js app Home/Guest Index
+node app.js
+
+---
 
 No longer needed : 
 ##Node and gyp
@@ -78,9 +94,8 @@ set "authfile": "",
 		
 ##manually build the demo index page.
 
-
-
 node  server\compiler\compile.js app Home/Guest Index
+
 
 --this only compiles a single page...the the auto compiler not working yet
 

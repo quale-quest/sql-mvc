@@ -171,9 +171,6 @@ exports.start_pass = function (zx /*, line_objects*/
 };
 exports.done_pass = function (zx, line_obj) {
 	if (zx.pass === 1) {
-		//console.log(' model db_update.update:');
-		zx.db_update.update(zx);
-		//console.log(' model db_update.update done:');
 	}
 };
 
