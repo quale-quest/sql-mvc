@@ -10,6 +10,7 @@ var path = require('path');
 var util = require('util');
 var os = require('os');
 var extend = require('node.extend');
+var deasync = require('deasync');
 
 exports.connections = {};
 
@@ -150,6 +151,7 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 				//console.log('db connections json 165301 :', JSON.stringify(rambase,null,4));
 				// console.log('db connections json :', JSON.stringify(exports.connections,null,4));
 				//console.log("connection number 164955 " + Object.keys(exports.connections).length + " for " + connectionID + ' on ' + exports.connections[connectionID]);
+                deasync.sleep(15); //on windows this is needed to prevent the compiler form hanging
 				if (callback !== undefined)
 					callback(null, "Connected", exports.connections[connectionID]);
 			}
