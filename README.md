@@ -5,9 +5,7 @@
 In 1991 Oracle added a few extensions to SQL to create Procedural SQL, so now we have added a 
 few more extensions to SQL, to create QUery Application Language Extensions (QUALE) - it is that simple.
 
-**Recent change log: Windows Install, Improved Syntax, cloud9 install, faster compile.**
-
-
+**Recent change log: Windows Install, Improved Syntax.**
 
 SQL-MVC is quite different to anything else out there, so don't have preconceived notions, and don't limit your thinking by 
 applying your current paradigm's best practices to SQL-MVC as it is a complete rethink of the development stack.
@@ -15,13 +13,14 @@ applying your current paradigm's best practices to SQL-MVC as it is a complete r
 This is not a toy,it is under full-time active development and it is the 
 culmination of many years of work, being re-implemented in an updated open source project.
 
+Please join our group to comment or discuss the technology( https://groups.google.com/group/sql-mvc-talk )
+
 *Alpha version 0.0 Notice: When evaluating SQL-MVC keep in mind this project is still version 0.0.x- alpha/preview release.
 The GUI looks old and clunky, but it is fully customisable and will be modernised, a lot of stuff is not 100% polished or even to spec,
 try and pick up the key points we are trying to demonstrate not shortcomings or bugs
- (although all feedback is welcome). We expect to reach Beta version in May *
+ (although all feedback is welcome). We expect to reach Beta version in April/May *
  
-
-
+ 
 ##Example	
 
 This is a complete implementation of [todomvc.com](http://todomvc.com) functionality in 40 lines of code.
@@ -72,6 +71,37 @@ use(todo.clear.button)
 #>
 ```
 
+
+# SQL-MVC Installing,
+
+##Windows
+
+[Windows install](https://github.com/quale-quest/sql-mvc/blob/master/doc/Install-windows.md)
+
+
+##Cloud 9 IDE
+
+[Quick and easy to get going](https://github.com/quale-quest/sql-mvc-c9/blob/master/README.md)
+
+##Install instructions for the hardcore Linux / Node developer at :
+[Install.md](https://github.com/quale-quest/sql-mvc/blob/master/doc/Install-linux.md)
+
+##Tutorials at :
+
+[Tutorials.md](https://github.com/quale-quest/sql-mvc/blob/master/doc/Tutorials.md)
+ 
+##Programmers Manual at : 
+
+[Github - wiki](https://github.com/quale-quest/sql-mvc/wiki)
+
+
+
+## Developer Resources
+
+* Git hub https://github.com/quale-quest/sql-mvc
+* SQL-MVC help and discussion mailing list: https://groups.google.com/group/sql-mvc-talk
+
+
 ##How does SQL-MVC work?
 
 * The compiler takes your application code which is little more 
@@ -115,39 +145,6 @@ default framework and theme is just to give you a quicc start.
 * Database drivers available for Firebird SQL, support planned for : MySQL, SQL Server, Oracle, NuoDB.
 * Planned support for JavaScript stored procedure engine, to enable no-sql, sqlite and off-line applications.
 
-
-
-# SQL-MVC Getting Started,
-
-##Cloud 9 IDE
-
-[Quick and easy to get going](https://github.com/quale-quest/sql-mvc-c9/blob/master/README.md)
-
-##Windows
-
-[Manual windows install](https://github.com/quale-quest/sql-mvc/blob/master/doc/Install-windows.md)
-
-
-##Tutorials at :
-
-[Tutorials.md](https://github.com/quale-quest/sql-mvc/blob/master/doc/Tutorials.md)
-
- 
-##Programmers Manual at : 
-
-[Github - wiki](https://github.com/quale-quest/sql-mvc/wiki)
-
-
-
-##Install instructions for the hardcore Linux / Node developer at :
-[Install.md](https://github.com/quale-quest/sql-mvc/blob/master/doc/Install-linux.md)
-
-
-
-## Developer Resources
-
-* Git hub https://github.com/quale-quest/sql-mvc
-* SQL-MVC help and discussion mailing list: https://groups.google.com/group/sql-mvc-talk
 
 
 ## Licensing
