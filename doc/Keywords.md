@@ -4,19 +4,11 @@
 
 ##console
 
-undefined
+Print a comment to the compiler console.
 
 ##warn
 
-undefined
-
-##html
-
-undefined
-
-##print
-
-undefined
+Print a warning to the compiler console.
 
 ##rem
 
@@ -33,6 +25,10 @@ disable some code.
 ##view
 
 Indicates screen output block.
+
+##html
+
+Outputs Blocks of HTML as is, with no interpretation.
 
 ##eval
 
@@ -114,6 +110,11 @@ Shows a success message with icon .
 ##failure
 
 Shows a failure message with icon .
+ Usage i18n _text
+
+##print
+
+Shows a plain message.
  Usage i18n _text
 
 ##menuscan_recurse

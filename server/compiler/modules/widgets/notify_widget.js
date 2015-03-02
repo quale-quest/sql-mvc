@@ -18,7 +18,8 @@ man_page:"General purpose notify pop up notifications.\n Usage: style=[brief|sti
 },{name:"warning",man_page:"Shows a warning message with icon .\n Usage i18n _text"
 },{name:"success",man_page:"Shows a success message with icon .\n Usage i18n _text"
 },{name:"failure",man_page:"Shows a failure message with icon .\n Usage i18n _text"
-}];
+},{name:"print",man_page:"Shows a plain message.\n Usage i18n _text"}
+];
 
 
 
@@ -55,6 +56,12 @@ var notify = exports.tag_notify = function (zx, line_obj) {
     
     //console.warn('tag_help:',line_obj,template,result);
 };
+
+exports.tag_print = function (zx, line_obj) {
+      line_obj.style="Print";
+      notify(zx, line_obj);
+};
+
 
 exports.tag_help = function (zx, line_obj) {
       line_obj.style="Help";

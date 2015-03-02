@@ -25,6 +25,10 @@ element(StickyNotifyDiv)
 
 element(HeadingNotifyDiv)
     <h1>{{{Text}}}</h1>
+
+element(PrintNotifyDiv)
+    {{{Text}}}
+
 	
 	
 #>

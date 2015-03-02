@@ -34,12 +34,14 @@ thus we must optimise this case to simple text substitutions
  */
 var path = require('path'); 
 exports.module_name='template_control';
-exports.tags=[{name:"console"},{name:"warn"},
-{name:"html"},{name:"print"}
+exports.tags=[
+{name:"console",man_page:"Print a comment to the compiler console."}
+,{name:"warn",man_page:"Print a warning to the compiler console."}
 ,{name:"rem",man_page:"remark / comment."}
 ,{name:"todo",man_page:"todo comment."}
 ,{name:"disable",man_page:"disable some code."}
 ,{name:"view",man_page:"Indicates screen output block."}
+,{name:"html",man_page:"Outputs Blocks of HTML as is, with no interpretation."}
 ];
 
 exports.tag_console = function (zx, line_obj) {		
@@ -65,21 +67,6 @@ exports.tag_html = function (zx, line_obj) {
 exports.tag_view = exports.tag_disable = exports.tag_todo = exports.tag_rem = function (zx, line_obj) {
 }
 
-exports.tag_print = function (zx, line_obj) {
-	//simple code including <$selects>
-	//also use for varios debug outputs - like passed parameters, etc..
-
-
-	/*
-	1 produces vars containing the database stuff
-	produce a mt output of the non databse stuff
-	 */
-    if (line_obj.nonkeyd) {
-	zx.mt.lines.push(zx.expressions.TextWithEmbededExpressions(zx, line_obj, line_obj.nonkeyd, "mt", "tag_print"));
-    }
-	//console.log('tag_print:',line_obj.nonkeyd );
-	//<#print "($elect name from Me where ref=operator.ref $)">
-};
 
 exports.start_pass = function (zx) {
 	zx.mt.lines = [];
