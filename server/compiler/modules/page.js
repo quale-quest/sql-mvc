@@ -21,6 +21,8 @@ var fs = require('fs'), bcb = require('./bcbiniparse.js');
 
 
 var appendToDepenance = exports.appendToDepenance = function (zx, filename) {
+    var page_name=zx.main_page_name.replace(/\\/g, "/");
+    
 //from child perspective    
 	var fileobj = zx.depends[filename];
 	if (fileobj === undefined) {
@@ -31,28 +33,28 @@ var appendToDepenance = exports.appendToDepenance = function (zx, filename) {
 		};
 		zx.depends[filename] = fileobj;
 	}
-	var parentobj = fileobj.parents[zx.main_page_name];
+	var parentobj = fileobj.parents[page_name];
 	if (parentobj === undefined) {
-		fileobj.parents[zx.main_page_name] = true;
+		fileobj.parents[page_name] = true;
 		zx.depends[filename] = fileobj;
 	}
 
 
 //from parent perspective
-    var parent=zx.main_page_name;
-	fileobj = zx.children[parent];
+    
+	fileobj = zx.children[page_name];
 	if (fileobj === undefined) {
 		fileobj = {
-			fn : parent,
+			fn : page_name,
 			children : {}
 
 		};
-		zx.children[parent] = fileobj;
+		zx.children[page_name] = fileobj;
 	}
 	var mt = String(fs.statSync(filename).mtime);
     console.warn('children 110918 :',mt, filename );    
 	fileobj.children[filename] = mt;
-	zx.children[parent] = fileobj;
+	zx.children[page_name] = fileobj;
 	    
     
 };
