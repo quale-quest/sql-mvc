@@ -241,7 +241,7 @@ ALTER PROCEDURE Z$RUN (
 RETURNS (
     INFO VARCHAR(1000),
     RES BLOB SUB_TYPE 1,
-    ScriptNamed VARCHAR(100) )
+    SCRIPTNAMED VARCHAR(250) )
 AS
 DECLARE VARIABLE o_ref    varchar(40);
 DECLARE VARIABLE o_session varchar(40);
@@ -455,9 +455,11 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
 	
     --further match language and coy custom files  
     SELECT first 1 pk,:Openstr||q.SCRIPT FROM Z$SP q where file_name=:currentpage into :current_page_pk,:script ;
-    if (script is null) then /*back home or direct to an 404 error page ..?*/                    
+    if (script is null) then /*back home or direct to an 404 error page ..?*/   
+      begin                 
         SELECT first 1 pk,:Openstr||q.SCRIPT FROM Z$SP q where 
                    file_name='//'||(SELECT LANDING_PAGE FROM Z$USER WHERE id = :o_ref)||'/404' into :current_page_pk,:script ;                        
+      end             
     if (script is null) then /*global 404 error page */
         SELECT first 1 pk,:Openstr||q.SCRIPT FROM Z$SP q where file_name='//Default/404' into :current_page_pk,:script ;                        
       
@@ -469,7 +471,7 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
        it may be better to launch the execute procedure from a bunch of if statements..?
       */      
      --info='mark4';  suspend;  
-     ScriptNamed = script;
+     ScriptNamed = currentpage;
      if (script is null) then
         begin 
            info='No script named : '||:currentpage;  suspend;
@@ -498,6 +500,8 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
           
 END^
 SET TERM ; ^
+
+
 
 
 
