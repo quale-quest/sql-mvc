@@ -76,7 +76,7 @@ use(todo.clear.button)
 
 ##Windows
 
-[Windows install](https://github.com/quale-quest/sql-mvc/blob/master/doc/Install-windows.md)
+[Windows install](https://github.com/quale-quest/sql-mvc-winstaller/blob/master/README.md)
 
 
 ##Cloud 9 IDE
