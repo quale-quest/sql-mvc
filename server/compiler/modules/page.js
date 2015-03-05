@@ -21,6 +21,7 @@ var fs = require('fs'), bcb = require('./bcbiniparse.js');
 
 
 var appendToDepenance = exports.appendToDepenance = function (zx, filename) {
+//from child perspective    
 	var fileobj = zx.depends[filename];
 	if (fileobj === undefined) {
 		fileobj = {
@@ -35,6 +36,25 @@ var appendToDepenance = exports.appendToDepenance = function (zx, filename) {
 		fileobj.parents[zx.main_page_name] = true;
 		zx.depends[filename] = fileobj;
 	}
+
+
+//from parent perspective
+    var parent=zx.main_page_name;
+	fileobj = zx.children[parent];
+	if (fileobj === undefined) {
+		fileobj = {
+			fn : parent,
+			children : {}
+
+		};
+		zx.children[parent] = fileobj;
+	}
+	var mt = String(fs.statSync(filename).mtime);
+    console.warn('children 110918 :',mt, filename );    
+	fileobj.children[filename] = mt;
+	zx.children[parent] = fileobj;
+	    
+    
 };
 
 var preProcess = function (zx, filename, str) {

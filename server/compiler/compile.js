@@ -176,6 +176,7 @@ var seq_main = function () {
 
 		
 		zx.depends = {};
+        zx.children = {};
 		zx.mainfiles = [];
 		zx.BlockIndex = 0;
 		zx.root_folder = path.resolve(path.join('.'+path.sep+'Quale'+path.sep)) + path.sep;
@@ -187,15 +188,27 @@ var seq_main = function () {
 		zx.app_folder = 'Guest';
 		zx.app_incl_extn = zx.app_extn = '.quicc';
 
-		if (fs.existsSync(zx.output_folder + 'depends.json')) {
-			fileContents = fs.readFileSync(zx.output_folder + 'depends.json');
-			if (fileContents !== "") {
-				zx.depends = JSON.parse(fileContents);
-			}
-		}
-		//possibly all plugins should move here
-
-
+        try {
+            if (fs.existsSync(zx.output_folder + 'depends.json')) {
+                fileContents = fs.readFileSync(zx.output_folder + 'depends.json');
+                if (fileContents !== "") {
+                    zx.depends = JSON.parse(fileContents);
+                }
+            }
+        } catch (e) {
+            zx.depends = {};
+        }
+        
+        try {
+            if (fs.existsSync(zx.output_folder + 'children.json')) {
+                fileContents = fs.readFileSync(zx.output_folder + 'children.json');
+                if (fileContents !== "") {
+                    zx.children = JSON.parse(fileContents);
+                }
+            }
+        } catch (e) {
+            zx.children = {};
+        }
 		zx.dbg = require('../database/db_fb_sql_gen.js');
 		zx.plugins.push(zx.dbg);
 
@@ -285,7 +298,17 @@ var seq_main = function () {
 				cmd = program.args[0];
 			}
 
-			if (cmd === 'app') {
+			if (cmd === 'index') {
+                console.log('index builds file:');
+				if (program.args.length > 1) {
+					f = program.args[1];
+				
+				zx.pages.push({
+					name : f,
+					obj : "args"
+				});
+                }
+			} else if (cmd === 'app') {
 				if (program.args.length > 1) {
 					zx.app_folder = program.args[1];
 				}
@@ -358,7 +381,7 @@ var seq_main = function () {
 				//currently this is being done by a bash shell .. change so windows would also work
 				console.warn('compiling :', cmd);
 			} else {
-				console.warn('invalid command expected[app|file|deltafile] got :', cmd);
+				console.warn('invalid command expected[app|file|deltafile|index] got :', cmd);
 				return;
 			}
 
@@ -515,6 +538,7 @@ var seq_page = function (zx) {
 
 		//console.log('writing zx.depends:',zx.depends);
 		fs.writeFileSync(zx.output_folder + 'depends.json', JSON.stringify(zx.depends, null, 4));
+        fs.writeFileSync(zx.output_folder + 'children.json', JSON.stringify(zx.children, null, 4));
 		try {
 			//console.log('diviner.compile:');
 			diviner.compile(zx, zx.obj);
@@ -665,6 +689,7 @@ if (!fs.existsSync("Quale")) {
 		console.error(e);
 		zx.dbu.exit();
 		console.log("!!!!!!!!!!Exception!!!!!!!!!:", e);
+        console.log(e.stack);
 		throw e;
 	}
 

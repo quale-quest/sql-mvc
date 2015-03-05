@@ -229,9 +229,8 @@ SET TERM ; ^
 
 
 
-
 SET TERM ^ ;
-CREATE PROCEDURE Z$RUN (
+ALTER PROCEDURE Z$RUN (
     SESSION VARCHAR(40),
     ACT VARCHAR(40),
     CID INTEGER,
@@ -241,7 +240,8 @@ CREATE PROCEDURE Z$RUN (
     UPDATES BLOB SUB_TYPE 1 )
 RETURNS (
     INFO VARCHAR(1000),
-    RES BLOB SUB_TYPE 1 )
+    RES BLOB SUB_TYPE 1,
+    ScriptNamed VARCHAR(100) )
 AS
 DECLARE VARIABLE o_ref    varchar(40);
 DECLARE VARIABLE o_session varchar(40);
@@ -284,7 +284,7 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
 */
     /*read the Session, CID,PKRef info*/
     --info='mark1';  suspend;
-    /*post updates - and check for username user_password_fields*/    
+    /*post updates - and check for username passwds*/    
     bp=1;    
     c=0;
     while (c<1000) do 
@@ -400,7 +400,7 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
             SELECT r.OPERATOR_REF, r.ID FROM Z$CONTEXT r where r.pk=:CID into :o_ref,:o_session;
             /*todo validate o_session against session*/
                         
-            SELECT LANDING_PAGE FROM user_table_name WHERE user_pk_field = :o_ref into :LANDING_PAGE;
+            SELECT LANDING_PAGE FROM Z$USER WHERE id = :o_ref into :LANDING_PAGE;
 
 
             
@@ -414,10 +414,10 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
         begin
           o_ref=NULL;
           /*alow them to login even if expired,  the dashboard gives information that they have expired...*/
-          select first 1 user_pk_field,LANDING_PAGE from user_table_name where user_name_field=:usern and user_password_field=:passw into :o_ref,:LANDING_PAGE;
+          select first 1 id,LANDING_PAGE from Z$USER where name=:usern and passwd=:passw into :o_ref,:LANDING_PAGE;
           /*if null then select the nobody user */
           if (o_ref is NULL) then 
-              select first 1 user_pk_field,LANDING_PAGE from user_table_name where user_name_field='Guest' into :o_ref,:LANDING_PAGE;
+              select first 1 id,LANDING_PAGE from Z$USER where name='Guest' into :o_ref,:LANDING_PAGE;
           
           /*info=:o_ref||'&'||:LANDING_PAGE||'&'||:passw||'&';  suspend;*/
           
@@ -431,7 +431,7 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
          
          --this record is so we can save and reload the first page                    
          INSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,TARGET,QUERY, PAGE_PARAMS)
-            VALUES (:pk,0,'click','user_table_name', :currentpage , 'user_pk_field='''||replace(:o_ref,'''','''''')||'''','');  
+            VALUES (:pk,0,'click','Z$USER', :currentpage , 'id='''||replace(:o_ref,'''','''''')||'''','');  
                              
          CID = pk;           
           
@@ -457,7 +457,7 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
     SELECT first 1 pk,:Openstr||q.SCRIPT FROM Z$SP q where file_name=:currentpage into :current_page_pk,:script ;
     if (script is null) then /*back home or direct to an 404 error page ..?*/                    
         SELECT first 1 pk,:Openstr||q.SCRIPT FROM Z$SP q where 
-                   file_name='//'||(SELECT LANDING_PAGE FROM user_table_name WHERE user_pk_field = :o_ref)||'/404' into :current_page_pk,:script ;                        
+                   file_name='//'||(SELECT LANDING_PAGE FROM Z$USER WHERE id = :o_ref)||'/404' into :current_page_pk,:script ;                        
     if (script is null) then /*global 404 error page */
         SELECT first 1 pk,:Openstr||q.SCRIPT FROM Z$SP q where file_name='//Default/404' into :current_page_pk,:script ;                        
       
@@ -469,6 +469,7 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
        it may be better to launch the execute procedure from a bunch of if statements..?
       */      
      --info='mark4';  suspend;  
+     ScriptNamed = script;
      if (script is null) then
         begin 
            info='No script named : '||:currentpage;  suspend;
@@ -497,6 +498,7 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
           
 END^
 SET TERM ; ^
+
 
 
 SET TERM ^ ;

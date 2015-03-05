@@ -120,9 +120,10 @@ exports.write_unknown = function (zx, err) {
 };
 
 exports.caught_exception = function (zx,e,msg) {
-
+    console.log(e.stack);
 	if (e === zx.error.known_error) {
 		console.log("!Known Compiler Exception!:", e);
+        
 		//continue with the next file
 	} else {
 
@@ -138,7 +139,9 @@ exports.caught_exception = function (zx,e,msg) {
 		console.error(e);
         if (msg.length>100) msg = zx.show_longstring(msg);
 		console.log("!!!!!!!!!!Unknown Compiler Exception from "+msg+" !!!!!!!!!:", e);
+        console.log(e.stack);
         console.trace("COMPILER STACK TRACE - as from catch location:");
+        
         
 		console.log("!!!!!!!!!!Possible location!!!!!!!!!:", linecopy);
 

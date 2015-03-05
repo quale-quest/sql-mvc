@@ -14,8 +14,9 @@ but then the page must be stored on the db server, else we will have to ask it a
 var ide = require("../../server/IDE/debugger");
 var db = require("../../server/database/DatabasePool");
 var fb = require("node-firebird");
+var app_utils = require("../lib/app_utils");
 
-exports.produce_div = function (req, res, ss, rambase, messages, session) {
+exports.produce_div = function (req, res, ss, rambase, messages, session,recursive) {
 
 	//input='SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p041257x00end') p;
 
@@ -54,7 +55,7 @@ exports.produce_div = function (req, res, ss, rambase, messages, session) {
 	update += "x00";
 	console.log("Server received update:", update);
 
-	console.log('\n\nSELECT info,RES FROM Z$RUN (\'' + message.session + '\',\'' + message.typ + '\',' + message.cid + ',' + message.pkf + ',\'' + message.valu + '\',\'' + public_parameters + '\',\'' + update + '\')\n\n');
+	console.log('\n\nSELECT info,RES,ScriptNamed FROM Z$RUN (\'' + message.session + '\',\'' + message.typ + '\',' + message.cid + ',' + message.pkf + ',\'' + message.valu + '\',\'' + public_parameters + '\',\'' + update + '\')\n\n');
 
 	rambase.db.startTransaction(//transaction(fb.ISOLATION_READ_COMMITED,
 		function (err, transaction) {
@@ -67,7 +68,7 @@ exports.produce_div = function (req, res, ss, rambase, messages, session) {
 			return;
 		}
 
-		transaction.query('SELECT info,RES FROM Z$RUN (?,?,?,?,?,?,?)',
+		transaction.query('SELECT info,RES,scriptnamed FROM Z$RUN (?,?,?,?,?,?,?)',
 			[message.session, message.typ, message.cid, message.pkf, message.valu, public_parameters, update],
 			function (err, result) {
 
@@ -78,6 +79,26 @@ exports.produce_div = function (req, res, ss, rambase, messages, session) {
 				transaction.rollback();
 			} else {
 
+            
+                if (!recursive && rambase.conf.run_settings[rambase.conf.run_mode].monitor_mode === "jit") {
+                    if (result.length > 0) {
+                        
+                        console.log('db -jit- ScriptNamed:', result[0].scriptnamed);
+                        if (app_utils.check_children(result[0].scriptnamed))  {
+                            console.log('check_children fileobj changed :', result[0].scriptnamed);
+                            transaction.rollback();
+                    
+                            app_utils.call_compiler (result[0].scriptnamed,function (err) {
+                                //recursively resubmit the query
+                                exports.produce_div(req, res, ss, rambase, messages, session,1);
+                                
+                            });   
+                            return ;
+                        }
+                    }
+                    //process.exit(2);
+                }
+            
 				transaction.commit(function (err) {
 					if (err) {
 						console.log('error in transaction.commit', err);
@@ -94,7 +115,7 @@ exports.produce_div = function (req, res, ss, rambase, messages, session) {
 								console.log(str);
 
 							} else {
-
+                                console.log('db - ScriptNamed:', result[0].scriptnamed);
 								console.log('db - JSON:\n\n', result[0].res, '\n\n');
 								{ //debug
 									//var json = JSON.parse(result[0].res);
@@ -104,6 +125,7 @@ exports.produce_div = function (req, res, ss, rambase, messages, session) {
 								}
 
 								//console.log('Index.htm.sql  ouput: ',result[0].res );
+                                
 								ss.publish.socketId(req.socketId, 'newData', 'content', result[0].res);
 								ss.publish.socketId(req.socketId, 'switchPage', '#PAGE_2', '');
 							}

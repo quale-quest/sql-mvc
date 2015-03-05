@@ -2,7 +2,7 @@
     "run_mode": "auto",
     "run_settings": {
         "lin": {
-            "monitor_mode": "check",
+            "monitor_mode": "jit",
             "help": [
                 "check",
                 "gaze",
@@ -15,7 +15,7 @@
         },
         "win": {
             "db_create": "yes",
-            "monitor_mode": "none",
+            "monitor_mode": "jit",
             "serve_port": "3000",
             "db": {
                 "database": "demo_db.fdb",
@@ -26,12 +26,12 @@
         },
         "dar": {
             "db_create": "yes",
-            "monitor_mode": "none",
+            "monitor_mode": "jit",
             "serve_port": "3000",
             "note":"this has not been checked yet"
         },
         "c9": {
-            "monitor_mode": "check",
+            "monitor_mode": "jit",
             "db_create": "yes",
             "url_page": true,
             "serve_port": "8080",
