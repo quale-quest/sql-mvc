@@ -11,12 +11,14 @@
             "db_create": "yes",
             "url_page": true,
             "serve_port": "3000",
+			"login_first":false,
             "debugkey": ""
         },
         "win": {
             "db_create": "yes",
             "monitor_mode": "jit",
             "serve_port": "3000",
+			"login_first":false,
             "db": {
                 "database": "demo_db.fdb",
                 "username": "sysdba",
@@ -28,6 +30,7 @@
             "db_create": "yes",
             "monitor_mode": "jit",
             "serve_port": "3000",
+			"login_first":false,
             "note":"this has not been checked yet"
         },
         "c9": {
@@ -35,12 +38,14 @@
             "db_create": "yes",
             "url_page": true,
             "serve_port": "8080",
+			"login_first":false,
             "debugkey": ""
         },
         "prod": {
             "db_create": "yes",
             "monitor_mode": "none",
             "serve_port": "80",
+			"login_first":false,
             "db": {
                 "schema_backup": 1
             }

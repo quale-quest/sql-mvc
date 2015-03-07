@@ -55,7 +55,7 @@ exports.produce_div = function (req, res, ss, rambase, messages, session,recursi
 	update += "x00";
 	console.log("Server received update:", update);
 
-	console.log('\n\nSELECT info,RES,ScriptNamed FROM Z$RUN (\'' + message.session + '\',\'' + message.typ + '\',' + message.cid + ',' + message.pkf + ',\'' + message.valu + '\',\'' + public_parameters + '\',\'' + update + '\')\n\n');
+	console.log('\n\nSELECT NEW_CID,info,RES,ScriptNamed FROM Z$RUN (\'' + message.session + '\',\'' + message.typ + '\',' + message.cid + ',' + message.pkf + ',\'' + message.valu + '\',\'' + public_parameters + '\',\'' + update + '\')\n\n');
 
 	rambase.db.startTransaction(//transaction(fb.ISOLATION_READ_COMMITED,
 		function (err, transaction) {
@@ -68,7 +68,7 @@ exports.produce_div = function (req, res, ss, rambase, messages, session,recursi
 			return;
 		}
 
-		transaction.query('SELECT info,RES,scriptnamed FROM Z$RUN (?,?,?,?,?,?,?)',
+		transaction.query('SELECT NEW_CID,info,RES,scriptnamed FROM Z$RUN (?,?,?,?,?,?,?)',
 			[message.session, message.typ, message.cid, message.pkf, message.valu, public_parameters, update],
 			function (err, result) {
 
@@ -117,7 +117,9 @@ exports.produce_div = function (req, res, ss, rambase, messages, session,recursi
 
 							} else {
                                 console.log('db - ScriptNamed:', result[0].scriptnamed);
-								console.log('db - JSON:\n\n', result[0].res, '\n\n');
+                                console.log('db - NEW_CID    :', result[0].new_cid);
+                                
+								console.log('db - JSON       :\n\n', result[0].res, '\n\n');
 								{ //debug
 									//var json = JSON.parse(result[0].res);
 									//console.log('db json :', JSON.stringify(json[0].Data,null,4));
@@ -127,6 +129,8 @@ exports.produce_div = function (req, res, ss, rambase, messages, session,recursi
 
 								//console.log('Index.htm.sql  ouput: ',result[0].res );
                                 
+                                rambase.current_cid = result[0].new_cid;
+                                //console.log('=================================rambase.current_cid> ',rambase.current_cid );
 								ss.publish.socketId(req.socketId, 'newData', 'content', result[0].res);
 								ss.publish.socketId(req.socketId, 'switchPage', '#PAGE_2', '');
 							}
@@ -163,6 +167,31 @@ exports.BuildNotify = function (message) {
 	ss.publish.all('BuildNotify', '#debugBuildNotify', message); // Broadcast the message to everyone
 }
 
+var produce_login = function (req, res, ss, rambase, Page, User,Password) {        
+                if (!Page) Page='';
+                var page_user_pass = rambase.page_user_pass;
+                if (page_user_pass[1]) Page=page_user_pass[1];
+                if (page_user_pass[2]) User=page_user_pass[2];
+                if (page_user_pass[3]) Password=page_user_pass[3];
+                
+				var messagelist = [];
+				var message = {
+					cid : 1000,
+					pkf : 0,
+					valu : ''
+				};
+                                
+				// update:'u08USER8002p041258x00end'                
+				message.update = par_format('u', User) + par_format('p', Password);
+                
+                //this could be a security issue so maybe only allow it in dev
+				if (Page&&rambase.conf.run.url_page) message.update += par_format('l', Page);
+				
+				messagelist.push(message);
+				exports.produce_div(req, res, ss, rambase, messagelist, req.session.myStartID);
+				//exports.produce_div(req, res, ss,rambase,message);
+}
+
 // Define actions which can be called from the client using ss.rpc('demo.ACTIONNAME', param1, param2...)
 exports.actions = function (req, res, ss) {
 	var rambase;
@@ -173,7 +202,33 @@ exports.actions = function (req, res, ss) {
 	//req.use('example.authenticated')
 
 	return {
+		connected : function () {
+			//console.log('The contents of my session is', req.session.myStartID);
+            rambase = db.locate(req.session.myStartID);
+            //console.log('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<rambase.current_cid  sp :',rambase.current_cid);
 
+            if (!rambase.current_cid) {
+                //or go direct to the app as guest user
+                //console.log('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<rambase.current_cid  sp :',rambase.conf);
+                if (rambase.conf.run.login_first)
+                    ss.publish.socketId(req.socketId, 'switchPage', '#PAGE_1', '');//login
+                else
+                    produce_login(req, res, ss, rambase, '', 'guest','gu35t');
+                
+            } else {    
+                var messagelist = [];
+                var message = {
+                    cid : rambase.current_cid,
+                    pkf : 0,
+                    valu : '',
+                    typ : 'click'
+                };
+                
+                messagelist.push(message);
+                exports.produce_div(req, res, ss, rambase, messagelist, req.session.myStartID);
+            }
+            
+		},
 		getSession : function () {
 			console.log('The contents of my session is', req.session);
 		},
@@ -191,31 +246,13 @@ exports.actions = function (req, res, ss) {
 			if (User && User.length >= 0) { // Check for blank messages
 				rambase = db.locate(req.session.myStartID);
 				//		console.log('My session is',req.session.myStartID,' and my database is ', rambase);
-				var messagelist = [];
-				var message = {
-					cid : 1000,
-					pkf : 0,
-					valu : ''
-				};
-                
-                if (!Page) Page='';
-                var page_user_pass = rambase.page_user_pass;
-                if (page_user_pass[1]) Page=page_user_pass[1];
-                if (page_user_pass[2]) User=page_user_pass[2];
-                if (page_user_pass[3]) Password=page_user_pass[3];
+
+
                 
                
                 console.log('LoginAction is', Page, User,Password);
+                produce_login(req, res, ss, rambase, Page, User,Password);
 
-				// update:'u08USER8002p041258x00end'                
-				message.update = par_format('u', User) + par_format('p', Password);
-                
-                //this could be a security issue so maybe only allow it in dev
-				if (Page&&rambase.conf.run.url_page) message.update += par_format('l', Page);
-				
-				messagelist.push(message);
-				exports.produce_div(req, res, ss, rambase, messagelist, req.session.myStartID);
-				//exports.produce_div(req, res, ss,rambase,message);
 
 				return res(true); // Confirm it was sent to the originating client
 			} else {

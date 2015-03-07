@@ -240,6 +240,7 @@ CREATE PROCEDURE Z$RUN (
     PUBLIC_PARAMETERS VARCHAR(1000),
     UPDATES BLOB SUB_TYPE 1 )
 RETURNS (
+    NEW_CID INTEGER,
     INFO VARCHAR(1000),
     RES BLOB SUB_TYPE 1,
     SCRIPTNAMED VARCHAR(250) )
@@ -438,7 +439,7 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
           
         end           
         
-               
+      
 /*          INSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU, BASERECORD) VALUES (:pk,:pki,'master_ref','', '');*/
 
 
@@ -446,7 +447,7 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
           
       /*info=:o_ref||'&'||:LANDING_PAGE||'&'||:currentpage||'&'||:passw||'&'||COALESCE(current_page_pk,'null');  suspend;          */
       /*execute the page or SP*/  
-    Openstr = 'EXECUTE BLOCK RETURNS  (info varchar(200),res blob SUB_TYPE 1)AS declare pki integer='||CID||';declare pkf integer='||PKRef||';'
+    Openstr = 'EXECUTE BLOCK RETURNS  (cid integer, info varchar(200),res blob SUB_TYPE 1)AS declare pki integer='||CID||';declare pkf integer='||PKRef||';'
          --||COALESCE(:public_parameters,'')
 		 --||COALESCE(:page_params,'')
          ||'declare z$sessionid varchar(40)='''||:SESSION||''''
@@ -481,7 +482,7 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
         begin           
 		  script = replace(:script,'--assign_params',COALESCE(:page_params,''));
           --res= :script ;  suspend;
-          FOR EXECUTE STATEMENT script INTO :info,:res DO suspend;
+          FOR EXECUTE STATEMENT script INTO :NEW_CID, :info,:res DO suspend;
           WHEN ANY DO
               BEGIN
               info='exception';
@@ -491,7 +492,7 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
               		  
         end    
     
-    
+       
     
         /*when any do
         begin

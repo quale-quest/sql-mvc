@@ -806,10 +806,7 @@ exports.sendLogin = function (LoginName, LoginInput, Page, cb) {
 
 // during initial debug auto-login so we can debug tables
 $(function () {
-	setTimeout(function () {
-		$('#LoginForm').submit();
-	}, 100);
-
+    ss.rpc('ServerProcess.connected');
 });
 
 // Show the chat form and bind to the submit action

@@ -179,7 +179,7 @@ exports.check_children = function (filename) {
             if (allsame) {
             var mt = String(fs.statSync(file).mtime);
             var same=(time===mt);
-            console.warn('check_children forEach :',same,file );    
+            // console.warn('check_children forEach :',same,file );    
             allsame = allsame&&same;
             }
             });

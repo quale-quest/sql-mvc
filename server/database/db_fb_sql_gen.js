@@ -924,7 +924,7 @@ exports.start_pass = function (zx /*, line_objects*/
 
 	zx.sql.testhead =
 		"\n\n\nset term #;\n" +
-		"EXECUTE BLOCK RETURNS  (res blob SUB_TYPE 1)AS \n" +
+		"EXECUTE BLOCK RETURNS  (cid  integer, res blob SUB_TYPE 1)AS \n" +
 		"declare pki integer=12345678;\n" +
 		"declare pkf integer=12345678;\n" +
 		"declare Z$SESSIONID varchar(40)='12345678';\n\n\n";
@@ -937,10 +937,10 @@ exports.start_pass = function (zx /*, line_objects*/
 	if (zx.sql.engine !== 'Z$RUN') {
 		emit(zx, 0, "EXECUTE BLOCK (", "");
 		emit(zx, 0, "pki integer=?,pkf integer=?,upd varchar(30000)=? ", "");
-		emit(zx, 0, ")RETURNS  (res blob SUB_TYPE 1)AS", "");
+		emit(zx, 0, ")RETURNS  (cid integer, res blob SUB_TYPE 1)AS", "");
 	}
 	emit(zx, 0, "declare cond integer=0;", "");
-	emit(zx, 0, "declare cid  integer;", "");
+	//emit(zx, 0, "declare cid  integer;", "");
 	//emit(zx,0,"declare cidi  integer=1;","");
 	/*emit(zx,0,"declare left varchar(1000)='';","");*/
 	/*emit(zx,0,"declare right varchar(1000)='';","");*/
@@ -994,7 +994,7 @@ exports.start_pass = function (zx /*, line_objects*/
 	//emit(zx,0,'execute statement st into operator_ref;');
 
 	//emit(zx,0,"INSERT INTO Z$CONTEXT (PK, TSTAMP, OPERATOR_REF, SESSION_REF) VALUES (:cid,'now', :operator_ref,:z$sessionid );");
-	emit(zx, 0, "res=res||',``cid``:``'||cid||'``';");
+	emit(zx, 0, "res=res||',``cid``:``'||:cid||'``';");
 
 };
 

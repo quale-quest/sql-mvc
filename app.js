@@ -24,6 +24,7 @@ ss.client.define('main', {
 	tmpl : '*'
 });
 
+
 //ss.client.set({liveReload: false}) //WORKS FOR PRODUCTION
 
 console.log('add route upload ',ss.http.route('/upload', function (req, res) {
@@ -53,12 +54,12 @@ ss.http.route('/', function (req, res) {
 
 	// we can also serve url friendly pages from the application
 
-	//...rest of normnal socket stream code ....
+	//...rest of normal socket stream code ....
 
 
 	//console.log('===========================Initial contents of my session is ', req.session.myStartID);
 	console.log('===========================Inital contents of my session is ', req.headers.host, req.url, req.session.myStartID);
-
+    
 	if (req.session.myStartID === undefined) {
 		//ss.session.options.secret = crypto.randomBytes(32).toString();
 		req.session.myStartID = app_util.timestamp();//crypto.randomBytes(32).toString();
@@ -85,11 +86,7 @@ ss.http.route('/', function (req, res) {
 		} else {
         
             dbref.page_user_pass=page_user_pass;
-            //console.log('serveClient b4:', home_page);
-			//console.log('serveClient b4:', JSON.stringify(res,null,4));
-			//console.log('serveClient b4:', res);
-			res.serveClient('main');
-			// console.log('serveClient aft:', res);
+            res.serveClient('main');
 		}
 
 	});

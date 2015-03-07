@@ -203,7 +203,7 @@ exports.getquery_info_async = function (zx, name, script, line_obj, return_callb
 
 exports.validate_script_async = function (zx, name, script, callback) {
 
-	var querys = 'EXECUTE BLOCK RETURNS  (info varchar(200),res blob SUB_TYPE 1)AS declare pki integer=0;declare pkf integer=0;declare z$sessionid varchar(40)=\'\';' + script;
+	var querys = 'EXECUTE BLOCK RETURNS  (cid integer,info varchar(200),res blob SUB_TYPE 1)AS declare pki integer=0;declare pkf integer=0;declare z$sessionid varchar(40)=\'\';' + script;
 	connection.db.query(querys, [],
 		function (err, result) {
 		//console.log('validation result: write',err,result );
