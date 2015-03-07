@@ -104,6 +104,9 @@ exports.compile = function (zx, obj) {
 		} //for lines
 		//console.log('entry.done_pass: ');
 		zx.eachplugin(zx, "done_pass", zx.line_objects);
+        
+        zx.mtscript = zx.mt.lines.join('\n'); //fix: to remove the artificial \n we must make take input \n 's as part of the source - so the output template is formatted the same as the input
+        zx.mtHash = zx.TemplateHashPrefix + zx.ShortHash(zx.mtscript); 
 
 	} //pass
 	//TODO add call back called done_div .. but it must be at the end of the div/file... not the end of the program	- check g960

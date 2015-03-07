@@ -90,6 +90,7 @@ exports.produce_div = function (req, res, ss, rambase, messages, session,recursi
                     
                             app_utils.call_compiler (result[0].scriptnamed,function (err) {
                                 //recursively resubmit the query
+                                console.log('app_utils.call_compiler callback on :',err, result[0].scriptnamed);
                                 exports.produce_div(req, res, ss, rambase, messages, session,1);
                                 
                             });   

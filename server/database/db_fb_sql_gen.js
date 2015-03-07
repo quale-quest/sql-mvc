@@ -101,25 +101,6 @@ a=F_STRINGLISTITEM(parmstr, 'varname')
 
 http://stackoverflow.com/questions/14197935/how-to-connect-to-a-redis-server-via-unix-domain-socket-using-hedis-in-haskell
 
-CREATE TABLE Z$CONTEXT
-(
-PK integer,
-TSTAMP TIMESTAMP,
-OPERATOR_ref VARCHAR(32),
-session_ref VARCHAR(32)
-// add breadcrumbs
-);
-CREATE TABLE Z$PK_CACHE
-(
-master integer,
-indx   integer,
-BaseRecord Integer, / *where the master.field must be read from for virtual records it is all the details, for real records it is only the table and ref* /
-
-Field_name VARCHAR(20),
-valu VARCHAR(1000)
-
-);
-
 
 
  */
@@ -1003,6 +984,7 @@ exports.start_pass = function (zx /*, line_objects*/
     
 	emito(zx, "Target", "#maincontainer");
 	emito(zx, "Stash", zx.main_page_name.substring(2).replace(/[\/\\]/g, '-')); //windows
+    emito(zx, "mtHash",  zx.mtHash); 
 	emito(zx, "ContainerId", "GUIDofTheTemplate");
 	emits(zx, "``Data``:{``start``:``true``");
 

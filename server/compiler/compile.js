@@ -67,6 +67,7 @@ replace with a <#jscript tag, to store away for execution after the dom injectio
  */
 
 
+var hogan = require('ss-hogan/node_modules/hogan.js');
  
 var program = require('commander');
 //var XLSX =  require('xlsx');
@@ -80,6 +81,7 @@ var page = require('./modules/page.js');
 var diviner = require('./modules/diviner.js');
 
 var zx = require('./zx.js');
+zx.TemplateHashPrefix = 'a';
 
 var db = require("../../server/database/DatabasePool");
 
@@ -183,8 +185,11 @@ var seq_main = function () {
 		//console.log('zx.root_folder :', zx.root_folder);
 		zx.build_roots = ["Config", "Custom", "Standard", "Lib", ""];
 		//if dev mode zx.build_roots.unshift("sandbox");
-		zx.output_folder = path.resolve('./output/') + '/';
-		zx.hogan_folder = path.resolve('./client/templates/') + '/';
+		zx.output_folder = path.resolve('./output/') +path.sep;
+        zx.hogan_folder = path.resolve('./client/templates/') +path.sep;
+        
+		zx.hogan_folder_compiled =  path.resolve('./database/files/') +path.sep;
+
 		zx.app_folder = 'Guest';
 		zx.app_incl_extn = zx.app_extn = '.quicc';
 
@@ -496,6 +501,7 @@ var seq_page = function (zx) {
 
 		var ofn = zx.output_folder + zx.rel_file;
 		var fnh = zx.hogan_folder + zx.rel_file + '.html';
+        var fnhc = zx.hogan_folder_compiled + zx.rel_file + '.html.js';
 		//console.log('fnh:',fnh);
 		var fnhp = path.dirname(fnh);
 		//console.log('fullhoganpath:',fnhp);
@@ -505,6 +511,12 @@ var seq_page = function (zx) {
 			if (err.code !== 'EEXIST')
 				console.error("cannot create template folder", err);
 		}
+		try {
+			fsx.mkdirSync(path.dirname(fnhc) + '/', dirxww, true);
+		} catch (err) {
+			if (err.code !== 'EEXIST')
+				console.error("cannot create template folder", err);
+		}        
 		//console.log('ofn:',path.dirname(ofn));
 		try {
 			fsx.mkdirSync(path.dirname(ofn) + '/', dirxww, true);
@@ -570,8 +582,8 @@ var seq_page = function (zx) {
 		script = script.replace(/``/g, '"');
 		script = script.replace(/\/\*\*\*\//g, ':');
 
-		var mtscript = zx.mt.lines.join('\n'); //fix: to remove the artificial \n we must make take input \n 's as part of the source - so the output template is formatted the same as the input
-        fs.writeFileSync(ofn + '.mt', mtscript);
+
+        fs.writeFileSync(ofn + '.mt', zx.mtscript);
 		//validate this using a prepare command
 		//err=zx.dbu.check_script(script);//runs the script, map the error back to a template file and line
 		//output the error, sql line, template file and line
@@ -596,15 +608,31 @@ var seq_page = function (zx) {
 		//console.log('validate_scriptxxx-----------------------------',valid);
 		if (valid === 'ok') { //only update when no syntax errors exist
 			console.log('Script validated - no error ' + zx.main_page_name);
-			fs.writeFileSync(
-				fnh,
-				mtscript);
+            if (zx.cache_page_in_app) { //we can still write pages to go with the first open of the app, like the index page
+            //todo need an interface to set cache_page_in_app
+            fs.writeFileSync(fnh,zx.mtscript);
+            zx.cache_page_in_app=0;
+            
+            }
+                
+            var so=hogan.compile(zx.mtscript, {asString: true}) ;  
+            
+            
+            so = "(function(){var ht=Hogan.Template,sst=require('socketstream').tmpl;" 
+                 +'sst[\'' + zx.main_page_name.substring(2).replace(/\//g, "-") + '\']=new ht(' + so + ');'
+                 +'}).call(this);';    
+            
+            //console.log('Wrote template - ' + so);    
 
-			zx.dbu.write_script(zx,false, zx.CurrentPageIndex ,zx.main_page_name, script,'');
+            var mtjs = '' +so + '';    
+            fs.writeFileSync(fnhc,mtjs);    
+
+                   
+			zx.dbu.write_script(zx,false, zx.CurrentPageIndex ,zx.main_page_name,zx.mtHash, script,'');
 
 			console.log('Wrote script to database - ' + zx.main_page_name, 'size:', script.length);
 
-			var errtxt = zx.sql.testhead + script + zx.sql.testfoot + mtscript;
+			var errtxt = zx.sql.testhead + script + zx.sql.testfoot + zx.mtscript;
 			fs.writeFileSync(lokfn, errtxt); //for easy debugging - when this file reloads it means there was an error
 
 		} else {

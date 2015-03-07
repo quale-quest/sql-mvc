@@ -1,6 +1,10 @@
 
 # SQL-MVC Getting_Started,
 
+##Windows
+
+[Windows install](https://github.com/quale-quest/sql-mvc-winstaller/blob/master/README.md)
+
 ##Cloud 9 IDE
 [Quick and easy to get going](https://github.com/quale-quest/sql-mvc-c9/blob/master/README.md)
 

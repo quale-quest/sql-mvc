@@ -41,6 +41,7 @@ ss.event.on('updateDiv', function (div, message) {
 
 // Listen out for newData events coming from the server
 qq_stache = {}; //global
+qq_tmpl_cache ={};
 
 // Private functions
 
@@ -260,139 +261,9 @@ var parse_json_attributes = function (cx,attr) {
     }
 }                
 
-var process_new_data = function (cx) {
-	//console.log("Static",o.Datasets[oi].Static,cx.Static );
 
-	//todo if a obj arrives but its static data is not there yet then, it must be queue'd
-	// this can be expanded to a whole dependency system
-	//  for now we will presume the 'correct' order
-
-	//console.log("ObjQueue",cx.obj.Object,cx.Static );
-	switch (cx.obj.Object) {
-
-	case "fullstash": { //
-			//console.log("cx.Data  :",cx.obj.Stash,cx.obj.Data);
-			//zxhogan parametrised function
-			cx.obj.Data.lookup = function () {
-				return function (ctx) {
-					//console.log('cx.obj.Data.lookup:',this,ctx,ctx[0]);
-					var look = ctx[0][this[1]];
-					var findkey = this[0];
-					if (look === undefined)
-						return 'unknown-' + this[1];
-					//console.log('cx.obj.Data.lookup obj:',look,findkey);
-					var retval = look[findkey];
-					if (retval === undefined)
-						retval = look.unknown;
-					if (retval === undefined)
-						retval = 'unknown';
-					return retval;
-				};
-			};
-
-			cx.obj.Data.ick = function (ths, ctx, _, fn) {
-				//console.log('cx.obj.Data.lookup:',this,ctx,ctx[0]);
-				var cx = {};
-				var items = [];
-				if (ths[0] !== "")
-					items = ths[0].split(",");
-                    
-				//console.log('cx.obj.Data.pick obj:',fn,ths);
-                parse_json_attributes(cx,ths[4]);
-
-				var look = ctx[0][ths[1]]; //this[1] is the name of the lookup list and look is the dictionary
-				//var findkey = ths[0];
-				if (look === undefined)
-					return 'unknown list-' + ths[1];
-
-				cx.par = ths;
-				//console.log('cx.obj.Data.pick obj:',look,findkey,this);
-				var retval = "";
-				for (var k in look) {
-					if (look.hasOwnProperty(k)) {
-						cx.ItemVal = k;
-						cx.ItemTxt = look[k];
-						if (cx.ItemTxt.substring(1, 8) !== "fblank:") {
-							if (retval !== "")
-								retval += ss.tmpl['Widgets-' + fn + 'FieldEditSeperator'].render(cx);
-							if (items.indexOf(cx.ItemVal) >= 0)
-								retval += ss.tmpl['Widgets-' + fn + 'FieldEdit'].render(cx);
-							else
-								retval += ss.tmpl['Widgets-' + fn + 'FieldEditUnChecked'].render(cx);
-							//console.log("new Option:",SelTxt,SelVal,toSel.options[toSel.length-1]);
-						}
-					}
-				}
-
-				//console.log("new pick:",retval);
-				return retval;
-			};
-
-			cx.obj.Data.radio = function () {
-				return function (ctx, _) {
-					return cx.obj.Data.ick(this, ctx, _, 'Radio');
-				};
-			};
-			cx.obj.Data.pick = function () {
-				return function (ctx, _) {
-					//console.log('cx.obj.Data.lookup:',this,ctx,ctx[0]);
-					return cx.obj.Data.ick(this, ctx, _, 'Pick');
-				};
-			};
-
-			cx.obj.Data.upload = function ( ctx, _) {
-               //_ is the current context dom object
-				//console.log('cx.obj.Data.upload:',this,ctx,ctx[0]);
-                //console.log('cx.obj.Data.upload:',ths[0],ctx,ctx[0]);
-                var ths=this;
-                //ths is a array of the parameters passed from the element fragment
-                //   first is normally the text content of the field
-                //   second is a field (sub)type 
-                //    [4] is attributes passed in f.
-                //console.log('cx.obj.Data.upload fn:');
-                //console.log('cx.obj.Data.upload _:');
-                //console.log('cx.obj.Data.upload ths[0]:',ths);
-				var lcx = {};
+var render_from_fullstash = function (cx,html) {
                 
-				var items = ths[0].split(",");
-				if (ths[0] === "")
-					items = [];
-                parse_json_attributes(lcx,ths[4]);
-                lcx.Session=cx.obj.Session;
-				//console.log('lcx.obj.Data.pick obj:',fn,ths);
-
-				lcx.par = ths;
-                console.log('Widgets-Uploader(',lcx);
-				var retval = ss.tmpl['Widgets-Uploader' ].render(lcx);
-				//console.log("new Option:",SelTxt,SelVal,toSel.options[toSel.length-1]);
-				
-
-				//console.log("new uploader:",retval);
-				return retval;
-			};
-            
-            
-			cx.obj.Data.codec_date = function () {
-				return function () {
-					var ta = this[0].split(" ");
-					if (ta.length < 1)
-						return this[0];
-					return ta[0];
-				};
-			};
-			cx.obj.Data.codec_stamp = function () {
-				return function () {
-					var ta = this[0].split(".");
-					if (ta.length < 1)
-						return this[0];
-					return ta[0];
-				};
-			};
-
-			qq_stache[cx.obj.Data.cid] = cx.obj.Data; //set global
-			console.log("qq_stache.cid  :", cx.obj.Data.cid,cx.obj.Stash);
-            qq_page_id = cx.obj.Stash;
-			var html = ss.tmpl[cx.obj.Stash].render(cx.obj.Data);
 			//console.log("cx.Data  :",cx.obj.Stash,cx.obj.Data);
 			$(cx.obj.Target).html(html);
 //            $(cx.obj.Target).find("script").each(function(i) {
@@ -553,6 +424,207 @@ var process_new_data = function (cx) {
             zxUploaderInit(); //todo make this conditional call only if it is inclueded
             zx_gallery_adaptive_touch_init();
             zx_SyntaxHighlighter_init();
+
+}
+
+var update_in_mem_template = function (page_id,mtHash, text) {	
+		var ht = Hogan.Template;
+		var t = require('socketstream').tmpl;
+		var sc = text;
+		eval(sc);
+        qq_tmpl_cache[page_id]=mtHash;
+	}
+var process_new_data = function (cx) {
+	//console.log("Static",o.Datasets[oi].Static,cx.Static );
+
+	//todo if a obj arrives but its static data is not there yet then, it must be queue'd
+	// this can be expanded to a whole dependency system
+	//  for now we will presume the 'correct' order
+
+	//console.log("ObjQueue",cx.obj.Object,cx.Static );
+	switch (cx.obj.Object) {
+
+	case "fullstash": { //
+			//console.log("cx.Data  :",cx.obj.Stash,cx.obj.Data);
+			//zxhogan parametrised function
+			cx.obj.Data.lookup = function () {
+				return function (ctx) {
+					//console.log('cx.obj.Data.lookup:',this,ctx,ctx[0]);
+					var look = ctx[0][this[1]];
+					var findkey = this[0];
+					if (look === undefined)
+						return 'unknown-' + this[1];
+					//console.log('cx.obj.Data.lookup obj:',look,findkey);
+					var retval = look[findkey];
+					if (retval === undefined)
+						retval = look.unknown;
+					if (retval === undefined)
+						retval = 'unknown';
+					return retval;
+				};
+			};
+
+			cx.obj.Data.ick = function (ths, ctx, _, fn) {
+				//console.log('cx.obj.Data.lookup:',this,ctx,ctx[0]);
+				var cx = {};
+				var items = [];
+				if (ths[0] !== "")
+					items = ths[0].split(",");
+                    
+				//console.log('cx.obj.Data.pick obj:',fn,ths);
+                parse_json_attributes(cx,ths[4]);
+
+				var look = ctx[0][ths[1]]; //this[1] is the name of the lookup list and look is the dictionary
+				//var findkey = ths[0];
+				if (look === undefined)
+					return 'unknown list-' + ths[1];
+
+				cx.par = ths;
+				//console.log('cx.obj.Data.pick obj:',look,findkey,this);
+				var retval = "";
+				for (var k in look) {
+					if (look.hasOwnProperty(k)) {
+						cx.ItemVal = k;
+						cx.ItemTxt = look[k];
+						if (cx.ItemTxt.substring(1, 8) !== "fblank:") {
+							if (retval !== "")
+								retval += ss.tmpl['Widgets-' + fn + 'FieldEditSeperator'].render(cx);
+							if (items.indexOf(cx.ItemVal) >= 0)
+								retval += ss.tmpl['Widgets-' + fn + 'FieldEdit'].render(cx);
+							else
+								retval += ss.tmpl['Widgets-' + fn + 'FieldEditUnChecked'].render(cx);
+							//console.log("new Option:",SelTxt,SelVal,toSel.options[toSel.length-1]);
+						}
+					}
+				}
+
+				//console.log("new pick:",retval);
+				return retval;
+			};
+
+			cx.obj.Data.radio = function () {
+				return function (ctx, _) {
+					return cx.obj.Data.ick(this, ctx, _, 'Radio');
+				};
+			};
+			cx.obj.Data.pick = function () {
+				return function (ctx, _) {
+					//console.log('cx.obj.Data.lookup:',this,ctx,ctx[0]);
+					return cx.obj.Data.ick(this, ctx, _, 'Pick');
+				};
+			};
+
+			cx.obj.Data.upload = function ( ctx, _) {
+               //_ is the current context dom object
+				//console.log('cx.obj.Data.upload:',this,ctx,ctx[0]);
+                //console.log('cx.obj.Data.upload:',ths[0],ctx,ctx[0]);
+                var ths=this;
+                //ths is a array of the parameters passed from the element fragment
+                //   first is normally the text content of the field
+                //   second is a field (sub)type 
+                //    [4] is attributes passed in f.
+                //console.log('cx.obj.Data.upload fn:');
+                //console.log('cx.obj.Data.upload _:');
+                //console.log('cx.obj.Data.upload ths[0]:',ths);
+				var lcx = {};
+                
+				var items = ths[0].split(",");
+				if (ths[0] === "")
+					items = [];
+                parse_json_attributes(lcx,ths[4]);
+                lcx.Session=cx.obj.Session;
+				//console.log('lcx.obj.Data.pick obj:',fn,ths);
+
+				lcx.par = ths;
+                console.log('Widgets-Uploader(',lcx);
+				var retval = ss.tmpl['Widgets-Uploader' ].render(lcx);
+				//console.log("new Option:",SelTxt,SelVal,toSel.options[toSel.length-1]);
+				
+
+				//console.log("new uploader:",retval);
+				return retval;
+			};
+            
+            
+			cx.obj.Data.codec_date = function () {
+				return function () {
+					var ta = this[0].split(" ");
+					if (ta.length < 1)
+						return this[0];
+					return ta[0];
+				};
+			};
+			cx.obj.Data.codec_stamp = function () {
+				return function () {
+					var ta = this[0].split(".");
+					if (ta.length < 1)
+						return this[0];
+					return ta[0];
+				};
+			};
+
+			qq_stache[cx.obj.Data.cid] = cx.obj.Data; //set global
+			console.log("qq_stache.cid  :", cx.obj.Data.cid,cx.obj.Stash);
+            qq_page_id = cx.obj.Stash;
+            var tmpl = ss.tmpl[qq_page_id];
+            var in_mem_hash = qq_tmpl_cache[qq_page_id];
+
+            if (tmpl && !in_mem_hash) {
+                //there is a template with no record of live loading - so it is used as it - template is in app.js 
+                console.log("template loaded from app.js :");
+                render_from_fullstash(cx,tmpl.render(cx.obj.Data)); 
+            } else {                
+                if (in_mem_hash===cx.obj.mtHash)
+                    { //the in mem template is up to date
+                        console.log("template loaded in memory cache :");
+                        render_from_fullstash(cx,tmpl.render(cx.obj.Data)); 
+                    } else {
+                        //the in mem template does not exist or is out dated
+                      
+                        //check the localStorage
+                        in_mem_hash = localStorage.getItem("qq-tmpl_hash-"+qq_page_id);
+                        if (in_mem_hash===cx.obj.mtHash) {
+                            console.log("template loaded in local storage cache :");
+                            var text = localStorage.getItem("qq-tmpl_html-"+qq_page_id);  
+                            update_in_mem_template(qq_page_id,cx.obj.mtHash,text); 
+                            tmpl = ss.tmpl[qq_page_id];                            
+                            render_from_fullstash(cx,tmpl.render(cx.obj.Data));                             
+                        } else {
+                            //get from the CDN    
+                            
+                            // request the new template
+                            var qq_page_id_path='/files?'+qq_page_id.replace(/-/g, "/")+'.html.js';
+                            console.log("invalid  storage object :",qq_page_id_path);
+                                
+                            var jqxhr =  $.get( qq_page_id_path, function(text) {
+                                    //console.log("got template :",text);
+                                    console.log("template loaded from CDN :");
+                                    update_in_mem_template(qq_page_id,cx.obj.mtHash,text);
+                                    tmpl = ss.tmpl[qq_page_id];   
+                                    var htmlx = tmpl.render(cx.obj.Data);
+                                    console.log("template loaded from CDN :",htmlx);
+                                    render_from_fullstash(cx,htmlx); 
+                                    
+                                    //write storage object also
+                                    localStorage.setItem("qq-tmpl_html-"+qq_page_id,text); 
+                                    localStorage.setItem("qq-tmpl_hash-"+qq_page_id,cx.obj.mtHash);  //presume the latest one has the hash rerequire                      
+                                    
+                                    })                        
+                                    .fail(function() {
+                                    alert( "error - could not load the template" );
+                                    });
+                                                            
+                            
+                            
+                            
+                        }    
+                      
+                      
+                    }        
+                    
+
+            } 
+            
 		}
 		break; //Content
 	case "Action": {}

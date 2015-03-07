@@ -374,14 +374,14 @@ exports.getPageIndexNumber = function (zx, name) {
 	return CurrentPageIndex;
 }
 
-exports.write_script_async = function (zx, real, spi, name, script, code, callback) {
+exports.write_script_async = function (zx, real, spi, name, mtHash, script, code, callback) {
 	name = name.replace(/\\/g, '/'); //windows
 	//console.log('.write_script_async - ' +spi,'>',name,'<',script);
 	script = script.replace('Z$$integer', 'Z$$' + spi);
 
 	//name = 'Z$$' + spi;
 	//console.log('write_script_async to Z$SP : ', name);
-	connection.db.query('UPDATE OR INSERT INTO Z$SP (PK,FILE_NAME,SCRIPT,CODE)VALUES (?,?,?,?) MATCHING (PK) ', [spi, name, script, JSON.stringify(code)],
+	connection.db.query("UPDATE OR INSERT INTO Z$SP (PK,TSTAMP,FILE_NAME,SCRIPT,CODE,MT_HASH)VALUES (?,'now',?,?,?,?) MATCHING (PK) ", [spi, name, script, JSON.stringify(code),mtHash],
 		function (err, result) {
 
 		if (real) {
@@ -401,12 +401,12 @@ exports.write_script_async = function (zx, real, spi, name, script, code, callba
 
 };
 
-exports.write_script = function (zx, real, spi, name, script, code) {
+exports.write_script = function (zx, real, spi, name, mtHash, script, code) {
 	//onsole.log('.write_script - ' +spi,name,'script:',script);
     var  err,done=false;
 	name = name.replace(/\\/g, '/'); //windows
     
-	zx.dbu.write_script_async(zx, real, spi, name, script, code, function (err,res){        
+	zx.dbu.write_script_async(zx, real, spi, name,mtHash, script, code, function (err,res){        
         done = true;
         });
     

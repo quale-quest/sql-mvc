@@ -99,13 +99,18 @@ exports.call_compiler = function (scriptnamed,callback) {
 						var fn = path.resolve('output/consol.txt');
 						fs.writeFileSync(fn, str + "...");
 						ss.api.publish.all('BuildNotify', '#debugBuildNotify', 'done'); // Broadcast the message to everyone
-						console.log('compiler done :');
+						console.log('BuildNotify done :');
 					}
 					if (str.length > 0) //don't bother us with small status message
 						console.log('check.sh result :', str);
+                        
+                    console.log('compiler job done :');    
+                    jitInProgress.job.cb(null)
+                        
 				} else {
 
 					console.log('compiler error :');
+                    jitInProgress.job.cb('error')
 				}
                 jitInProgress.job=null;
 
@@ -138,12 +143,14 @@ var zx_children = null;
 var zx_children_mtime = null;
 exports.check_children = function (filename) {
 
+    try{
 	var mt = fs.statSync('output/children.json').mtime;
     //console.log('check_children file :',(zx_children_mtime-mt));
 	if ((zx_children_mtime-mt)!==0) {        
 		zx_children_mtime = mt;
 		zx_children = null;
 	}
+    } catch (e) {};
 
 	if (zx_children === null) {
 		try {
@@ -199,7 +206,7 @@ exports.serveString = function (res, Type, Str, code) {
 
 };
 
-exports.serveBuffer = function (res, Type, Buffer, code) {
+exports.serveBuffer = function (res, Type, Buffer, code,filename) {
 	res.statusCode = code || 200;
 	//var mime = require('mime');
 	// var filename = path.basename(file);
@@ -207,7 +214,7 @@ exports.serveBuffer = function (res, Type, Buffer, code) {
 	//var mimetype = mime.lookup(file);
 
 	if ((Type === undefined) || (Type === null) || (Type === ''))
-		Type = mime.lookup(".png");
+		Type = mime.lookup(filename);
 
 	res.setHeader('Content-Length', Buffer.length);
 	res.setHeader('Content-Type', Type);
