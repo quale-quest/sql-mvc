@@ -619,7 +619,7 @@ var seq_page = function (zx) {
             
             
             so = "(function(){var ht=Hogan.Template,sst=require('socketstream').tmpl;" 
-                 +'sst[\'' + zx.main_page_name.substring(2).replace(/\//g, "-") + '\']=new ht(' + so + ');'
+                 +'sst[\'' + zx.main_page_name.substring(2).replace(/[\/\\]/g, "-") + '\']=new ht(' + so + ');'
                  +'}).call(this);';    
             
             //console.log('Wrote template - ' + so);    
