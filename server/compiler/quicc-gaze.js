@@ -19,7 +19,12 @@ exports.gaze_start = function (onChange) {
 		// On changed/added/deleted
 		this.on('all', function (event, filepath) {
 			filelist.push(filepath);
-
+            //console.log('sending changed list...:', event,filepath);
+            if ( filepath.match(/killserver.quicc/)) {
+                console.log('Sever killed by drop file:', event,filepath);
+                process.exit(0);//correct this must kill the program
+            }
+                 
 			//remove existing timers
 			if (lastRun.delayTime) {
 				clearTimeout(lastRun.delayTime);
