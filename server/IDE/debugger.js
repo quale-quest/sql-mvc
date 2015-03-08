@@ -7,6 +7,7 @@ var fs = require('fs');
 var path = require('path');
 var jt = require('./json_tree');
 var ss = require('socketstream');
+var app_utils = require("../lib/app_utils");
 
 var config = db.check_run_mode(require('fs').readFileSync('Quale/Config/config.json').toString());
 
@@ -77,6 +78,8 @@ exports.ProcessDebugRequest = function (cmds) {
 	switch (cmds.fn) {
 
 	case "Rebuild": {
+            app_utils.queue_compiler('all',null,null); 
+            app_utils.call_compiler();
 			var fn = path.resolve('output/built_complete');
 			console.log('Rebuild unlinkSync :', fn);
 			try {

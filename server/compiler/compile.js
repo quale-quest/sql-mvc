@@ -336,6 +336,29 @@ var seq_main = function () {
 					name : f,
 					obj : "args"
 				});
+                
+                
+			} else if (cmd === 'all') {
+                //all [Application[/LandingPage]] 
+                var prefix='Quale/Standard/';
+                zx.app_folder='';
+				if (program.args.length > 1) {
+					zx.app_folder = program.args[1];
+				}
+                zx.wildcard = true;
+                
+                //get a list of folders that contain Index.quicc 
+                var files_ = fileutils.getFiles(prefix+zx.app_folder,null , /Index.quicc/);
+                //console.log('index builds files:',files_);
+                 
+                zx.forFields(files_,function (filename) {
+                    filename = '//'+filename.slice(prefix.length,-6); //-6 = legth of .quicc
+                    console.log('index builds files each:',filename);
+                    zx.pages.push({
+                        name : filename,
+                        obj : "args"
+                        });
+                });               
 
 			} else if (cmd === 'file') {
 

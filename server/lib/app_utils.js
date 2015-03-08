@@ -93,8 +93,14 @@ exports.call_compiler = function () {
     ss.api.publish.all('BuildStarted',  jitInProgress.job.fn,jitInProgress.job.sn );
     
     console.log('compiler job started :',jitInProgress.job.fn);
-     
-			var command = spawn('node',['server/compiler/compile.js','index',jitInProgress.job.fn]);
+    
+    var command;
+        if (jitInProgress.job.fn==='all') {
+            command = spawn('node',['server/compiler/compile.js','all']);
+        }else {
+			command = spawn('node',['server/compiler/compile.js','index',jitInProgress.job.fn]);
+            }
+            
 			var output = [];
 
 			command.stdout.on('data', function (chunk) {

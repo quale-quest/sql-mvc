@@ -135,11 +135,12 @@ exports.getDropinFileList = function (zx, regex, current_page , line_obj, trce
 	return filelist;
 };
 
-function getFiles(dir, files_, regex) { //regular recursive search
+var getFiles = exports.getFiles = function(dir, files_, regex) { //regular recursive search
 	files_ = files_ || [];
 	if (typeof files_ === 'undefined')
 		files_ = [];
 	var files = fs.readdirSync(dir);
+    //console.log('getFiles found:',files);
 	for (var i in files) { //is this ok??? should it not be foreach???  TODO
 		if (!files.hasOwnProperty(i))
 			continue;

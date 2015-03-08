@@ -8,7 +8,7 @@ var db = require("./server/database/DatabasePool");
 var path = require('path');
 
 var fs = require('fs');
-var app_util = require("./server/lib/app_utils");
+var app_utils = require("./server/lib/app_utils");
 var app_uploads = require("./server/lib/app_uploads");
 
 var Busboy = require('busboy');
@@ -46,7 +46,7 @@ ss.http.route('/files?*', function (req, res) {
 	//console.log('parse ', req.session,req.url, fn);
     //var path = zx.config.async.public    
    //dont have a way to correctly read the config...i.e. this service is not related to any config... console.log('parse ', zx.config.async.public.path);
-	app_util.serveBuffer(res, '', fs.readFileSync('./database/files/' + fn),fn); //TODO in production the s must be improved - should actually be server from a web server or CDN
+	app_utils.serveBuffer(res, '', fs.readFileSync('./database/files/' + fn),fn); //TODO in production the s must be improved - should actually be server from a web server or CDN
 	return true; 
 });
 
@@ -63,7 +63,7 @@ ss.http.route('/', function (req, res) {
     
 	if (req.session.myStartID === undefined) {
 		//ss.session.options.secret = crypto.randomBytes(32).toString();
-		req.session.myStartID = app_util.timestamp();//crypto.randomBytes(32).toString();
+		req.session.myStartID = app_utils.timestamp();//crypto.randomBytes(32).toString();
 		req.session.save();
 	}    
     
@@ -140,12 +140,12 @@ server.listen(config.run.serve_port);
 
 //start qq file monitor if in dev mode
 if (config.run_settings[config.run_mode].monitor_mode === "check") { 
-	app_util.run_monitor(1000);
+	app_utils.run_monitor(1000);
 }
 
 if (config.run_settings[config.run_mode].monitor_mode === "jit") { 	
     zxGase= require("./server/compiler/quicc-gaze");
-    zxGase.gaze_start(app_util.check_zx_depends_list);
+    zxGase.gaze_start(app_utils.check_zx_depends_list);
 }
 // Start SocketStream
 ss.start(server);
