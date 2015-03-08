@@ -52,7 +52,7 @@ var appendToDepenance = exports.appendToDepenance = function (zx, filename) {
 		zx.children[page_name] = fileobj;
 	}
 	var mt = String(fs.statSync(filename).mtime);
-    console.warn('children 110918 :',mt, filename );    
+    //console.warn('children 110918 :',mt, filename );    
 	fileobj.children[filename] = mt;
 	zx.children[page_name] = fileobj;
 	    

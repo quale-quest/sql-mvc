@@ -87,13 +87,14 @@ exports.produce_div = function (req, res, ss, rambase, messages, session,recursi
                         if (app_utils.check_children(result[0].scriptnamed))  {
                             console.log('check_children fileobj changed :', result[0].scriptnamed);
                             transaction.rollback();
-                    
-                            app_utils.call_compiler (result[0].scriptnamed,function (err) {
+
+                            app_utils.queue_compiler (result[0].scriptnamed,session,function (err) {
                                 //recursively resubmit the query
                                 console.log('app_utils.call_compiler callback on :',err, result[0].scriptnamed);
                                 exports.produce_div(req, res, ss, rambase, messages, session,1);
                                 
                             });   
+                            app_utils.call_compiler();
                             return ;
                         }
                     }
@@ -129,7 +130,11 @@ exports.produce_div = function (req, res, ss, rambase, messages, session,recursi
 
 								//console.log('Index.htm.sql  ouput: ',result[0].res );
                                 
-                                rambase.current_cid = result[0].new_cid;
+                                rambase.current_cid    = result[0].new_cid;
+                                rambase.current_script = result[0].scriptnamed;
+                                //todo filter developers on some key value - so only a small subset of users can to live editing of source
+                                db.developers[message.session] = result[0].scriptnamed;
+                                
                                 //console.log('=================================rambase.current_cid> ',rambase.current_cid );
 								ss.publish.socketId(req.socketId, 'newData', 'content', result[0].res);
 								ss.publish.socketId(req.socketId, 'switchPage', '#PAGE_2', '');

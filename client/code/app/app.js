@@ -5,6 +5,7 @@
         
 var zx_view_page='#PAGE_3';       
 var zx_prev_page='#PAGE_3';
+var qq_session,qq_cid;
 
 var zx_switch_page = function (div){
     console.log("zx_switch_page :",div );
@@ -533,7 +534,7 @@ var process_new_data = function (cx) {
 					items = [];
                 parse_json_attributes(lcx,ths[4]);
                 lcx.Session=cx.obj.Session;
-				//console.log('lcx.obj.Data.pick obj:',fn,ths);
+				//console.log('lcx.obj.Data.pick obj:',qq_session,qq_Stash);
 
 				lcx.par = ths;
                 console.log('Widgets-Uploader(',lcx);
@@ -566,6 +567,9 @@ var process_new_data = function (cx) {
 			qq_stache[cx.obj.Data.cid] = cx.obj.Data; //set global
 			console.log("qq_stache.cid  :", cx.obj.Data.cid,cx.obj.Stash);
             qq_page_id = cx.obj.Stash;
+            qq_cid = cx.obj.Data.cid;
+            qq_session =cx.obj.Session;
+             
             var tmpl = ss.tmpl[qq_page_id];
             var in_mem_hash = qq_tmpl_cache[qq_page_id];
 
@@ -673,11 +677,22 @@ ss.event.on('newData', function (div, message) {
 
 
 
+ss.event.on('BuildComplete', function (file,excludes) {
+   file=file.substring(2).replace(/[\/\\]/g, '-');
+   //console.log("BuildComplete result  :", file,excludes);
+   //console.log("BuildComplete compare :", qq_page_id,qq_session);
+   
+   if ((qq_session!==excludes)&&(qq_page_id===file)) {
+       zxnav_reload();
+   }
+  
+ });
+ 
 ss.event.on('BuildNotify', function (div,message) {
    //console.log("BuildNotify result  :", div,message);
   $(div).html('<pre>'+Date()+' : '+message+'</pre>');
  });
-
+ 
 ss.event.on('debugresult', function (div,message,fn) {
 
 
@@ -743,6 +758,35 @@ exports.delta = function (cell) {
 zx_delta = exports.delta;
 // bind to the helpbutton action
 
+zxnav_reload = function () {
+    //in place reloading  without saving - preserve changes -todo
+    
+	DeltaList = [];
+    var message = {
+        cid : qq_cid,
+        pkf : 0,
+        valu : '',
+        typ : 'click'
+    };  
+    DeltaList.push(message);   
+    var data = JSON.stringify(DeltaList);    
+    DeltaList = [];         
+    
+	deltacount = 0;
+	$('#deltacounter1').text(deltacount);
+	$('#deltacounter2').text(deltacount);
+
+	return exports.sendClick(data, function (success) {
+		if (success) {
+			return $('#myMessage').val('');
+		} else {
+			return alert('Oops! Unable to send message');
+		}
+	});
+
+};
+
+
 $(".zxlink").click(function () {
 	// Grab the message from the text box
 	var text = $(this).attr('id') + ' abc';
@@ -760,11 +804,9 @@ $(".zxlink").click(function () {
 
 // sharing code between modules by exporting function
 exports.sendClick = function (text, cb) {
-	if (valid(text)) {
-		return ss.rpc('ServerProcess.NavSubmit', text, cb);
-	} else {
-		return cb(false);
-	}
+
+	return ss.rpc('ServerProcess.NavSubmit', text, cb);
+
 };
 
 // bind to the login form and submit the fields after validation

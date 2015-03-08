@@ -12,6 +12,7 @@ var app_util = require("./server/lib/app_utils");
 var app_uploads = require("./server/lib/app_uploads");
 
 var Busboy = require('busboy');
+var zxGase;
 
 // Define a single-page client called 'main'
 ss.client.define('main', {
@@ -71,13 +72,14 @@ ss.http.route('/', function (req, res) {
 	within that application we retrieve a config file
 	organise the application source in this tree... even though the compiler puts it in the database
 	 */
-
+//format  http://10.0.0.254:3000/application/page?username&password
+//page includes the /
     var root_folder = path.resolve('./Quale/') + '/';
     var host_name = (req.headers.host.match(/(http:\/\/)?(https:\/\/)?(\w+)/) || ["", "",""])[3];    
     var home_page = (req.url.match(/([\/]\w+)([\w\W]+)/) || ["", "",""]);    
     var Application = home_page[1]; //=host_name  to make host name based routing
 	var page_user_pass = (home_page[2].match(/([\w\/]+)\?*(\w*)&*([\w]*)/) || ["", "","",""]); 
-    console.log('serveClient host:',host_name,' home_page:', home_page,page_user_pass);
+    console.log('serveClient host:',host_name,' home_page:', home_page,page_user_pass,' Application :',Application);
     
 	db.databasePooled(root_folder, req.session.myStartID,Application, function (err , msg, dbref
 		) {
@@ -137,9 +139,13 @@ server.listen(config.run.serve_port);
 
 
 //start qq file monitor if in dev mode
-if (config.run_settings[config.run_mode].monitor_mode === "check") { //Develop Debug Demo Production
+if (config.run_settings[config.run_mode].monitor_mode === "check") { 
 	app_util.run_monitor(1000);
 }
 
+if (config.run_settings[config.run_mode].monitor_mode === "jit") { 	
+    zxGase= require("./server/compiler/quicc-gaze");
+    zxGase.gaze_start(app_util.check_zx_depends_list);
+}
 // Start SocketStream
 ss.start(server);

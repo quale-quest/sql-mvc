@@ -13,6 +13,7 @@ var extend = require('node.extend');
 var deasync = require('deasync');
 
 exports.connections = {};
+exports.developers = {}; //stores all the developer id and where they are viewing for JIT compiler
 
 exports.module_name = 'DatabasePool.js';
 

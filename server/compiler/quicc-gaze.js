@@ -12,7 +12,7 @@ var lastRun = {
 
 var filelist = [];
 
-exports.gaze_start = function () {
+exports.gaze_start = function (onChange) {
 	console.log('gaze start...:');
 	gaze('Quale/**/*.quicc', function (err, watcher) {
 
@@ -31,7 +31,9 @@ exports.gaze_start = function () {
 			//Delay timer
 			if (!lastRun.State)
 				lastRun.delayTime = setTimeout(function () {
-						console.log('sending changed list...:', filelist);
+						//console.log('sending changed list...:', filelist);
+                        if (onChange)
+                          onChange(filelist);
 						filelist = [];
 						lastRun.State = 1;
 						lastRun.at = Date.now();
@@ -44,5 +46,5 @@ exports.gaze_start = function () {
 	console.log('gazing...:');
 }
 
-exports.gaze_start();
+//exports.gaze_start();
 

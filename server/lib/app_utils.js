@@ -8,6 +8,7 @@ var path = require('path');
 var fs = require('fs');
 var spawn = require('child_process').spawn;
 var mime = require('mime-types');
+var db = require("../../server/database/DatabasePool");
 
 exports.timestamp = function () {
 	var pad2 = function (number) {
@@ -68,20 +69,29 @@ exports.run_monitor = function (interval_ms) {
 }
 
 var jitJobs=[];
+var jitJobsByName={};
 var jitInProgress={};
-exports.call_compiler = function (scriptnamed,callback) {
+exports.queue_compiler = function (scriptnamed,session,callback) {
 //this can be called by more than one client but we can serve only one at a time...
 
   console.log('compiler job  queued :',scriptnamed);
-  if (scriptnamed)
-      jitJobs.push({fn:scriptnamed,cb:callback});
-  
-  if (!jitInProgress.job)  {
-      
-      
-      jitInProgress.job = jitJobs.shift(); //single threaded node, this wont case a race condition
-     
-     console.log('compiler job dequeued :',jitInProgress.job.fn);
+  if (scriptnamed) {
+      //deduplicate - make sure it is not already in the queue
+      if (!jitJobsByName[scriptnamed])
+          {
+          jitJobs.push({fn:scriptnamed,sn:session,cb:callback});
+          jitJobsByName[scriptnamed] = true;
+          }
+  }
+}
+
+exports.call_compiler = function () {  
+
+  if (!jitInProgress.job && jitJobs.length>0)  {
+    jitInProgress.job = jitJobs.shift(); //single threaded node, this wont case a race condition    
+    jitJobsByName[jitInProgress.job.fn] = false;    
+    
+    console.log('compiler job started :',jitInProgress.job.fn);
      
 			var command = spawn('node',['server/compiler/compile.js','index',jitInProgress.job.fn]);
 			var output = [];
@@ -105,15 +115,30 @@ exports.call_compiler = function (scriptnamed,callback) {
 						console.log('check.sh result :', str);
                         
                     console.log('compiler job done :');    
-                    jitInProgress.job.cb(null)
+                    if (jitInProgress.job.cb)
+                        jitInProgress.job.cb(null);
+                    
+                    
+                    ss.api.publish.all('BuildComplete',  jitInProgress.job.fn,jitInProgress.job.sn );
+                    //now the cleint must compare his file name and request a update if the match
+                    //the client waiting for the JIT??????
+                    
+                    
+                    //signal_update_developers(jitInProgress.job.fn,jitInProgress.job.sn);
                         
 				} else {
 
 					console.log('compiler error :');
-                    jitInProgress.job.cb('error')
+                    if (jitInProgress.job.cb)
+                        jitInProgress.job.cb('error')
 				}
-                jitInProgress.job=null;
+                
 
+                jitInProgress.job=null;
+                
+                
+                //exports.call_compiler();
+                
 			});      
       
       
@@ -139,37 +164,86 @@ var forFields = exports.forFields = function (object,callback) {
 }                        
 
 
-var zx_children = null;
-var zx_children_mtime = null;
-exports.check_children = function (filename) {
+
+
+exports.follow_file = function (filename,follow) {
 
     try{
-	var mt = fs.statSync('output/children.json').mtime;
-    //console.log('check_children file :',(zx_children_mtime-mt));
-	if ((zx_children_mtime-mt)!==0) {        
-		zx_children_mtime = mt;
-		zx_children = null;
+	var mt = fs.statSync('output/depends.json').mtime;
+    //console.log('check_depends file :',(follow.mtime-mt));
+	if ((follow.mtime-mt)!==0) {        
+		follow.mtime = mt;
+	 	follow.obj   = null;
 	}
     } catch (e) {};
 
-	if (zx_children === null) {
+	if (!follow.obj) {
 		try {
-			//console.log('check_children reading:');
-			var fileContents = fs.readFileSync('output/children.json');
-			//console.log('check_children read :',fileContents);
+			//console.log('check_depends reading:');
+			var fileContents = fs.readFileSync(filename);
+			//console.log('check_depends read :',fileContents);
 			if (fileContents !== "") {
-				zx_children = JSON.parse(fileContents);
-				//console.log('check_children contents :', zx_children);
+				follow.obj = JSON.parse(fileContents);
+				//console.log('check_depends contents :', zx_children);
 			}
 
 		} catch (e) {
-			zx_children = {};
-			//console.log('check_children failed :',e);
+			follow.obj = {};
+			//console.log('check_depends failed :',e);
 		}
 	}
-        
-    if (zx_children !== null) {
-        var fileobj = zx_children[filename];
+    
+    return follow.obj;       
+}
+
+var zx_depends = {};
+//called from gaze with the changed file name
+
+exports.check_zx_depends = function (filename) {    
+    
+    if  (exports.follow_file('output/depends.json',zx_depends)) {
+        //console.log('        check_zx_depends zx_depends :', zx_depends);
+        var fileobj = zx_depends.obj[filename];
+	    if (fileobj !== undefined) {   
+            forFields(fileobj.parents,function (val,file) {        
+                //console.log('        check_zx_depends fileobj contents :', val,file);
+    //this must now lookup in the current pages for each of the dev cleints,
+    //    if it find a match the file mus be queued for compilation            
+                forFields(db.developers,function (current_script,connection) {        
+                    //console.log('            check_zx_depends developers :', current_script,connection);
+                    if (current_script===file) {
+                        console.log('        found active file - queue for compile:', file);
+                        exports.queue_compiler(file,null,null); 
+                    }
+                });
+            });
+            
+            //show current pages
+//            console.log('check_zx_depends connections contents :');
+//            forFields(db.connections,function (rambase,file) {        
+//                console.log('        check_zx_depends connections contents :', rambase.current_script,file);
+//                exports.call_compiler = function (scriptnamed,callback) 
+//            });
+            
+        }        
+    }           
+}    
+
+exports.check_zx_depends_list = function (filenames) {    
+    forFields(filenames,function (filename) {
+       //console.log('check_zx_depends filename :', filename);        
+        exports.check_zx_depends(filename);
+        });
+    exports.call_compiler(); //only start compiling after we have check all the files to make sure we don't compile one twice.    
+
+}
+
+
+var zx_children = {};
+exports.check_children = function (filename) {
+
+    if  (exports.follow_file('output/children.json',zx_children)) {
+        var fileobj = zx_children.obj[filename];
 	    if (fileobj !== undefined) {
             var allsame=true;
             //console.log('check_children fileobj contents :', fileobj.children);
