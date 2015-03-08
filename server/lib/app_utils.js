@@ -90,6 +90,7 @@ exports.call_compiler = function () {
   if (!jitInProgress.job && jitJobs.length>0)  {
     jitInProgress.job = jitJobs.shift(); //single threaded node, this wont case a race condition    
     jitJobsByName[jitInProgress.job.fn] = false;    
+    ss.api.publish.all('BuildStarted',  jitInProgress.job.fn,jitInProgress.job.sn );
     
     console.log('compiler job started :',jitInProgress.job.fn);
      

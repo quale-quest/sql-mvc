@@ -86,6 +86,7 @@ exports.produce_div = function (req, res, ss, rambase, messages, session,recursi
                         console.log('db -jit- ScriptNamed:', result[0].scriptnamed);
                         if (app_utils.check_children(result[0].scriptnamed))  {
                             console.log('check_children fileobj changed :', result[0].scriptnamed);
+                            ss.publish.socketId(req.socketId, 'switchPage', '#PAGE_4', '');
                             transaction.rollback();
 
                             app_utils.queue_compiler (result[0].scriptnamed,session,function (err) {

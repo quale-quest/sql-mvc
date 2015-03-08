@@ -606,7 +606,7 @@ var process_new_data = function (cx) {
                                     update_in_mem_template(qq_page_id,cx.obj.mtHash,text);
                                     tmpl = ss.tmpl[qq_page_id];   
                                     var htmlx = tmpl.render(cx.obj.Data);
-                                    console.log("template loaded from CDN :",htmlx);
+                                    //console.log("template loaded from CDN :",htmlx);
                                     render_from_fullstash(cx,htmlx); 
                                     
                                     //write storage object also
@@ -676,7 +676,17 @@ ss.event.on('newData', function (div, message) {
 });
 
 
-
+ss.event.on('BuildStarted', function (file,excludes) {
+   file=file.substring(2).replace(/[\/\\]/g, '-');
+   //console.log("BuildComplete result  :", file,excludes);
+   //console.log("BuildComplete compare :", qq_page_id,qq_session);
+   
+   if (((qq_session!==excludes)&&(qq_page_id===file))||(qq_page_id==='all')) {
+       zx_switch_page('#PAGE_4');
+   }
+  
+ });
+ 
 ss.event.on('BuildComplete', function (file,excludes) {
    file=file.substring(2).replace(/[\/\\]/g, '-');
    //console.log("BuildComplete result  :", file,excludes);
