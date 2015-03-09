@@ -1,10 +1,6 @@
 "use strict";
 // Server-side Code
 
-//fbpool = require("DatabasePool");
-//var zxDiv = require('../../zxDiv').init();
-//var fs = require('fs');
-
 /*
 The login/page and updates can all be integrated into a single request,
 but then the page must be stored on the db server, else we will have to ask it and that is pointless.....
@@ -15,6 +11,8 @@ var ide = require("../../server/IDE/debugger");
 var db = require("../../server/database/DatabasePool");
 var fb = require("node-firebird");
 var app_utils = require("../lib/app_utils");
+var fs = require('fs');
+var path = require('path');
 
 exports.produce_div = function (req, res, ss, rambase, messages, session,recursive) {
 
