@@ -115,7 +115,8 @@ exports.produce_div = function (req, res, ss, rambase, messages, session,recursi
 							if (result[0].info === 'exception') {
 								var str = '\n\n\n\nSET TERM ^ ;' + result[0].res + '^\nSET TERM ; ^\n\n\n\n';
 								//write this to a audit
-								console.log(str);
+								console.log(str);                                
+						        fs.writeFileSync( path.resolve('output/runtime_exception.txt'), str );
 
 							} else {
                                 console.log('db - ScriptNamed:', result[0].scriptnamed);

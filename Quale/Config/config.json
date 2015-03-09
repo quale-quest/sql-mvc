@@ -19,6 +19,7 @@
             "monitor_mode": "jit",
             "serve_port": "3000",
 			"login_first":false,
+            "debugkey": "",
             "db": {
                 "database": "demo_db.fdb",
                 "username": "sysdba",
@@ -55,14 +56,12 @@
     "db": {
         "dialect": "fb25",
         "server": "127.0.0.1",
-        "database-old": "/var/db/demo_db.fdb",
         "database": "/var/lib/firebird/2.5/data/demo_db.fdb",
         "username": "using the value from authfile",
         "password": "using the value from authfile",
         "authfile": "/etc/firebird/2.5/SYSDBA.password",
         "useUDF": "no",
         "schema_mode": "master",
-        "xschema_rebuild": "always",
         "schema_rebuild": "onchange",
         "schema_backup": 0,
         "schema_alter_fields": "yes",

@@ -8,6 +8,8 @@ var path = require('path');
 var fs = require('fs');
 var spawn = require('child_process').spawn;
 var mime = require('mime-types');
+var rimraf = require('rimraf');
+
 var db = require("../../server/database/DatabasePool");
 
 exports.timestamp = function () {
@@ -96,8 +98,9 @@ exports.call_compiler = function () {
     
     var command;
         if (jitInProgress.job.fn==='all') {
+            rimraf.sync('output');
             command = spawn('node',['server/compiler/compile.js','all']);
-        }else {
+        } else {
 			command = spawn('node',['server/compiler/compile.js','index',jitInProgress.job.fn]);
             }
             
