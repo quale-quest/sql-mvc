@@ -688,11 +688,11 @@ ss.event.on('BuildStarted', function (file,excludes) {
  });
  
 ss.event.on('BuildComplete', function (file,excludes) {
-   file=file.substring(2).replace(/[\/\\]/g, '-');
-   //console.log("BuildComplete result  :", file,excludes);
-   //console.log("BuildComplete compare :", qq_page_id,qq_session);
+   if (file!=='all') file=file.substring(2).replace(/[\/\\]/g, '-');
+   console.log("BuildComplete result  :", file,excludes);
+   console.log("BuildComplete compare :", qq_page_id,qq_session);
    
-   if ((qq_session!==excludes)&&(qq_page_id===file)) {
+   if ((qq_session!==excludes)&&((qq_page_id===file)||(file==='all'))) {
        zxnav_reload();
    }
   

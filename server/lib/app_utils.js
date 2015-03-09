@@ -125,11 +125,12 @@ exports.call_compiler = function () {
 						console.log('check.sh result :', str);
                         
                     console.log('compiler job done :');    
+                    ss.api.publish.all('BuildComplete',  jitInProgress.job.fn,jitInProgress.job.sn );
                     if (jitInProgress.job.cb)
                         jitInProgress.job.cb(null);
                     
                     
-                    ss.api.publish.all('BuildComplete',  jitInProgress.job.fn,jitInProgress.job.sn );
+                    
                     //now the cleint must compare his file name and request a update if the match
                     //the client waiting for the JIT??????
                     
@@ -179,7 +180,7 @@ var forFields = exports.forFields = function (object,callback) {
 exports.follow_file = function (filename,follow) {
 
     try{
-	var mt = fs.statSync('output/depends.json').mtime;
+	var mt = fs.statSync(filename).mtime;
     //console.log('check_depends file :',(follow.mtime-mt));
 	if ((follow.mtime-mt)!==0) {        
 		follow.mtime = mt;
@@ -210,7 +211,7 @@ var zx_depends = {};
 //called from gaze with the changed file name
 
 exports.check_zx_depends = function (filename) {    
-    
+    var file_counts=0;
     if  (exports.follow_file('output/depends.json',zx_depends)) {
         //console.log('        check_zx_depends zx_depends :', zx_depends);
         var fileobj = zx_depends.obj[filename];
@@ -223,6 +224,7 @@ exports.check_zx_depends = function (filename) {
                     //console.log('            check_zx_depends developers :', current_script,connection);
                     if (current_script===file) {
                         console.log('        found active file - queue for compile:', file);
+                        file_counts++;
                         exports.queue_compiler(file,null,null); 
                     }
                 });
@@ -236,22 +238,39 @@ exports.check_zx_depends = function (filename) {
 //            });
             
         }        
-    }           
+    } 
+    return file_counts;    
 }    
 
 exports.check_zx_depends_list = function (filenames) {    
+    var file_counts=0;
     forFields(filenames,function (filename) {
        //console.log('check_zx_depends filename :', filename);        
-        exports.check_zx_depends(filename);
+        file_counts+=exports.check_zx_depends(filename);
         });
+    if ( file_counts === 0)   {
+        console.log('No dependents found, buidling all :',filenames);
+        //invalidate all children, and issue a refresh to all 'dev' users
+        exports.rebuild_all=true;
+        ss.api.publish.all('BuildComplete',  'all','');
+        
+    }
+        
     exports.call_compiler(); //only start compiling after we have check all the files to make sure we don't compile one twice.    
 
 }
 
 
 var zx_children = {};
+exports.rebuild_all=false;
 exports.check_children = function (filename) {
 
+    if (exports.rebuild_all) {
+        fs.unlink('output/children.json');        
+        console.log('BuildComplete all :');
+    } 
+    exports.rebuild_all = false;
+        
     if  (exports.follow_file('output/children.json',zx_children)) {
         var fileobj = zx_children.obj[filename];
 	    if (fileobj !== undefined) {
