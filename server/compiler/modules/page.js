@@ -5,6 +5,7 @@ ease of use is important
  */
 
 //var Sync = require('sync'); // https://github.com/ybogdanov/node-sync
+var path = require('path');
 var fileutils = require('./fileutils.js');
 var extend = require('node.extend');
 var deepcopy = require('deepcopy');
@@ -649,7 +650,8 @@ exports.start_up = function (zx) {
 	zx.end_of_block = "#>";
 	zx.end_of_block_regex = /#>/g;
 	var Keyword_API_md = '#Commands and reserverd keywords in the Quale language\n\n ';
-
+	var Keyword_API_npp = '';
+	
 	zx.all_tags_str = '(';
     zx.tag_attr={};
 	zx.forFields(zx.plugins, function (plugin) {
@@ -661,7 +663,7 @@ exports.start_up = function (zx) {
 
 			Keyword_API_md += '\n\n##' + keyword.name;
 			Keyword_API_md += '\n\n' + keyword.man_page || ' - TBD';
-            
+            Keyword_API_npp += keyword.name +'&#x000D;&#x000A;';
             zx.tag_attr[ keyword.name ] = keyword;
 		});
 	});
@@ -687,5 +689,21 @@ exports.start_up = function (zx) {
 		}
 
 	} catch (err) {}
+	try {
+        //var APPDATA = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + 'Library/Preference' : '/var/local');
+        //APPDATA = path.join(APPDATA,'Notepad++','userDefineLang.xml');
+        var APPDATA = 'install/userDefineLang.xml';
+        console.log('Notepad userDefineLang:', APPDATA);
+        //if (!fs.existsSync(APPDATA))    {
+		    console.log('Creating Notepad userDefineLang:', APPDATA);	
+            var npp = 'install/npp.txt';
+            var str = String(fs.readFileSync(npp));
+		    str = str.replace('QUICCKEYWORDS',Keyword_API_npp);
+			fs.writeFileSync(APPDATA,str)
+		   
+		//}
+            
+	} catch (err) {}    
+    
 
 };
