@@ -1,11 +1,11 @@
 {
   "name": "sql-mvc",
-  "version": "0.0.94",
+  "version": "0.0.99",
   "description": "Paradigm inversion-write web applications in SQL instead of JavaScript",
   "main": "./index.js",
   "scripts": {
     "install": "node bin/sql-mvc patchhost",
-	"postinstall": "install/post_script.sh",
+	"postinstall": "node bin/sql-mvc post_script",
     "start": "node app.js"
   },
   "engines": {

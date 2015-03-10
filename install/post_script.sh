@@ -1,6 +1,6 @@
 #!/bin/bash
 
-read -p "When running this script, if prompted for [more] or password, press the enter key, like now...[more]"
+#read -p "When running this script, if prompted for [more] or password, press the enter key, like now...[more]"
 
 
 DEBIAN_FRONTEND=noninteractive sudo apt-get install -y  -qq  firebird2.5-classic firebird-dev

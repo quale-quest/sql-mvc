@@ -71,6 +71,12 @@ exports.check_run_mode = function (str) {
 		var stats = fs.lstatSync(fn);
 		if (stats.mtime) config.run_mode = 'c9';
         } catch (e) {}
+		var fn = '../../production.run';
+        try {
+		var stats = fs.lstatSync(fn);
+		if (stats.mtime) config.run_mode = 'prod';
+        } catch (e) {}
+        
 	}
 	//console.log("check_run_mode d: ", config.run_mode);	process.exit(2);        
 	config.run = config.run_settings[config.run_mode];
