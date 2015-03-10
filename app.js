@@ -150,3 +150,14 @@ if (config.run_settings[config.run_mode].monitor_mode === "jit") {
 }
 // Start SocketStream
 ss.start(server);
+
+
+if (config.run_mode === "c9") {    
+    console.log('To edit the application home page click '+path.resolve(__dirname)+'/Quale/Standard/Home/Guest/Index.quicc');    
+    console.log('To access the application click https://'+process.env['C9_HOSTNAME']+' or "preview->preview with webserver" in the menu above');    
+} else if (config.run_mode !== "win") {    
+    console.log('To edit the application home page edit the file '+path.resolve(__dirname)+'/Quale/Standard/Home/Guest/Index.quicc');    
+    console.log('To access the application open https://'+process.env['C9_HOSTNAME']+':'+config.run.serve_port+' or "preview->preview with webserver" in the menu above');    
+} //win has its own IDE start up
+
+
