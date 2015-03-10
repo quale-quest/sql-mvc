@@ -64,8 +64,15 @@ exports.check_run_mode = function (str) {
 	}
 
 	//console.log("check_run_mode a : ", config);
-	if (config.run_mode === "auto")
+	if (config.run_mode === "auto") {
 		config.run_mode = os.platform().substring(0, 3);
+		var fn = '/mnt/shared/bin/c9';//path.resolve(process.env.HOME ,'.c9')
+        try {
+		var stats = fs.lstatSync(fn);
+		if (stats.mtime) config.run_mode = 'c9';
+        } catch (e) {}
+	}
+	//console.log("check_run_mode d: ", config.run_mode);	process.exit(2);        
 	config.run = config.run_settings[config.run_mode];
     config.db = extend(config.db, config.run.db); //second one has the priority
 	//console.log("check_run_mode c: ", config);	process.exit(2);

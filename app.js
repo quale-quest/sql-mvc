@@ -43,10 +43,11 @@ ss.http.route('/locked?*', function (req, res) { //files that should not be publ
 
 ss.http.route('/files?*', function (req, res) {
 	var fn = req.url.substr(7);
+    fn = fn.split(/&/)[0];
 	//console.log('parse ', req.session,req.url, fn);
     //var path = zx.config.async.public    
    //dont have a way to correctly read the config...i.e. this service is not related to any config... console.log('parse ', zx.config.async.public.path);
-	app_utils.serveBuffer(res, '', fs.readFileSync('./database/files/' + fn),fn); //TODO in production the s must be improved - should actually be server from a web server or CDN
+	app_utils.serveBuffer(res, '', fs.readFileSync('./database/files/' + fn),0,fn); //TODO in production the s must be improved - should actually be server from a web server or CDN
 	return true; 
 });
 
