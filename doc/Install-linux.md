@@ -39,12 +39,13 @@ Edit and play with the demo page : /Quale/Standard/Home/Guest/Index.quicc
 the changes you make will automatically be updated to your browser.
 
 Compiler error output can be viewed by pressing ctrl-q in the application page.
-And it will be on the console running the ./dev_server.sh
+And it will be on the console running the server
 and also in the file: output/error_log.json
 
 
 #Production
 This is not yet production ready, but FYI.
+
 	cd myapp
 	touch production.run 
 	node node_modules/sql-mvc/bin/sql-mvc  forever node_modules/sql-mvc/
