@@ -14,7 +14,16 @@ var app_utils = require("../lib/app_utils");
 var fs = require('fs');
 var path = require('path');
 
-exports.produce_div = function (req, res, ss, rambase, messages, session,recursive) {
+exports.produce_div = function (req, res, ss, rambase, messages, session,recursive) {    
+    
+    db.connect_if_needed(
+      rambase,
+      function () { exports.connect_and_produce_div(req, res, ss, rambase, messages, session,recursive);
+      });
+    
+}
+
+exports.connect_and_produce_div = function (req, res, ss, rambase, messages, session,recursive) {
 
 	//input='SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p041257x00end') p;
 

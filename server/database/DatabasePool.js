@@ -22,9 +22,22 @@ exports.list = function (/*connectionID*/
 	return exports.connections;
 };
 
-exports.locate = function (connectionID) {
-	return exports.connections[connectionID];
-};
+var maintenance_timer = setInterval(function () {
+	//console.log('maintenance_timer...:');
+	var to= Date.now() - 300000; //5mins
+	for (var key in exports.connections) {
+		if (exports.connections.hasOwnProperty(key)) {
+			var c = exports.connections[key];
+			if (c && c.db)
+				if (c.last_connect_stamp < to) {
+					console.log('maintenance_timer...: Detached :',key);
+					c.db.detach();
+					c.db =null;
+				}
+		}
+	};
+						
+	}, 500);
 
 exports.load_config = function (root_folder, Application) {
 
@@ -86,14 +99,6 @@ exports.check_run_mode = function (str) {
 	return config;
 }
 
-exports.LocateDatabasePool = function (connectionID) {
-	if (exports.connections[connectionID] !== undefined) {
-		console.log("database connection cached from : ", connectionID);
-		return exports.connections[connectionID];
-	}
-	return null;
-
-}
 
 exports.databasePooled = function (root_folder, connectionID, Application, callback) {
 	//util.log('db connections json 164959 :'+util.inspect(exports.connections));
@@ -141,12 +146,13 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 		if (conf.run.db_create==="yes")
 			fn = fb.attachOrCreate;
 
-		fn({
+        rambase.connection_string = {
 			host : rambase.host,
 			database : rambase.database,
 			user : rambase.user,
 			password : rambase.password
-		},
+		};
+		fn(rambase.connection_string,
 			function (err, dbref) {
 			if (err) {
 
@@ -161,7 +167,10 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 				//console.log('db connections json 165230 :', JSON.stringify(rambase,null,4));
 				//console.log('db connections json 164950 :', JSON.stringify(exports.connections, null, 4));
 				rambase.connectionID = connectionID;
+                rambase.ready = true;
+				rambase.last_connect_stamp = Date.now();
 				exports.connections[connectionID] = rambase;
+                
 				//console.log('db connections json 165301 :', JSON.stringify(rambase,null,4));
 				// console.log('db connections json :', JSON.stringify(exports.connections,null,4));
 				//console.log("connection number 164955 " + Object.keys(exports.connections).length + " for " + connectionID + ' on ' + exports.connections[connectionID]);
@@ -174,6 +183,47 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 
 	return;
 };
+
+
+exports.connect_if_needed = function (connection, callback) {
+	
+	if (!connection.db) { 
+        fb.attach(connection.connection_string,
+			function (err, dbref) {
+			if (err) {
+				console.log(err.message);
+				if (callback !== undefined)
+					callback(err, "Error");
+			} else {
+				connection.db = dbref;
+                connection.ready = true;
+                deasync.sleep(15); //on windows this is needed to prevent the compiler form hanging
+				connection.last_connect_stamp = Date.now();
+				if (callback !== undefined)
+					callback(null, "Connected", connection);
+			}
+		});    
+	} else {
+		connection.last_connect_stamp = Date.now();
+		callback(null, "Connected", connection);
+		
+		}
+
+};
+
+
+exports.locate = function (connectionID) {
+	return exports.connections[connectionID];
+};
+
+exports.LocateDatabasePool = function (connectionID) {
+	if (exports.connections[connectionID] !== undefined) {
+		console.log("database connection cached from : ", connectionID);
+		return exports.connections[connectionID];
+	}
+	return null;
+
+}
 
 exports.detach = function (dbref, connectionID, force) {
 	//actual detachment is managed by the pool
@@ -202,6 +252,7 @@ exports.detach = function (dbref, connectionID, force) {
 exports.on_exit = function (dbref, connectionID, force) {
 	for (var key in exports.connections) {
 		if (exports.connections.hasOwnProperty(key)) {
+			var c = exports.connections[key];
 			if (c)
 				if (c.db)
 					c.db.detach();

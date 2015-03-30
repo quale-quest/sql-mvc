@@ -21,7 +21,7 @@ try and pick up the key points we are trying to demonstrate not shortcomings or 
  (although all feedback is welcome). We expect to reach Beta version in April/May *
  
  
-##Example	
+## Example	
 
 This is a complete implementation of [todomvc.com](http://todomvc.com) functionality in 40 lines of code.
 Prerequisite knowledge : SQL,JSON and [mustache](https://mustache.github.io/mustache.5.html).
@@ -74,25 +74,20 @@ use(todo.clear.button)
 
 # SQL-MVC Getting_Started,
 
-##Windows
+##Windows - [Windows install](https://github.com/quale-quest/sql-mvc-winstaller/blob/master/README.md)
 
-[Windows install](https://github.com/quale-quest/sql-mvc-winstaller/blob/master/README.md)
+##Cloud 9 IDE - [Quick and easy to get going](https://github.com/quale-quest/sql-mvc-c9/blob/master/README.md)
 
-##Cloud 9 IDE
-[Quick and easy to get going](https://github.com/quale-quest/sql-mvc-c9/blob/master/README.md)
+##Existing node environment - in a fresh project directory just do:   **npm install sql-mvc**
 
-##Existing node environment
-in a fresh project directory just do:   npm install sql-mvc
-
-##Install instructions for Linux from scratch:
-[Install.md](https://github.com/quale-quest/sql-mvc/blob/master/doc/Install-linux.md)
+##Install instructions for Linux from scratch - [Install.md](https://github.com/quale-quest/sql-mvc/blob/master/doc/Install-linux.md)
 
 
-##Tutorials at :
+## Tutorials at :
 
 [Tutorials.md](https://github.com/quale-quest/sql-mvc/blob/master/doc/Tutorials.md)
  
-##Programmers Manual at : 
+## Programmers Manual at : 
 
 [Github - wiki](https://github.com/quale-quest/sql-mvc/wiki)
 
@@ -107,7 +102,7 @@ in a fresh project directory just do:   npm install sql-mvc
 * SQL-MVC help and discussion mailing list: https://groups.google.com/group/sql-mvc-talk
 
 
-##How does SQL-MVC work?
+## How does SQL-MVC work?
 
 * The compiler takes your application code which is little more 
 than a few SQL statements, directives and properties and produces:
@@ -117,9 +112,9 @@ When the two are combined in the browser !!voila!!.
 * The server node.js does very little other than pass JSON between the server and client.
 * All the business logic remains in the database server.
 * You have full control of the client side look, feel and behaviour, the 
-default framework and theme is just to give you a quicc start.
+default framework and theme is just to give you a quick start.
 
-###Super fast Development:	
+### Super fast Development:	
 
 * Write web applications with little more than a few SQL statements
 * DRY (don't repeat yourself), Inheritance, Auto-Menus and more further reduces development time.
@@ -131,7 +126,7 @@ default framework and theme is just to give you a quicc start.
 * i18n support and tools
 * Security implied by design rather than explicit configuration.
 
-###Super fast Runtime:
+### Super fast Runtime:
 
 * All database queries are amalgamated into a single database stored procedure call. 
 * the JSON from the database is retrieved in one BLOB (Less chatter to the DB).
@@ -145,7 +140,7 @@ default framework and theme is just to give you a quicc start.
 * Client side caching of large datasets in reusable/relocatable chunks
 * Subscribe to events to do partial refreshes when changes are posted to database objects by other users.
 
-###Other features
+### Other features
 
 * Windows installer and development environment with JIT compiler and notepad++ with syntax highlighting.
 * Database drivers available for Firebird SQL, support planned for : MySQL, SQL Server, Oracle, NuoDB.
