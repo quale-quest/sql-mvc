@@ -101,6 +101,7 @@ Ported from UpdateFDB.py
  */
 var fs = require('fs');
 var deepcopy = require('deepcopy');
+var extend = require('node.extend');
 
 exports.module_name = 'db_fb_updater.js';
 
@@ -284,7 +285,8 @@ var exec_qry = function (cx, qrys) {
 	exports.write_log.push(qrys);
 	//fs.writeFileSync(zx.output_folder + 'build.sql', exports.write_log.join(''));
 	//console.log('exports.write_log.push  :', qrys);
-    console.log('exec : ', qrys);
+    //console.log('exec : ', qrys);
+	//console.log('exec : ', qrys.substr(0,40));
 	//console.log('exports.write_log.push  :', cx.zx.line_obj.srcinfo );
 
 	if (cx.zx.config.db.schema_mode !== "slave") {
@@ -342,7 +344,6 @@ var dropTriggers = function (zx) {
 
 var dropProcedures = function (zx) {
 	//remove the code from procedure - alternative to drop/create empty which has a dependency issue
-	dropTriggers(zx);
 	var count = 0;
 	var totaldropped;
 	//each loop any independent procs are dropped, thereby freeing dependencies of the other procs
@@ -494,7 +495,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 		//console.log('blocks.forEach  :', LineNr, bi);
 		//if (verbosity > 2)
 		//	console.log(" Preview DDL from line preview: ",  block.src.LineNr, ' for ', block.src.l + 1, ' lines');
-		var qrystr = block.q;
+		var name,qrystr = block.q;
 		//console.log('blocks.forEach GENERATOR:',qrystr.match(/\s*CREATE\s+GENERATOR\s/i) );
 		//statements that would be used in the make script
         //console.log('blocks.forEach subs:',qrystr.substring(0,50));
@@ -512,18 +513,23 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			}
 			block.order = 100;
 		
-		} else if (qrystr.match(/CREATE\s+ROLE\s/)) {
+		} else if (name=qrystr.match(/CREATE\s+ROLE\s+([\w$]+)/)) {
+			block.name = 'ROLE_' + name[1];
 			block.expect = /335544351/;
 			block.order = 200;
-		} else if (qrystr.match(/CREATE\s+DOMAIN\s/)) {
+			} else if (name=qrystr.match(/CREATE\s+DOMAIN\s+([\w$]+)/)) {
+			//console.log(" match DOMAIN:  ",name);	
+			block.name = 'DOMAIN_' + name[1];
 			block.expect = /335544351/;
 			block.order = 300;
-		} else if (qrystr.match(/DECLARE\s+EXTERNAL\s+FUNCTION\s/)) {
+		} else if (name=qrystr.match(/DECLARE\s+EXTERNAL\s+FUNCTION\s+([\w$]+)/)) {
+			block.name = 'FUNCTION_' + name[1];
 			block.expect = /335544351/;
 			block.order = 400;
-		} else if (qrystr.match(/CREATE\s+GENERATOR\s/i)) {
+		} else if (name=qrystr.match(/CREATE\s+GENERATOR\s+([\w$]+)/i)) {
+			block.name = 'GENERATOR_' + name[1];
 			block.expect = /335544351/;
-			var mg = qrystr.match(/CREATE\s+GENERATOR\s([\w\$]+)/i);
+			var mg = qrystr.match(/CREATE\s+GENERATOR\s+([\w\$]+)/i);
             //console.log("checkGenerator  ",mg, 'as ',qrystr);
 			if (mg && checkGenerator(zx, mg[1]))
                 {
@@ -532,7 +538,8 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
                 }
 			// else execute as is
 			block.order = 500;
-		} else if (qrystr.match(/SET\s+GENERATOR\s/i)) {
+		} else if (name=qrystr.match(/SET\s+GENERATOR\s+([\w$]+)/i)) {
+			block.name = 'SETGENERATOR_' + name[1];
 			var mgg = qrystr.match(/SET\s+GENERATOR\s+([\w\$]+)/i);
 			//console.log("getGenerator  ",mgg, 'as ',qrystr);
 			if (mgg) {
@@ -551,14 +558,16 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
                 
 			}
 			block.order = 600;
-		} else if (qrystr.match(/CREATE\s+SEQUENCE\s/i)) {
+		} else if (name=qrystr.match(/CREATE\s+SEQUENCE\s+([\w$]+)/i)) {
+			block.name = 'SEQUENCE_' + name[1];
 			block.expect = /335544351/;
 			var mc = qrystr.match(/CREATE\s+SEQUENCE\s([\w\$]+)/i);
 			if (mc && checkGenerator(zx, mc[1]))
 				qrystr = "";
 			// else execute as is
 			block.order = 500;
-		} else if (qrystr.match(/ALTER\s+SEQUENCE\s/i)) {
+		} else if (name=qrystr.match(/ALTER\s+SEQUENCE\s/i)) {
+			block.name = 'ALTERSEQUENCE_' + name[1];
 			var msgg = qrystr.match(/ALTER\s+SEQUENCE\s+([\w\$]+)/i);
 			//console.log(" ALTER+SEQUENCE:  ",msgg, 'as ',qrystr);
 			if (msgg) {
@@ -570,29 +579,38 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 				}
 			}
 			block.order = 600;
-		} else if (qrystr.match(/CREATE\s+TABLE/i)) {
+		} else if (name=qrystr.match(/CREATE\s+TABLE\s+([\w$]+)/i)) {
+			block.name = 'TABLE_' + name[1];
 			block.method = "TABLE";
 			block.order = 700;
-		} else if (qrystr.match(/CREATE\s+GLOBAL\s+TEMPORARY\s+TABLE\s/i)) {			
+		} else if (name=qrystr.match(/CREATE\s+GLOBAL\s+TEMPORARY\s+TABLE\s+([\w$]+)/i)) {			
+			block.name = 'TABLE_' + name[1];
 			block.method = "TABLE";
 			block.order = 800;
-		} else if (qrystr.match(/CREATE\s+INDEX\s/)) {
+		} else if (name=qrystr.match(/CREATE\s+INDEX\s+([\w$]+)/)) {
+			block.name = 'INDEX_' + name[1];
 			block.expect = /335544351/;
 			block.order = 900;
 			//console.log("show CREATE INDEX:", qrystr);
-		} else if (qrystr.match(/CREATE\s+VIEW\s/i)) {
+		} else if (name=qrystr.match(/CREATE\s+VIEW\s+([\w$]+)/i)) {
+			block.name = 'VIEW_' + name[1];
 			qrystr = qrystr.replace(/CREATE\s+VIEW\s/i, "CREATE OR ALTER VIEW ");
 			block.order = 1000;
-		} else if (qrystr.match(/CREATE\s+OR\s+ALTER\s+VIEW\s/i)) { //execute as is
+		} else if (name=qrystr.match(/CREATE\s+OR\s+ALTER\s+VIEW\s+([\w$]+)/i)) { //execute as is
+			block.name = 'VIEW_' + name[1];
 			block.order = 1100;
-		} else if (qrystr.match(/ALTER\s+VIEW\s/i)) { //execute as is
+		} else if (name=qrystr.match(/ALTER\s+VIEW\s+([\w$]+)/i)) { //execute as is
+			block.name = 'VIEW_' + name[1];
 			block.order = 1200;
-		} else if (qrystr.match(/CREATE\s+EXCEPTION\s/i)) {
+		} else if (name=qrystr.match(/CREATE\s+EXCEPTION\s+([\w$]+)/i)) {
+			block.name = 'EXCEPTION_' + name[1];
 			qrystr = qrystr.replace(/CREATE\s+EXCEPTION\s/i, "CREATE OR ALTER EXCEPTION ");
 			block.order = 1300;
-		} else if (qrystr.match(/CREATE\s+OR\s+ALTER\s+EXCEPTION\s/i)) { //execute as is
+		} else if (name=qrystr.match(/CREATE\s+OR\s+ALTER\s+EXCEPTION\s+([\w$]+)/i)) { //execute as is
+			block.name = 'EXCEPTION_' + name[1];
 			block.order = 1400;
-		} else if (qrystr.match(/CREATE\s+(?:OR\s+ALTER\s+)?PROCEDURE\s/i)) {
+		} else if (name=qrystr.match(/CREATE\s+(?:OR\s+ALTER\s+)?PROCEDURE\s+([\w$]+)/i)) {
+			block.name = 'PROCEDURE_' + name[1];
 			qrystr = qrystr.replace(/CREATE\s+PROCEDURE\s/i, "CREATE OR ALTER PROCEDURE ");
 			var DECLARE_PROCEDURE = deepcopy(block);
 			DECLARE_PROCEDURE.method = "DECLARE_PROCEDURE";
@@ -601,18 +619,23 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
             DECLARE_PROCEDURE.Hash = zx.ShortHash(qrystr);
 			blocks.push(DECLARE_PROCEDURE);
 			block.order = 1500;
-		} else if (qrystr.match(/ALTER\s+PROCEDURE\s/i)) {
+		} else if (name=qrystr.match(/ALTER\s+PROCEDURE\s+([\w$]+)/i)) {
+			block.name = 'PROCEDURE_' + name[1];
 			//execute as is
 			block.order = 1700;
-		} else if (qrystr.match(/CREATE\s+TRIGGER\s/i)) {
+		} else if (name=qrystr.match(/CREATE\s+TRIGGER\s+([\w$]+)/i)) {
+			block.name = 'TRIGGER_' + name[1];
 			qrystr = qrystr.replace(/CREATE\s+TRIGGER\s/i, "CREATE OR ALTER TRIGGER ");
 			block.order = 1800;
-		} else if (qrystr.match(/CREATE\s+OR\s+ALTER\s+TRIGGER/i)) { //execute as is
+		} else if (name=qrystr.match(/CREATE\s+OR\s+ALTER\s+TRIGGER\s+([\w$]+)/i)) { //execute as is
+			block.name = 'TRIGGER_' + name[1];
 			block.order = 1900;
 		} else if (qrystr.match(/GRANT\s/)) {
+			//block.name = 'DOMAIN_' + name[1];
 			block.expect = /335544351/;
 			block.order = 2000;
 		} else if (qrystr.match(/INSERT\s+MATCHING\s/i)) {
+			//block.name = 'DOMAIN_' + name[1];
 			block.order = 2100;
 			var mi = qrystr.match(/INSERT\s+MATCHING\s+([\w\$,\s]+)/i);
 			if (mi) {
@@ -621,7 +644,8 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 				insertmatchingblock = block;
 			}
 			qrystr = "";
-		} else if (qrystr.match(/INSERT\s+INTO\s/i)) {
+		} else if (name=qrystr.match(/INSERT\s+INTO\s+([\w\$,\s]+)/i)) {			
+			block.name = 'INSERTINTO_' + zx.ShortHash(qrystr);
 			block.order = 2200;
 			qrystr = qrystr.replace(/;\s+$/g, '');
 			if (insertmatchingfield !== '') {
@@ -631,8 +655,10 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			}
 
 		} else if (qrystr.match(/UPDATE\s/i)) {
+			//block.name = 'DOMAIN_' + name[1];
 			block.order = 2300;
 		} else {
+			block.name = 'UNKNOWNSQL_' + zx.ShortHash(qrystr);
 
             //console.log('blocks.forEach else:',qrystr.substring(0,50));
             var qrystrx = comment_suppress(qrystr).trim()
@@ -690,19 +716,28 @@ exports.Sort_DDL = function (zx, blocks) {
 	var Hash = 0;
 	var build_str = [];
 	var build_exec_str = [];
+	var block_hashes = {};
+	
 	blocks.forEach(function (block, i) {
 		var qrystr = block.qrystr;
-        Hash += +block.Hash; 
+        Hash += +block.Hash;
+		if (block.name) {
+			block_hashes[block.name] = block.Hash;		
+			//console.log('block.Hashes :', block.name,exports.lastHashes[block.name],block_hashes[block.name]);
+		}
         if (block.Hash===undefined) 
             console.log('block.Hash===undefined :', block);
         
 		if (block.method === 'DECLARE_PROCEDURE')
 			qrystr = "DECLARE" + zx.show_longstring(qrystr);
 		build_str.push(" BORDER:" + block.order + " BNR:" + block.src.BlockNr + " method:" + block.method + " SRC:" + qrystr);
+		
+		build_exec_str.push("--block "+block.name+" #"+block.Hash);
 		build_exec_str.push(qrystr);
 	});
+	block_hashes["Complete"] = Hash;
 	return {
-		Hash : Hash,
+		Hashes : block_hashes,
 		build_str : build_str.join('\n'),
 		build_exec_str : build_exec_str.join('\n\n'),
 	};
@@ -727,11 +762,14 @@ exports.Execute_DDL = function (zx, blocks) {
 		zx : zx
 	};
 	blocks.forEach(function (block, i) {
-		if (block.qrystr === undefined) {
+		if ((block.qrystr === undefined) || (block.qrystr === "")) {
 			//console.log('block.qrystr===undefined:', i,block);
-		} else {
+		} else if (exports.lastHashes[block.name]===block.Hash) {
+			console.log('block.Hashes match:', block.name,exports.lastHashes[block.name],block.Hash);
+		} else {			
 			var qrystr = block.qrystr;
 			cx.expect = block.expect;
+			console.log('block.Hashes missmatch:', block.name,exports.lastHashes[block.name],block.Hash,'"'+qrystr+'"');
 			//console.log('exports.Execute_DDL item:', i,block.method,(qrystr||'').substring(0,40),'q:',(block.q||'').substring(0,40));
 			var ex = block.src.src_obj.srcinfo;
 			//delete block.src.src_obj.body;
@@ -843,7 +881,8 @@ exports.update = function (zx) {
 
 	if (exports.lastHash === null)
 		try {
-			exports.lastHash = JSON.parse(require('fs').readFileSync(zx.output_folder + 'update.hash').toString()).Hash;
+			exports.lastHashes = JSON.parse(require('fs').readFileSync(zx.output_folder + 'update.hash').toString());
+			exports.lastHash = 'x'+exports.lastHashes.Complete;
 		} catch (e) {}
 
 	//exports.show_DDL(zx,"B4 Sort",exports.blocks);
@@ -857,15 +896,17 @@ exports.update = function (zx) {
 	//exports.show_DDL(zx,"Afer Write",exports.blocks);
     
     
-    if ((exports.lastHash !== null) && (exports.lastHash === B.Hash))
+    if ((exports.lastHash !== null) && (exports.lastHash === B.Hashes["Complete"]))
        {
-       exports.write_log.push("Model meta hash indicates it has not changed..."+ B.Hash);
+       exports.write_log.push("Model meta hash indicates it has not changed..."+ B.Hashes["Complete"]);
        //console.log("Model meta hash indicates it has not changed...", B.Hash);
        }
     
-	if ((exports.lastHash === null) || (exports.lastHash !== B.Hash) || (zx.config.db.schema_rebuild==="always")) {
+	if ((exports.lastHash === null) || (exports.lastHash !== B.Hashes["Complete"]) || (zx.config.db.schema_rebuild==="always")) {
 	    //console.log('exports.Execute_DDL hashed:',exports.lastHash,"\n   B.Hash 210425:",B.Hash);
+		console.log('Backup_DDL');
 		exports.Backup_DDL(zx, 0, 1); //audit trail
+		console.log('Backup_DDL-done');
 	    //console.log('exports.Execute_DDL hashed aaa:');	
 		//exports.show_DDL(zx, "After sort b4 exec ", exports.blocks);
 	    //console.log('exports.Execute_DDL hashed bbb:');	
@@ -878,13 +919,12 @@ exports.update = function (zx) {
         //process.exit(2);		
 	}
 	//console.log('exports.write_log.length  :', exports.write_log.length);
-	exports.lastHash = B.Hash;
-
+	exports.lastHash = B.Hashes["Complete"];
+	exports.lastHashes = extend(exports.lastHashes, B.Hashes); //second one has the priority
+    
 	fs.writeFileSync(zx.output_folder + 'input.sql', exports.input_audit.join(''));
 	fs.writeFileSync(zx.output_folder + 'build.sql', exports.write_log.join(''));
-	fs.writeFileSync(zx.output_folder + 'update.hash', JSON.stringify({
-			Hash : B.Hash
-		}));
+	fs.writeFileSync(zx.output_folder + 'update.hash', JSON.stringify(B.Hashes,null,4));
 
 };
 

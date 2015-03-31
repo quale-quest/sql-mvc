@@ -625,10 +625,12 @@ exports.extract_dll = function (zx) {
 
 exports.exit = function (/*zx*/
 ) {
+	//console.trace('database detaching');
     if (connection.db)
 	connection.db.detach(
 		function () {
 		console.log('database detached');
+		process.exit(0);
 	});
 };
 

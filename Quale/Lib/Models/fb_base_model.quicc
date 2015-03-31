@@ -84,7 +84,20 @@ CREATE TABLE user_table_name                         --:{as:"Table"}
   LANDING_PAGE VARCHAR(80) DEFAULT 'Home/Guest',     --:{as:"Text"}  
   user_keys_field VARCHAR(250),						 --:{as:"Text",title:"Key list"}  
   LANGUAGE fk,										 --:{as:"Text",title:"Language"}  
-  GP_INPUT VARCHAR(250)  						  	 --:{Type:"Hide"}
+  GP_INPUT VARCHAR(250),  						  	 --:{Type:"Hide"}
+
+  OWNER FK,
+  ACTIVATION_DATE TIMESTAMP DEFAULT 'now',
+  EXPIRY_DATE TIMESTAMP DEFAULT '2100/01/01',
+  FLAGS VARCHAR(20),
+  SKILL_LIST VARCHAR(250),
+  FORCE_CHANGE_ON TIMESTAMP,
+  TEAM FK,
+  IMAGE FK,
+  MOBILE_NUMBER Z$PHONE_NUMBER,
+  EMAIL Z$EMAIL,
+  IM VARCHAR(200)
+  
 );
 CREATE INDEX IDX_ME1 ON user_table_name (user_pk_field);
 CREATE INDEX IDX_ME4 ON user_table_name (user_name_field);
@@ -115,7 +128,7 @@ CREATE TABLE Z$DICTIONARY
   BIN BLOB SUB_TYPE 1
 );
 CREATE INDEX IDX_Z$DICTIONARY$1 ON Z$DICTIONARY (REF);
-CREATE INDEX IDX_Z$DICTIONARY$1 ON Z$DICTIONARY (CONTEXT,INDX);
+CREATE INDEX IDX_Z$DICTIONARY$2 ON Z$DICTIONARY (CONTEXT,INDX);
 
 CREATE TABLE Z$INSERTREF
 (
