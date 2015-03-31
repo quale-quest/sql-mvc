@@ -933,6 +933,7 @@ function recreate(zx, model_text) {}
 exports.init = function (zx) {
 
 	exports.lastHash = null;
+	exports.lastHashes = {};
 	exports.src_obj = {};
 	exports.blocks = [];
 	exports.write_log = [];
