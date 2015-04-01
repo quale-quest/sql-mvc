@@ -138,8 +138,9 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
 								}
 
 								//console.log('Index.htm.sql  ouput: ',result[0].res );
-                                
-                                rambase.current_cid    = result[0].new_cid;
+                                if (result[0].new_cid!==0) 
+                                   rambase.current_cid    = result[0].new_cid;
+							    console.log('db - NOW_CID    :', rambase.current_cid);
                                 rambase.current_script = result[0].scriptnamed;
                                 //todo filter developers on some key value - so only a small subset of users can to live editing of source
                                 db.developers[message.session] = result[0].scriptnamed;

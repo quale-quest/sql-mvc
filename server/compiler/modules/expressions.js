@@ -128,6 +128,11 @@ var TagTypes =
 		"method" : "getter",
 		"addback" : false
 	}, {
+		"open" : "passed.",
+		"close" : "",
+		"method" : "getter",
+		"addback" : false
+	}, {		
 		"open" : "here.",
 		"close" : "",
 		"method" : "getter",
@@ -369,7 +374,7 @@ var recurseMacroExpansion = function (zx, line_obj, varx, QryStr) {
 						table : r.content.split('.')[0],
 						field : r.content.split('.')[1]
 					};
-					result += zx.dbg.emit_variable_getter(zx, line_obj, v, "expression variable_getter");
+					result += zx.dbg.emit_variable_getter(zx, line_obj, v, "", "expression variable_getter");
 					//console.log('getter.method: ', v,'///',result,'///',varx.target_type);
 				}
 			} else {

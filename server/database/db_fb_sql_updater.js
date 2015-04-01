@@ -765,7 +765,7 @@ exports.Execute_DDL = function (zx, blocks) {
 		if ((block.qrystr === undefined) || (block.qrystr === "")) {
 			//console.log('block.qrystr===undefined:', i,block);
 		} else if (exports.lastHashes[block.name]===block.Hash) {
-			console.log('block.Hashes match:', block.name,exports.lastHashes[block.name],block.Hash);
+			//console.log('block.Hashes match:', block.name,exports.lastHashes[block.name],block.Hash);
 		} else {			
 			var qrystr = block.qrystr;
 			cx.expect = block.expect;

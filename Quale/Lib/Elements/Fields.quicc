@@ -286,5 +286,27 @@ element(UploadFieldView_Main)
      {{#field.f.height}}rows="{{field.f.height}}"{{/field.f.height}}
     />
 
+element(DtViewField_Main)
+    inherit:View_Main	
+	
+element(DtViewField_Div)
+    inherit:View_Div	
+	
+element(DtViewField_Script)
+    inherit:View_Script		
+	
+	
+	
+element(DtDivoutLinkFieldLink_Main)
+    <a href="#" language=javascript 
+	onclick="return(zxnav(event,[[0]],{{QryOffset}}));" {{{LinkElements}}} >{{{LeftSpan}}} 
+	 [[{{pop}}]] {{{RightSpan}}} </a>
+	<div id=123>Divout</div>
+		
+element(DtDivoutLinkFieldLink_Div)
+    inherit:View_Div	
+	
+element(DtDivoutLinkFieldLink_Script)
+    inherit:View_Script			
 	
 #>

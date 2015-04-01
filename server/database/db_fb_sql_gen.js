@@ -529,8 +529,12 @@ exports.link_from = function (zx, line_obj) {
 
 		//console.log('run_procedure_param: ',PAGE_PARAMS );
 	}
-
-	var links = "INSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,TARGET,QUERY, PAGE_PARAMS)" +
+    
+	var links = '';
+	if (line_obj.pass)
+	    links+= "\n--pass singleton link  TODO "+JSON.stringify(line_obj);// + fld_obj.pass.Divout;//:cid,:tfid,
+	
+	links += "\nINSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,TARGET,QUERY, PAGE_PARAMS)" +
 		"VALUES (:cid," + zx.sql.cidi + ",'click'," + fb_AsString(from) + ", " + 
         fb_AsString(zx.Current_main_page_name.replace(/\\/g, "/")) + "," + (wherex /*+" "+ zx.gets(line_obj.nonkeyd)..check above TODO note*/
 		) + "," +
@@ -630,8 +634,12 @@ if (fld_obj.cf[0].pointer===undefined)
 	}
 
 	//this will happen in the table loop and inserts the value of the pointer field, it
-
-	var links = "INSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS)" +
+    
+	var links = '';
+	if (fld_obj.cf[0].pass)
+	    links+= exports.build_variable_pass_all(zx,fld_obj,fld_obj.cf[0].pass,'lft123737')
+	
+	links += "\nINSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS)" +
 		"VALUES (:cid,:tfid,'tfid','" + from +
         "','" + pkname +
 		"', '" + zx.Current_main_page_name.replace(/\\/g, "/") + "', "+
@@ -732,14 +740,20 @@ exports.edit_from_table = function (zx, cx, fld_obj) {
 		}
 	}
  
-	var links = "INSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS,TARGET_FIELDS,TARGET_VALUES,baserecord)" +
+	var links = '';
+	
+	if (fld_obj.cf[0].pass)
+	    links+= exports.build_variable_pass_all(zx,fld_obj,fld_obj.cf[0].pass,'lft123737')
+	   
+	links += "\nINSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS,TARGET_FIELDS,TARGET_VALUES,baserecord)" +
 		"VALUES (:cid,:tfid,'updateonpk','" + /*valu*/
 		from +
 		"','" + pkname + "', '" + fld_obj.name + "', :F" + fld_obj.cf[0].pointer + " ,'" + Soft_decode + "' ,'" + TARGET_FIELDS + "'," + TARGET_VALUES + ","+baserecord_ref+");tfid=tfid+1;";
 	//console.log('=================================\n',fld_obj, pkname );
 	// process.exit(2);
 	//done the postback must also be informed of any softcodec required
-
+	
+        
 	fld_obj.postback = links;
 	fld_obj.tfidOffset = zx.tfidOffset;
 	zx.tfidOffset += 1;
@@ -979,10 +993,14 @@ exports.start_pass = function (zx /*, line_objects*/
     
     emit(zx, 0, "res=res||',``Session``:``'||Z$SESSIONID||'``';", "");
     
-   
-    
-    
-	emito(zx, "Target", "#maincontainer");
+	var v = {
+		table : 'passed',
+		field : 'DivoutName'
+	};
+	var container = zx.dbg.emit_variable_getter(zx, 0, v, "maincontainer", "maincontainer variable_getter");
+	emit(zx, 0, "res=res||',``Target``:``#'||"+container+"||'``';");
+	//emito(zx, "Target", "#maincontainer");
+	
 	emito(zx, "Stash", zx.main_page_name.substring(2).replace(/[\/\\]/g, '-')); //windows
     emito(zx, "mtHash",  zx.mtHash); 
 	emito(zx, "ContainerId", "GUIDofTheTemplate");
@@ -1003,6 +1021,8 @@ exports.done_pass = function (zx /*, line_objects*/
 	// console.log('sqlgen_fb done_pass: ',zx.pass);
 
 	//console.log('sqlgen_fb declare_above: ',zx.sql.declare_above);
+	
+	emit(zx, 0, "if ( exists(select first 1 valu from Z$VARIABLES where Z$VARIABLES.REF='pass'||:pki||'-'||:pkf||'-DivoutName')) then cid=0;", "");
 	emit(zx, 0, "res=res||'}}]';", "");
 	emit(zx, 0, "suspend;", "");
 	if (zx.sql.engine === 'Z$RUN') {
@@ -1037,6 +1057,11 @@ var get_variable_table_expression = function (v) {
 			where = "'system'||'-" + v.field + "'";
 		}
 		break;
+	case 'passed': {
+			where = "'pass'||:pki||'-'||:pkf||'-" + v.field + "'";
+		}
+		break;
+
 	}
 	return where;
 };
@@ -1053,7 +1078,8 @@ exports.emit_variable_setter = function (zx, line_obj, v, comment) {
         //setting read only or invalid context 
     }
 };
-exports.emit_variable_getter = function (zx, line_obj, v /*, comment*/
+
+exports.emit_variable_getter = function (zx, line_obj, v , coalesce /*, comment*/
 ) {
     if (v.table === 'key') {
         var keyquery="exists(select * from "
@@ -1079,9 +1105,30 @@ exports.emit_variable_getter = function (zx, line_obj, v /*, comment*/
     
 	if ((v.table === 'session') && (v.field === 'id'))
 		return "(:z$sessionid)";
+	if ((v.table === 'session') && (v.field === 'master_context'))
+		return "(:pki)";	
+	if ((v.table === 'session') && (v.field === 'master_offset'))
+		return "(:pkf)";
     
-	var result = "(coalesce((select first 1 valu from Z$VARIABLES where Z$VARIABLES.REF=" + where + "),''))";
+	var result = "(coalesce((select first 1 valu from Z$VARIABLES where Z$VARIABLES.REF=" + where + "),'"+coalesce+"'))";
 	return result;
+};
+
+
+exports.build_variable_passing = function (zx, fld_obj, v,key, comment) {
+	
+	var where = "'pass'||:cid||'-'||:tfid||'-" + key + "'";    
+	var statement = "\nUPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),('" + v + "')) matching (REF);";
+	return statement;
+    
+};
+
+exports.build_variable_pass_all = function (zx, fld_obj, pass, comment) {
+    var links = '';	
+	zx.forFields(pass, function (v,key) {
+		links += exports.build_variable_passing(zx, fld_obj, v,key, comment);		
+		});
+    return links;		
 };
 
 exports.getPageIndexNumber = function (zx, name) {
