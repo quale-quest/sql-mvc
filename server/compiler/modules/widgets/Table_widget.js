@@ -258,6 +258,10 @@ var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx,
 	//table level stuff
 	//console.log('--------------cx was',cx);
 	cx.table = o.q.Table;
+     
+     cx.param={};
+     zx.copy_params(cx.param,o);
+     //console.log('\n\ formulatemodel_quale:');  zx.stringify_2(cx); 
 	//console.log('--------------cx now is',cx.autoinsert_internal);
 	//console.log('\n\nformulatemodel_quale tablestyle:',cx.table.tablestyle);
 	//console.log('\n\nformulatemodel_quale cx.Fields:',o.q.Fields);
@@ -845,7 +849,7 @@ var table_content = function (cx) {
 
 	//divine-EndOfTableBody
 	//divine-AddGraphingScripts
-
+    //console.log('\n\nwrap context:');  zx.stringify_2(cx); 
 	table_style(cx, 'Wrap');
 	//divine-MoreGraphingScripts
 	//divine-ContentBodyStyling
