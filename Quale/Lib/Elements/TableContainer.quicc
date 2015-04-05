@@ -111,8 +111,16 @@ element(FormDataFootFieldCell)
 element(DTData_Inherit)
     
 
+element(DTDataTopTitle)
+	{{#table.Title}} <p><h4>{{table.Title}}</h4></p> {{/table.Title}}
+	{{#param.Title}} <p><h4>{{param.Title}}</h4></p> {{/param.Title}}
+
+
 element(DTDataWrap)
-    <div > <form autocomplete="off"><table class="data-table" id="{{tid}}">{{{head_html}}}{{{body_html}}}{{{foot_html}}}</table></form></div>
+    {{name}}<div > <form autocomplete="off"><table class="data-table" 
+	{{#table.pagination}} data-page-length='{{table.pagination}}' {{/table.pagination}}
+	{{#param.pagination}} data-page-length='{{param.pagination}}' {{/param.pagination}}
+	id="{{tid}}">{{{head_html}}}{{{body_html}}}{{{foot_html}}}</table></form></div>
 
 element(TodoData_Inherit)
     

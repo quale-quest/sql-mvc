@@ -3,6 +3,14 @@
 
 Currently part of user interface 1:
 
+#Table level
+
+* pagination
+* Title
+
+
+#Table field level
+
 ##Action:
 
 * View
@@ -17,6 +25,7 @@ Currently part of user interface 1:
 * Link
 * Pick
 * Gallery
+
 
 
 ##Link Styles

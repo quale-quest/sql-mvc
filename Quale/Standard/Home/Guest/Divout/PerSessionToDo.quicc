@@ -1,0 +1,14 @@
+
+<#view
+master(TODO_MVC)
+
+table(pagination:20)
+	Select  --:{Title:"View records",from:"TODO_MVC",tablestyle:"DT"}
+	STATUS, --:{}
+	NAME,   --:{}
+	OWNER,   --:{Type:"Hide"}
+	REF	    --:{Type:"Hide"}	
+	From TODO_MVC 
+    where (owner=master.owner)
+
+#>

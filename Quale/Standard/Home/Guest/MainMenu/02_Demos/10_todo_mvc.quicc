@@ -3,12 +3,12 @@
 
 dropinmenu (icon:"nav-icon invoice-icon",title:"Todo Reports")
 
-notify(style=Heading) Total entries per session
 
-table()
-	Select  --:{Title:"View existing records",from:"TODO_MVC",tablestyle:"DT"}
+
+table(pagination:3)
+	Select  --:{Title:"View sessions",from:"TODO_MVC",tablestyle:"DT"}
 	first 1000
-	OWNER,  --:{Action:"Link",Type:"Link",form:"Views/PerSessionToDo",pointer:0}
+	OWNER,  --:{pass:{DivoutName:detaildiv},Action:"Link",Type:"Link",form:"Divout/PerSessionToDo",pointer:0}
 	Count(*), --:{Type:"View"}
 	list(substring(name from 1 for 8)) --:{Type:"View"}
 	
@@ -16,21 +16,6 @@ table()
 	where (( (here.todo_type='' and (status!='3' or status is null)) 
 	or( (status='' or status is null) and here.todo_type='1')or(status='1' and here.todo_type='2')))
 	group by Owner
-
-
-notify (style="Heading") All To Do Items
-
-
-table()
-	Select  --:{Title:"View existing records",from:"TODO_MVC",tablestyle:"DT"}
-	first 3000
-	STATUS, --:{}
-	NAME,    --:{Action:"Link",Type:"Link",form:"Views/ShowPeers"} 
-	OWNER,   --:{Type:"View"}
-	REF	    --:{Type=Hide}		
-	From TODO_MVC 
-	where (( (here.todo_type='' and (status!='3' or status is null)) 
-	or( (status='' or status is null) and here.todo_type='1')or(status='1' and here.todo_type='2')))
 
 
 button (title:"View all")
@@ -42,8 +27,7 @@ button {title:"Active"}
 button {title:"Completed"}
 	set here.todo_type='2';
 
-use(todo.source_files)	
 #>
 
 
-
+<div id=detaildiv>details go here</div>

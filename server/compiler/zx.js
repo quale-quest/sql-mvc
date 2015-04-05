@@ -191,7 +191,7 @@ exports.pushArray = function (Target, Source) {
 	Target.push.apply(Target, Source);
 };
 
-exports.indent = function (dent) {
+var indent = exports.indent = function (dent) {
 	var str = '';
 	for (var i = 0; i < dent; ++i) {
 		str += ' ';
@@ -507,16 +507,18 @@ exports.CSVtoArray = function (text) { //http://www.quora.com/How-can-I-parse-a-
 	if (/,\s*$/.test(text))
 		a.push('');
 	return a;
-},
+};
 
-exports.show_longstring = function (str) {
+var show_longstring = exports.show_longstring = function (str,siz) {
+    if (!siz) siz=40;
+    
 	if (str === undefined)
 		return undefined;
 	if (typeof str !== 'string')
 		str = '[OBJECT]'; //JSON.stringify(str);
 	str = str.trim();
-	if (str.length > 60)
-		return "[" + str.substring(0, 40).replace(/\n/g, '\\n') + " ..." + (str.length) + " bytes... " + str.slice(-40).replace(/\n/g, '\\n') + "]";
+	if (str.length > (siz*1.5))
+		return "[" + str.substring(0, siz).replace(/\n/g, '\\n') + " ..." + (str.length) + " bytes... " + str.slice(-siz).replace(/\n/g, '\\n') + "]";
 	else
 		return "[" + str + "] shown in full " + (str.length) + " bytes... ";
 }
@@ -644,6 +646,43 @@ var forFields = exports.forFields = function (object,callback) {
     return false;
 }                        
 
+var stringify_2 = exports.stringify_2 = function (object,depth) {
+//returns true and stops if a match is found - acts like arr.some
+    if (!depth) depth=0;
+    forFields(object, function (field, key) {
+        
+        if (typeof field === 'object') {
+            console.log(indent(depth)+'',key,':');
+            console.log(indent(depth)+'  { ');
+            if (key!=='zx')
+                stringify_2(field,depth+4);
+            console.log(indent(depth)+'  } //',key);
+        }else{
+            console.log(indent(depth)+'',typeof field ,key,exports.show_longstring(String(field)));
+        }
+        		
+			
+
+    });
+                  
+    return false;
+}                        
+
+var copy_params = exports.copy_params = function (cx,obj,depth) {
+//copies only shallow parameters
+    if (!depth) depth=0;
+    forFields(obj, function (field, key) {        
+        if (typeof field === 'object') {
+        }else{
+            cx[key]=obj[key];
+        }
+    });
+
+}                        
+
+
+
+
 var encodeHtml = exports.encodeHtml = function (html) {
 //decode with <script type="text/javascript">document.write(unescape("..."));</script>
      html = escape(html);
@@ -668,6 +707,16 @@ var showSource = exports.showSource = function (html) {
 var padRight = exports.padRight = function (text,length) {
     return text+Array(l-text.length+1).join(" ")
 } 
+
+var updateFileSync = exports.updateFileSync = function (file_name,text) {
+    var str=null;
+    try { str = String(fs.readFileSync(file_name));
+    } catch (e) {}
+    
+    if (str!=text)
+      fs.writeFileSync(file_name,text);
+}    
+   
    
    
 

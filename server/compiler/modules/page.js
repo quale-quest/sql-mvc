@@ -699,7 +699,7 @@ exports.start_up = function (zx) {
             var npp = 'install/npp.txt';
             var str = String(fs.readFileSync(npp));
 		    str = str.replace('QUICCKEYWORDS',Keyword_API_npp);
-			fs.writeFileSync(APPDATA,str)
+			zx.updateFileSync(APPDATA,str)
 		   
 		//}
             
