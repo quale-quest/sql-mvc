@@ -2,12 +2,14 @@
 <#view
 master(TODO_MVC)
 
+
+	
 table(pagination:20)
-	Select  --:{Title:"View records",from:"TODO_MVC",tablestyle:"DT"}
+	Select  --:{Title:"Edit records",from:"TODO_MVC",tablestyle:"DT"}
+	REF	,    --:{Type:"View"}	
 	STATUS, --:{}
-	NAME,   --:{}
-	OWNER,   --:{Type:"Hide"}
-	REF	    --:{Type:"Hide"}	
+	NAME,  --:{as:"popup",form:"Popup/PerSessionEdit"}
+	OWNER   --:{Type:"Hide"}	
 	From TODO_MVC 
     where (owner=master.owner)
 

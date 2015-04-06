@@ -1,0 +1,20 @@
+
+<#view
+master(TODO_MVC)
+
+
+table()
+	Select  --:{Title:"Edit record",from:"TODO_MVC"}
+	STATUS, --:{Action=Edit}
+	NAME,   --:{Action=Edit}
+	OWNER,   --:{Type:"Hide"}
+	REF	    --:{Type:"View"}	
+	From TODO_MVC 
+    where (ref=master.ref)
+
+#>
+
+<span class="icon-wrap-lb">
+<a href="#" language="javascript" onclick="$.modal.close(); return(zxnav(event,0,0));" title="Save and close">
+<span class="icon-block-black box-outgoing-b"></span>Save and close</a></span>
+

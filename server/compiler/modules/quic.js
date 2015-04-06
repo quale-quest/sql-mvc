@@ -283,6 +283,14 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 				var copy = deepcopy(zx.q.classes[clss]);
 				//console.log('copy:',copy);
 				tokens_eval_eachRecursive(copy, zx, line_obj, quickinput);
+                
+                if (copy.table==='') delete copy.table;
+                
+                
+                //console.log('.....................................table:');//,quale);
+                //zx.stringify_2(quale)
+                //console.log('.....................................copy:');//,quale);                
+                //zx.stringify_2(copy)
 				quale = extend(copy, quale); //quale overrides any class settings
 				//console.log('quale:',quale);
 			}

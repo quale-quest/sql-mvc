@@ -1,6 +1,7 @@
 
 <#model
 
+--:{class:"popup",Type:"Link",Action:"Link",substyle:Popup,pass:{DivoutName:basicmodaldialog}}
 
 CREATE DOMAIN Z$PHONE_NUMBER
  AS VARCHAR(80)

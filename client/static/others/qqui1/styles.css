@@ -2022,6 +2022,10 @@ div.graph {
 #basic-modal-content {
 	display: none;
 }
+#basicmodaldialog {
+	display: none;
+}
+
 /* Overlay */
 #simplemodal-overlay {
 	background-color:#000;
@@ -2031,8 +2035,8 @@ div.graph {
 #simplemodal-container {
 	height:360px;
 	width:600px;
-	color:#bbb;
-	background-color:#333;
+	color:#000;
+	background-color:#F0F0F0;
 	border:4px solid #444;
 	padding:12px;
 }
@@ -2042,14 +2046,14 @@ div.graph {
 #simplemodal-container code {
 	background:#141414;
 	border-left:3px solid #65B43D;
-	color:#bbb;
+	color:#000;
 	display:block;
 	font-size:12px;
 	margin-bottom:12px;
 	padding:4px 6px 6px;
 }
 #simplemodal-container a {
-	color:#ddd;
+	color:#000;
 }
 #simplemodal-container a.modalCloseImg {
 	background:url(/images/qqui1/x.png) no-repeat;
@@ -2063,7 +2067,7 @@ div.graph {
 	cursor:pointer;
 }
 #simplemodal-container h3 {
-	color: #84b8d9;
+	color: #000;
 }
 /* * SimpleModal Confirm Modal Dialog * http://www.ericmmartin.com/projects/simplemodal/
 * http://code.google.com/p/simplemodal/

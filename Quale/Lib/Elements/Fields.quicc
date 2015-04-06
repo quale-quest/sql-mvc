@@ -295,8 +295,14 @@ element(DtViewField_Div)
 element(DtViewField_Script)
     inherit:View_Script		
 	
-	
-	
+element(PopupLinkFieldLink_Main)
+    <a href="#" language=javascript onclick="zxnav(event,[[0]],{{QryOffset}}); $.modal(document.getElementById('basicmodaldialog')); return true;" {{{LinkElements}}} >{{{LeftSpan}}} [[{{pop}}]] {{{RightSpan}}} </a>
+
+element(PopupLinkFieldLink_Head)
+    inherit:View_Head
+
+element(PopupLinkFieldLink_Div)
+    inherit:View_Div	
 	
 	
 #>
