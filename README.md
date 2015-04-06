@@ -2,18 +2,31 @@
 
 **Paradigm inversion - write web applications in SQL instead of JavaScript.**
 
+If you find the way web app development is done today as tedious, and wasteful, then join me 
+in creating a true "application programming language" (or DSL of you prefer),
+as opposed to using a general purpose language (JavaScript) for writing applications.
+
+I have been a programmer since 1983 (mostly in embedded systems),
+since 1999 I have been using my own secret platform to do the occasional custom line of business web app.
+Last year (2014) I had a need to write a simple app for an embedded ARM processor (BeagleBone Black), and as my 
+secret platform was windows only, I had to evaluate and choose from the latest app development technologies, 
+I was quite amazed that app development seems to be less efficient now that back in the 90's.
+
+So I started this project to modernize my secret methods, and make them available to the public.
+These methods were developed in isolation, as a result SQL-MVC is quite different to anything else out there, 
+so don't have preconceived notions, and don't limit your thinking by 
+applying your current paradigm's best practices to SQL-MVC as it is a
+complete rethink of the development stack. 
+ 
+This is not a toy,it is under full-time active development, with the objective to match and beat any other technologies hands down.
+ 
 In 1991 Oracle added a few extensions to SQL to create Procedural SQL, so now we have added a 
 few more extensions to SQL, to create QUery Application Language Extensions (QUALE) - it is that simple.
 
-**Recent change log: Automatic JIT compiler, Windows Installer and dev environment with syntax highlighting.**
+**Recent change log: Divout popup, Automatic JIT compiler, Windows Installer and dev environment with syntax highlighting.**
 
-SQL-MVC is quite different to anything else out there, so don't have preconceived notions, and don't limit your thinking by 
-applying your current paradigm's best practices to SQL-MVC as it is a complete rethink of the development stack.
 
-This is not a toy,it is under full-time active development and it is the 
-culmination of many years of work, being re-implemented in an updated open source project.
-
-Please join our group to comment or discuss the technology( https://groups.google.com/group/sql-mvc-talk )
+Please join our new group to comment or discuss the technology( https://groups.google.com/group/sql-mvc-talk )
 
 *Alpha version 0.0 Notice: When evaluating SQL-MVC keep in mind this project is still version 0.0.x- alpha/preview release.
 The GUI looks old and clunky, but it is fully customisable and will be modernised, a lot of stuff is not 100% polished or even to spec,
