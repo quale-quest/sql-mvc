@@ -1,6 +1,6 @@
 {
   "name": "sql-mvc",
-  "version": "0.0.106",
+  "version": "0.0.108",
   "description": "Paradigm inversion-write web applications in SQL instead of JavaScript",
   "main": "./index.js",
   "scripts": {
@@ -28,7 +28,7 @@
     "node-uuid": "^1.4.2",
     "node.extend": "^1.1.3",
     "rimraf": "^2.3.1",
-    "socketstream": "0.3.x",
+    "socketstream": "0.3.11",
     "ss-hogan": "0.1.x",
     "ss-stylus": "^0.1.9",
     "temp": "^0.8.1"

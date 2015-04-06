@@ -6,7 +6,7 @@ master(TODO_MVC)
 	
 table(pagination:20)
 	Select  --:{Title:"Edit records",from:"TODO_MVC",tablestyle:"DT"}
-	REF	,    --:{Type:"View"}	
+	REF	,    --:{Type:"Hide"}	
 	STATUS, --:{}
 	NAME,  --:{as:"popup",form:"Popup/PerSessionEdit"}
 	OWNER   --:{Type:"Hide"}	
