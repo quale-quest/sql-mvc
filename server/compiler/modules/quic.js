@@ -178,6 +178,8 @@ function tokenscheck_eachRecursive(obj) {
 				obj[k] = 'false';
 
 			if (typeof obj[k] === "string" && obj[k] !== null)
+                {
+                //console.log('tokenscheck_eachRecursive 155527 :',obj[k]);
 				if (obj[k].substring(0, 7) === "regex:/") {
 					var sp = obj[k].split("/");
 					//console.log('tokenscheck_eachRecursive sp:',obj[k],sp);
@@ -189,17 +191,44 @@ function tokenscheck_eachRecursive(obj) {
 						obj[k] = re;
 					}
 				}
-
+                else if (obj[k].substring(0, 9) === "replace:/") { //concat:/regex/mod/replacementPattern/regex/mod/replacementPattern ....
+                    //this code is the setup execution for  , which get executed in tokens_eval_eachRecursive - marked 053212
+                    //an array of regular expressions or strings expressions
+                    //console.trace('tokenscheck_eachRecursive replace sp:',obj[k],sp);
+                    
+                    var arry=[];
+					var sp = obj[k].split("/"),i;
+					//console.log('tokenscheck_eachRecursive replace sp:',obj[k],sp);
+                    arry.push('replace');
+					for (i=1;i<sp.length;i+=3) {                      
+						var flags = sp[i+1]||'';
+						var re = new RegExp(sp[i], flags);
+						arry.push(re);
+						arry.push(sp[i+2]||'');                                              
+					}
+                    //console.log('tokenscheck_eachRecursive replace arry:',arry);
+                    obj[k] = arry;
+                    
+                    
+				}
+                //console.log('tokenscheck_eachRecursive 155529 :',obj[k]);
+                
+                
+                }
 		}
 	}
 }
 function tokens_eval_eachRecursive(obj, zx, line_obj, quickinput) {
 	for (var k in obj) {
-		//console.log('tokens_eval_eachRecursive:',k," : ",obj.hasOwnProperty(k),obj[k] instanceof RegExp,typeof obj[k],obj[k]);
+		//console.log('tokens_eval_eachRecursive for k    :',k," : ",obj.hasOwnProperty(k),obj[k] instanceof RegExp,typeof obj[k],obj[k]);
 		if (!obj.hasOwnProperty(k))
 			continue; // skip this property
 
 		if (typeof obj[k] === "object" && obj[k] !== null) {
+            
+            //if list of regexes
+            //console.log('tokens_eval_eachRecursive typeof:',k," : ",typeof obj[k]);
+            
 			if ((obj[k]instanceof RegExp) && (k !== 'regex')) {
 				//console.log('tokens_eval_eachRecursive:',k," : ",obj[k], 'in ',quickinput);
 
@@ -218,8 +247,33 @@ function tokens_eval_eachRecursive(obj, zx, line_obj, quickinput) {
 				}
 
 			} else {
-				//console.log('tokenscheck_eachRecursive..:',k," : ",obj[k]);
+                //this is the execution of the type setup in tokenscheck_eachRecursive  maked as "setup execution for"  - marked 053212
+                if ((obj[k] instanceof Array)&&(obj[k][0]==='replace')) {
+                    //console.trace('tokenscheck_eachRecursive..isArray :',k," : ",typeof obj[k],obj[k]);
+                    //console.log('tokens_eval_eachRecursive quickinput:',quickinput);
+                    // console.log('JSON.stringify line_obj quickinput ',JSON.stringify(line_obj));
+                    
+                    var matches = quickinput.match(obj[k][1]);
+				    //console.log('tokens_eval_eachRecursive match:',k," : ",obj[k],matches);
+                    var repl=quickinput.replace(obj[k][1], obj[k][2]);
+                    //console.log('tokens_eval_eachRecursive replace:',k," : ",obj[k],repl);
+                    var i;
+                    var processed = quickinput;
+                    for(i=1;i<obj[k].length;i+=2) {
+                        //processed = processed.replace(obj[k][i], obj[k][i+1]);
+                        processed = processed.match(obj[k][1])[1]||'';
+                        //console.log('tokens_eval_eachRecursive processed aaa:',processed);
+                        processed = obj[k][i+1].replace(/\$1/,processed);
+                        
+                        
+                    }    
+                    //console.log('tokens_eval_eachRecursive processed:',processed);
+                    obj[k] = processed;
+                    
+                } else {
+                 //console.log('tokenscheck_eachRecursive.. :',k," : ",typeof obj[k],obj[k]);
 				tokens_eval_eachRecursive(obj[k], zx, line_obj, quickinput);
+                }
 			}
 		} else {
 			// do something...
@@ -234,6 +288,14 @@ var watch = function (zx, msg) {
 };
 
 exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
+/*
+    Qualia priority should be:
+            Regex           is overwritten by:
+            qualia          is overwritten by:
+            class           is again overwritten by:
+            qualia          
+            
+*/
 	//console.log('-------------------------- \ nQuic_eval : ',quickinput,'::',quics)//," :::",str);
 
 	var quale = {};
@@ -267,12 +329,15 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 	//interpret/fixup some tokens in the object
 	tokenscheck_eachRecursive(q_obj);
 
+    //merge with manual qualia to get class "as" settings
 	watch(zx, " at 134242 ");
 	//merge the objects to create the new quale
+    //console.log('quale---:',quale.Type,q_obj.Type,quickinput);
 	extend(quale, q_obj); //second one has the priority
-	//console.log('quale:',quale);
+    //if ( quale.name==='BLOB_ID')
+	//    console.log('quale------------------------------------------------------------------------------------:',quale,quickinput);
 
-	//merge with any class information
+	//merge with any class information to override regexes
 	if (quale.as !== undefined) {
 		if (!Array.isArray(quale.as)) 
 			quale.as = [].concat(quale.as);
@@ -291,19 +356,28 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
                 //zx.stringify_2(quale)
                 //console.log('.....................................copy:');//,quale);                
                 //zx.stringify_2(copy)
-				quale = extend(copy, quale); //quale overrides any class settings
-				//console.log('quale:',quale);
+				quale = extend(quale,copy); //class settings  overrides any quale  ... quale will agina overide class later
+				//console.log('quale extended by as:',quale);
 			}
 
 		});
 		delete quale['class'];
 	}
 
+
+    //lastly set back manual quale as it has the higherst priority
+    //console.log('quale2---:',quale.Type,q_obj.Type,quickinput);
+	extend(quale, q_obj); //second one has the priority
+    //if ( quale.name==='BLOB_ID')
+	//    console.log('quale2------------------------------------------------------------------------------------:',quale,quickinput);
+
+    
+//find the name if it is not yet found
 	watch(zx, " at 134245 ");
 	//merge with any context information
 	//console.log('quale b4 context:',quale);
 	if ((tag.toLowerCase() !== 'model') && (quale.name === undefined) && quale.from === undefined) {
-		var firstword = quickinput.match(/(\w+.\w)/); //TODO this looks wrong
+		var firstword = quickinput.match(/([\w_$.]+)/); 
 		//console.log('Quale firstword extract :', firstword);
 		if (firstword !== null) {
 			firstword = firstword[1];
@@ -351,7 +425,7 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 
 	watch(zx, " at 134248 ");
 	if (tag.toLowerCase() === 'model') {
-		//console.log('Quale model  :',quale);
+		//console.log('Quale model  122444:',quale);
 		if (quale.regex !== undefined)
 			zx.q.regex.push(quale);
 		else {
@@ -467,8 +541,10 @@ exports.start_up = function (zx) {
 
 var disp_quic = function (zx, line_obj, str) {
 	console.log(" \ n \ n \ nparsing : ", str);
+    line_obj = {};
 	var sql = exports.parse(zx, line_obj, str, 'model');
 	console.log(" SQL remaining after parsed:: \ n ", sql);
+    console.log(" OBJ           after parsed:: \ n ", line_obj);
 	console.log(" \ n------------------------------ \ n \ n ");
 };
 
@@ -487,6 +563,7 @@ var unit_test = exports.unit_test = function () {
 	console.log('start Quic', line_obj.hello);
 
 	disp_quic(zx, line_obj, "--:{regex:\"regex:/varchar/i\",Default_length:\"20\",length:\"regex:/(\\\\d+)/\",name:\"regex:/(\\\\w+)/\",base:\"text\"} --comment ");
+                                      
 	disp_quic(zx, line_obj, "--:{regex:\"regex:/create\\\\s+table/i\",rl_context:\"regex:/create\\\\s+table\\\\s+(\\\\w+)/i\"} ");
 	disp_quic(zx, line_obj, "--:{class:\"Text\",mode:\"edit\"} ");
 	//disp_quic(zx,line_obj,"--:{class:\"Table\",match:\"regex:/create\s+table/i\",name:\"regex:/create\\\\s+table\\\\s+(\\\\w+)/\"} ");
