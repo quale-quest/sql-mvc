@@ -6,10 +6,10 @@ dropinmenu (icon:"nav-icon invoice-icon",title:"Todo Reports")
 
 
 table(pagination:3)
-	Select  --:{Title:"View sessions",from:"TODO_MVC",tablestyle:"DT"}
-	first 1000
-	OWNER,  --:{pass:{DivoutName:detaildiv},Action:"Link",Type:"Link",form:"Divout/PerSessionToDo",pointer:0}
-	Count(*), --:{Type:"View"}
+	Select  --:{Title:"View sessions",from:TODO_MVC,tablestyle:DT}
+	first 1000	
+	OWNER,  --:{as:fordetaildiv,form:"Divout/PerSessionToDo"}
+	Count(*), --:{Type:View}
 	list(substring(name from 1 for 8)) --:{Type:"View"}
 	
 	From TODO_MVC 

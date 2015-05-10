@@ -257,35 +257,6 @@ element(SliderTextFieldEdit_Div)
 element(SliderTextFieldView_Head)
     inherit:View_Head
 
-element(UploadFieldEdit_Main)
-    [[[upload({{pop}},'{{field.f.filetype}}',0,'{{QryOffset}}','
-    repack(Title,Button) 
-    ')]]]
-
-element(UploadFieldEdit_Div)
-    <div data-qqpickvalue='[[{{f_index}}]]'>{{{pop}}}</div>
-
-element(UploadFieldEdit_Script)
-    inherit:Edit_Script
-
-element(UploadPluginCode)
-    some way of making this code and the code in app.js  and in templates/widgets pluggable
-
-element(UploadFieldView_Head)
-    inherit:View_Head
-
-element(UploadFieldView_Div)
-    inherit:View_Div
-
-element(UploadFieldView_Script)
-    inherit:View_Script
-
-element(UploadFieldView_Main)
-    <img src='{{{field.f.url}}}[[[{{pop}}]]]' alt='[[[{{pop}}]]]' title='[[[{{pop}}]]]' 
-     {{#field.f.width}}width="{{field.f.width}}"{{/field.f.width}}
-     {{#field.f.height}}rows="{{field.f.height}}"{{/field.f.height}}
-    />
-
 element(DtViewField_Main)
     inherit:View_Main	
 	

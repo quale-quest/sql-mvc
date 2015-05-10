@@ -17,7 +17,7 @@ table()
 	first 100
 	STATUS, --:{}
 	NAME,   --:{}
-	OWNER,   --:{Type:"Hide"}
+	OWNER,  --:{}
 	REF	    --:{}	
 	From TODO_MVC 
     where (owner=master.owner)

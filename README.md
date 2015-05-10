@@ -2,11 +2,11 @@
 
 **Paradigm inversion - write web applications in SQL instead of JavaScript.**
 
-If you find the way web app development is done today as tedious, and wasteful, then join me 
+If like me, you find the way web app development is done today as tedious, and wasteful, then join me 
 in creating a true "application programming language" (or DSL of you prefer),
 as opposed to using a general purpose language (JavaScript) for writing applications.
 
-I have been a programmer since 1983 (mostly in embedded systems),
+I have been programming since 1983 (mostly in embedded systems),
 since 1999 I have been using my own secret platform to do the occasional custom line of business web app.
 Last year (2014) I had a need to write a simple app for an embedded ARM processor (BeagleBone Black), and as my 
 secret platform was windows only, I had to evaluate and choose from the latest app development technologies, 
@@ -26,7 +26,7 @@ few more extensions to SQL, to create QUery Application Language Extensions (QUA
 **Recent change log: Divout popup, Automatic JIT compiler, Windows Installer and dev environment with syntax highlighting.**
 
 
-Please join our new group to comment or discuss the technology( https://groups.google.com/group/sql-mvc-talk )
+Please join our new google group to comment on, or discuss the technology : [sql-mvc-talk](https://groups.google.com/group/sql-mvc-talk)
 
 *Alpha version 0.0 Notice: When evaluating SQL-MVC keep in mind this project is still version 0.0.x- alpha/preview release.
 The GUI looks old and clunky, but it is fully customisable and will be modernised, a lot of stuff is not 100% polished or even to spec,
@@ -102,14 +102,10 @@ use(todo.clear.button)
 [Github - wiki](https://github.com/quale-quest/sql-mvc/wiki)
 
 
-
-
-
-
 ## Developer Resources
 
-* Git hub https://github.com/quale-quest/sql-mvc
-* SQL-MVC help and discussion mailing list: https://groups.google.com/group/sql-mvc-talk
+* Git hub  [https://github.com/quale-quest/sql-mvc](https://github.com/quale-quest/sql-mvc)
+* SQL-MVC help and discussion mailing list : [sql-mvc-talk](https://groups.google.com/group/sql-mvc-talk)
 
 
 ## How does SQL-MVC work?
@@ -143,6 +139,7 @@ default framework and theme is just to give you a quick start.
 * Almost no middle-ware processing.	
 * Exchange only JSON data elements across the wire.	
 * Build with Nodejs, SocketStream and Hogan templates to produce Single Page Applications.	
+* Cache client side code automatically, and update automatically when the server side changes.
 * The page loads full visible content on first load - no partial view like waiting for multiple Ajax /ReST calls.
 * Lazy loading of application client code while the user keys in his login information( if not cached already).
 * Partial div(Divout) / records load/reload  on Navigating / Saving or refreshing content.

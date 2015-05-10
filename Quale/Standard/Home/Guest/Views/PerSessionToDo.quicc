@@ -10,10 +10,11 @@ table()
 	Select  --:{Title:"Make new records",from:"TODO_MVC",tablestyle:"DT"}
 	STATUS, --:{}
 	NAME,   --:{}
-	OWNER,   --:{Type:"Hide"}
+	OWNER,  --:{Type:"Hide"}
 	REF	    --:{}	
 	From TODO_MVC 
     where (owner=master.owner)
 	
 use(todo.source_files)	
 #>
+

@@ -56,30 +56,30 @@ element(GalleryDataFootFirstFieldCell)
 element(GalleryDataFootFieldCell)
     {{{pop}}}
 
-element(GalleryFieldEdit_Main)
+element(GalleryImageFieldEdit_Main)
     [[[upload({{pop}},'{{field.f.filetype}}',0,'{{QryOffset}}','
     repack(Title,Button) 
     ')]]]
 
-element(GalleryFieldEdit_Div)
+element(GalleryImageFieldEdit_Div)
     <div data-qqpickvalue='[[{{f_index}}]]'>{{{pop}}}</div>
 
-element(GalleryFieldEdit_Script)
+element(GalleryImageFieldEdit_Script)
     inherit:Edit_Script
 
 element(GalleryPluginCode)
     some way of making this code and the code in app.js  and in templates/widgets pluggable
 
-element(GalleryFieldView_Head)
+element(GalleryImageFieldView_Head)
     inherit:View_Head
 
-element(GalleryFieldView_Div)
+element(GalleryImageFieldView_Div)
     inherit:View_Div
 
-element(GalleryFieldView_Script)
+element(GalleryImageFieldView_Script)
     inherit:View_Script
 
-element(GalleryFieldView_Main)
+element(GalleryImageFieldView_Main)
     <div class='qiui1gallery_box'><div class='qiui1gallery_boxInner'>
     <img src='{{{field.f.url}}}[[[{{pop}}]]]' alt='[[[{{pop}}]]]' title='[[[{{pop}}]]]' 
      {{#field.f.width}}width="{{field.f.width}}"{{/field.f.width}}
@@ -87,4 +87,39 @@ element(GalleryFieldView_Main)
     />
     <div class='titleqiui1gallery_box'>[[[{{field.w.DisplayName}}]]]</div></div></div>
 
+
+
+
+
+
+element(ImageFieldEdit_Main)
+    [[[upload({{pop}},'{{field.f.filetype}}',0,'{{QryOffset}}','
+    repack(Title,Button) 
+    ')]]]
+
+element(ImageFieldEdit_Div)
+    <div data-qqpickvalue='[[{{f_index}}]]'>{{{pop}}}</div>
+
+element(ImageFieldEdit_Script)
+    inherit:Edit_Script
+
+element(ImageFieldPluginCode)
+    some way of making this code and the code in app.js  and in templates/widgets pluggable
+
+element(ImageFieldView_Head)
+    inherit:View_Head
+
+element(ImageFieldView_Div)
+    inherit:View_Div
+
+element(ImageFieldView_Script)
+    inherit:View_Script
+
+element(ImageFieldView_Main)
+    <img src='{{{field.f.url}}}[[[{{pop}}]]]' alt='[[[{{pop}}]]]' title='[[[{{pop}}]]]' 
+     {{#field.f.width}}width="{{field.f.width}}"{{/field.f.width}}
+     {{#field.f.height}}rows="{{field.f.height}}"{{/field.f.height}}
+    />
+	
+	
 #>

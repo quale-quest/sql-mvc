@@ -1,7 +1,30 @@
 
 <#model
 
---:{class:"popup",Type:"Link",Action:"Link",substyle:Popup,pass:{DivoutName:basicmodaldialog}}
+
+--:{class:hidden,Type:Hide}  
+
+--:{class:text,Type:Text}  
+--:{class:text40,Type:Text}  
+
+--:{class:textbox,Type:Text,substyle:Box}  
+
+--:{class:integer,Type:Integer}  
+--:{class:float,Type:Float}  
+
+--:{class:timestamp,Type:Text,substyle:Datetimepicker}  
+--:{class:datestamp,Type:Text,substyle:Datepicker}  
+
+--:{class:ticked,Type:Pick,List:Ticked}  
+
+--:{class:image,Action:View,Type:Image,width:128,Button:"Upload File",widget:{DisplayName:NAME,Target:public},Async:{ namefield:"replace:/([\\w_$]+)//$1", filefield:"replace:/([\\w_$]+)//$1_FILENAME",somestuff:1, Target:public}}  
+--:{class:image_filename,Type:Hide,Action:Hide}  
+
+--:{class:popup,Type:Link,Action:Link,substyle:Popup,pass:{DivoutName:basicmodaldialog},pointer:0}
+--:{class:fordetaildiv,Action:Link,Type:Link,pass:{DivoutName:detaildiv},pointer:0}
+
+
+
 
 CREATE DOMAIN Z$PHONE_NUMBER
  AS VARCHAR(80)

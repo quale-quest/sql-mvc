@@ -4,12 +4,13 @@
 <#model
 CREATE TABLE GALLERY		     	--:{as:"Table"} 
 (
-  REF VARCHAR(40),					--:{as:"pk"}
-  NAME VARCHAR(100),				--:{as:"Text",size:40,title:"todo",onupdate:"owner=session.id"}  
-  OWNER VARCHAR(40),				--:{Type:"Hide"}
-  STATUS VARCHAR(10) default '',	--:{Type:"Pick",List:"Ticked"}  
-  DisplayName  VARCHAR(100),		--:{as:"Text"}
-  BLOB_ID   VARCHAR(100)			--:{Type:"Gallery"}
+  REF VARCHAR(40),					--:{as:pk}
+  NAME VARCHAR(100),				--:{as:text,size:40,title:"todo",onupdate:"owner=session.id"}  
+  OWNER VARCHAR(40),				--:{as:hidden}
+  STATUS VARCHAR(10) default '',	--:{as:ticked}  
+
+  BLOB_ID   VARCHAR(100),			--:{as:image}
+  BLOB_ID_filename VARCHAR(100)	    --:{as:image_filename}
   
 );
 #>

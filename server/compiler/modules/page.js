@@ -478,11 +478,16 @@ exports.RecurseParseFileToObject = function (zx, filename) {
                 }
                 else {
                 
-                obj[i] = exports.check_json_parse(zx,obj[i]);
+                    obj[i] = exports.check_json_parse(zx,obj[i]);
 
                 }
 				obj[i] = zx.quic.parse(zx, obj[i], obj[i].body, obj[i].tag, true); //obj[i] here gets filled later...should really be made into 2 separate objects
-				//console.log('Quic RecurseParseFileToObject 172022 :', obj[i]);
+                if (obj[i].tag==='table')  {
+				   //console.log('Quic RecurseParseFileToObject 172022 :', obj[i]);
+                   //console.log('Quic RecurseParseFileToObject 172022 nonkeyd:', obj[i].nonkeyd);
+                   //if (obj[i].q.fields)
+                   //console.log('Quic RecurseParseFileToObject 172022 fields:', obj[i].q.Fields);
+                }
 			}
 		} catch (e) {
 			zx.error.caught_exception(zx, e, " RecurseParseFileToObject mark-172031 ");
@@ -580,7 +585,7 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 					var obj2 = exports.ParseFileToObject(zx, file_name);
 					//console.warn('include tag : file ', file_name, JSON.stringify(obj2, null, 4).length);
 					//console.warn('include tag : obj2 ', zx.show_longstring(JSON.stringify(obj2)));
-					if (MaxIncludes++ > 500) {
+					if (MaxIncludes++ > 5000) {
 						console.trace('process.exit(2) from RecurseParseFileToObject MaxIncludes exceeded: ');
 						process.exit(33);
 					}

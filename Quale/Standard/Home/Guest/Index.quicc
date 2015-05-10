@@ -29,10 +29,10 @@ endquery
 endquery
 
 table()
-	Select  --:{Title:"Make new records",from:"TODO_MVC",autoinsert:"top",tablestyle:"Todo"}
-	STATUS, --:{Action:"Edit",debug:0,autosave:yes,onupdate:"owner=session.id"}
-	NAME,   --:{Action:"Edit","placeholder":"What needs to be done (tab to save)","autosave":yes,onupdate:"owner=session.id"}
-	REF	    --:{Action:"View",Type:"Hide"}
+	Select  --:{Title:"Make new records",from:TODO_MVC,autoinsert:top,tablestyle:Todo}
+	STATUS, --:{Action:Edit,autosave:yes,onupdate:"owner=session.id"}
+	NAME,   --:{Action:Edit,placeholder:"What needs to be done (tab to save)",autosave:yes,onupdate:"owner=session.id"}
+	REF	    --:{}
 	From TODO_MVC 
 	where (owner=session.id and ( (here.todo_type='' and (status!='3' or status is null)) 
 	or( (status='' or status is null) and here.todo_type='1')or(status='1' and here.todo_type='2')))

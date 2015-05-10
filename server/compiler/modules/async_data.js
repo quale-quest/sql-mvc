@@ -38,6 +38,8 @@ exports.check_Async_Binary_Fields = function (zx, fld, line_object) {
 				var indx = zx.CurrentPageIndex + (+zx.sql.sub_proc_index);
 
 				//console.log('check_Async_Binary_Fields fn B - ' + zx.sql.sub_proc_index);
+                //console.log('check_Async_Binary_Fields fn lcx - ' ,lcx);
+                //console.log('check_Async_Binary_Fields fn code - ' ,sql);
 
 				baserecord_ref = zx.dbu.write_script(zx, true, indx, pn,'0', sql, fld.f.Async);
 				zx.sql.sub_proc_index++;

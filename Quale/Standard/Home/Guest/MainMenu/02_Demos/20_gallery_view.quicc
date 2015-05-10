@@ -7,13 +7,8 @@ Layout from http://www.dwuser.com/education/content/creating-responsive-tiled-la
 
 <#table()
 Select  --:{Title:"",from:"GALLERY",tablestyle:"Gallery"}
-NAME    --:{Action:"View",Type:"Hide"}
-,BLOB_ID --:{Action:"View",Type:"Gallery",width:"128",title:"File upload",Button:"Save it",
-   widget:{DisplayName:"NAME",Target:"public"}, 
-   Async:{ testing:1,
-           namefield:"BLOB_ID",
-		   filefield:"DisplayName",		  
-		   Target:"public"}}
+NAME    --:{Type:"Hide"}
+,BLOB_ID --:{}
 From GALLERY 
 where blob_id is not null and status=''
 
@@ -23,18 +18,16 @@ Container                                                               (style=T
 
 table
 Select  --:{Title:"Make new records",from:"GALLERY",tablestyle:"Todo"}
-STATUS, --:{Action:"Edit",debug:0}
-NAME,   --:{Action:"Edit","placeholder":"What needs to be done (tab to save)"}
-REF	    --:{Action:"View",Type:"Hide"}
-,BLOB_ID --:{Action:"View",Type:"Upload",width:"32",Title:"File upload",Button:"Save it",   
-   Async:{ 
-           namefield:"BLOB_ID",
-		   filefield:"DisplayName",		  
-		   Target:"public"}}
+STATUS, --:{Action:Edit}
+NAME,   --:{Action:Edit,"placeholder":"What needs to be done (tab to save)"}
+REF	    --:{}
+,BLOB_ID --:{width:48}
 From GALLERY 
 where blob_id is not null and status<>'3'
 
+#>
 
+<#
 
 NextContainer( rem="----------------------------------------------------------" tab=NewPictures)
 
@@ -66,13 +59,8 @@ where blob_id is null
 table
 Select  --:{Title:"pictures",from:"GALLERY",tablestyle:"Upload"}
 first 1
-REF	    --:{Action:"Hide",Type:"Hide"}
-,BLOB_ID --:{Action:"Edit",Type:"Upload",Title:"File upload",Button:"Save it",
-   title:"",
-   Async:{ 
-           namefield:"BLOB_ID",
-		   filefield:"DisplayName",		  
-		   Target:"public"}}
+REF	    --:{}
+,BLOB_ID --:{Action:Edit}
 From GALLERY 
 where blob_id is null
 
