@@ -491,7 +491,7 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 			}
 		} catch (e) {
 			zx.error.caught_exception(zx, e, " RecurseParseFileToObject mark-172031 ");
-			throw zx.error.known_error;
+			throw new Error("local known error");
 		}
 		try {
 			zx.locate_plugin(zx, "tag_pass0_", obj[i].tag, obj[i]);
@@ -502,7 +502,7 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 
 		} catch (e) {
 			zx.error.caught_exception(zx, e, " RecurseParseFileToObject mark-172032 ");
-			throw zx.error.known_error;
+			throw new Error("local known error");
 		}
 
 		if (obj[i].tag.toLowerCase() === 'table') {

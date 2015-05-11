@@ -556,7 +556,7 @@ var seq_page = function (zx) {
 			//console.log('RecurseParseFileToObject done:',fn);
 		} catch (e) {
 			zx.error.caught_exception(zx, e, " RecurseParseFileToObject mark-114232 ");
-			throw zx.error.known_error;
+			throw new Error("local known error");
 		}
 
       
@@ -580,7 +580,7 @@ var seq_page = function (zx) {
 			//console.log('diviner.compile done:');
 		} catch (e) {
 			zx.error.caught_exception(zx, e, " diviner.compile mark-114233 ");
-			throw zx.error.known_error;
+			throw new Error("local known error");
 		}
 		fs.writeFileSync(ofn + '.linkfiles.txt', JSON.stringify(zx.linkfiles, null, 4));
 
@@ -621,7 +621,7 @@ var seq_page = function (zx) {
 			script = zx.sql.testhead + script + zx.sql.testfoot;
 			zx.error.log_validation_fail(zx, 'Compile Error', script, zx.err);
 			console.log('>>>>>>>>>>>>>>>Throwing known error (1)');
-			throw zx.error.known_error;
+			throw new Error("local known error");
 		} else {}
 
 		console.log('validate_script...........................................', zx.main_page_name, JSON.stringify(script, null, 4).length);
@@ -667,12 +667,12 @@ var seq_page = function (zx) {
 				zx.error.log_SQL_fail(zx, 'Quale definition missing',
                         "Each field in a table select statement must have a -:{} even if empty.",{}, {});
                 
-				throw zx.error.known_error;
+				throw new Error("local known error");
 			} else {
 				console.log('Script validation failed - ', valid);
 				
 				zx.error.log_validation_fail(zx, 'Script validation failed', script, valid);				
-				throw zx.error.known_error;
+				throw new Error("local known error");
 			}
 		}
 	}

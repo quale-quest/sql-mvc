@@ -50,7 +50,7 @@ exports.check_Async_Binary_Fields = function (zx, fld, line_object) {
 
 	} catch (e) {
 		zx.error.caught_exception(zx, e, "check_Async_Binary_Fields 170105, : ", fld);
-		throw zx.error.known_error;
+		throw new Error("local known error");
 	}
 	return baserecord_ref;
 }

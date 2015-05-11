@@ -94,7 +94,7 @@ exports.compile = function (zx, obj) {
 						} //if done
 					} catch (e) {
 						zx.error.caught_exception(zx, e, " locate_plugin -114538,  tag_" + tag);
-						throw zx.error.known_error;
+						throw new Error("local known error");
 					}
 				} //else
 

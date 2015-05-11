@@ -209,8 +209,9 @@ var fieldSubItem = function (cx, FT) {
 
 	} catch (e) {
 		console.log('fieldSubItem 120818: ', FieldHtml, tt, FT);
+        console.log('e.stack 112235 :',e.stack);
 		zx.error.caught_exception(zx, e, " fragment -120818, : " + tt);
-		throw zx.error.known_error;
+		throw new Error("local known error");
 	}
 
 	return FieldHtml;
@@ -232,7 +233,7 @@ var formatField = function (cx, FT /*, itemindex*/
 
 		} catch (e) {
 			zx.error.caught_exception(zx, e, " formatField -120556, fieldSubItemt : " + "\ncx: " + JSON.stringify(cx));
-			throw zx.error.known_error;
+			throw new Error("local known error");
 		}
 		//console.log('formatField B: ',cx.pop,FT);
 
@@ -246,7 +247,7 @@ var formatField = function (cx, FT /*, itemindex*/
             
 		} catch (e) {
 			zx.error.caught_exception(zx, e, " formatField -120555, hogan fragment : " + JSON.stringify(ts) + "\ncx: " + JSON.stringify(cx));
-			throw zx.error.known_error;
+			throw new Error("local known error");
 		}
 
 		//console.log('fieldSubItem X2: ',ts,cx.pop);

@@ -129,7 +129,7 @@ exports.parse = function (zx, line_obj, str, tag,Quale_eval) {
 					exports.Quic_eval(zx, line_obj, quickinput, quics, tag, opener);
 				} catch (e) {
 					zx.error.caught_exception(zx, e, " Quicc parse mark 070741 ");
-					throw zx.error.known_error;
+					throw new Error("local known error");
 				}
 
 			if (opener === '--{')
@@ -137,13 +137,13 @@ exports.parse = function (zx, line_obj, str, tag,Quale_eval) {
 					exports.Tag_eval(zx, line_obj, quickinput, quics, tag, opener);
 				} catch (e) {
 					zx.error.caught_exception(zx, e, " Quicc parse mark 070743 ");
-					throw zx.error.known_error;
+					throw new Error("local known error");
 				}
 		}
 
 	} catch (e) {
 		zx.error.caught_exception(zx, e, " Quicc parse mark 070745 ");
-		throw zx.error.known_error;
+		throw new Error("local known error");
 	}
 
 	zx.q.ths.query = str;

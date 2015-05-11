@@ -106,6 +106,9 @@ var update_pk_name = function (zx, tcx) {
 };
 
 var prep_query = function (zx, cx, tcx, o) {
+	console.log('I dont think this is being used anymore -prep_query - 122421: ');
+	process.exit(2);
+    
 	/*
 	Table level
 	 */
@@ -177,7 +180,11 @@ var prep_query = function (zx, cx, tcx, o) {
 			tcx.query += ' from datafile ';
 
 		if (+cx.table.autoinsert_internal > 0) {
-			tcx.query += ' right join Z$INSERTREF on ref = INSERT_REF';
+			tcx.query += ' right join Z$INSERTREF on '+tcx.implied_pk_name+' = INSERT_REF';
+			//console.log('cx.table.autoinsert_internal > 0 122422: ',tcx.implied_pk_name,tcx.query);
+			//process.exit(2);
+            
+
 			//where is used to set default values
 		} else {
 			if (o.join !== undefined)
@@ -216,7 +223,7 @@ var prep_query = function (zx, cx, tcx, o) {
 		//console.log('Query result is ',res);
 		if (res.status === "err") {
 			console.log('>>>>>>>>>>>>>>>Throwing known error (2)');
-			throw zx.error.known_error;
+			throw new Error("local known error");
 		}
 		tcx.field_details = res.output;
 		tcx.param_details = res.input;
@@ -345,6 +352,15 @@ var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx,
 
 	if (+cx.table.autoinsert_internal > 0) { //for inserts we have to modify the query
 		//this should be part of the driver code
+        
+		o.q.Fields.some(function (wip) {
+			if ((wip.PrimaryKey === 'true')) {
+				tcx.implied_pk_name = wip.name;
+				return true;
+			} else
+				return false;
+		});        
+        
 		tcx.query = tcx.query_original;
 
 		var p = tcx.query.indexOf('left');
@@ -365,17 +381,15 @@ var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx,
 		p = tcx.query.indexOf('order');
 		if (p > 0)
 			tcx.query = tcx.query.substring(0, p);
-		tcx.query += ' right join Z$INSERTREF on ref = INSERT_REF ';
+		tcx.query += ' right join Z$INSERTREF on '+tcx.implied_pk_name+' = INSERT_REF ';
+        
+		//console.log('cx.table.autoinsert_internal > 0 122423: ',tcx.implied_pk_name,tcx.query);
+		//process.exit(2);        
+        
 		//console.log('--------------cx now is :',cx.table);
 		//console.log('--------------cx.Fields now is :',o.q.Fields);
 
-		o.q.Fields.some(function (wip) {
-			if ((wip.PrimaryKey === 'true')) {
-				tcx.implied_pk_name = wip.name;
-				return true;
-			} else
-				return false;
-		});
+
 		//console.log('--------------tcx.implied_pk_name :',tcx.implied_pk_name);
 		if (tcx.implied_pk_name !== '')
 			tcx.query = tcx.query.replace(tcx.implied_pk_name, 'INSERT_REF');
@@ -443,7 +457,7 @@ var formulatemodel = exports.formulatemodel = function (zx, cx, o) {
 
 						} catch (e) {
 							zx.error.caught_exception(zx, e, " error in mapping widget field :" + field + " key:" + key + " for:" + forfield.name);
-							throw zx.error.known_error;
+							throw new Error("local known error");
 						}
 
 					});
@@ -452,7 +466,7 @@ var formulatemodel = exports.formulatemodel = function (zx, cx, o) {
 		});
 	} catch (e) {
 		zx.error.caught_exception(zx, e, " error in mapping widget fields to real fields ");
-		throw zx.error.known_error;
+		throw new Error("local known error");
 	}
 
 	tcx.fields.forEach(function (r) {
@@ -505,7 +519,7 @@ var exec_query = function (zx, o, QueryType) {
 		formulatemodel(zx, cx, o);
 	} catch (e) {
 		zx.error.caught_exception(zx, e, " exec_query -114812, formulatemodel ");
-		throw zx.error.known_error;
+		throw new Error("local known error");
 	}
 	//console.log('generatetable call:',QueryType);
 	if (QueryType === "Table") {
@@ -513,14 +527,14 @@ var exec_query = function (zx, o, QueryType) {
 			var tabletext = generatetable(zx, cx, o);
 		} catch (e) {
 			zx.error.caught_exception(zx, e, " exec_query -114813, generatetable ");
-			throw zx.error.known_error;
+			throw new Error("local known error");
 		}
 		zx.mt.lines.push(tabletext);
 		try {
 			zx.dbg.table_make_script(zx, cx, o, QueryType);
 		} catch (e) {
 			zx.error.caught_exception(zx, e, " exec_query -114814,  table_make_script");
-			throw zx.error.known_error;
+			throw new Error("local known error");
 		}
 
 	}
@@ -529,7 +543,7 @@ var exec_query = function (zx, o, QueryType) {
 			zx.dbg.table_make_script(zx, cx, o, QueryType);
 		} catch (e) {
 			zx.error.caught_exception(zx, e, " exec_query -114535,  table_make_script-list ");
-			throw zx.error.known_error;
+			throw new Error("local known error");
 		}
 	}
 
@@ -760,7 +774,7 @@ var zxTable = exports.zxTable = function (cx) {
 		}
 	} catch (e) {
 		zx.error.caught_exception(zx, e, " TopTitle -114823,  ");
-		throw zx.error.known_error;
+		throw new Error("local known error");
 	}
 	//Divine-table_content
 	html += table_content(cx); //Should push direct to div
@@ -929,7 +943,7 @@ var row_content = function (cx, HeaderOrBodyOrFooter) {
 					eval_widget(cx, cx.field, HeaderOrBodyOrFooter);
 				} catch (e) {
 					zx.error.caught_exception(zx, e, " eval row_field -114835, field[" + j + "] : "); // + JSON.stringify(cx.field));
-					throw zx.error.known_error;
+					throw new Error("local known error");
 				}
 				if (cx.field.f.Type !== 'Hide') {
 					try {
@@ -940,7 +954,7 @@ var row_content = function (cx, HeaderOrBodyOrFooter) {
 						html = html + cx.pop;
 					} catch (e) {
 						zx.error.caught_exception(zx, e, " wrap row_field -122505, field[" + j + "] : "); // + JSON.stringify(cx.field));
-						throw zx.error.known_error;
+						throw new Error("local known error");
 					}
 				}
 			}
@@ -966,7 +980,7 @@ var row_content = function (cx, HeaderOrBodyOrFooter) {
 		//there is always a table id called Data.ContainerId
 	} catch (e) {
 		zx.error.caught_exception(zx, e, " row_content -114831, " + HeaderOrBodyOrFooter);
-		throw zx.error.known_error;
+		throw new Error("local known error");
 	}
 
 	return cx.pop;

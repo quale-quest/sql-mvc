@@ -422,7 +422,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 				//Computed by gets dropped as part of cleanup ??WTF
 			} else {
 
-				var FFD = field.match(/(\S+)\s+(\S+)\s?(default)?\s?(not\s+null)?\s?(.*)/i);
+				var FFD = field.match(/(\S+)\s+(\S+)\s+(default)?\s?(not\s+null)?\s?(.*)/i);
 				//console.log('Table fields FFD:', field, FFD);
 				if (FFD) {
 					var FieldName = FFD[1],
@@ -433,8 +433,11 @@ var CREATE_TABLE = function (zx, qrystr) {
                     cx.expect = /335544351/;    
 					exec_qry(cx, "ALTER TABLE " + Table + " alter " + FieldName + " TYPE " + FieldType);
 					if (Default !== "") {
+                        //console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Table fields FFD Default:', FieldName,Default);// FFD);
+                        
                         cx.expect = /335544351/; 
 						exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " set DEFAULT " + Default);
+                        //exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " set " + Default);
 						// updating the default before commit seems a problem ... this should be moved to phase 2
 						//caused an error in carlton update ->    exec_qry("update "+Table +" set " + FieldName + "="+Default+" where " +FieldName + " is null ")
 					} else {

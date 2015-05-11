@@ -120,13 +120,14 @@ exports.write_unknown = function (zx, err) {
 };
 
 exports.caught_exception = function (zx,e,msg) {
-    console.log(e.stack);
+    
 	if (e === zx.error.known_error) {
-		console.log("!Known Compiler Exception!:", e);
+		//console.log("!Known Compiler Exception!:", e);
         
 		//continue with the next file
 	} else {
-
+        console.log('e.stack 112234 :',e.stack);
+        
 		var linecopy = deepcopy(zx.line_obj);
 		if (linecopy && linecopy.srcinfo) {
 			linecopy.srcinfo.source = zx.show_longstring(linecopy.srcinfo.source);
