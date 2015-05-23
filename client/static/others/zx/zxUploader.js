@@ -1,15 +1,17 @@
 
-
+//http://stackoverflow.com/questions/8006715/drag-drop-files-into-standard-html-file-input
+//   this last post  has an example of showing a preview in the page 
 
 
 var last_message='';
 
 function ajaxComplete () {
-  document.getElementById('cancelbutton').style.display = "none";
+  //document.getElementById('cancelbutton').style.display = "none";
   document.getElementById('submitbutton').style.display = "none";
   if (last_message=="Server Complete")
     {
-      log_message("Complete"); 
+      //log_message("Complete"); 
+      document.getElementById('UploadProgressIndicator').value=document.getElementById('UploadProgressIndicator').max;
   //NavSubmit(0);
       //.....what to do.... 
       //TODO sql-mvc we dont want to relogin....but we want to nav some where....
@@ -28,10 +30,10 @@ function doClear()
     if (document.getElementById("divProgress")===null) return;
     document.getElementById("divProgress").innerHTML = "";
     document.getElementById('UploadProgressIndicator').value=0;
-    document.getElementById('progbar').value=0;
-    document.getElementById("progtext").innerHTML = '';
+    //document.getElementById('progbar').value=0;
+    //document.getElementById("progtext").innerHTML = '';
     document.getElementById('submitbutton').style.display = "none";
-    document.getElementById('cancelbutton').style.display = "none";
+    //document.getElementById('cancelbutton').style.display = "none";
 }
  
 function log_message(message)
@@ -67,7 +69,7 @@ function transferFailed(evt) {
 }
 
 function transferCanceled(evt) {
-  alert("The transfer has been canceled by you.");
+  alert("The transfer has been cancelled by you.");
 }
 
 
@@ -98,7 +100,7 @@ function AJAXSubmit (e,pkf,pko) {
     }
   
   document.getElementById('submitbutton').style.display = "none";
-  document.getElementById('cancelbutton').style.display = "initial";
+  //document.getElementById('cancelbutton').style.display = "initial";
      
 
      
@@ -110,11 +112,11 @@ function AJAXSubmit (e,pkf,pko) {
    function zx_canceling() {
         //detach();
         oReq.abort();
-        log_message("User Canceled"); 
+        log_message("User Cancelled"); 
         ajaxComplete();        
     }
   
-  document.getElementById('cancelbutton').addEventListener('click', zx_canceling, false);
+  //document.getElementById('cancelbutton').addEventListener('click', zx_canceling, false);
   
   oReq.onload = function() { 
          if (last_message!="Server Complete")
@@ -139,8 +141,8 @@ function AJAXSubmit (e,pkf,pko) {
                 if (result.progress)
                   {
                   //log_message(result.progress);                  
-                  document.getElementById("progtext").innerHTML = '(' + result.progress + ' of ' + MaxProgress + ' records)';
-                  document.getElementById('progbar').value = result.progress;   
+                  //document.getElementById("progtext").innerHTML = '(' + result.progress + ' of ' + MaxProgress + ' records)';
+                  //document.getElementById('progbar').value = result.progress;   
                   }
                 if (result.totalprogress)
                   {
@@ -160,7 +162,7 @@ function AJAXSubmit (e,pkf,pko) {
             //log_message("<b>[XHR] Exception: " + e + "</b>");
         }
   }
-  document.getElementById("progtext").innerHTML = '';
+  //document.getElementById("progtext").innerHTML = '';
   oReq.upload.addEventListener("progress", updateProgress, false);
   oReq.upload.addEventListener("load", transferComplete, false);
   oReq.upload.addEventListener("error", transferFailed, false);
@@ -171,7 +173,7 @@ function AJAXSubmit (e,pkf,pko) {
   if (form.method.toLowerCase() === "post") {
     oReq.open("post", form.action, true);
     oReq.send(new FormData(form));
-    log_message("Staring to send the upload....");
+    log_message("Starting to send the upload....");
   } else {
     var oField, sFieldType, nFile, sSearch = "";
     for (var nItem = 0; nItem < form.elements.length; nItem++) {
@@ -189,19 +191,47 @@ function AJAXSubmit (e,pkf,pko) {
   }
 }
 
+function eventFire(el, etype){
+  if (el.fireEvent) {
+   (el.fireEvent('on' + etype));
+  } else {
+    var evObj = document.createEvent('Events');
+    evObj.initEvent(etype, true, false);
+    el.dispatchEvent(evObj);
+  }
+}
 function FileSelectHandler(e) {
     doClear();
-    document.getElementById('submitbutton').style.display = "initial";
+    //document.getElementById('submitbutton').style.display = "initial";
+    
+    document.getElementById('upload_hide').style.display = "block";
+    eventFire(document.getElementById('submitbutton'),'click');
+    //$('#submitbutton').on('click');
+    //var el = document.getElementById('submitbutton');
+    //(el.onclick || el.click || function() {})();
+    
+    
+    //alert("file selected");
+    
 }
 
 
 
+//usage
+
 function zxUploaderInit() {
-if (document.getElementById("divProgress")===null) return;
+    
+
+//alert("zxUploaderInit1 ");   
+if (document.getElementById("fileselect")===null) return;
+//alert("zxUploaderInit2 ");
 log_message("zxUploaderInit");
+//alert("zxUploaderInit3 ");
 doClear();
 //document.getElementById('dbid').value = dbid;   
-document.getElementById('fileselect').addEventListener("change", FileSelectHandler, false);
+//alert("zxUploaderInit ");    
+
+document.getElementById('fileselect').addEventListener("change", function() {FileSelectHandler(this.value)}, false);
 //document.getElementById('file_upload_ref').value=BatchRef ;
 }
 
