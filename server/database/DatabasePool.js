@@ -92,7 +92,7 @@ exports.check_run_mode = function (str) {
         
 	}
 	//console.log("check_run_mode d: ", config.run_mode);	process.exit(2);        
-	config.run = config.run_settings[config.run_mode];
+	config.run = extend(config.run,config.run_settings[config.run_mode]);
     config.db = extend(config.db, config.run.db); //second one has the priority
 	//console.log("check_run_mode c: ", config);	process.exit(2);
     

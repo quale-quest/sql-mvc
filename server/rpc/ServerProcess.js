@@ -14,16 +14,16 @@ var app_utils = require("../lib/app_utils");
 var fs = require('fs');
 var path = require('path');
 
-exports.produce_div = function (req, res, ss, rambase, messages, session,recursive) {    
+exports.produce_div = function (req, res, ss, rambase, messages, session,recursive,cb) {    
     
     db.connect_if_needed(
       rambase,
-      function () { exports.connect_and_produce_div(req, res, ss, rambase, messages, session,recursive);
+      function () { exports.connect_and_produce_div(req, res, ss, rambase, messages, session,recursive,cb);
       });
     
 }
 
-exports.connect_and_produce_div = function (req, res, ss, rambase, messages, session,recursive) {
+exports.connect_and_produce_div = function (req, res, ss, rambase, messages, session,recursive,cb) {
 
 	//input='SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p041257x00end') p;
 
@@ -87,7 +87,7 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
 			} else {
 
             
-                if (!recursive && rambase.conf.run_settings[rambase.conf.run_mode].monitor_mode === "jit") {
+                if (!recursive && rambase.conf.run.monitor_mode === "jit") {
                     if (result.length > 0) {
                         
                         console.log('db -jit- ScriptNamed:', result[0].scriptnamed);
@@ -128,8 +128,8 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
 							} else {
                                 console.log('db - ScriptNamed:', result[0].scriptnamed);
                                 console.log('db - NEW_CID    :', result[0].new_cid);
-                                
-								console.log('db - JSON       :\n\n', result[0].res, '\n\n');
+                                var newdata = (result[0].res);//.replace(/\n/g, " ").replace(/\r/g, " ");
+								console.log('db - JSON       :\n\n', newdata, '\n\n');
 								{ //debug
 									//var json = JSON.parse(result[0].res);
 									//console.log('db json :', JSON.stringify(json[0].Data,null,4));
@@ -146,8 +146,11 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
                                 db.developers[message.session] = result[0].scriptnamed;
                                 
                                 //console.log('=================================rambase.current_cid> ',rambase.current_cid );
-								ss.publish.socketId(req.socketId, 'newData', 'content', result[0].res);
-								ss.publish.socketId(req.socketId, 'switchPage', '#PAGE_2', '');
+                                if (cb) cb(newdata)
+                                else {    
+                                    ss.publish.socketId(req.socketId, 'newData', 'content', newdata);
+                                    ss.publish.socketId(req.socketId, 'switchPage', '#PAGE_2', '');
+                                }
 							}
 						}
 					}
@@ -157,6 +160,83 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
 
 	}); //tr
 }
+
+
+exports.facebook_check = function (rambase,Login_response,response,cb) {
+
+	//input='SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p041257x00end') p;
+	var message = [];
+	var update = '';
+	var last_cid = '';
+	var public_parameters = '';
+	
+
+	rambase.db.startTransaction(
+		function (err, transaction) {
+		if (err) {
+			error(err);
+			var source = {}; 
+			parse_error(zx, err, source, line_obj);
+			console.log('Error starting transaction:', err);
+
+			return;
+		}
+
+        
+        //console.log('\n--------------------------------------------------------\nLogin_response.authResponse,response:', Login_response.authResponse,response,rambase.params);
+        //console.log('\n--------------------------------------------------------\nrambase 115821:', rambase);
+        var ar = Login_response.authResponse; 
+        var rs = response;  
+        var pars = [ar.userID, rs.email, rs.first_name, rs.gender, rs.last_name, 
+                    rs.link, rs.locale,rs.name,rs.timezone+'', 
+                    rambase.params.invite || '', rambase.params.site || '',rambase.connectionID
+                    ];
+        var pars2 = [ '101619350173460',
+  'john@our-beloved.co.za',
+  'John',
+  'male',
+  'Ourbeloved',
+  'https://www.facebook.com/app_scoped_user_id/101619350173460/',
+  'en_US',
+  'John Ourbeloved',
+  '2',
+  
+  '',
+  '',
+  '7:28:16.721' ];
+
+  
+        console.log('\npars 084245:',pars);//pars);
+		transaction.query("SELECT INFO FROM FACEBOOK_CHECK (?,?,?,?,?, ?,?,?,?,'now', ?,?,?)",
+			pars,
+			function (err, result) {
+
+			if (err !== undefined) {
+				console.log('dberror:', err);
+				//console.log('dbresult: empty' );
+				//todo - show operator some kind of server error
+				transaction.rollback();
+                cb();
+			} else {
+
+            
+            
+				transaction.commit(function (err) {
+					if (err) {
+						console.log('error in transaction.commit', err);
+						transaction.rollback();
+					} else {
+                        
+					}
+                    
+                    cb();
+				}); //tr com
+			}
+		}); //tr qry
+
+	}); //tr
+}
+
 
 function lpad(input, len, chr) {
 	var str = input.toString();
@@ -182,12 +262,12 @@ exports.BuildNotify = function (message) {
 	ss.publish.all('BuildNotify', '#debugBuildNotify', message); // Broadcast the message to everyone
 }
 
-var produce_login = function (req, res, ss, rambase, Page, User,Password) {        
+var produce_login = exports.produce_login = function (req, res, ss, rambase, Page, User,Password,cb) {        
                 if (!Page) Page='';
-                var page_user_pass = rambase.page_user_pass;
-                if (page_user_pass[1]) Page=page_user_pass[1];
-                if (page_user_pass[2]) User=page_user_pass[2];
-                if (page_user_pass[3]) Password=page_user_pass[3];
+                var params = rambase.params;
+                if (params.page) Page=params.page||'';
+                if (params.user) User=params.user||'';
+                if (params.pass) Password=params.pass||'';
                 
 				var messagelist = [];
 				var message = {
@@ -203,7 +283,7 @@ var produce_login = function (req, res, ss, rambase, Page, User,Password) {
 				if (Page&&rambase.conf.run.url_page) message.update += par_format('l', Page);
 				
 				messagelist.push(message);
-				exports.produce_div(req, res, ss, rambase, messagelist, req.session.myStartID);
+				exports.produce_div(req, res, ss, rambase, messagelist, req.session.myStartID,0,cb);
 				//exports.produce_div(req, res, ss,rambase,message);
 }
 
@@ -224,7 +304,7 @@ exports.actions = function (req, res, ss) {
 
             if (!rambase.current_cid) {
                 //or go direct to the app as guest user
-                //console.log('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<rambase.current_cid  sp :',rambase.conf);
+                //console.log('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<rambase.conf  sp :',rambase.conf);
                 if (rambase.conf.run.login_first)
                     ss.publish.socketId(req.socketId, 'switchPage', '#PAGE_1', '');//login
                 else
@@ -257,6 +337,22 @@ exports.actions = function (req, res, ss) {
 				console.log('Session data has been saved:', req.session, err);
 			});
 		},
+        FBLoginAction : function (Login_response,response,Page) {
+            rambase = db.locate(req.session.myStartID);
+            //console.log('FBLoginAction is',req.session.myStartID,Login_response,response, rambase);
+            //TODO validate  Login_response.accessToken and Login_response.userID
+            //first create facebook user if it does not exist
+            db.connect_if_needed(
+              rambase,
+              function () { exports.facebook_check(rambase,Login_response,response,
+                        function () {//console.log('exports.facebook_checked 210655 :',req.session.myStartID,Login_response,response, rambase);
+                        var User = Login_response.authResponse.userID; 
+                        console.log('exports.facebook_checked 210655 :',User);
+                        produce_login(req, res, ss, rambase, '', User,'FACEBOOKED');
+                        }); 
+              });              
+              
+        },
 		LoginAction : function (User, Password, Page) {
 			if (User && User.length >= 0) { // Check for blank messages
 				rambase = db.locate(req.session.myStartID);
@@ -342,3 +438,26 @@ exports.actions = function (req, res, ss) {
 	};
 
 };
+
+/* 
+//Test facebook procedure
+setTimeout(function () {       
+var myStartID='test-sessionid123';
+var Login_response = {authResponse:{userID:'fbid'}};
+var response={};
+db.databasePooled(path.resolve('./Quale/') + '/', myStartID,'', function (){
+            var rambase = db.locate(myStartID);
+            rambase.params={};
+            db.connect_if_needed(
+              rambase,
+              function () { exports.facebook_check(rambase,Login_response,response,
+                        function () {//console.log('exports.facebook_checked 210655 :',req.session.myStartID,Login_response,response, rambase);
+                        var User = Login_response.authResponse.userID; 
+                        console.log('exports.facebook_checked 1210655 :',User);
+                        //produce_login(req, res, ss, rambase, '', User,'FACEBOOKED');
+                        }); 
+              });         
+});
+},2000);
+*/    
+    

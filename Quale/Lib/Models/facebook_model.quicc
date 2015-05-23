@@ -1,0 +1,164 @@
+
+<#:model()
+
+CREATE TABLE user_table_name                         --:{name:facebook_user,as:"Table"} 
+(
+  user_pk_field PK,                                  --:{as:"pk"}
+  NAME LONG_NAME,			                         --:{as:"text",title:"Full Name"}  
+  First_NAME SHORT_NAME,	                         --:{as:"text",title:"First Name"}  
+  Last_NAME SHORT_NAME,	                         	 --:{as:"text",title:"Last Name"}  
+  Gender SHORT_NAME,                            	 --:{as:"text",title:"Gender"}  
+  
+  
+  photo 	     VARCHAR(100),						 --:{as:image}
+  photo_filename VARCHAR(100),	    				 --:{as:image_filename}  
+  
+  user_name_field SHORT_NAME,                        --:{as:"text",title:"Login Name"}  
+  user_password_field Z$T_PASSWORD,			  		 --:{as:"text",title:"Password"}  
+  FB_LINK VARCHAR(320) DEFAULT '',					 --:{as:"text",title:"Facebook timeline"}  
+  FB_updated_time TIMESTAMP DEFAULT 'now',			 --:{as:"text",title:"FB_UPDATED"} 
+  INVITED_BY FK,									 --:{as:"text",title:"Invited by"}  
+  SITE_ID    FK,									 --:{as:"text",title:"Currently visiting"}  
+  
+  
+  Country    FK,									 --:{as:"text",title:"Currently visiting"}  
+  
+  timezone	 VARCHAR(20),							 --:{as:"text"}  
+  LANDING_PAGE VARCHAR(80) DEFAULT 'Home/Guest',     --:{as:"text"}  
+  user_keys_field VARCHAR(250),						 --:{as:"text",title:"Key list"}  
+  LANGUAGE fk,										 --:{as:"text",title:"Language"}  
+
+  OWNER FK,
+  ACTIVATION_DATE TIMESTAMP DEFAULT 'now',
+  EXPIRY_DATE TIMESTAMP DEFAULT '2100/01/01',
+  FLAGS VARCHAR(20),
+  SKILL_LIST VARCHAR(250),
+  FORCE_CHANGE_ON TIMESTAMP,
+  TEAM FK,
+  IMAGE FK,
+  MOBILE_NUMBER Z$PHONE_NUMBER,						--:{as:"text",title:"Password"}  
+  EMAIL Z$EMAIL,									--:{as:"text",title:"Password"}  
+  IM VARCHAR(200)									--:{as:"text",title:"Password"}  
+  
+);
+
+#>
+
+
+<#model
+CREATE TABLE visit                       --:{as:"Table"} 
+(
+  ID  VARCHAR(40),					     --:{as:pk}
+  Session_ID FK,                         --:{as:"fk"}
+  visitor_user_ID FK,                    --:{as:"fk"}
+  invite_id FK,							 --:{as:"fk"}
+  site_ID FK,                            --:{as:"fk"}
+  arival_time TIMESTAMP DEFAULT 'now',	 --:{as:"text",title:"from"} 
+  departure_time TIMESTAMP DEFAULT 'now',--:{as:"text",title:"Until"} 
+  actions		integer default 0, 		 --:{as:"text"}
+  status		FK						 --:{as:"fk"}
+);
+CREATE INDEX IDX_visit1 ON visit (id);
+CREATE INDEX IDX_visit2 ON visit (Session_ID);
+CREATE INDEX IDX_visit3 ON visit (visitor_user_ID);
+CREATE INDEX IDX_visit4 ON visit (invite_id);
+CREATE INDEX IDX_visit5 ON visit (site_ID);
+
+#>
+
+
+<#model
+CREATE TABLE invite                     --:{as:"Table"} 
+(
+  ID  VARCHAR(40),	  				     --:{as:pk}
+  issuer_user_ID FK,                     --:{as:"fk"}
+  site_ID FK,                            --:{as:"fk"}
+  
+  Short_Message VARCHAR(100),			 --:{as:text,size:100,title:"Message"} 
+  
+  issued_time TIMESTAMP DEFAULT 'now',	 --:{as:"text",title:"invited"} 
+  expiery_time TIMESTAMP DEFAULT '2099/01/01',	 --:{as:"text",title:"expire"} 
+  status		FK							--:{as:"fk"}
+);
+
+CREATE INDEX IDX_invite1 ON invite (id);
+CREATE INDEX IDX_invite2 ON invite (issuer_user_ID);
+CREATE INDEX IDX_invite3 ON invite (site_ID);
+
+#>
+
+
+
+<#model
+
+SET TERM ^ ;
+CREATE PROCEDURE FACEBOOK_CHECK (
+    USERID VARCHAR(40),
+    EMAIL VARCHAR(40),
+    FIRST_NAME VARCHAR(40),
+    GENDER VARCHAR(40),
+    LAST_NAME VARCHAR(40),
+    LINK VARCHAR(320),
+    LOCALE VARCHAR(40),
+    NAME VARCHAR(80),
+    TIMEZONE VARCHAR(40),
+    UPDATED_TIME TIMESTAMP,
+    INVITE_ID FK, 
+	SITE_ID FK,
+	Session_ID FK)
+RETURNS (
+    INFO VARCHAR(1000) )
+AS
+BEGIN
+  
+    if (not invite_id = '') then
+       SITE_ID = (select SITE_ID from INVITE where id = :invite_id);  
+  
+    UPDATE or INSERT INTO user_table_name (NAME, FIRST_NAME, LAST_NAME, GENDER, user_name_field, PASSWD,
+        FB_LINK, INVITED_BY, SITE_ID, LANDING_PAGE, LANGUAGE, EMAIL, FB_UPDATED_TIME,
+        TIMEZONE)
+    VALUES (
+        :name, 
+        :first_name,
+        :last_name,  
+        :gender, 
+        :userID, 
+        'FACEBOOKED', 
+        :link,
+        :INVITE_ID, 
+		:SITE_ID, 
+        'Home/User', 
+        :locale, 
+        :email,  
+        :updated_time, 
+        :timezone
+    ) matching (user_name_field);
+  
+
+
+    
+  INSERT INTO VISIT ( Session_ID,VISITOR_USER_ID, INVITE_ID, SITE_ID, STATUS)
+        VALUES (
+		    :Session_ID, 
+			(select id from user_table_name where user_name_field = :userID) ,
+            :invite_id,            
+            :SITE_ID, 
+            '1'
+        );		
+	
+		
+		
+		
+  INFO='ok';
+  suspend;
+  
+END^
+SET TERM ; ^
+
+
+GRANT EXECUTE
+ ON PROCEDURE FACEBOOK_CHECK TO  SYSDBA;
+
+
+#>
+
