@@ -11,14 +11,12 @@
             "db_create": "yes",
             "url_page": true,
             "serve_port": "3000",
-			"login_first":false,
             "debugkey": ""
         },
         "win": {
             "db_create": "yes",
             "monitor_mode": "jit",
             "serve_port": "3000",
-			"login_first":false,
             "debugkey": "",
             "db": {
                 "database": "demo_db.fdb",
@@ -31,7 +29,6 @@
             "db_create": "yes",
             "monitor_mode": "jit",
             "serve_port": "3000",
-			"login_first":false,
             "note":"this has not been checked yet"
         },
         "c9": {
@@ -39,20 +36,21 @@
             "db_create": "yes",
             "url_page": true,
             "serve_port": "8080",
-			"login_first":false,
             "debugkey": ""
         },
         "prod": {
             "db_create": "yes",
             "monitor_mode": "none",
             "serve_port": "80",
-			"login_first":false,
             "db": {
                 "schema_backup": 1
             }
         }
     },
     "first": 300,
+	"run": {
+				"login_first":false
+	       },
     "db": {
         "dialect": "fb25",
         "server": "127.0.0.1",
@@ -67,10 +65,10 @@
         "schema_alter_fields": "yes",
         "schema_reorder_fields": "no",
         "platform_user_table": {
-            "user_table_name": "Z$USER",
+            "user_table_name": "Z$USER",		
             "user_display_field": "name",
             "user_pk_field": "id",
-            "user_name_field": "name",
+            "user_name_field": "login_name",
             "user_password_field": "passwd",
             "user_keys_field": "key_list"
         },

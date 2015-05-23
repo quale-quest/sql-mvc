@@ -10,6 +10,16 @@ list{
     }
 }
 
+
+list{
+    "name": "Gender",
+    "values": {
+        "0": "Male",
+        "1": "Female",
+        "": "ifblank:Male"
+    }
+}
+
 list{name=Ticked,values={
 	"1":"",
 	"":"ifblank:"

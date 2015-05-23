@@ -24,7 +24,7 @@
 		</div>
 		<div id="usermenu">
 
-			<a href="#" class="admin-user"><#print() #operator.user_name_field# #><span class="user-icon"></span></a>
+			<a href="#" class="admin-user"><#print() #operator.user_display_field# #><span class="user-icon"></span></a>
 			
 			<div class="sub-menu">
 				<ul>

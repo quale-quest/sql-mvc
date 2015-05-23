@@ -16,6 +16,8 @@
 --:{class:datestamp,Type:Text,substyle:Datepicker}  
 
 --:{class:ticked,Type:Pick,List:Ticked}  
+--:{class:gender,Type:Pick,List:Gender}  
+--:{class:yesno,Type:Pick,List:YesNo}  
 
 --:{class:image,Action:View,Type:Image,width:128,Button:"Upload File",widget:{DisplayName:NAME,Target:public},Async:{ namefield:"replace:/([\\w_$]+)//$1", filefield:"replace:/([\\w_$]+)//$1_FILENAME",somestuff:1, Target:public}}  
 --:{class:image_filename,Type:Hide,Action:Hide}  
