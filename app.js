@@ -12,6 +12,7 @@ var app_utils = require("./server/lib/app_utils");
 var app_uploads = require("./server/lib/app_uploads");
 
 var Busboy = require('busboy');
+var json_like = require("./server/lib/json_like"); 
 var zxGase;
 
 // Define a single-page client called 'main'
@@ -47,7 +48,12 @@ ss.http.route('/files?*', function (req, res) {
 	//console.log('parse ', req.session,req.url, fn);
     //var path = zx.config.async.public    
    //dont have a way to correctly read the config...i.e. this service is not related to any config... console.log('parse ', zx.config.async.public.path);
+   console.log('Serving file from /files 104503 url:',req.url,'file name :', fn);
+   if (fn=='') {
+        app_utils.serveError404(res);
+   } else {   
 	app_utils.serveBuffer(res, '', fs.readFileSync('./database/files/' + fn),0,fn); //TODO in production the s must be improved - should actually be server from a web server or CDN
+   }     
 	return true; 
 });
 
@@ -74,13 +80,19 @@ ss.http.route('/', function (req, res) {
 	organise the application source in this tree... even though the compiler puts it in the database
 	 */
 //format  http://10.0.0.254:3000/application/page?username&password
+//new  format  http://10.0.0.254:3000/app=abc,page=1,user=guest,pass=pass
+//
 //page includes the /
     var root_folder = path.resolve('./Quale/') + '/';
     var host_name = (req.headers.host.match(/(http:\/\/)?(https:\/\/)?(\w+)/) || ["", "",""])[3];    
     var home_page = (req.url.match(/([\/]\w+)([\w\W]+)/) || ["", "",""]);    
-    var Application = home_page[1]; //=host_name  to make host name based routing
-	var page_user_pass = (home_page[2].match(/([\w\/]+)\?*(\w*)&*([\w]*)/) || ["", "","",""]); 
-    console.log('serveClient host:',host_name,' home_page:', home_page,page_user_pass,' Application :',Application);
+    var decoded="{"+decodeURIComponent(req.url).substring(1) + "}";
+    console.log('serveClient decoded:',decoded);
+    var params = json_like.parse(decoded);    
+    console.log('serveClient params:',params);
+    var Application = params.app || ''; 
+
+    //console.log('serveClient host:',host_name,' home_page:', home_page,params,' Application :',Application);
     
 	db.databasePooled(root_folder, req.session.myStartID,Application, function (err , msg, dbref
 		) {
@@ -88,8 +100,25 @@ ss.http.route('/', function (req, res) {
 			console.log(err.message);
 		} else {
         
-            dbref.page_user_pass=page_user_pass;
+            dbref.params=params;
+            
+            if (params.invite) {
+                //generate the page - using guest login and an invite number
+                /* todo debug this code
+                issue 1 is rambase == dbref ??
+                issue 2 passing invite number as the master.ref to the stored procedure
+                        
+                
+                serverprocess.produce_login(req, res, ss, rambase or dbref??, '', 'guest','gu35t',
+                function (jsonstring){
+                    join the json string with the template from a file
+                    app_utils.serveBuffer(res, '',html,0,'index.html');                     
+                });
+                
+                */
+            } else  {               
             res.serveClient('main');
+            }
 		}
 
 	});

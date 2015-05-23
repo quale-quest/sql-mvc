@@ -300,6 +300,15 @@ return true;
 //var buffer=fs.readFileSync('client/static/favicon.ico'); //this would read from a database
 //app_util.serveBuffer(res,'image/x-icon',buffer);
 
+exports.serveError404 = function (response) {    
+    response.writeHead(404, {"Content-Type": "text/plain"});
+    response.write("404 Not found");
+    response.statusCode = 404;
+	response.end();
+	return;
+
+};
+
 exports.serveString = function (res, Type, Str, code) {
 	res.statusCode = code || 200;
 	res.setHeader('Content-Length', Buffer.byteLength(Str));
