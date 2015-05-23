@@ -435,7 +435,8 @@ exports.makeexpression = function (zx, line_obj, varx) {
 exports.F_F2J = function (zx, line_obj, str) {
     //console.log('exports.F_F2J  1: ',zx);
     if (zx.config.db.useUDF === "yes") return "Z$F_F2J(" + str + ")";
-    else return "'\"'||REPLACE(coalesce(" + str + ",''),'\"','\\\"')||'\"'";    
+    //else return "'\"'||REPLACE(coalesce(" + str + ",''),'\"','\\\"')||'\"'";    
+    else return "'\"'||REPLACE(REPLACE(coalesce(" + str + ",''),'\"','\\\"'),'\n','CRLF')||'\"'";    
 }
 
 exports.F_F2SQL = function (zx, line_obj, str) {
@@ -554,7 +555,7 @@ var check_pointer = function (zx,cx,fld_obj) {
     {
 
         zx.error.log_SQL_fail (zx, "no primary key for edit ","You must select(and mark) the primary key as part of the query, in order to edit a field in the table", fld_obj, zx.line_obj);
-        throw new Error("local known error");
+        throw zx.error.known_error;
     }
 	var pointerfieldindex = fld_obj.cf[0].pointer;
 	//console.log('pointerfieldindex a:',fld_obj.cf[0].pointer,cx.fields[ pointerfieldindex ]);
@@ -614,7 +615,7 @@ if (fld_obj.cf[0].pointer===undefined)
 {
 
     zx.error.log_SQL_fail (zx, "no primary key for link","You must select(and mark) the primary key as part of the query, in order to make a link on the table", fld_obj, zx.line_obj)
-    throw new Error("local known error");
+    throw zx.error.known_error;
 }
 
     var pkname = check_pointer(zx,cx,fld_obj);

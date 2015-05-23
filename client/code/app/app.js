@@ -639,6 +639,55 @@ var process_new_data = function (cx) {
 	} //switch class
 };
 
+var forFields = exports.forFields = function (object,callback) {
+//returns true and stops if a match is found - acts like arr.some
+
+    if (Array.isArray(object))         
+        return object.some(callback);
+        
+    for (var key in object) {
+        if (object.hasOwnProperty(key)) {
+            if (callback( object[key],key,object)===true) return;
+        }
+    }                    
+    return false;
+}   
+
+
+var indent = exports.indent = function (dent) {
+	var str = '';
+	for (var i = 0; i < dent; ++i) {
+		str += ' ';
+	}
+	return str;
+};
+
+
+var replace_string_in_object = function (object,depth) {
+//returns true and stops if a match is found - acts like arr.some
+    if (!depth) depth=0;
+    if (depth>30) return;
+    forFields(object, function (field, key,obj1) {        
+        if (typeof field === 'object') {
+            //console.log(indent(depth)+'',key,':');
+            //console.log(indent(depth)+'  { ');
+            replace_string_in_object(field,depth+1)
+            //console.log(indent(depth)+'  } //',key);
+        }else{
+            if (typeof field === 'string') {
+                //console.log(indent(depth)+' ==',typeof field ,key,(String(field)));
+                var newstr = field.replace(/CRLF/g, '\n');   
+                obj1[key]=newstr;
+                //console.log(indent(depth)+' ->',typeof field ,key,newstr);
+            }    
+            
+        }
+    });
+                  
+    return false;
+}                        
+
+
 ss.event.on('newData', function (div, message) {
 	//object queue and dispatcher
 	//first we will just use it locally , later we will cache the header globally to late/ajax data can also be parsed
@@ -655,6 +704,7 @@ ss.event.on('newData', function (div, message) {
 	//console.log('client got newData',message);
 	//$('#content').html(message);
 	var o = JSON.parse(message);
+    replace_string_in_object(o,0);
 
 	//var zxFormater = require('/zxFormater.js');
 	if (o !== null)
@@ -848,7 +898,8 @@ if (0) {
 
 //
 // sharing code between modules by exporting function
-exports.sendLogin = function (LoginName, LoginInput, Page, cb) {
+sendLogin = exports.sendLogin = function (LoginName, LoginInput, Page, cb) {
+    
 	if (loginvalid(LoginName) && loginvalid(LoginInput)) {
 		return ss.rpc('ServerProcess.LoginAction', LoginName, LoginInput,Page, cb);
 	} else {
@@ -856,7 +907,7 @@ exports.sendLogin = function (LoginName, LoginInput, Page, cb) {
 	}
 };
 
-// during initial debug auto-login so we can debug tables
+// After load attempt initial auto loging - configured from server Quale/Config.json
 $(function () {
     ss.rpc('ServerProcess.connected');
 });
