@@ -49,7 +49,7 @@
     },
     "first": 300,
 	"run": {
-				"login_first":true
+				"login_first":false
 	       },
     "db": {
         "dialect": "fb25",
