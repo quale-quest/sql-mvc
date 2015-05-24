@@ -147,6 +147,15 @@ var start_page_compiler = function (zx) {
         zx.linkfiles = [];
 }
 
+function getDirectories(srcpath,Filter) {
+  return fs.readdirSync(srcpath).filter(function(file) {
+    return fs.statSync(path.join(srcpath, file)).isDirectory();
+  });
+  
+  console.log('getFiles:' + getFiles('.', null, /widget/gi));
+}
+
+
  var seq_main = function () {
 	var cmd,
 	fileobj,
@@ -177,7 +186,6 @@ var start_page_compiler = function (zx) {
         start_page_compiler(zx);
 
         zx.pass=0;
-        zx.includeQualeInroot_folder=0;
 		
 		zx.depends = {};
         zx.children = {};
@@ -185,15 +193,60 @@ var start_page_compiler = function (zx) {
 		zx.BlockIndex = 0;
         
         zx.root_folder = process.cwd()+ path.sep;// path.resolve(path.join('.'+path.sep+'Quale'+path.sep)) + path.sep;
-        if (zx.includeQualeInroot_folder)
-            zx.root_folder = path.resolve(path.join('.'+path.sep+'Quale'+path.sep)) + path.sep;
+
+        
+        zx.config = db.load_config(zx.root_folder, '');//always in Quale/Config
         
 		console.log('zx.root_folder :', zx.root_folder);
-		zx.build_roots = ["Quale/Config", "Quale/Custom", "Quale/Standard", "Quale/Lib", "Quale",""]; //last one MUST be "" 
-        if (zx.includeQualeInroot_folder)   
-            zx.build_roots = ["Config", "Custom", "Standard", "Lib", ""];
+		zx.build_roots = ["Quale/Config", "Quale/Custom", "Quale/Standard", "Quale/Lib"]; 
+        
+        //order find first file
+        /*  Application folders :   
+                    Sandbox,   // File in development that is intended to be deleted soon
+                    Custom,    // Files permanently customised for this installation
+                    Standard,  //Where the main standard app goes
+                    
+            Libraries
+                    Lib     Libraries provided by a package
+                    
+            With in the folders we have a app structure and the files are over layed to form one virtual folder structure
+                Home
+                All
+                Elements
+                FootMenu
+                MainMenu
+                Models
+                Controllers
+                Layout
+                Popup
+                    
+        */
+        
+        
+        //Find Installable drop-in folders
+        fileutils.getDropinPackages('node_modules/',/sql-mvc/, zx.build_roots);
+        
+        //Add plug-in folders
+        
+        zx.build_roots.push(""); //last one MUST be "" 
+
+
+        console.error("Quale Search path ",zx.build_roots);
+        console.error("==================================================================== ");
+        
 		//if dev mode zx.build_roots.unshift("sandbox");
 		zx.output_folder = path.resolve('./output/') +path.sep;
+        
+        //must be created early so we have place to write errors to
+		//try {remove.removeSync(zx.output_folder);} catch (err) {}
+		try {fs.mkdirSync(zx.output_folder);
+		} catch (err) {
+          if (err.code!=='EEXIST'){
+            console.error("cannot create output folder",err);
+            process.exit(2);
+          }
+		}
+        
         zx.hogan_folder = path.resolve('./client/templates/') +path.sep;
         
 		zx.hogan_folder_compiled =  path.resolve('./database/files/') +path.sep;
@@ -295,17 +348,7 @@ var start_page_compiler = function (zx) {
 
 		zx.queue_file_to_be_compiled = queue_file_to_be_compiled;
 
-        //must be created early so we have place to write errors to
-		var output_folder='./Output/';
-		//try {remove.removeSync(output_folder);} catch (err) {}
-		try {fs.mkdirSync(output_folder);
-		} catch (err) {
-          if (err.code!=='EEXIST'){
-            console.error("cannot create output folder",err);
-            process.exit(2);
-          }
-		}
-		
+
 
 		if (zx.pages.length === 0) {
 
@@ -470,7 +513,7 @@ var seq_page = function (zx) {
 		zx.file_stack = [];
 		delete zx.err;
 
-		zx.config = db.load_config(zx.root_folder, zx.pages[zx.pgi].name);
+		//zx.config = db.load_config(zx.root_folder, zx.pages[zx.pgi].name);
 		//console.warn('zx.config located : ',zx.config);
 		//process.exit(2);
 

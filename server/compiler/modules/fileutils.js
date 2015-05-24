@@ -209,7 +209,44 @@ function inheritFiles(dir, files_, root, regex_prefix, regex_extn, debug) { //ba
 	return files_;
 }
 
+
+var getDropinPackages = exports.getDropinPackages = function(dir, dir_regex, files_) { //regular recursive search
+	files_ = files_ || [];
+	if (typeof files_ === 'undefined')
+		files_ = [];
+	var files = fs.readdirSync(dir);
+    //console.log('getFiles found:',files);
+	for (var i in files) { //is this ok??? should it not be foreach???  TODO
+		if (!files.hasOwnProperty(i))
+			continue;
+		var name = files[i];
+        if (dir_regex && !dir_regex.test(name)) continue;
+            
+		//var pathname = path.join(dir , name);
+        var libname = path.join(dir , name, 'Quale', 'Lib');
+        try {
+            if (fs.statSync(libname).isDirectory()) {
+                console.log('getFiles pathname:',libname);
+                files_.push(libname);           
+            } else {
+            }
+        } catch (err) {}
+	}
+    
+    //console.log('getFiles found list:',files_);
+	return files_;
+}
+
 /*function UnitTest() {
 console.log('getFiles:' + getFiles('.', null, /widget/gi));
 console.log('\n got inheritFiles:' + inheritFiles(path.resolve('.'), null, path.resolve('../..'), /.json/gi));
-}*/
+}
+
+console.log('getFiles:' + getDropinPackages('node_modules/',/sql-mvc/, null));
+process.exit(2);
+
+*/
+
+
+
+
