@@ -146,7 +146,8 @@ var start_page_compiler = function (zx) {
         zx.line_obj={};
         zx.linkfiles = [];
 }
-var seq_main = function () {
+
+ var seq_main = function () {
 	var cmd,
 	fileobj,
 	filelist,
@@ -175,15 +176,22 @@ var seq_main = function () {
 		zx.debug_conditional_structure = 0;
         start_page_compiler(zx);
 
-
+        zx.pass=0;
+        zx.includeQualeInroot_folder=0;
 		
 		zx.depends = {};
         zx.children = {};
 		zx.mainfiles = [];
 		zx.BlockIndex = 0;
-		zx.root_folder = path.resolve(path.join('.'+path.sep+'Quale'+path.sep)) + path.sep;
-		//console.log('zx.root_folder :', zx.root_folder);
-		zx.build_roots = ["Config", "Custom", "Standard", "Lib", ""];
+        
+        zx.root_folder = process.cwd()+ path.sep;// path.resolve(path.join('.'+path.sep+'Quale'+path.sep)) + path.sep;
+        if (zx.includeQualeInroot_folder)
+            zx.root_folder = path.resolve(path.join('.'+path.sep+'Quale'+path.sep)) + path.sep;
+        
+		console.log('zx.root_folder :', zx.root_folder);
+		zx.build_roots = ["Quale/Config", "Quale/Custom", "Quale/Standard", "Quale/Lib", "Quale",""]; //last one MUST be "" 
+        if (zx.includeQualeInroot_folder)   
+            zx.build_roots = ["Config", "Custom", "Standard", "Lib", ""];
 		//if dev mode zx.build_roots.unshift("sandbox");
 		zx.output_folder = path.resolve('./output/') +path.sep;
         zx.hogan_folder = path.resolve('./client/templates/') +path.sep;
@@ -287,15 +295,17 @@ var seq_main = function () {
 
 		zx.queue_file_to_be_compiled = queue_file_to_be_compiled;
 
-		/* var output_folder='./Output/';
-
-		try {remove.removeSync(output_folder);} catch (err) {}
+        //must be created early so we have place to write errors to
+		var output_folder='./Output/';
+		//try {remove.removeSync(output_folder);} catch (err) {}
 		try {fs.mkdirSync(output_folder);
 		} catch (err) {
-		console.error("cannot create output folder",err);
-		process.exit(2);
+          if (err.code!=='EEXIST'){
+            console.error("cannot create output folder",err);
+            process.exit(2);
+          }
 		}
-		 */
+		
 
 		if (zx.pages.length === 0) {
 
@@ -488,7 +498,7 @@ var seq_page = function (zx) {
            
         
 		var fn = fileutils.locatefile(zx, zx.pages[zx.pgi].name, zx.root_folder, "Compile " + zx.pages[zx.pgi].name, 120022);
-		//console.warn('file located : ',fn);
+		console.warn('file located : ',fn);
 
 		zx.model_files = get_model_files(zx, fn);
 
@@ -503,7 +513,7 @@ var seq_page = function (zx) {
 	if (fn === "") {
 		console.warn('file not found ', zx.Current_rel_file, fn);
 		zx.error.log_nofile_warning(zx, "InputFileNameBlank:", "", 0);
-		return;
+		return false;
 		//process.exit(34);
 	} else {
 		zx.pushArray(zx.mainfiles, zx.pages[zx.pgi]);
@@ -677,19 +687,23 @@ var seq_page = function (zx) {
 		}
 	}
 
-	return;
+	return true;
 };
 
 var deepcopy = require('deepcopy');
 var seq_pages = function (zx) {
 	while (zx.pgi < zx.pages.length) {
 		while (zx.pgi < zx.pages.length) {
-
+            var ok;
 			try {
-				seq_page(zx);
+				ok = seq_page(zx);
 			} catch (e) {
 				zx.error.caught_exception(zx, e, " iterating pages mark-114230 ");
 			}
+            if (!ok)     {
+                    console.log('\n...........................................No file\n');
+                    throw new Error("no file - known error");                
+            }                
 			zx.eachplugin(zx, "done_page", zx.pages[zx.pgi]);
 
 			zx.pgi++;
@@ -744,9 +758,9 @@ if (!fs.existsSync("Quale")) {
 		throw e;
 	}
 
-	//console.log("shuting_down");
+	console.log("shuting_down");
 	zx.eachplugin(zx, "shut_down", 0);
-	//console.log("shut_down");
+	console.log("shut_down");
 	zx.dbu.exit();
 //});
 //eof

@@ -83,7 +83,7 @@ ss.http.route('/', function (req, res) {
 //new  format  http://10.0.0.254:3000/app=abc,page=1,user=guest,pass=pass
 //
 //page includes the /
-    var root_folder = path.resolve('./Quale/') + '/';
+    var root_folder = path.resolve('./') + '/';
     var host_name = (req.headers.host.match(/(http:\/\/)?(https:\/\/)?(\w+)/) || ["", "",""])[3];    
     var home_page = (req.url.match(/([\/]\w+)([\w\W]+)/) || ["", "",""]);    
     var decoded="{"+decodeURIComponent(req.url).substring(1) + "}";

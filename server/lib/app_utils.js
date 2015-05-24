@@ -94,14 +94,17 @@ exports.call_compiler = function () {
     jitJobsByName[jitInProgress.job.fn] = false;    
     ss.api.publish.all('BuildStarted',  jitInProgress.job.fn,jitInProgress.job.sn );
     
-    console.log('compiler job started :',jitInProgress.job.fn);
+    console.log('compiler job started :',process.cwd(),__dirname);
+    //console.log('compiler job started :',jitInProgress.job.fn);
+    var compiler = __dirname+'/../../server/compiler/compile.js';
+    //console.log('compiler compiler :',compiler,fs.existsSync(compiler));
     
     var command;
         if (jitInProgress.job.fn==='all') {
             rimraf.sync('output');
-            command = spawn('node',['server/compiler/compile.js','all']);
+            command = spawn('node',[compiler,'all']);
         } else {
-			command = spawn('node',['server/compiler/compile.js','index',jitInProgress.job.fn]);
+			command = spawn('node',[compiler,'index',jitInProgress.job.fn]);
             }
             
 			var output = [];
@@ -139,7 +142,7 @@ exports.call_compiler = function () {
                         
 				} else {
 
-					console.log('compiler error :');
+					console.log('compiler error :',code);
                     if (jitInProgress.job.cb)
                         jitInProgress.job.cb('error')
 				}

@@ -18,13 +18,14 @@ var locateclosestbuildroot = exports.locateclosestbuildroot = function (zx, fn) 
 	zx.build_roots.forEach(function (root_name) {
 		var build_rel = path.resolve(path.join(zx.root_folder, root_name));
 		var rel = path.relative(build_rel, fn);
-		//console.log('    relative   : from ',zx.root_folder,' via:',root_name,' to:',fn, ' is:', rel);
+		//if (zx.pass<1)  console.log('    relative  154240 : from ',zx.root_folder,' via:',root_name,' to:',fn, ' is:', rel);
 		if (rel.length < filename.length) {
 			filename = rel;
 			build_root = root_name;
-			//console.log('    locateclosestbuildroot   :',filename,'p:',build_root,':' );
+			//console.log('    locateclosestbuildroot thus far  :',filename,'p:',build_root,':' );
 		}
 	});
+    //console.log('    locateclosestbuildroot final  :',filename,'p:',build_root,':' );
 	return {
 		filename : filename,
 		build_root : build_root
@@ -43,6 +44,8 @@ exports.locatefile = function (zx, fn, current_page, line_obj, trce) {
 		return "";
 	}
 
+    
+    //if (zx.pass<1) console.log(' file name   154245 :',fn );
 	if (fn.substring(0, 2) === "//") //abs path
 	{
 		fn = fn.substring(2);
@@ -51,15 +54,21 @@ exports.locatefile = function (zx, fn, current_page, line_obj, trce) {
 
 	//backward comparable with ini ~ format
 	fn = zx.dbg.adapt_filename(fn);
-
-	var br = locateclosestbuildroot(zx, current_page.replace(zx.app_extn, '')); //path.join(zx.root_folder,fn));
-	//console.log(' locateclosestbuildroot    :',br ,trce);
+    
+    //if (zx.pass<1) console.log(' file name   154246 :',fn );
+    //if (zx.pass<1) console.log('current_page  154246 :',current_page );
+    //current_page is now zx.root_folder
+	// dont see the point of this - 
+    var br = locateclosestbuildroot(zx, current_page.replace(zx.app_extn, '')); //path.join(zx.root_folder,fn));
+	//if (zx.pass<1) console.log(' locateclosestbuildroot    :',br ,fn,' current_page:',current_page);
+    //if (zx.pass<1) console.log(' file name    171843 :',fn );//, br.filename);
+    //process.exit(2);
 	zx.build_roots.some(function (root_name)
 		//var root_name = "../../lib";
 	{
-		//console.log(' file name     :',fn );
-		var search_path = path.join(zx.root_folder, root_name, br.filename);
-		//console.log('current_page   :',current_page,search_path );
+		
+		var search_path = path.join(zx.root_folder, root_name,br.filename);
+		//if (zx.pass<1) console.log('search_path 154246  :',search_path );
 
 		//var rel = path.relative(zx.root_folder, search_path);
 		//console.log('relative   :',rel );
@@ -69,14 +78,15 @@ exports.locatefile = function (zx, fn, current_page, line_obj, trce) {
 
 
 		//console.log('zx.root_folder :',zx.root_folder );
-		//console.log('lengths : ',search_path.length,build_rel.length,search_path,build_rel );
+		//console.log('lengths 154246: ',search_path.length,build_rel.length,search_path,build_rel );
 		while (search_path.length >= build_rel.length - 1) {
 			var ffn = path.join(search_path, fn);
 			//TODO have debug mode that shows this to the user: if he cant figure out why his files arnt being seen
-			//console.log('    trying: ',ffn+zx.app_extn );
+			//console.log('    trying 171021: ',ffn+zx.app_extn );
 			if (fs.existsSync(ffn + zx.app_extn)) {
 				zx.Current_rel_file = path.relative(build_rel, ffn);
-				//console.log('locatefile Found   :',ffn );
+				//console.log('locatefile Found 171020  :',ffn );
+                //process.exit(2);
 				//console.log('               :',zx.Current_rel_file );
 
 

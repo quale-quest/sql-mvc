@@ -46,11 +46,12 @@ exports.load_config = function (root_folder, Application) {
 	if (Application === '/')
 		Application = '/Home';
         
-    var initial   =root_folder + 'Config' + Application; 
+    var initial   =root_folder + 'Quale/Config' + Application; 
+
 	var fileContents = '',
 	search = path.resolve(initial);
 
-	//console.log('Inital Application is',initial, Application,' located at:',search);
+	console.log('Inital Application is',initial, Application,' located at:',search);
 	while (fileContents === "" && search !== '/') {
 		try {
 			fileContents = fs.readFileSync(search + '/config.json');            
@@ -72,7 +73,8 @@ exports.check_run_mode = function (str) {
 	try {
 		config = JSON.parse(str);
 	} catch (e) {
-		console.log("WARN Error parsing config.quicc :", e);
+		console.log("WARN Error parsing config.quicc 175908 :", e, 'string:',str);
+        console.trace("Stack!")
 		process.exit(2);
 	}
 
