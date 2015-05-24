@@ -1,7 +1,7 @@
 
 <#:model()
 
-CREATE TABLE user_table_name                         --:{name:facebook_user,as:"Table"} 
+CREATE_EXTEND facebook TABLE user_table_name                         --:{name:facebook_user,as:"Table"} 
 (
   user_pk_field PK,                                  --:{as:"pk"}
   NAME LONG_NAME,			                         --:{as:"text",title:"Full Name"}  
@@ -155,9 +155,6 @@ BEGIN
 END^
 SET TERM ; ^
 
-
-GRANT EXECUTE
- ON PROCEDURE FACEBOOK_CHECK TO  SYSDBA;
 
 
 #>
