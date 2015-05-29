@@ -254,6 +254,15 @@ exports.unblock = function (zx, line_obj,comment) {
 	return line_obj;
 };
 
+exports.emit_log_out = function (zx, line_obj,comment) {
+    //console.trace();
+	emit(zx, line_obj, "info='logout';",comment);
+
+	return line_obj;
+};
+
+
+
 exports.assignsqrytovar = function (zx, line_obj) {
 	//compiles sql
 
@@ -939,7 +948,7 @@ exports.start_pass = function (zx /*, line_objects*/
 
 	zx.sql.testhead =
 		"\n\n\nset term #;\n" +
-		"EXECUTE BLOCK RETURNS  (cid  integer, res blob SUB_TYPE 1)AS \n" +
+		"EXECUTE BLOCK RETURNS  (cid  integer,info varchar(200), res blob SUB_TYPE 1)AS \n" +
 		"declare pki integer=12345678;\n" +
 		"declare pkf integer=12345678;\n" +
 		"declare Z$SESSIONID varchar(40)='12345678';\n\n\n";

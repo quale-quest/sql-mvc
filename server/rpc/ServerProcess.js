@@ -148,6 +148,12 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
                                 rambase.current_script = result[0].scriptnamed;
                                 //todo filter developers on some key value - so only a small subset of users can to live editing of source
                                 db.developers[message.session] = result[0].scriptnamed;
+
+                                if (result[0].info === 'logout') {
+                                    rambase.logged_out = true;
+                                    //console.log('db - logged_out message for :', rambase);
+                                } else rambase.logged_out = false;   
+
                                 
                                 //console.log('=================================rambase.current_cid> ',rambase.current_cid );
                                 if (cb) cb(newdata)
@@ -272,6 +278,7 @@ function lpad(input, len, chr) {
 }
 
 function par_format(type, message) {
+    message = '' + message;
 	if (message.length < 95) {
 		type = type.toLowerCase();
 		return type + lpad(message.length, 2, '0') + message;
@@ -328,7 +335,7 @@ exports.actions = function (req, res, ss) {
             rambase = db.locate(req.session.myStartID);
             //console.log('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<rambase.current_cid  sp :',rambase.current_cid);
 
-            if (!rambase.current_cid) {
+            if (!rambase.current_cid ||  rambase.logged_out) {
                 //or go direct to the app as guest user
                 //console.log('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<rambase.conf  sp :',rambase.conf);
                 if (rambase.conf.run.login_first)
@@ -465,25 +472,5 @@ exports.actions = function (req, res, ss) {
 
 };
 
-/* 
-//Test facebook procedure
-setTimeout(function () {       
-var myStartID='test-sessionid123';
-var Login_response = {authResponse:{userID:'fbid'}};
-var response={};
-db.databasePooled(path.resolve('./Quale/') + '/', myStartID,'', function (){
-            var rambase = db.locate(myStartID);
-            rambase.params={};
-            db.connect_if_needed(
-              rambase,
-              function () { exports.facebook_check(rambase,Login_response,response,
-                        function () {//console.log('exports.facebook_checked 210655 :',req.session.myStartID,Login_response,response, rambase);
-                        var User = Login_response.authResponse.userID; 
-                        console.log('exports.facebook_checked 1210655 :',User);
-                        //produce_login(req, res, ss, rambase, '', User,'FACEBOOKED');
-                        }); 
-              });         
-});
-},2000);
-*/    
+    
     

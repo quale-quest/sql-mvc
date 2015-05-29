@@ -56,7 +56,8 @@ exports.tags=[
 {name:"elsequery",man_page:"Every ifquery may have one optional elsequery."},
 {name:"unblock",man_page:"Alias for endquery."},
 {name:"endquery",man_page:"Every ifquery must have one endquery to signify the end of the conditional."},
-{name:"include",man_page:"Include a quicc file from the inheretance tree."}
+{name:"include",man_page:"Include a quicc file from the inheritance tree."},
+{name:"logout",man_page:"Logout the current session."}
 ];
  
  var debug=false;
@@ -305,8 +306,15 @@ exports.tag_endquery = exports.tag_unblock = function (zx, o) {
 	exports.explicid_unblock(zx, o);
 };
 
+
+exports.tag_logout = function (zx, line_obj) {
+    return zx.dbg.emit_log_out(zx, line_obj);
+};
+
 exports.tag_include = function (/*zx, o*/
 ) {};
+
+
 
 exports.start_item = function (zx, line_obj) {
 	//if (active_pass!=zx.pass) return true;
