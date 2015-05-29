@@ -668,6 +668,47 @@ var stringify_2 = exports.stringify_2 = function (object,depth) {
     return false;
 }                        
 
+
+var forFieldsRecursively = exports.forFieldsRecursively = function (object,callback,depth) {
+//calls with each base type
+    if (!depth) depth=0;
+    forFields(object, function (field, key) {
+        if (typeof field === 'object' || Array.isArray(field)) {
+            forFieldsRecursively(field,callback,depth+1);
+        }else{
+            callback(field,key,object);
+        }
+    });                  
+    return false;
+}  
+
+var forEveryString = exports.forEveryString = function (object,callback) {
+    forFieldsRecursively(object, function (field, key) {
+        if (typeof field === 'string') {
+                callback(field,key,object);
+                //console.log(indent(depth)+' ==',typeof field ,key,(String(field)));
+                var newstr = field.replace(/CRLF/g, '\n');   
+                obj1[key]=newstr;
+                //console.log(indent(depth)+' ->',typeof field ,key,newstr);
+            }  
+    });        
+    return false;
+} 
+
+var ReplaceForEveryString = exports.ReplaceForEveryString = function (object,regex,str) {
+    //Redbin: there is code in replace_string_in_object that can be moved to a common library using this
+    forEveryString(object, function (field, key) {
+                //console.log(indent(depth)+' ==',typeof field ,key,(String(field)));
+                var newstr = field.replace(regex,str);   
+                obj1[key]=newstr;
+                //console.log(indent(depth)+' ->',typeof field ,key,newstr);              
+    });        
+    return false;
+} 
+
+            
+
+
 var copy_params = exports.copy_params = function (cx,obj,depth) {
 //copies only shallow parameters
     if (!depth) depth=0;

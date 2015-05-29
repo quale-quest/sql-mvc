@@ -351,7 +351,8 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
             bt=LOWER(bt);
                  if (bt='u') THEN  usern=val ;       
             else if (bt='p') THEN  passw=val ;  
-			else if (bt='l') THEN  currentpage=val ;			
+			else if (bt='l') THEN  currentpage=val ;
+			else if (bt='t') THEN  Openstr=val ;	-- used as temporary storage 		
             else if (bt='c') THEN  update_cid=val ;  -- used as temporary storage                 
             else if (bt='k') THEN  i=cast(val as integer); /*Key field update - used as temporary storage                 */
             else if (bt='v') THEN /*Key value update - temp cache*/
@@ -413,7 +414,11 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
                             --trigger based validations will emit erors into a log that can be fed back to the user
                             
                         end  
-                     END                     
+                     END       
+            else if (bt='r') THEN /*parameter value from first load Openstr=name*/
+                     BEGIN					 					
+						UPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES ('params-'||:SESSION||'-'||:Openstr,:val) matching (REF);
+                     END  					 
             else c=1001;
                   
       END

@@ -150,6 +150,7 @@ thisIsAnObject = -10,
 thisIsAnArray = -11,
 thisIsAnString = -12, //intentional
 SwitchOnValue = "on",
+emptystringmark='emptystringmark114101',
 
 looking_for_key_or_value = -1;
 
@@ -275,12 +276,13 @@ var parse3 = function (text, extra_mode_par) {
 		right--; //compensate decrement for the increment at the end of the loop
 	}
 
-	var sub_parse3 = function (closing, current_object) {
+	var sub_parse3 = function (closing, current_object) {        
 		if (debug)
-			console.log('sub_parse3 start with :', left, right, closing, current_object);
+			console.trace('sub_parse3 start with :', left, right, closing, current_object);
 		var key_or_value,
 		keyname = null;
 		var keynameQuoted = false;
+        var gotAssigner=false;
 		var scan_mode = looking_for_key_or_value;
 		var nonSpaceCount = 0;
 		var arrayObj = 0;
@@ -289,7 +291,7 @@ var parse3 = function (text, extra_mode_par) {
 		var string_recieved = function (value, quoted) {
 			var ival;
 			if (debug)
-				console.log('string_recieved :', keyname, value, typeof value, quoted);
+				console.trace('string_recieved :', keyname, value,' type of:', typeof value, quoted);
 
 			if (keyname === 'debug_json_like')
 				debug = true;
@@ -300,7 +302,7 @@ var parse3 = function (text, extra_mode_par) {
 			if (!quoted) {
 				value = value.trim();
 
-				if (value === "true")
+                if (value === "true")
 					value = true;
 				else {
 					try {
@@ -320,9 +322,11 @@ var parse3 = function (text, extra_mode_par) {
 			}
 
 			if (keyname !== null) { //already has a key so this is the end of the value
+                if (value===emptystringmark) value='';
 				current_object[keyname] = value;
 				keyname = null;
 				keynameQuoted = false;
+                gotAssigner=false;
 			} else { //this must be the end of the key-name and start of the value in a te"xt"   short-cut
 				if (typeof value != "number") {
 					keyname = value;
@@ -334,7 +338,7 @@ var parse3 = function (text, extra_mode_par) {
 			arrayObj = 0;
 			if (debug)
 				console.log('string_recieved done :', keyname, value);
-
+            
 		};
 		//=========function:
 		if (debug)
@@ -372,14 +376,19 @@ var parse3 = function (text, extra_mode_par) {
 					nonSpaceCount++;
 				if (debug)
 					console.log('parse3 a:', str.charAt(right), closing, keyname, left, right, chr, ':', nonSpaceCount);
-
+            
 				if (closing === chr) { //closer found
 					//..what to do with it 		//I have already been doing it
 					//it could be there is no key or value - just a close
 					if (left === right) { //just a close
 						if (keyname !== null) {
+                            //console.log('parse3 no value on closing 082220:',gotAssigner);
+                            if (gotAssigner) key_or_value = emptystringmark;
+                              else {
 							key_or_value = SwitchOnValue;
 							arrayObj = 1;
+                            }
+
 							string_recieved(key_or_value, false);
 						}
 					} else {
@@ -411,11 +420,12 @@ var parse3 = function (text, extra_mode_par) {
 
 					key_or_value = str.substring(left, right - 1 + 1);
 					if (debug)
-						console.log('parse3 isQoute nspc>0   :', left, right, chr, ':', str.charAt(right), ("{" + keyname + ":" + key_or_value + "}"), str);
-					string_recieved(key_or_value, false);
+						console.log('parse3 isQoute nspc>0   :', left, right, chr, ':', str.charAt(right), ("{" + keyname + ":" + key_or_value + "}"), str,nonSpaceCount);
+				    string_recieved(key_or_value, false);
 					//continues at mark1
 				}
 				if (isAssigner(chr)) {
+                    gotAssigner=true;
 					key_or_value = str.substring(left, right - 1 + 1);
 					if (debug)
 						console.log('parse3 isAssigner     :', left, right, chr, ':', str.charAt(right), '{', keyname, ":", key_or_value, "}", o);
@@ -453,8 +463,11 @@ var parse3 = function (text, extra_mode_par) {
 					} else {
 						//this is not a quoted value
 						if (left === right) {
-							key_or_value = SwitchOnValue;
-							arrayObj = 1;
+                             if (gotAssigner) key_or_value = emptystringmark;
+                              else {                            
+                                key_or_value = SwitchOnValue;
+                                arrayObj = 1;
+                              }
 						}
 
 						string_recieved(key_or_value, false);
@@ -657,15 +670,22 @@ test(reference, "Simple values  00c", "{obj:1}");
 	test(reference, "Simple obj 03a", "[obj'sub']");
 	test(reference, "Simple obj 03b", "['obj'sub ]");
 	test(reference, "Simple obj 03c", '["obj"sub ]');
-	reference = {
-		obj : "sub"
-	};
 	test(reference, "Simple obj 03d", "[obj'sub']");
 
 	test(reference, "Simple obj 04a", "[{obj: sub}]");
 	test(reference, "Simple obj 04b", "[[obj: sub]]");
 	test(reference, "Simple obj 04b", "[(obj: sub)]");
 
+    reference = {
+		obj : "",
+        enx : ""
+	};    
+    test(reference, "Simple values  02f", "{obj:'',enx:''}");    
+    test(reference, "Simple values  02h", "{obj:'',enx:}");    
+    test(reference, "Simple values  02g", "{obj:,enx:''}"); 
+    
+    
+    
 	reference = {
 		array : ["obj"],
 		obj : "on"
@@ -799,7 +819,7 @@ test(reference, "Simple values  00c", "{obj:1}");
 	test(reference, "Simple obj 90a", "(obj'sub)"); //this would be invalid   ==  "obj": "sub)"
 
 
-	console.log('Pass unit_test');
+	console.log('Pass json_like unit_test');
 }
 
 parse3countMax = 99999;

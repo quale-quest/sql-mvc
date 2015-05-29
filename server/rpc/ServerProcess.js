@@ -41,7 +41,7 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
 		message = msg;
 		message.session = session;
 		if (msg.update !== undefined) { //only the login command currently updates directly
-			update = msg.update;
+			update += msg.update;
 		} else {
 			if (msg.typ === 'change') {
 				if (last_cid !== message.cid) {
@@ -51,6 +51,10 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
 				update += par_format('k', message.pkf);
 				update += par_format('v', message.valu);
 			}
+			if (msg.typ === 'params') {
+				update += par_format('t', message.key);
+				update += par_format('r', message.valu);
+			}            
 		}
 	});
 
@@ -162,6 +166,27 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
 }
 
 
+
+
+exports.push_passed_params = function (rambase,messagelist) {
+//	var message = [];
+         console.log('push_passed_params params 183135 :',rambase.params);            
+        app_utils.forFields(rambase.params, function (field, key) {  
+            if (key !== 'object_ended_at') {        
+            
+            	var message = {
+					typ : 'params',
+					key : '' +  key,
+					valu: '' + field
+                    };	
+               messagelist.push(message);  
+               console.log('params 183135 :',key,field);
+            }
+        
+        });
+}
+
+
 exports.facebook_check = function (rambase,Login_response,response,cb) {
 
 	//input='SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p041257x00end') p;
@@ -237,7 +262,6 @@ exports.facebook_check = function (rambase,Login_response,response,cb) {
 	}); //tr
 }
 
-
 function lpad(input, len, chr) {
 	var str = input.toString();
 	chr = chr || " ";
@@ -281,8 +305,10 @@ var produce_login = exports.produce_login = function (req, res, ss, rambase, Pag
                 
                 //this could be a security issue so maybe only allow it in dev
 				if (Page&&rambase.conf.run.url_page) message.update += par_format('l', Page);
-				
-				messagelist.push(message);
+					                
+                exports.push_passed_params(rambase,messagelist);
+
+                messagelist.push(message);
 				exports.produce_div(req, res, ss, rambase, messagelist, req.session.myStartID,0,cb);
 				//exports.produce_div(req, res, ss,rambase,message);
 }

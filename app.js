@@ -87,6 +87,9 @@ ss.http.route('/', function (req, res) {
     var host_name = (req.headers.host.match(/(http:\/\/)?(https:\/\/)?(\w+)/) || ["", "",""])[3];    
     var home_page = (req.url.match(/([\/]\w+)([\w\W]+)/) || ["", "",""]);    
     var decoded="{"+decodeURIComponent(req.url).substring(1) + "}";
+    decoded = decoded.replace(/&/g,',');
+    decoded = decoded.replace(/\?/g,'');
+
     console.log('serveClient decoded:',decoded);
     var params = json_like.parse(decoded);    
     console.log('serveClient params:',params);

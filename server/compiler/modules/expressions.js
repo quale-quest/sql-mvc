@@ -123,6 +123,11 @@ var TagTypes =
 		"method" : "getter",
 		"addback" : false
 	}, {
+		"open" : "params.",
+		"close" : "",
+		"method" : "getter",
+		"addback" : false
+	}, {        
 		"open" : "system.",
 		"close" : "",
 		"method" : "getter",

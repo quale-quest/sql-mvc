@@ -130,7 +130,7 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 				process.exit(2);
 			}
 			rambase.user = (str.match(/^ISC_USER=\"*(\w+)/im) || ["", "sysdba"])[1];
-			rambase.password = (str.match(/^ISC_PASSWORD=\"*(\w+)/im) || ["", "masterkey"])[1]; //old default
+            rambase.password = (str.match(/^ISC_PASSWORD=\"*([\w\.]+)/im) || ["", "masterkey"])[1]; //old default
 
 			//console.log("Using Password file name set in conf.db.authfile as : ", conf.db.authfile, " retrieved as user ", rambase.user);
 		} else {
@@ -159,6 +159,10 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 			if (err) {
 
 				console.log(err.message);
+                if (err.message.match(/user name and password are not defined/)) {
+                    console.log('Check the databse config and passwords :', JSON.stringify(rambase.connection_string,null,4));
+                    process.exit(2);
+                }
 
 				if (callback !== undefined)
 					callback(err, "Error");

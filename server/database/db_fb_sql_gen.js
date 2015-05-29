@@ -1050,6 +1050,10 @@ var get_variable_table_expression = function (v) {
 			where = "'session-'||:operator$ref||'-'||:z$sessionid||'-" + v.field + "'";
 		}
 		break;
+	case 'params': {
+			where = "'params-'||:z$sessionid||'-" + v.field + "'";
+		}
+		break;        
 	case 'my': {
 			where = ":operator$ref||'-" + v.field + "'";
 		}
