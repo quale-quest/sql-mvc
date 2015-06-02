@@ -80,8 +80,11 @@ You may already have a user table in your database, in the config.json you can c
 
 ##params
 
-The url parameters passed to the server, the params are parsed with json_like.js but where ampersand are equivalent to comma.
-
+The URL parameters passed to the server, the params are parsed with json_like.js but where ampersand are equivalent to comma.
+if a URL param of name 'user' is included it is taken to be the user name and a automatic login is attempted,
+additional optional parameters are "password", "app" and "page". 
+If no password is supplied the password defaults to 'gu35t'.  If user name or password fails it logs in as user 'guest'.
+Guest login can contain some guest app info, and offer a re-login - password recovery or registration.
 
 
 

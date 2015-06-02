@@ -412,8 +412,8 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 		    extend(true, quale, zx.q.contexts[quale.table][quale.name], deepcopy(quale)); //second one has the priority
          else
           {
-          console.trace("Unknown Table");
-}          
+          console.trace("Unknown Table 160901 - Quale Table names are case sensitive :",quale.table);//,zx.q.contexts);
+        }          
 		watch(zx, " at 134258 ");
 
 		//quale = extend(quale,zx.q.contexts[quale.table][quale.name]);

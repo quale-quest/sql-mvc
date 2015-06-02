@@ -2,10 +2,15 @@
 /*jshint browser: true, node: false, jquery: true */
 /* qq App */
 
-        
+
+var zx_client_side_plugins = require('./zx_client_side_plugins.js');
+   
+
+   
 var zx_view_page='#PAGE_3';       
 var zx_prev_page='#PAGE_3';
 var qq_session,qq_cid;
+
 
 var zx_switch_page = function (div){
     console.log("zx_switch_page :",div );
@@ -249,30 +254,16 @@ var zxAdapt_menus = function () {
 
 };
 
-var parse_json_attributes = function (cx,attr) {
-    cx.f = {};
-    if (attr !== undefined) {        
-        var jsonobj = '{' + attr + '}';
-        try {
-            cx.f = JSON.parse(jsonobj);
-        } catch (e) {
-            console.log('parse_json_attributes failed:', e);
-        }
-        //console.log('cx.obj.Data.pick vals:',cx.f);
-    }
-}                
 
 
-var render_from_fullstash = function (cx,html) {
-                
-			//console.log("cx.Data  :",cx.obj.Stash,cx.obj.Data);
-			$(cx.obj.Target).html(html);
-//            $(cx.obj.Target).find("script").each(function(i) {
+
+//alert('make init_from_fullstash_internal');
+init_from_fullstash_internal = function (Target) {
+//TODO-10002  Create a registration type function to register events to elements after fullstash loads
+
+//            $(Target).find("script").each(function(i) {
 //                    eval($(this).text()); --seems already to be executing scripts...
 //                });
-
-			//TODO-10002  Create a registration type function to register events to elements after fullstash loads
-
 
 			$(".qq-range-value").each(function (/*index*/
 				) {
@@ -341,11 +332,11 @@ var render_from_fullstash = function (cx,html) {
 
 			});
 
-			$(cx.obj.Target).off('click', '#usermenu', zxInit_usermenu);
-			$(cx.obj.Target).on('click', '#usermenu', zxInit_usermenu);
+			$(Target).off('click', '#usermenu', zxInit_usermenu);
+			$(Target).on('click', '#usermenu', zxInit_usermenu);
 
-			$(cx.obj.Target).off('click', '.right-toggle', zx_right_toggle_menu);
-			$(cx.obj.Target).on('click', '.right-toggle', zx_right_toggle_menu);
+			$(Target).off('click', '.right-toggle', zx_right_toggle_menu);
+			$(Target).on('click', '.right-toggle', zx_right_toggle_menu);
             
             
           
@@ -418,8 +409,8 @@ var render_from_fullstash = function (cx,html) {
 
 			static_zx_hide_leftbar = 0;
 			zxAdapt_menus();
-			$(cx.obj.Target).off('click', '#header', zxAdapt_menus);
-			$(cx.obj.Target).on('click', '#header', zxAdapt_menus);
+			$(Target).off('click', '#header', zxAdapt_menus);
+			$(Target).on('click', '#header', zxAdapt_menus);
 
 			capture_enter();
             zxUploaderInit(); //todo make this conditional call only if it is inclueded
@@ -428,11 +419,21 @@ var render_from_fullstash = function (cx,html) {
 
 }
 
+var render_from_fullstash = function (cx,html) {
+                
+			//console.log("cx.Data  :",cx.obj.Stash,cx.obj.Data);
+			$(cx.obj.Target).html(html);
+
+            init_from_fullstash_internal(cx.obj.Target);
+			
+}
+
+
 var update_in_mem_template = function (page_id,mtHash, text) {	
-		var ht = Hogan.Template;
-		var t = require('socketstream').tmpl;
-		var sc = text;
-		eval(sc);
+		var ht = Hogan.Template; //local variable used in script eval is evaluating
+		var t = require('socketstream').tmpl; //local variable used in script eval is evaluating
+		var sc = text; //local variable used in script eval is evaluating
+		eval(sc); //this creates the hogan script - it does not do the rendering
         qq_tmpl_cache[page_id]=mtHash;
 	}
 var process_new_data = function (cx) {
@@ -448,121 +449,7 @@ var process_new_data = function (cx) {
 	case "fullstash": { //
 			//console.log("cx.Data  :",cx.obj.Stash,cx.obj.Data);
 			//zxhogan parametrised function
-			cx.obj.Data.lookup = function () {
-				return function (ctx) {
-					//console.log('cx.obj.Data.lookup:',this,ctx,ctx[0]);
-					var look = ctx[0][this[1]];
-					var findkey = this[0];
-					if (look === undefined)
-						return 'unknown-' + this[1];
-					//console.log('cx.obj.Data.lookup obj:',look,findkey);
-					var retval = look[findkey];
-					if (retval === undefined)
-						retval = look.unknown;
-					if (retval === undefined)
-						retval = 'unknown';
-					return retval;
-				};
-			};
-
-			cx.obj.Data.ick = function (ths, ctx, _, fn) {
-				//console.log('cx.obj.Data.lookup:',this,ctx,ctx[0]);
-				var cx = {};
-				var items = [];
-				if (ths[0] !== "")
-					items = ths[0].split(",");
-                    
-				//console.log('cx.obj.Data.pick obj:',fn,ths);
-                parse_json_attributes(cx,ths[4]);
-
-				var look = ctx[0][ths[1]]; //this[1] is the name of the lookup list and look is the dictionary
-				//var findkey = ths[0];
-				if (look === undefined)
-					return 'unknown list-' + ths[1];
-
-				cx.par = ths;
-				//console.log('cx.obj.Data.pick obj:',look,findkey,this);
-				var retval = "";
-				for (var k in look) {
-					if (look.hasOwnProperty(k)) {
-						cx.ItemVal = k;
-						cx.ItemTxt = look[k];
-						if (cx.ItemTxt.substring(1, 8) !== "fblank:") {
-							if (retval !== "")
-								retval += ss.tmpl['Widgets-' + fn + 'FieldEditSeperator'].render(cx);
-							if (items.indexOf(cx.ItemVal) >= 0)
-								retval += ss.tmpl['Widgets-' + fn + 'FieldEdit'].render(cx);
-							else
-								retval += ss.tmpl['Widgets-' + fn + 'FieldEditUnChecked'].render(cx);
-							//console.log("new Option:",SelTxt,SelVal,toSel.options[toSel.length-1]);
-						}
-					}
-				}
-
-				//console.log("new pick:",retval);
-				return retval;
-			};
-
-			cx.obj.Data.radio = function () {
-				return function (ctx, _) {
-					return cx.obj.Data.ick(this, ctx, _, 'Radio');
-				};
-			};
-			cx.obj.Data.pick = function () {
-				return function (ctx, _) {
-					//console.log('cx.obj.Data.lookup:',this,ctx,ctx[0]);
-					return cx.obj.Data.ick(this, ctx, _, 'Pick');
-				};
-			};
-
-			cx.obj.Data.upload = function ( ctx, _) {
-               //_ is the current context dom object
-				//console.log('cx.obj.Data.upload:',this,ctx,ctx[0]);
-                //console.log('cx.obj.Data.upload:',ths[0],ctx,ctx[0]);
-                var ths=this;
-                //ths is a array of the parameters passed from the element fragment
-                //   first is normally the text content of the field
-                //   second is a field (sub)type 
-                //    [4] is attributes passed in f.
-                //console.log('cx.obj.Data.upload fn:');
-                //console.log('cx.obj.Data.upload _:');
-                //console.log('cx.obj.Data.upload ths[0]:',ths);
-				var lcx = {};
-                
-				var items = ths[0].split(",");
-				if (ths[0] === "")
-					items = [];
-                parse_json_attributes(lcx,ths[4]);
-                lcx.Session=cx.obj.Session;
-				//console.log('lcx.obj.Data.pick obj:',qq_session,qq_Stash);
-
-				lcx.par = ths;
-                console.log('Widgets-Uploader(',lcx);
-				var retval = ss.tmpl['Widgets-Uploader' ].render(lcx);
-				//console.log("new Option:",SelTxt,SelVal,toSel.options[toSel.length-1]);
-				
-
-				//console.log("new uploader:",retval);
-				return retval;
-			};
-            
-            
-			cx.obj.Data.codec_date = function () {
-				return function () {
-					var ta = this[0].split(" ");
-					if (ta.length < 1)
-						return this[0];
-					return ta[0];
-				};
-			};
-			cx.obj.Data.codec_stamp = function () {
-				return function () {
-					var ta = this[0].split(".");
-					if (ta.length < 1)
-						return this[0];
-					return ta[0];
-				};
-			};
+            zx_client_side_plugins.fill_data(cx.obj.Data);
 
 			qq_stache[cx.obj.Data.cid] = cx.obj.Data; //set global
 			console.log("qq_stache.cid  :", cx.obj.Data.cid,cx.obj.Stash);
@@ -909,7 +796,13 @@ sendLogin = exports.sendLogin = function (LoginName, LoginInput, Page, cb) {
 
 // After load attempt initial auto loging - configured from server Quale/Config.json
 $(function () {
-    ss.rpc('ServerProcess.connected');
+    //alert('first_page_rendered :'+first_page_rendered);
+    if (first_page_rendered) {
+         
+        init_from_fullstash_internal(first_page_container);
+    }     
+    ss.rpc('ServerProcess.connected',first_page_rendered);
+    
 });
 
 // Show the chat form and bind to the submit action

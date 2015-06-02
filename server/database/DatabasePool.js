@@ -218,8 +218,26 @@ exports.connect_if_needed = function (connection, callback) {
 };
 
 
+
+
+exports.locateRambase = function (connectionID,cb) {
+    if (exports.connections[connectionID])  {
+        cb(exports.connections[connectionID]);
+    } else {
+        
+	db.databasePooled(root_folder, req.session.myStartID,Application, function (err , msg, Rambase
+		) {
+		if (err) {
+			console.log(err.message);
+		} else {
+            cb(Rambase);
+        }});                  
+    }
+    
+};
+
 exports.locate = function (connectionID) {
-	return exports.connections[connectionID];
+    return exports.connections[connectionID];
 };
 
 exports.LocateDatabasePool = function (connectionID) {

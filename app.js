@@ -15,6 +15,14 @@ var Busboy = require('busboy');
 var json_like = require("./server/lib/json_like"); 
 var zxGase;
 
+var ServerProcess = require("./server/rpc/ServerProcess"); 
+var severside_render = require("./server/lib/severside_render"); 
+
+
+//var redis = require('redis');
+//var redis_client = redis.createClient(); //creates a new client 
+
+
 // Define a single-page client called 'main'
 ss.client.define('main', {
 	view : 'app.html', //file under ../client/views
@@ -66,11 +74,13 @@ ss.http.route('/', function (req, res) {
 
 
 	//console.log('===========================Initial contents of my session is ', req.session.myStartID);
-	console.log('===========================Inital contents of my session is ', req.headers.host, req.url, req.session.myStartID);
+	console.log('===========================Inital contents of my session is ',
+        req.session.myStartID,  req.headers.host, req.url);
     
 	if (req.session.myStartID === undefined) {
 		//ss.session.options.secret = crypto.randomBytes(32).toString();
 		req.session.myStartID = app_utils.timestamp();//crypto.randomBytes(32).toString();
+        //console.log('===========================Assigned new session ID ',req.session.myStartID);
 		req.session.save();
 	}    
     
@@ -97,29 +107,54 @@ ss.http.route('/', function (req, res) {
 
     //console.log('serveClient host:',host_name,' home_page:', home_page,params,' Application :',Application);
     
-	db.databasePooled(root_folder, req.session.myStartID,Application, function (err , msg, dbref
+	db.databasePooled(root_folder, req.session.myStartID,Application, function (err , msg, rambase
 		) {
 		if (err) {
 			console.log(err.message);
 		} else {
         
-            dbref.params=params;
+            rambase.params=params;
             
             if (params.invite) {
                 //generate the page - using guest login and an invite number
                 /* todo debug this code
-                issue 1 is rambase == dbref ??
+                
                 issue 2 passing invite number as the master.ref to the stored procedure
                         
                 
-                serverprocess.produce_login(req, res, ss, rambase or dbref??, '', 'guest','gu35t',
+                serverprocess.produce_login(req, res, ss, rambase , '', 'guest','gu35t',
                 function (jsonstring){
                     join the json string with the template from a file
                     app_utils.serveBuffer(res, '',html,0,'index.html');                     
                 });
                 
                 */
-            } else  {               
+            } else if (params.user) {    
+            //this is a first page load ... server-side rendered
+                
+                ServerProcess.produce_login(req, res, ss,rambase, '', 'guest','gu35t',
+                function (scriptnamed,jsonstring){
+                    //console.log('produce_login 162245:',scriptnamed);
+                    //console.log('produce_login 162245:',jsonstring);
+                    
+                    
+                    severside_render.render(scriptnamed,jsonstring,"client/views/app.html",
+                        function (html_inject){
+                             //console.log('produce_login rendered html 162246:',html_inject);
+                             //app_utils.serveBuffer(res, '',html,0,'index.html');  
+                             res.serveClient('main',
+                             function (html){
+                                 html = severside_render.render_inject(html,html_inject);
+                                 //console.log('produce_login rendered html 162247 XXXXXXXXXXXXXXXXXXX:',html);
+                                 return html;
+                             });
+                        });    
+                   
+                });
+                
+                
+               // res.serveClient('main');
+            } else  {
             res.serveClient('main');
             }
 		}
@@ -129,7 +164,7 @@ ss.http.route('/', function (req, res) {
 }); //end of ss.http.route callback
 
 
-//ss.session.store.use('redis'); - gves a prolem but should be used later
+//ss.session.store.use('redis'); //- gives a problem but should be used later
 
 // Code Formatters
 

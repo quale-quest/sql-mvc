@@ -97,7 +97,8 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
                         console.log('db -jit- ScriptNamed:', result[0].scriptnamed);
                         if (app_utils.check_children(result[0].scriptnamed))  {
                             console.log('check_children fileobj changed :', result[0].scriptnamed);
-                            ss.publish.socketId(req.socketId, 'switchPage', '#PAGE_4', '');
+                            if (ss.publish && ss.publish.socketId)
+                                ss.publish.socketId(req.socketId, 'switchPage', '#PAGE_4', '');
                             transaction.rollback();
 
                             app_utils.queue_compiler (result[0].scriptnamed,session,function (err) {
@@ -156,10 +157,12 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
 
                                 
                                 //console.log('=================================rambase.current_cid> ',rambase.current_cid );
-                                if (cb) cb(newdata)
+                                if (cb) cb(result[0].scriptnamed,newdata)
                                 else {    
+                                    if (ss.publish && ss.publish.socketId) {
                                     ss.publish.socketId(req.socketId, 'newData', 'content', newdata);
                                     ss.publish.socketId(req.socketId, 'switchPage', '#PAGE_2', '');
+                                    } else console.warn('=================================Data processing lost due to not having a connected socket ');
                                 }
 							}
 						}
@@ -295,10 +298,11 @@ exports.BuildNotify = function (message) {
 
 var produce_login = exports.produce_login = function (req, res, ss, rambase, Page, User,Password,cb) {        
                 if (!Page) Page='';
-                var params = rambase.params;
-                if (params.page) Page=params.page||'';
-                if (params.user) User=params.user||'';
-                if (params.pass) Password=params.pass||'';
+                if (rambase.params) {
+                    if (rambase.params.page) Page=rambase.params.page||'';
+                    if (rambase.params.user) User=rambase.params.user||'';
+                    if (rambase.params.pass) Password=rambase.params.pass||'';
+                }
                 
 				var messagelist = [];
 				var message = {
@@ -324,18 +328,23 @@ var produce_login = exports.produce_login = function (req, res, ss, rambase, Pag
 exports.actions = function (req, res, ss) {
 	var rambase;
 	// Example of pre-loading sessions into req.session using internal middleware
+//    console.log('The contents of my req was ', req);
 	req.use('session');
+//    console.log('db.module_name 133135 :', db.module_name);
 
 	// Uncomment line below to use the middleware defined in server/middleware/example
 	//req.use('example.authenticated')
-
+    
 	return {
-		connected : function () {
+		connected : function (first_page_rendered) {
+            if (first_page_rendered) {
+                console.log("Connected and first_page_rendered 065230 :");
+            } else {
 			//console.log('The contents of my session is', req.session.myStartID);
             rambase = db.locate(req.session.myStartID);
             //console.log('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<rambase.current_cid  sp :',rambase.current_cid);
 
-            if (!rambase.current_cid ||  rambase.logged_out) {
+            if (!rambase.current_cid ||  rambase.logged_out || rambase.conf.run.dont_reload) {
                 //or go direct to the app as guest user
                 //console.log('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<rambase.conf  sp :',rambase.conf);
                 if (rambase.conf.run.login_first)
@@ -352,8 +361,10 @@ exports.actions = function (req, res, ss) {
                     typ : 'click'
                 };
                 
+                console.log("Connected message reloading 065230 :");
                 messagelist.push(message);
                 exports.produce_div(req, res, ss, rambase, messagelist, req.session.myStartID);
+            }
             }
             
 		},
@@ -388,16 +399,15 @@ exports.actions = function (req, res, ss) {
         },
 		LoginAction : function (User, Password, Page) {
 			if (User && User.length >= 0) { // Check for blank messages
-				rambase = db.locate(req.session.myStartID);
-				//		console.log('My session is',req.session.myStartID,' and my database is ', rambase);
+                db.locateRambase(req.session.myStartID,function (rambase) {
+				
+				//console.log('My session is',req.session.myStartID,' and my database is ', rambase);
 
-
-                
-               
                 console.log('LoginAction is', Page, User,Password);
                 produce_login(req, res, ss, rambase, Page, User,Password);
 
-
+                }); 
+                
 				return res(true); // Confirm it was sent to the originating client
 			} else {
 				return res(false);

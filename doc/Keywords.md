@@ -203,7 +203,11 @@ Every ifquery must have one endquery to signify the end of the conditional.
 
 ##include
 
-Include a quicc file from the inheretance tree.
+Include a quicc file from the inheritance tree.
+
+##logout
+
+Logout the current session.
 
 ##inject_point
 
