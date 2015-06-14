@@ -194,9 +194,12 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 exports.connect_if_needed = function (connection, callback) {
 	
 	if (!connection.db) { 
+        console.log('connect_if_needed connecting 080005 :');
         fb.attach(connection.connection_string,
 			function (err, dbref) {
+            console.log('connect_if_needed connected 080005 :');    
 			if (err) {
+                console.log('connect_if_needed connected error 080005 :');    
 				console.log(err.message);
 				if (callback !== undefined)
 					callback(err, "Error");
@@ -205,12 +208,14 @@ exports.connect_if_needed = function (connection, callback) {
                 connection.ready = true;
                 deasync.sleep(15); //on windows this is needed to prevent the compiler form hanging
 				connection.last_connect_stamp = Date.now();
+                console.log('connect_if_needed connected callback 080005 :');    
 				if (callback !== undefined)
 					callback(null, "Connected", connection);
 			}
 		});    
 	} else {
 		connection.last_connect_stamp = Date.now();
+        console.log('connect_if_needed already connected 080005 :');
 		callback(null, "Connected", connection);
 		
 		}

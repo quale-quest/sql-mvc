@@ -2,7 +2,8 @@
 /*jshint browser: true, node: false, jquery: true */
 /*  */
 
-var precompiled = {Data:{}};            
+var precompiled = {Data:{}};  
+var sst;          
 
 var parse_json_attributes = function (cx,attr) {
     cx.f = {};
@@ -39,7 +40,7 @@ var create_fill_data = function (obj) {
 
 			obj.Data.ick = function (ths, ctx, _, fn) {
 				//console.log('obj.Data.lookup:',this,ctx,ctx[0]);
-                if (typeof ss !== 'undefined' && ss.tmpl) { //redbin: client side plugins cannot server side render client side hogans - mark 194901
+                if ( sst) { //redbin: client side plugins cannot server side render client side hogans - mark 194901
                 
                 
 				var cx = {};
@@ -64,11 +65,11 @@ var create_fill_data = function (obj) {
 						cx.ItemTxt = look[k];
 						if (cx.ItemTxt.substring(1, 8) !== "fblank:") {
 							if (retval !== "")
-								retval += ss.tmpl['Widgets-' + fn + 'FieldEditSeperator'].render(cx);
+								retval += sst['Widgets-' + fn + 'FieldEditSeperator'].render(cx);
 							if (items.indexOf(cx.ItemVal) >= 0)
-								retval += ss.tmpl['Widgets-' + fn + 'FieldEdit'].render(cx);
+								retval += sst['Widgets-' + fn + 'FieldEdit'].render(cx);
 							else
-								retval += ss.tmpl['Widgets-' + fn + 'FieldEditUnChecked'].render(cx);
+								retval += sst['Widgets-' + fn + 'FieldEditUnChecked'].render(cx);
 							//console.log("new Option:",SelTxt,SelVal,toSel.options[toSel.length-1]);
 						}
 					}
@@ -93,7 +94,7 @@ var create_fill_data = function (obj) {
 
 			obj.Data.upload = function ( ctx, _) {
                //_ is the current context dom object
-				console.log('obj.Data.upload:',this,ctx,ctx[0]);
+				//console.log('obj.Data.upload:',ctx[0].Session,this,ctx,ctx[0]);
                 //console.log('obj.Data.upload:',ths[0],ctx,ctx[0]);
                 var ths=this;
                 //ths is a array of the parameters passed from the element fragment
@@ -109,14 +110,16 @@ var create_fill_data = function (obj) {
 				if (ths[0] === "")
 					items = [];
                 parse_json_attributes(lcx,ths[4]);
-                lcx.Session=obj.Session;
+                lcx.Session=ctx[0].Session;
 				//console.log('lobj.Data.pick obj:',qq_session,qq_Stash);
 
 				lcx.par = ths;
-                console.log('Widgets-Uploader(',lcx);
-                if (typeof ss !== 'undefined' && ss.tmpl) //redbin: client side plugins cannot server side render client side hogans - mark 194901
-				   retval = ss.tmpl['Widgets-Uploader' ].render(lcx);
-                   else retval = 'redbin: client side plugins cannot server side render client side hogans - mark 194901 ';
+                //console.log('Widgets-Uploader(',lcx);
+                if (sst) //redbin: client side plugins cannot server side render client side hogans - mark 194901
+				   retval = sst['Widgets-Uploader' ].render(lcx);
+                   else {retval = 'redbin: client side plugins cannot server side render client side hogans - mark 194901 ';
+                   console.log(retval);
+                   }
 				//console.log("new Option:",SelTxt,SelVal,toSel.options[toSel.length-1]);
 				
 
@@ -145,8 +148,9 @@ var create_fill_data = function (obj) {
 }
 
 
-exports.fill_data = function (obj) {     
-    console.log('filling client side plugin :',obj);
+exports.fill_data = function (obj,ss_tmpl) {     
+    //console.log('filling client side plugin :',obj);
+    sst=ss_tmpl;
     obj.lookup = precompiled.Data.lookup;
     obj.ick = precompiled.Data.ick;
     obj.radio = precompiled.Data.radio;
@@ -156,9 +160,9 @@ exports.fill_data = function (obj) {
     obj.codec_stamp = precompiled.Data.codec_stamp;
 }  
 
-create_fill_data(precompiled);            
-
-
+create_fill_data(precompiled);    
+  
+  
 
 
 

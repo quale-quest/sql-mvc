@@ -90,7 +90,7 @@ exports.ajax_upload_with_rpc_feedback = function (req, res) {
 		cx.dbref = db.LocateDatabasePool(session);
 
 		//var readstream = fs.createReadStream(fx.tempName);
-
+        console.log('ajax_upload_with_rpc_feedback :',cx.dbref,session);
 		if (cx.dbref !== null) {
 
 			//create the thumb nail

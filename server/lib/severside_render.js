@@ -5,24 +5,55 @@ path = require('path'),
 os = require('os');
 var fs = require('fs');
 var zx_client_side_plugins = require('../../client/code/app/zx_client_side_plugins.js');
-
+var fileutils = require('../../server/compiler/modules/fileutils.js');
 
 //var ss = require('socketstream');
 var Hogan = require('ss-hogan/client.js');
+var HoganC = require('ss-hogan/node_modules/hogan.js/lib/compiler.js');
 
-//var ss = {tmpl : {}};
 
-//var app_filename = path.join(__dirname, "../../client/views/app.html");
-//var app_html = fs.readFileSync(app_filename).toString();
+var qq_tmpl_cache =  [];
+var sst =  {};
+var ht = Hogan.Template;
 
-//app_html=app_html.replace(/id="PAGE_2" style="display: none;"/,'id="PAGE_2" x2style="display: none;"');
-//app_html=app_html.replace(/en0_style/,'style');
-//console.log("\n\n\napp_html.replace :",app_html,'\n\n\n');
+var update_in_widgit_template = function (filename, text) {
+            var fn = path.basename(filename)
+            fn = fn.substr(0, fn.lastIndexOf('.'));
+            
+            var codes = HoganC.compile(text,{asString: true});
+            console.log("serverside compiled codes :",fn,codes); 
+            var fncall = codes.slice(0,16);
+            if (fncall!=='function(c,p,i){') {
+                console.log("Server side render fails unit test - unexpected function type from Hogan compile 133005:",fncall); 
+                process.exit(2);
+            }            
+            codes = "sst['Widgets-"+fn+"']=new ht("+codes + ")";
+            eval(codes); //this creates the hogan script - it does not do the rendering
+    
+}    
 
+var files_ = fileutils.getFiles(path.join(__dirname,'../../client/templates/Widgets'));
+console.log("serverside render files_ :",files_);
+
+ for (var key in files_) {
+        if (files_.hasOwnProperty(key)) {         
+            var text = fs.readFileSync(files_[key]).toString();
+            update_in_widgit_template(files_[key],text);
+        }
+    }                    
+
+//unit test compare basic template
+update_in_widgit_template("ssr_unit_test.html","abc{{name}}");
+console.log("serverside compiled :",sst);    
+var lcx = {name:"efg"};
+var retval = sst['Widgets-ssr_unit_test' ].render(lcx);
+if (retval!=='abcefg') {
+    console.log("Server side render fails unit test - unexpected function type from Hogan compile 133006:",retval); 
+    process.exit(2);
+
+}
 
 //the server side rendering is a mirror of the client side rendering
-var qq_tmpl_cache =  [];
-var sst =  [];
 var update_in_mem_template = function (page_id,mtHash, text) {	
 		//var ht = Hogan.Template; //local variable used in script eval is evaluating
 		//var t = require('socketstream').tmpl; //local variable used in script eval is evaluating
@@ -30,7 +61,7 @@ var update_in_mem_template = function (page_id,mtHash, text) {
         
 		var sc = text.replace(/,sst=require\('socketstream'\)\.tmpl/,''); //local variable used in script eval is evaluating
         
-        console.log("\n\n\nupdate_in_mem_template :",page_id,sc,'\n\n\n');
+        //console.log("\n\n\nupdate_in_mem_template :",page_id,sc,'\n\n\n');
 		eval(sc); //this creates the hogan script - it does not do the rendering
         qq_tmpl_cache[page_id]=mtHash;
 	}
@@ -61,16 +92,15 @@ exports.render_inject = function (html_inp,html_inject) {
 exports.render = function (qq_page_id,jsonstring,template_filename,cb) {    
     var mtHash=0;
     var cx={};
-    
-    
-    //.......
-    
-    
+      
     var page_id = qq_page_id.substr(2).replace(/\//g,'-');
     cx.obj = JSON.parse(jsonstring);
-    console.log("cx.obj.mtHash :",cx.obj[0].mtHash);
-            zx_client_side_plugins.fill_data(cx.obj[0].Data);
-            console.log("cx.obj.mtHash :",cx.obj[0].Data);
+    //console.log("cx.obj.mtHash :",cx.obj[0].mtHash);
+    //console.log("cx.obj[0].Session :",cx.obj[0].Session);
+    //console.log("cx.obj[0].Data :",cx.obj[0].Data);
+            cx.obj[0].Data.Session =  cx.obj[0].Session;
+            zx_client_side_plugins.fill_data(cx.obj[0].Data,sst);
+            //console.log("cx.obj.mtHash :",cx.obj[0].Data);
             
             var tmpl = sst[page_id];
             var in_mem_hash = qq_tmpl_cache[page_id];
@@ -88,18 +118,18 @@ exports.render = function (qq_page_id,jsonstring,template_filename,cb) {
                         //the in mem template does not exist or is out dated
                       
                         var fn='./database/files' + qq_page_id + ".html.js";
-                        console.log("template loading :",fn);
+                        //console.log("template loading :",fn);
                         
                         var text = fs.readFileSync(fn).toString();
                         update_in_mem_template(page_id,cx.obj.mtHash,text); 
                         tmpl = sst[page_id];  
-                        console.log("template loaded :",page_id,sst,tmpl);                        
+                        //console.log("template loaded :",page_id,sst,tmpl);                        
                         render_from_fullstash(cx,tmpl.render(cx.obj[0].Data),cb); 
-                    
+                        //console.log("render_from_fullstash done :",fn);
                     }
             }
     
     
 }
 
-//..
+//

@@ -449,7 +449,8 @@ var process_new_data = function (cx) {
 	case "fullstash": { //
 			//console.log("cx.Data  :",cx.obj.Stash,cx.obj.Data);
 			//zxhogan parametrised function
-            zx_client_side_plugins.fill_data(cx.obj.Data);
+            cx.obj.Data.Session =  cx.obj.Session;
+            zx_client_side_plugins.fill_data(cx.obj.Data,ss.tmpl);
 
 			qq_stache[cx.obj.Data.cid] = cx.obj.Data; //set global
 			console.log("qq_stache.cid  :", cx.obj.Data.cid,cx.obj.Stash);
@@ -801,7 +802,7 @@ $(function () {
          
         init_from_fullstash_internal(first_page_container);
     }     
-    ss.rpc('ServerProcess.connected',first_page_rendered);
+   else ss.rpc('ServerProcess.connected',first_page_rendered);
     
 });
 

@@ -24,7 +24,7 @@ exports.produce_div = function (req, res, ss, rambase, messages, session,recursi
 }
 
 exports.connect_and_produce_div = function (req, res, ss, rambase, messages, session,recursive,cb) {
-
+    console.time("========================DB QUERY");
 	//input='SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p041257x00end') p;
 
 	//console.log("Server received messages:", messages);
@@ -157,6 +157,7 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
 
                                 
                                 //console.log('=================================rambase.current_cid> ',rambase.current_cid );
+                                console.timeEnd("========================DB QUERY");
                                 if (cb) cb(result[0].scriptnamed,newdata)
                                 else {    
                                     if (ss.publish && ss.publish.socketId) {
@@ -296,7 +297,7 @@ exports.BuildNotify = function (message) {
 	ss.publish.all('BuildNotify', '#debugBuildNotify', message); // Broadcast the message to everyone
 }
 
-var produce_login = exports.produce_login = function (req, res, ss, rambase, Page, User,Password,cb) {        
+var produce_login = exports.produce_login = function (req, res, ss, rambase, Page, User,Password,cb) {   
                 if (!Page) Page='';
                 if (rambase.params) {
                     if (rambase.params.page) Page=rambase.params.page||'';

@@ -130,22 +130,21 @@ ss.http.route('/', function (req, res) {
                 
                 */
             } else if (params.user) {    
-            //this is a first page load ... server-side rendered
-                
+            //this is a first page load ... server-side rendered                
                 ServerProcess.produce_login(req, res, ss,rambase, '', 'guest','gu35t',
                 function (scriptnamed,jsonstring){
-                    //console.log('produce_login 162245:',scriptnamed);
-                    //console.log('produce_login 162245:',jsonstring);
-                    
-                    
+                    console.time("severside_render");
                     severside_render.render(scriptnamed,jsonstring,"client/views/app.html",
                         function (html_inject){
                              //console.log('produce_login rendered html 162246:',html_inject);
                              //app_utils.serveBuffer(res, '',html,0,'index.html');  
+                             console.timeEnd("severside_render");
                              res.serveClient('main',
                              function (html){
+                                 //console.log("render_from_fullstash returning :");
                                  html = severside_render.render_inject(html,html_inject);
                                  //console.log('produce_login rendered html 162247 XXXXXXXXXXXXXXXXXXX:',html);
+                                 console.timeEnd("severside_render");
                                  return html;
                              });
                         });    
