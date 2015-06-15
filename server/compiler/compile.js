@@ -224,7 +224,10 @@ function getDirectories(srcpath,Filter) {
         
         
         //Find Installable drop-in folders
-        fileutils.getDropinPackages('node_modules/',/sql-mvc/, zx.build_roots);
+        if (fs.existsSync('./node_modules'))
+            fileutils.getDropinPackages('./node_modules/',/sql-mvc/, zx.build_roots);
+        else
+            fileutils.getDropinPackages('../node_modules/',/sql-mvc/, zx.build_roots);
         
         //Add plug-in folders
         
@@ -579,14 +582,16 @@ var seq_page = function (zx) {
 		var fnh = zx.hogan_folder + zx.rel_file + '.html';
         var fnhc = zx.hogan_folder_compiled + zx.rel_file + '.html.js';
 		//console.log('fnh:',fnh);
-		var fnhp = path.dirname(fnh);
+		/*no longer used
+        //var fnhp = path.dirname(fnh);
 		//console.log('fullhoganpath:',fnhp);
-		try {
-			fsx.mkdirSync(fnhp + '/', dirxww, true);
-		} catch (err) {
-			if (err.code !== 'EEXIST')
-				console.error("cannot create template folder", err);
-		}
+		//try {
+		//	fsx.mkdirSync(fnhp + '/', dirxww, true);
+		//} catch (err) {
+		//	if (err.code !== 'EEXIST')
+		//		console.error("cannot create template folder", err);
+		//}
+```````*/
 		try {
 			fsx.mkdirSync(path.dirname(fnhc) + '/', dirxww, true);
 		} catch (err) {
