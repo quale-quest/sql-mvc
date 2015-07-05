@@ -94,7 +94,7 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
                 if (!recursive && rambase.conf.run.monitor_mode === "jit") {
                     if (result.length > 0) {
                         
-                        console.log('db -jit- ScriptNamed:', result[0].scriptnamed);
+                        console.log('db -jit- ScriptNamed:', result[0].scriptnamed.toString());
                         if (app_utils.check_children(result[0].scriptnamed))  {
                             console.log('check_children fileobj changed :', result[0].scriptnamed);
                             if (ss.publish && ss.publish.socketId)
@@ -131,7 +131,7 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
 						        fs.writeFileSync( path.resolve('output/runtime_exception.txt'), str );
 
 							} else {
-                                console.log('db - ScriptNamed:', result[0].scriptnamed);
+                                console.log('db - ScriptNamed:', result[0].scriptnamed.toString());
                                 console.log('db - NEW_CID    :', result[0].new_cid);
                                 var newdata = (result[0].res);//.replace(/\n/g, " ").replace(/\r/g, " ");
 								console.log('db - JSON       :\n\n', newdata, '\n\n');
@@ -146,9 +146,9 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
                                 if (result[0].new_cid!==0) 
                                    rambase.current_cid    = result[0].new_cid;
 							    console.log('db - NOW_CID    :', rambase.current_cid);
-                                rambase.current_script = result[0].scriptnamed;
+                                rambase.current_script = result[0].scriptnamed.toString();
                                 //todo filter developers on some key value - so only a small subset of users can to live editing of source
-                                db.developers[message.session] = result[0].scriptnamed;
+                                db.developers[message.session] = result[0].scriptnamed.toString();
 
                                 if (result[0].info === 'logout') {
                                     rambase.logged_out = true;
@@ -158,7 +158,7 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
                                 
                                 //console.log('=================================rambase.current_cid> ',rambase.current_cid );
                                 console.timeEnd("========================DB QUERY");
-                                if (cb) cb(result[0].scriptnamed,newdata)
+                                if (cb) cb(result[0].scriptnamed.toString(),newdata)
                                 else {    
                                     if (ss.publish && ss.publish.socketId) {
                                     ss.publish.socketId(req.socketId, 'newData', 'content', newdata);

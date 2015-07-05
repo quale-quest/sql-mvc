@@ -94,7 +94,7 @@ var preProcess = function (zx, filename, str) {
 	}
 	return str;
 };
-var check_user_table_name = function (zx, str) {
+var check_user_table_name = exports.check_user_table_name = function (zx, str) {
 	var check_user_table = function (str, key) {
 		if (zx.conf.db.platform_user_table[key] !== key) {
 			//console.log('replace platform_user_table ',key,' with ',zx.conf.db.platform_user_table[key]);
@@ -107,10 +107,13 @@ var check_user_table_name = function (zx, str) {
 	str = check_user_table(str, "user_display_field");
 	str = check_user_table(str, "user_pk_field");
 	str = check_user_table(str, "user_name_field");
+    str = check_user_table(str, "user_guest_name");
 	str = check_user_table(str, "user_password_field");
 	str = check_user_table(str, "user_keys_field");
+    str = check_user_table(str, "user_landing_page");
 	return str;
 }
+
 
 var ParseIntoStatements = function (zx, compound_statement, objtype) {
 	var statements = [];
