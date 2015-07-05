@@ -1,6 +1,6 @@
 {
   "name": "sql-mvc",
-  "version": "0.0.121",
+  "version": "0.0.122",
   "description": "Paradigm inversion-write web applications in SQL instead of JavaScript",
   "main": "./app.js",
   "scripts": {
@@ -64,7 +64,7 @@
     "sql-mvc": "./bin/sql-mvc"
   },
   "author": "Lafras",
-  "license": "commercial open source",
+  "license": "AGPL3 or commercial open source",
   "bugs": {
     "url": "https://github.com/quale-quest/sql-mvc/issues"
   },

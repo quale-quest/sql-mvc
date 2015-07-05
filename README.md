@@ -159,7 +159,8 @@ default framework and theme is just to give you a quick start.
 
 ## Licensing
 
-SQL-MVC is a commercial open source project, It is free as in speech
-but not free as in beer, but cheap as in peanuts.
+QualeQuest/SQL-MVC is a Dual-licensed, either under the AGPL 3 license, or for a fee, you can license under a 
+commercial-friendly license, which lets you embed, modify, and redistribute QualeQuest/SQL-MVC with your commercial 
+application, without having to open source your application.
 
  
