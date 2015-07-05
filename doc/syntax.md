@@ -8,7 +8,7 @@
 
 {}  ::= 0 or more
 
-Quic ::= { {html}{"<#"[quick_Command]{newline quick_Command}"#>"} }
+Quicc ::= { {html}{"<#"[quick_Command]{newline quick_Command}"#>"} }
 
 newline ::= "\n"
 
@@ -42,7 +42,7 @@ json_like_object ::= JSON syntax with the following adjustments
 
 ##Description:
 
-The .quic file is a HTML fragment, any un-escaped text will be interpreted as HTML.
+The .quicc file is a HTML fragment, any un-escaped text will be interpreted as HTML.
 The escape is <# ... #>
 Commands start on a new line, and are optionally followed by command parameters in braces, 
 and followed by query code which extend the next command.

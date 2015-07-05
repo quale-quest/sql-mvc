@@ -89,7 +89,8 @@ fields will inherit the model qualia. This will most often be the same as the ta
 To be able to do updates, the select must include the primary key, in this case REF.
 
 The SQL *where* clause will filter the records with context variables being substituted at runtime, in this case 
- for this example it's filtered according to the operator, and the *here.todo_type* context variable.
+ for this example it's filtered according to the operator, and the *here.todo_type* context variable, 
+ which is used as a selector of different record statuses using basic boolean logic.
 
 The *here.* context record is a virtual record that reflect the context of the current page for the current user. 
 You can set the context variables with simple buttons like: [more on setting and updating context variables....](todo)
@@ -213,7 +214,7 @@ use(todo.clear.button)
 
 ##Platform agnostic
 
-As you can see from this example, it could compile just as easily into a native mobile app as a desktop web app, this is the principle of a Qualic system.
+As you can see from this web app example, it could compile just as easily into a native mobile app as a desktop web app, this is the principle of a Qualic system.
 
 
 #Next
