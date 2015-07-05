@@ -4,23 +4,23 @@
 notify(style=Heading) Please confirm your details
 
 form()
-	Select  --:{Title:"Make new records",from:"z$user" }
-	NAME,   --:{Title:"Full Name"}		
+	Select  --:{Title:"Make new records",from:"user_table_name" }
+	user_display_field,   --:{Title:"Full Name"}		
 	Country     , --:{Action:Edit}
 	MOBILE_NUMBER, --:{Action:Edit}
 	ID	    --:{as:pk}
-	From z$user 
+	From user_table_name 
     where id=operator.id
 #>
 
 
 <#table()
-	Select  --:{Title:"pictures",from:z$user ,tablestyle:"Upload"}
+	Select  --:{Title:"pictures",from:user_table_name ,tablestyle:"Upload"}
 	first 1
 	ID,	    --:{as:pk}
-	NAME,  --:{as:hidden}		
+	user_display_field,  --:{as:hidden}		
 	photo --:{Action:Edit,as:image}
-	From z$user  
+	From user_table_name  
     where id=operator.id
 #>	
 	

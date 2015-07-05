@@ -798,6 +798,7 @@ sendLogin = exports.sendLogin = function (LoginName, LoginInput, Page, cb) {
 // After load attempt initial auto loging - configured from server Quale/Config.json
 $(function () {
     //alert('first_page_rendered :'+first_page_rendered);
+    if (typeof first_page_rendered == "undefined") first_page_rendered=0;
     if (first_page_rendered) {
          
         init_from_fullstash_internal(first_page_container);

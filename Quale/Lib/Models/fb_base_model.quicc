@@ -8,6 +8,7 @@
 --:{regex:"regex:/integer/i",Default_length:"10",name:"([\\w_$]+)/",Type:"Text",Action:"View"} 
 
 --:{class:"pk",Action:View,Type:Hide,PrimaryKey:true,fb_trigger:true}
+--:{class:"existing_pk",Action:View,Type:Hide,PrimaryKey:true,fb_trigger:false}
 --:{class:"fk",Action:Link,Type:Link}
 
 DECLARE EXTERNAL FUNCTION Z$F_F2J
@@ -109,7 +110,7 @@ CREATE TABLE user_table_name                         --:{as:"Table"}
   Country    FK,									 --:{as:"text",title:"Currently visiting"}  
   
   timezone	 VARCHAR(20),							 --:{as:"text"}  
-  LANDING_PAGE VARCHAR(80) DEFAULT 'Home/Guest',     --:{as:"text"}  
+  user_landing_page VARCHAR(80) DEFAULT 'Home/Guest',     --:{as:"text"}  
   user_keys_field VARCHAR(250),						 --:{as:"text",title:"Key list"}  
   LANGUAGE fk,										 --:{as:"text",title:"Language"}  
   GP_INPUT VARCHAR(250),  						  	 --:{Type:"Hide"}
@@ -290,7 +291,7 @@ DECLARE VARIABLE o_ref    varchar(40);
 DECLARE VARIABLE o_session varchar(40);
 DECLARE VARIABLE passw    varchar(20) ='';
 DECLARE VARIABLE usern    varchar(20) ='';
-DECLARE VARIABLE LANDING_PAGE varchar(100) ;
+DECLARE VARIABLE user_landing_page varchar(100) ;
 DECLARE VARIABLE currentpage varchar(100)='';
 
 DECLARE VARIABLE table_name varchar(100);
@@ -448,7 +449,7 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
             SELECT r.OPERATOR_REF, r.ID FROM Z$CONTEXT r where r.pk=:CID into :o_ref,:o_session;
             /*todo validate o_session against session*/
                         
-            SELECT LANDING_PAGE FROM Z$USER WHERE id = :o_ref into :LANDING_PAGE;
+            SELECT user_landing_page FROM user_table_name WHERE user_pk_field = :o_ref into :user_landing_page;
 
 
             
@@ -462,15 +463,17 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
         begin
           o_ref=NULL;
           /*alow them to login even if expired,  the dashboard gives information that they have expired...*/
-          select first 1 id,LANDING_PAGE from Z$USER where user_name_field=:usern and passwd=:passw into :o_ref,:LANDING_PAGE;
+          select first 1 user_pk_field,user_landing_page from user_table_name where user_name_field=:usern and user_password_field=:passw into :o_ref,:user_landing_page;
           /*if null then select the nobody user */
           if (o_ref is NULL) then 
-              select first 1 id,LANDING_PAGE from Z$USER where user_name_field='Guest' into :o_ref,:LANDING_PAGE;
+              select first 1 user_pk_field,user_landing_page from user_table_name where user_name_field='user_guest_name' into :o_ref,:user_landing_page;
           
-          /*info=:o_ref||'&'||:LANDING_PAGE||'&'||:passw||'&';  suspend;*/
           
-		 IF ( currentpage <> '') THEN currentpage = '//'||LANDING_PAGE||currentpage;
-         ELSE currentpage = '//'||LANDING_PAGE||'/Index';
+         
+          --info=COALESCE(:o_ref,'NULL')||'&'||COALESCE(:LANDING_PAGE,'NULL')||'&'||COALESCE(:passw,'NULL')||'&';  suspend;
+           
+		 IF ( currentpage <> '') THEN currentpage = '//'||user_landing_page||currentpage;
+         ELSE currentpage = '//'||user_landing_page||'/Index';
 		 
          current_page_pk=NULL;
          pk = gen_id( Z$CONTEXT_seq, 1 );          
@@ -479,7 +482,7 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
          
          --this record is so we can save and reload the first page                    
          INSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,TARGET,QUERY, PAGE_PARAMS)
-            VALUES (:pk,0,'click','Z$USER', :currentpage , 'id='''||replace(:o_ref,'''','''''')||'''','');  
+            VALUES (:pk,0,'click','user_table_name', :currentpage , 'user_pk_field='''||replace(:o_ref,'''','''''')||'''','');  
                              
          CID = pk;           
           
@@ -491,7 +494,7 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
 
     --info='mark3';  suspend;  
           
-      --info=COALESCE(:o_ref,'null')||'&'||COALESCE(:LANDING_PAGE,'null')||'&'||COALESCE(:currentpage,'null')||'&'||COALESCE(:passw,'null')||'&'||COALESCE(current_page_pk,'null');  suspend;          
+      --info=COALESCE(:o_ref,'null')||'&'||COALESCE(:user_landing_page,'null')||'&'||COALESCE(:currentpage,'null')||'&'||COALESCE(:passw,'null')||'&'||COALESCE(current_page_pk,'null');  suspend;          
       /*execute the page or SP*/  
     Openstr = 'EXECUTE BLOCK RETURNS  (cid integer, info varchar(200),res blob SUB_TYPE 1)AS declare pki integer='||CID||';declare pkf integer='||PKRef||';'
          --||COALESCE(:public_parameters,'')
@@ -506,7 +509,7 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
     if (script is null) then /*back home or direct to an 404 error page ..?*/   
       begin                 
         SELECT first 1 pk,:Openstr||q.SCRIPT FROM Z$SP q where 
-                   file_name='//'||(SELECT LANDING_PAGE FROM Z$USER WHERE id = :o_ref)||'/404' into :current_page_pk,:script ;                        
+                   file_name='//'||(SELECT user_landing_page FROM user_table_name WHERE user_pk_field = :o_ref)||'/404' into :current_page_pk,:script ;                        
       end             
     if (script is null) then /*global 404 error page */
         SELECT first 1 pk,:Openstr||q.SCRIPT FROM Z$SP q where file_name='//Default/404' into :current_page_pk,:script ;                        
@@ -522,7 +525,7 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
      ScriptNamed = currentpage;
      if (script is null) then
         begin 
-           info='No script named : '||:currentpage;  suspend;
+           info='No script named : '||COALESCE(:currentpage,'');  suspend;
         end
         ELSE   
         begin           
@@ -532,7 +535,7 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
           WHEN ANY DO
               BEGIN
               info='exception';
-              res= :script ;  
+              res= sqlcode ||'   SET TERM ^ ;'|| :script ;   
               suspend;              
               END   
               		  
@@ -591,8 +594,8 @@ INSERT INTO Z$INSERTREF (NON_MATCH, INSERT_REF) VALUES ('NON_MATCH_2', '2');
 INSERT INTO Z$INSERTREF (NON_MATCH, INSERT_REF) VALUES ('NON_MATCH_3', '3');
 
 INSERT MATCHING user_name_field;
-INSERT INTO user_table_name (LANDING_PAGE,user_display_field,user_name_field,user_password_field) values ('Home/Guest','Guest','Guest','Any');
-INSERT INTO user_table_name (LANDING_PAGE,user_display_field,user_name_field,user_password_field) values ('Home/SysAdmin','sysadmin','sysadmin','changethis');
+INSERT INTO user_table_name (user_landing_page,user_display_field,user_name_field,user_password_field) values ('Home/Guest','Guest','user_guest_name','AnyPassword');
+INSERT INTO user_table_name (user_landing_page,user_display_field,user_name_field,user_password_field) values ('Home/SysAdmin','sysadmin','sysadmin','changethis');
 
 #>
 

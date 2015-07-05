@@ -4,7 +4,7 @@
 CREATE_EXTEND facebook TABLE user_table_name                         --:{name:facebook_user,as:"Table"} 
 (
   user_pk_field PK,                                  --:{as:"pk"}
-  NAME LONG_NAME,			                         --:{as:"text",title:"Full Name"}  
+  user_display_field LONG_NAME,			                         --:{as:"text",title:"Full Name"}  
   First_NAME SHORT_NAME,	                         --:{as:"text",title:"First Name"}  
   Last_NAME SHORT_NAME,	                         	 --:{as:"text",title:"Last Name"}  
   Gender SHORT_NAME,                            	 --:{as:"text",title:"Gender"}  
@@ -24,7 +24,7 @@ CREATE_EXTEND facebook TABLE user_table_name                         --:{name:fa
   Country    FK,									 --:{as:"text",title:"Currently visiting"}  
   
   timezone	 VARCHAR(20),							 --:{as:"text"}  
-  LANDING_PAGE VARCHAR(80) DEFAULT 'Home/Guest',     --:{as:"text"}  
+  user_landing_page VARCHAR(80) DEFAULT 'Home/Guest',     --:{as:"text"}  
   user_keys_field VARCHAR(250),						 --:{as:"text",title:"Key list"}  
   LANGUAGE fk,										 --:{as:"text",title:"Language"}  
 
@@ -114,8 +114,8 @@ BEGIN
     if (not invite_id = '') then
        SITE_ID = (select SITE_ID from INVITE where id = :invite_id);  
   
-    UPDATE or INSERT INTO user_table_name (NAME, FIRST_NAME, LAST_NAME, GENDER, user_name_field, PASSWD,
-        FB_LINK, INVITED_BY, SITE_ID, LANDING_PAGE, LANGUAGE, EMAIL, FB_UPDATED_TIME,
+    UPDATE or INSERT INTO user_table_name (user_display_field, FIRST_NAME, LAST_NAME, GENDER, user_name_field, user_password_field,
+        FB_LINK, INVITED_BY, SITE_ID, user_landing_page, LANGUAGE, EMAIL, FB_UPDATED_TIME,
         TIMEZONE)
     VALUES (
         :name, 

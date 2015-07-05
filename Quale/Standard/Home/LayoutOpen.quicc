@@ -2,7 +2,7 @@
 <body>	
 
 <#xinclude file=Menu/SlideBar
-xifnotexists="select name from user_table_name where user_table_name.user_pk_field=user_pk_field and  user_keys_field containing 'SWB'"
+xifnotexists="select user_display_field from user_table_name where user_table_name.user_pk_field=user_pk_field and  user_keys_field containing 'SWB'"
 #>	
 
 <div  id="wrapper"> <!--this should hold all content excluding footer -->
@@ -10,7 +10,7 @@ xifnotexists="select name from user_table_name where user_table_name.user_pk_fie
 <#include(file=~/Layout/Notify)#>
 <div id="basicmodaldialog" "> <h3>Loading...</h3></div>
 <#xinclude file=Menu/SwitchBar
-xifnotexists="select name from user_table_name where user_table_name.user_pk_field=operator.user_pk_field and  user_keys_field containing 'SWB'"
+xifnotexists="select user_display_field from user_table_name where user_table_name.user_pk_field=operator.user_pk_field and  user_keys_field containing 'SWB'"
 #>	
 
 

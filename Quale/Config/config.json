@@ -70,6 +70,8 @@
             "user_pk_field": "id",
             "user_name_field": "login_name",
             "user_password_field": "passwd",
+			"user_landing_page": "LANDING_PAGE",
+			"user_guest_name": "Guest",			
             "user_keys_field": "key_list"
         },
         "pk": "ref"
