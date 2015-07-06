@@ -430,6 +430,16 @@ SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p0
 
     if (usern='') THEN    
         BEGIN
+		
+			if (PKRef=-1) then --save without refreshing
+			    begin
+				  info='saved';
+				  res= '' ;  
+				  SCRIPTNAMED= '' ;  
+				  suspend; 					
+				  exit;
+				end				
+		
 			if (PKRef<>0) then
 			    begin
 					SELECT a.target,COALESCE(a.PAGE_PARAMS,'') FROM Z$PK_CACHE a WHERE a.MASTER = :CID AND a.INDX = :PKRef into :currentpage,:page_params;              

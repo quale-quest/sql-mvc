@@ -264,8 +264,13 @@ var r;
 
  var autosave=$( el ).attr("data-autosave");
  var save=truish(autosave);
- console.log("zxd autosave:",autosave,' saveing:',save);   
- if (save)
+ console.log("zxd autosave:",autosave,' saveing:',save);  
+ if (autosave=="push") {
+         //alert("pushing data");
+         var savecell={typ:"click",cid:Cell.cid,pkf:"-1"};
+         zx_delta(savecell);
+         return false;
+     } else if (save)
      {
      var savecell={typ:"click",cid:Cell.cid,pkf:"0"};
      //console.log("autosave:",savecell);
