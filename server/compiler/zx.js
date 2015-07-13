@@ -646,6 +646,26 @@ var forFields = exports.forFields = function (object,callback) {
     return false;
 }                        
 
+var forFieldsx = exports.forFieldsx = function (object,callback) {
+//returns true and stops if a match is found - acts like arr.some
+//redbin: combinef orFieldsx with forFields and test all code using it for side effects
+    if (Array.isArray(object))         
+        return object.some(callback);
+        
+    if (typeof val === 'object') {       
+        for (var key in object) {
+            if (object.hasOwnProperty(key)) {
+                if (callback( object[key],key,object)===true) return;
+            }
+        }                    
+    }
+    else {
+        callback( object,0,[object]);
+    }
+    //return false;
+}                      
+
+
 var stringify_2 = exports.stringify_2 = function (object,depth) {
 //returns true and stops if a match is found - acts like arr.some
     if (!depth) depth=0;

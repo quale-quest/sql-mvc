@@ -225,7 +225,7 @@ exports.connect_if_needed = function (connection, callback) {
 
 
 
-exports.locateRambase = function (connectionID,cb) {
+exports.locateRambase = function (connectionID,cb) {//dont think this is being used
     if (exports.connections[connectionID])  {
         cb(exports.connections[connectionID]);
     } else {
@@ -240,6 +240,27 @@ exports.locateRambase = function (connectionID,cb) {
     }
     
 };
+
+exports.locateRambaseReq = function (req,cb) {
+    var connectionID=req.session.myStartID;
+    if (exports.connections[connectionID])  {
+        cb(exports.connections[connectionID]);
+    } else {
+      
+    console.log('locateRambase req.session 105555 :',req.session.myStartID,req.session.Application,req.session.root_folder);
+    
+	exports.databasePooled(req.session.root_folder, req.session.myStartID, req.session.Application, function (err , msg, Rambase
+		) {
+		if (err) {
+			console.log(err.message);
+		} else {
+            cb(Rambase);
+        }});                  
+    }
+    
+};
+
+
 
 exports.locate = function (connectionID) {
     return exports.connections[connectionID];

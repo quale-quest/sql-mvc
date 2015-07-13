@@ -4,6 +4,35 @@ The Quale folders contains all the project files.
 
 *We use "Normally" Because you can locate it anywhere.
 
+#directory structure design	
+
+At first directory structure seems confusing and arbitrary, but was in fact designed to allow inheritance and substitution of files in a most convenient manner to require the least amount of configuration.
+
+All the applications files are .quicc files, they may just as well all be in a single flat directory.
+	
+##inheritance
+
+
+##extending functionality
+any functionality found in a library can be extended by creating a new file with a unique file name higher up in the hierarchy.
+
+##overriding
+If you want to replace an entire file you simply place one with the same name higher in the hierarchy.
+Any file higher in the hierarchy with the same name will override a lower file.
+	
+##Immutable libraries
+Installed libraries should not be modified directly as future upgrades will overwrite your changes,
+rather use the above extensions and overriding functionality in by placing files in your source that override files or part of files in the libraries. 
+
+When libraries are upgraded (expectantly with major version changes) you should review the impact on you customisations.
+
+	
+	
+
+
+#Examples
+
+<pre>
 Normally the Quale directory in the install root or sub-projects contains the user project files.
 	InstallRoot
     ├── node_modules
@@ -80,7 +109,7 @@ Typical apps will look like this
 │       │   └── User
 │       └── Models
 
-
+</pre>
 
 
 The compiler and server uses 2 directories,
@@ -91,6 +120,5 @@ To compile a sub project file
 	node ../node_modules/sql-mvc/server/compiler/compile.js  app Home/User Index
 to run	a sub project
 	node ../node_modules/sql-mvc/app.js
-	
 	
 	

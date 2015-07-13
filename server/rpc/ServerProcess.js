@@ -90,9 +90,9 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
 				transaction.rollback();
 			} else {
 
-            
+                //console.log('dbresult:', result);
                 if (!recursive && rambase.conf.run.monitor_mode === "jit") {
-                    if (result.length > 0) {
+                    if (result.length > 0 && result[0].scriptnamed) {
                         
                         console.log('db -jit- ScriptNamed:', result[0].scriptnamed.toString());
                         if (app_utils.check_children(result[0].scriptnamed))  {
@@ -123,15 +123,16 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
 							console.log('no database results'); //this could be use full for save only instructions that don't feedback
 						else {
 							//if ((rambase.conf.run_mode=="dev")&&result[0].res)
-							console.log('dbresult:', String(result[0].info), '');
-							if (result[0].info === 'exception') {
+                            var infos = String(result[0].info);    
+							//console.log('dbresult infos:', infos, '');
+							if (infos === 'exception') {
 								var str = '\n\n\n\nSET TERM ^ ;' + result[0].res + '^\nSET TERM ; ^\n\n\n\n';
 								//write this to a audit
 								console.log(str);                                
 						        fs.writeFileSync( path.resolve('output/runtime_exception.txt'), str );
 
 							} else {
-                                console.log('db - ScriptNamed:', result[0].scriptnamed.toString());
+                                console.log('db - ScriptNamed:', (result[0].scriptnamed||'').toString());
                                 console.log('db - NEW_CID    :', result[0].new_cid);
                                 var newdata = (result[0].res);//.replace(/\n/g, " ").replace(/\r/g, " ");
 								console.log('db - JSON       :\n\n', newdata, '\n\n');
@@ -146,19 +147,20 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
                                 if (result[0].new_cid!==0) 
                                    rambase.current_cid    = result[0].new_cid;
 							    console.log('db - NOW_CID    :', rambase.current_cid);
-                                rambase.current_script = result[0].scriptnamed.toString();
+                                rambase.current_script = (result[0].scriptnamed||'').toString();
                                 //todo filter developers on some key value - so only a small subset of users can to live editing of source
-                                db.developers[message.session] = result[0].scriptnamed.toString();
+                                db.developers[message.session] = rambase.current_script;
 
-                                if (result[0].info === 'logout') {
+                                if (infos === 'logout') {
                                     rambase.logged_out = true;
                                     //console.log('db - logged_out message for :', rambase);
                                 } else rambase.logged_out = false;   
 
                                 
+
                                 //console.log('=================================rambase.current_cid> ',rambase.current_cid );
                                 console.timeEnd("========================DB QUERY");
-                                if (cb) cb(result[0].scriptnamed.toString(),newdata)
+                                if (cb) cb(rambase.current_script,newdata)
                                 else {    
                                     if (ss.publish && ss.publish.socketId) {
                                     ss.publish.socketId(req.socketId, 'newData', 'content', newdata);
@@ -417,8 +419,9 @@ exports.actions = function (req, res, ss) {
 
 		NavSubmit : function (message) {
 			if (message && message.length > 0) { // Check for blank messages
-				rambase = db.locate(req.session.myStartID);
-				//console.log('My session is',req.session.myStartID,' and my database is ', rambase);
+
+                db.locateRambaseReq(req,function (rambase) {            
+				console.log('My session is',req.session.myStartID,' and my database is ', rambase);
 				message = JSON.parse(message);
 
 				//console.log("message do:", message);
@@ -428,6 +431,7 @@ exports.actions = function (req, res, ss) {
 
 				console.log('NavSubmit is', message);
 				exports.produce_div(req, res, ss, rambase, message, req.session.myStartID);
+                });
 
 				return res(true); // Confirm it was sent to the originating client
 			} else {

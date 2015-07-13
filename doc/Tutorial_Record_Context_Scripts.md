@@ -9,6 +9,8 @@ which can be used as per this example.
 
 Example
 	
+```	
+
 <#script(when:name_of_script)
 UPDATE PRODUCT set UNIT=cast (UNIT as integer)+1
 where ref=:run_procedure_pk
@@ -20,6 +22,8 @@ Select
 ref           --:{as:pk}
 ...
 #>	
+
+```
 	
 
 	

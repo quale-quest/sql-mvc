@@ -38,6 +38,9 @@ A formula for the complexity of a system can be expressed
 	
 
 ##Current solutions
+
+It could be argued that all languages got started due to an attempt to reduce some complexity vector in another language.
+
 Over the decades many new systems and languages have been created with the intent to reduce 
 the Incidental complexity, it is wise to learn and use the best practices.
 
@@ -50,7 +53,7 @@ Language syntax - I prefer braces for code blocks, but have had very enjoyable t
 however I disliked PHP's syntax intensely, however these are superficial differences which probably 
 add very little incidental complexity. More substantial complexity are language features such as C macro's.
 
-It could be argued that all languages got started due to an attempt to reduce some complexity vector in another language.
+
 
 
 Python has a great meme: There should by one and only one obvious way of doing something, 
@@ -65,18 +68,20 @@ But even the MVC method adds its own vector of incidental complexity.
 .....
 
 #Creating better solutions
-The question then becomes how do we minimise the incidental complexity vectors
- of a specific problem domains of interest.
-
-
+The question then becomes how do we minimise all the incidental complexity vectors of a specific problem domains of interest.
 
 Within this domain we have 
-		User Interface
-		Bussiness/Application logic
-		Database Interface
+		* User Interface
+		* Bussiness/Application logic
+		* Database Interface
 		
-MVC splits the UI away from the Model and controller, this is especially useful in modern apps where the aesthetic of an applications is viatl and the
+MVC splits the UI away from the Model and controller, this is especially useful in modern apps where the aesthetic of an applications is vital and the
 programmer does not have all the skills of a UI designer, and the UI designer must not be able to break the rest of the program.
+
+A really big contributor of incidental complexity is the notion that the "database" is separate from the application, thus the database records have to be loaded into memory, operated on and posted back. Paradigms like ORM is an attempt to make the database appear as part of the application code. the benefit of this is much reduced incidental complexity but at the expense of performance. The alternative is to move the application code into the database, which is unusual but not totally unheard of as often parts of an application is moved to the database normally for performance or security reasons, what makes QualeQuest/SQL-MVC so unique is it approaches the database as the default location for all the code except for when functionally this is not possible. 
+
+The out come is a system with decreased complexity and improved performance.
+
 	
 “Something that looks great but is difficult to use is exemplary of great UI and poor UX. 
 While Something very usable that looks terrible is exemplary of great UX and poor UI.”	

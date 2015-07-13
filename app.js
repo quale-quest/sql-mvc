@@ -19,8 +19,6 @@ var ServerProcess = require("./server/rpc/ServerProcess");
 var severside_render = require("./server/lib/severside_render"); 
 
 
-//var redis = require('redis');
-//var redis_client = redis.createClient(); //creates a new client 
 
 
 // Define a single-page client called 'main'
@@ -76,12 +74,12 @@ ss.http.route('/', function (req, res) {
 	//console.log('===========================Initial contents of my session is ', req.session.myStartID);
 	console.log('===========================Inital contents of my session is ',
         req.session.myStartID,  req.headers.host, req.url);
-    
+    var session_save = 0;
 	if (req.session.myStartID === undefined) {
 		//ss.session.options.secret = crypto.randomBytes(32).toString();
 		req.session.myStartID = app_utils.timestamp();//crypto.randomBytes(32).toString();
         //console.log('===========================Assigned new session ID ',req.session.myStartID);
-		req.session.save();
+		session_save = 1;
 	}    
     
 	/*
@@ -106,6 +104,9 @@ ss.http.route('/', function (req, res) {
     var Application = params.app || ''; 
 
     //console.log('serveClient host:',host_name,' home_page:', home_page,params,' Application :',Application);
+    if (req.session.Application!=Application) {req.session.Application=Application; session_save = 1;}
+    if (req.session.root_folder!=root_folder) {req.session.root_folder=root_folder; session_save = 1;}
+    if (session_save) req.session.save();    
     
 	db.databasePooled(root_folder, req.session.myStartID,Application, function (err , msg, rambase
 		) {
@@ -133,18 +134,18 @@ ss.http.route('/', function (req, res) {
             //this is a first page load ... server-side rendered                
                 ServerProcess.produce_login(req, res, ss,rambase, '', 'guest','gu35t',
                 function (scriptnamed,jsonstring){
-                    console.time("severside_render");
+                    //console.time("severside_render");
                     severside_render.render(scriptnamed,jsonstring,"client/views/app.html",
                         function (html_inject){
                              //console.log('produce_login rendered html 162246:',html_inject);
                              //app_utils.serveBuffer(res, '',html,0,'index.html');  
-                             console.timeEnd("severside_render");
+                             //console.timeEnd("severside_render");
                              res.serveClient('main',
                              function (html){
                                  //console.log("render_from_fullstash returning :");
                                  html = severside_render.render_inject(html,html_inject);
                                  //console.log('produce_login rendered html 162247 XXXXXXXXXXXXXXXXXXX:',html);
-                                 console.timeEnd("severside_render");
+                                 //console.timeEnd("severside_render");
                                  return html;
                              });
                         });    
@@ -155,7 +156,7 @@ ss.http.route('/', function (req, res) {
                // res.serveClient('main');
             } else  {
             res.serveClient('main');
-            }
+            } 
 		}
 
 	});
