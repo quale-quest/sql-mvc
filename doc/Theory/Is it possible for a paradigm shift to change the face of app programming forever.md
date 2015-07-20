@@ -17,6 +17,20 @@ Please have a look at how I do it and enter into meaningful discussion.
 https://github.com/quale-quest/sql-mvc/blob/master/doc/Tutorial_basic_1.md
 
 
+[About Lafras] (https://github.com/quale-quest/sql-mvc/blob/master/doc/Theory/About_Lafras.md) 
+ 
+
+
+Good reading:
+https://www.youtube.com/watch?feature=player_detailpage&v=2egL4y_VpYg
+	Have a message
+		What is the language for, who is the language for, What would make it better(define better, be specific, know your own faults), 
+		No language can be everything for everyone.
+
+About 43:00 Is a graph of C++ history
+
+
+
 
 
 
