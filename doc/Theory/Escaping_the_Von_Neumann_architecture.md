@@ -32,7 +32,7 @@ John Backus stated the Von Neumann architecture creates an intellectual bottlene
 
 **Functional programming** : John Backus introduces Functional programming as a non Von Neumann architecture [1].
 
-**Dataflow architecture** : no commercially successful general-purpose computer hardware has used a dataflow architecture, although event driven(data arriving) programming is a common programming paradigm.
+**Dataflow architecture** :  (also see above) [" Dataflow architectures do not have a program counter, or (at least conceptually) the executability and execution of instructions is solely determined based on the availability of input arguments to the instructions, so that the order of instruction execution is unpredictable; no commercially successful general-purpose computer hardware has used a dataflow architecture"] (https://en.wikipedia.org/wiki/Dataflow_architecture),  although event driven(data arriving) programming is a common programming paradigm.
 
 **Cellular automaton** :  no commercially successful general-purpose computer hardware has used a Cellular automaton architecture, however programmable gate arrays (FPGA) and VHDL has been used to implement application specific solutions [2]. 
 

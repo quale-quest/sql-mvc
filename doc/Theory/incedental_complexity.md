@@ -89,6 +89,9 @@ although a bit idealistic, this is a great principle well worth striving for.
 
 **Separation of concerns** - There are many arguments at which point / angle concerns should be separated, I believe primary separation should be based on human talent, i.e. separate programmers from designers and analysts (as the 3 talents are seldom found in one individual). The second separation should be on application code vs system code, application code is best written by programmers that have a thorough understanding of the business use case, whereas system programming very seldom is dependent on the use case and is very infrastructure driven. Thus by its very nature, there are three primary natural separations. I think this separation should be so severe that it must not be possible to mix the Application code, the design art and the system code at all.
 
+**early optimization** - vs *premature optimization* - For most projects, there is a good chance you won't ever need to consider optimization, but if your app is busy going viral you will loose your window of opportunity as there will be no time to optimise. The best practise is early optimization, you need to choose the right base technology to scale, you need to design the architecture to scale, most importantly the language and architecture should make it easy to continuously write optimal code. Leaving optimisations until you need them is an anti-pattern.
+
+
 
 ##Anti-establishment 
 
