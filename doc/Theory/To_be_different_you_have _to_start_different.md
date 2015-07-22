@@ -1,3 +1,8 @@
+#Introduction
+
+In January 2015 published some pretty cool stuff, but nobody seems to notice it between all the "noise" of new technologies, So I started to try and document the theory behind it, I actually had to discover what I invented and find a way to express it in a theoretical manner that would illustrate the benefits, this has been great and has lead to more abstract thinking and further evolution of the concepts - truly a Quest.
+
+
 #Application Architecture Abstraction Paradigm (AAAP)
 To be different, you have to start of being different
 
@@ -48,7 +53,7 @@ Think of AAAP more as a linker that links your application with the appropriate 
 
 So far our proof of concept is QualeQuest/SQL-MVC is working but it still needs a lot of work before it will meet all these goals.
 
-**Please visit <https://github.com/quale-quest/sql-mvc> for some more detail on the platform.**
+Please visit my home page <http://qualequest.com/> or the Github repository <https://github.com/quale-quest/sql-mvc> for some more detail on the platform.
 
 [About Lafras] (https://github.com/quale-quest/sql-mvc/blob/master/doc/Theory/About_Lafras.md) 
  

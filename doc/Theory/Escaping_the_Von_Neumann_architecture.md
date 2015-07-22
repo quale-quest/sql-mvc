@@ -1,3 +1,7 @@
+#Introduction
+
+In January 2015 published some pretty cool stuff, but nobody seems to notice it between all the "noise" of new technologies, So I started to try and document the theory behind it, I actually had to discover what I invented and find a way to express it in a theoretical manner that would illustrate the benefits, this has been great and has lead to more abstract thinking and further evolution of the concepts - truly a Quest.
+
 #Escaping the Von Neumann architecture (in web and app programming)
 
 Firstly the definition of the Von Neumann architecture: "A design architecture for an electronic digital computer with parts consisting of a processing unit(1) containing an arithmetic logic unit and processor registers, a control unit containing an instruction register and program counter, a memory(2) to store both data and instructions, external mass storage(3), and input and output mechanisms(4)." [7]
@@ -39,19 +43,19 @@ John Backus stated the Von Neumann architecture creates an intellectual bottlene
 All of mankind has been trapped in the "Von Neumann intellectual bottleneck", even those that can see there is a better solution fall back into it's trap.
 
 I content that even modern functional languages regress to the Von Neumann architecture in the form of IO monads because of the "Von Neumann intellectual bottleneck". This answer to a SO question exemplifies the "Von Neumann intellectual bottleneck":
-[" The problem is that Haskell IO is based on monads, and IO is probably one of the first things you want to understand when learning a new language - after all, its not much fun to create programs which don't produce any output."] (http://stackoverflow.com/questions/44965/what-is-a-monad)
+[" The problem is that Haskell IO is based on monads, and IO is probably one of the first things you want to understand when learning a new language - after all, its not much fun to create programs which don't produce any output."] (http://stackoverflow.com/questions/44965/what-is-a-monad), [More on why and how to aviod monad thinking ] (https://noordering.wordpress.com/2009/03/31/how-you-shouldnt-use-monad/)
 
 A further insistence on IO monads is perpetuated by by a desire to be the [best language for every thing and everybody] (https://www.youtube.com/watch?feature=player_detailpage&v=2egL4y_VpYg#t=122) **and every part**.
 
 
 ##Eliminating the artefacts of our technical limits from the architecture
 
-Imagine how different our programming architecture would be today, if all computer memory right from the first bits in the first stored program computer to every QB today was directly accessible and non-volatile memory, imagine some or all of that memory being content or context addressable memory [3]. Imagine if we could reach into that memory and observe and change it and trigger execution directly.
+Imagine how different our programming architecture would be today, if all computer memory right from the first bits in the first stored program computer to every QB today was directly accessible and non-volatile memory, imagine some or all of that memory being [content (or context) addressable memory] (https://en.wikipedia.org/wiki/Content-addressable_memory). Imagine if we could reach into that memory and observe and change it and trigger execution directly.
 
 These technologies all exist today and can be used to create a new architecture.
 
 The "new architecture" definition would be:
-Definition : "A design architecture for an electronic digital computer with parts consisting of a processing unit(1) or units containing an arithmetic logic unit or units, an event unit(2) that can start the execution of instructions within a context of an event (similar concept to an interrupt), a non-volatile memory(3) to store both data and instructions that is directly accessible by address or context and where the memory is associated with an external host or hosts providing mechanisms for input and output and event triggers."
+A design architecture for an electronic digital computer with parts consisting of a processing unit(1) or units containing an arithmetic logic unit or units, an event unit(2) that can start the execution of instructions within a context of an event (similar concept to an interrupt), a non-volatile memory(3) to store both data and instructions that is directly accessible by address or context and where the memory is associated with an external host or hosts providing mechanisms for input and output and event triggers.
 
 Thus the architecture consists of 4 parts (CPU, EVENT-CONTEXT, NV-RAM, HOST) 
 
@@ -78,13 +82,13 @@ Comparing a simple Haskell example [5]
 	<span name="message"></span>
 	message = "Hello, " ++ context.name ++ "."
 	
-As demonstrated by this very simple example, this new model is very well suited to functional languages eliminating the need to serialise input and output.
+As demonstrated by this very simple example, this new model is very well suited to functional languages, eliminating the need to serialise input and output.
 
-I don't suggest that it would be practical to build such hardware. **Why** then imagine such a hypothetical and impractical architecture when the Von Neumann architecture serves our computing requirements so well? Simple, to eliminate the  "Von Neumann intellectual bottleneck".
+I don't suggest that it would be practical to build such hardware. The reason to imagine such a hypothetical and impractical architecture is to eliminate the  "Von Neumann intellectual bottleneck".
 
-SQL is a functional language (and [the successful cousin of Haskell] (http://thoughts.davisjeff.com/2011/09/25/sql-the-successful-cousin-of-haskell/) ), it is very widely used and easily understood with human like language syntax, in contrast to most functional languages with algebraic syntax. On comparison a SQL database is a very close approximation of the "new architecture", Once we get the abstraction of the input, output and events correct, SQL becomes a candidate to test the hypothesis of the "new architecture" in the real world, hence our platform QualeQuest/SQL-MVC, which uses SQL to deliver a fully operational declarative / functional application language.
+SQL is a functional language (that could be considered [the successful cousin of Haskell] (http://thoughts.davisjeff.com/2011/09/25/sql-the-successful-cousin-of-haskell/) ), it is very widely used and easily understood with human like language syntax, in contrast to most functional languages with algebraic syntax. On comparison a SQL database is a very close approximation of the "new architecture". Once we get the abstraction of the input, output and events correct, SQL becomes a candidate to test the hypothesis of the "new architecture" in the real world, hence my platform QualeQuest/SQL-MVC, which uses SQL to deliver a fully operational declarative / functional application language.
 
-Please visit <https://github.com/quale-quest/sql-mvc> for some more detail on the platform.
+Please visit my home page <http://qualequest.com/> or the Github repository <https://github.com/quale-quest/sql-mvc> for some more detail on the platform.
 
 [About Lafras] (https://github.com/quale-quest/sql-mvc/blob/master/doc/Theory/About_Lafras.md)
 

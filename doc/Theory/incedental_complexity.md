@@ -1,3 +1,9 @@
+#Introduction
+
+In January 2015 published some pretty cool stuff, but nobody seems to notice it between all the "noise" of new technologies, So I started to try and document the theory behind it, I actually had to discover what I invented and find a way to express it in a theoretical manner that would illustrate the benefits, this has been great and has lead to more abstract thinking and further evolution of the concepts - truly a Quest.
+
+
+
 #Incidental complexity 
 
 Our domain of interest in this paper is client/server/database applications (on-line or off-line), more specifically web and mobile applications, and initially web applications.
@@ -136,7 +142,7 @@ At a sufficiently abstracted application programming level, it becomes more abou
 All above is a pointless discussion if it cannot be put into practise, The outcome is a system with decreased complexity and improved performance, QualeQuest/SQL-MVC is the first platform built with this concept.
 
 
-Please visit <https://github.com/quale-quest/sql-mvc> for some more detail on the platform.
+Please visit my home page <http://qualequest.com/> or the Github repository <https://github.com/quale-quest/sql-mvc> for some more detail on the platform.
 
 
 [About Lafras] (https://github.com/quale-quest/sql-mvc/blob/master/doc/Theory/About_Lafras.md)
