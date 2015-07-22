@@ -21,7 +21,7 @@ var update_in_widgit_template = function (filename, text) {
             fn = fn.substr(0, fn.lastIndexOf('.'));
             
             var codes = HoganC.compile(text,{asString: true});
-            console.log("serverside compiled codes :",fn,codes); 
+            //console.log("serverside compiled codes :",fn,codes); 
             var fncall = codes.slice(0,16);
             if (fncall!=='function(c,p,i){') {
                 console.log("Server side render fails unit test - unexpected function type from Hogan compile 133005:",fncall); 
@@ -33,7 +33,7 @@ var update_in_widgit_template = function (filename, text) {
 }    
 
 var files_ = fileutils.getFiles(path.join(__dirname,'../../client/templates/Widgets'));
-console.log("serverside render files_ :",files_);
+//console.log("serverside render files_ :",files_);
 
  for (var key in files_) {
         if (files_.hasOwnProperty(key)) {         
@@ -44,7 +44,7 @@ console.log("serverside render files_ :",files_);
 
 //unit test compare basic template
 update_in_widgit_template("ssr_unit_test.html","abc{{name}}");
-console.log("serverside compiled :",sst);    
+//console.log("serverside compiled :",sst);    
 var lcx = {name:"efg"};
 var retval = sst['Widgets-ssr_unit_test' ].render(lcx);
 if (retval!=='abcefg') {
