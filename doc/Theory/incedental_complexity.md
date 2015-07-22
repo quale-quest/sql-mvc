@@ -86,11 +86,11 @@ although a bit idealistic, this is a great principle well worth striving for.
 
 ##Anti-establishment 
 
-The above description is pretty straight forward, fairly self-evident and not really controversial, but it does start to create the mindset we need to look at the problem form a incidental complexity point of view. 
+The above description is pretty straight forward, fairly self-evident and not really controversial, but it does start to create the mindset we need to look at the problem from a incidental complexity point of view. 
 
-*Go against convention.* Conventional wisdom is bad. It is what the majority of the world follows and the majority of the world is in the big part of the bell shaped curve. Do things differently and you will end up with a very different result. [reference] (https://www.quora.com/What-are-the-top-10-things-that-we-should-be-informed-about-in-life)
+*Go against convention.* "Conventional wisdom is bad. It is what the majority of the world follows and the majority of the world is in the big part of the bell shaped curve. Do things differently and you will end up with a very different result." [reference] (https://www.quora.com/What-are-the-top-10-things-that-we-should-be-informed-about-in-life)
 
-In a [keynote address at Curry ON Prague] (https://www.youtube.com/watch?feature=player_detailpage&v=2egL4y_VpYg), Bjarne Stousstrup (7:13) describes the early days of C++ and how he had faced ridicule because of anti-establishment thinking, this is inevitable, if you do not get ridiculed you are not radical enough.
+In a [keynote address at Curry ON Prague] (<https://www.youtube.com/watch?feature=player_detailpage&v=2egL4y_VpYg#t=399>, Bjarne Stousstrup describes the early days of C++ and how he had faced ridicule because of anti-establishment thinking, this is inevitable, if you do not get ridiculed you are not radical enough.
 
 ##Anti-Patterns of Fundamental best practises
 
@@ -123,7 +123,7 @@ Separate concerns to the extent that the code should not directly generate HTML 
 
 Custom handling of input boxes etc. should not be possible in the application programming model, but must be moved to a systems level programming model.
 
-"Write once run everywhere" is an unattainable ideal, but if we abstract the application programming model to a sufficiently high level we can force the removal of platform code out of the application level and place it into an design art level or systems level, thereby making it easier to port, and reuse and consistently in various views.
+"Write once run everywhere" is an unattainable ideal, but if we abstract the application programming model to a sufficiently high level we can force the removal of platform code out of the application level and place it into an design art level or systems level, thereby making it easier to port, and reuse consistently in various views.
 
 Systems level code would be written in general purpose native or scripted languages, and would typically form a "Platform", if the  application programming model is sufficiently abstracted, it will not matter to the application how Incidental complexity vectors like Legacy, Diversity, Network performance and Endpoint trust are resolved by the underlying platform, and such issues would be able to be improved upon by system level developers without affecting the application code at all.
 
@@ -133,7 +133,7 @@ At a sufficiently abstracted application programming level, it becomes more abou
 
 ##Step 5 - Build proof of concept
 
-All above is pointless discussion if it cannot be put into practise, The outcome is a system with decreased complexity and improved performance, QualeQuest/SQL-MVC is the first platform built with this concept.
+All above is a pointless discussion if it cannot be put into practise, The outcome is a system with decreased complexity and improved performance, QualeQuest/SQL-MVC is the first platform built with this concept.
 
 
 Please visit <https://github.com/quale-quest/sql-mvc> for some more detail on the platform.

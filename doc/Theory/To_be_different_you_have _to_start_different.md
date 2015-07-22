@@ -2,7 +2,7 @@
 To be different, you have to start of being different
 
 ##Background
-<https://www.youtube.com/watch?feature=player_detailpage&v=2egL4y_VpYg> at 7:30 is a graph showing C++'s origin being in Simula, a general purpose abstraction and C, a hardware abstraction. All modern  languages have borrowed from this general purpose abstraction(GPA) ancestry , leaving behind Domain Specific Abstractions(DSA) like Fortran and Cobol, branding them as legacy and deprecated.
+<https://www.youtube.com/watch?feature=player_detailpage&v=2egL4y_VpYg#t=447>  is a graph showing C++'s origin being in Simula, a general purpose abstraction and C, a hardware abstraction. All modern  languages have borrowed from this general purpose abstraction(GPA) ancestry , leaving behind Domain Specific Abstractions(DSA) like Fortran and Cobol, branding them as legacy and deprecated.
 
 This general purpose abstraction(GPA) mirrors the basic hardware architecture of being a processing unit attached to storage units (Von Neumann model). Subsequent scripted languages and higher abstractions, even parts of functional programming have followed this model.
 
