@@ -42,7 +42,7 @@ John Backus stated the Von Neumann architecture creates an intellectual bottlene
 
 All of mankind has been trapped in the "Von Neumann intellectual bottleneck", even those that can see there is a better solution fall back into it's trap.
 
-I content that even modern functional languages regress to the Von Neumann architecture in the form of IO monads because of the "Von Neumann intellectual bottleneck". This answer to a SO question exemplifies the "Von Neumann intellectual bottleneck":
+I contend that even modern functional languages regress to the Von Neumann architecture in the form of IO monads because of the "Von Neumann intellectual bottleneck". This answer to a SO question exemplifies the "Von Neumann intellectual bottleneck":
 [" The problem is that Haskell IO is based on monads, and IO is probably one of the first things you want to understand when learning a new language - after all, its not much fun to create programs which don't produce any output."] (http://stackoverflow.com/questions/44965/what-is-a-monad), [More on why and how to aviod monad thinking ] (https://noordering.wordpress.com/2009/03/31/how-you-shouldnt-use-monad/)
 
 A further insistence on IO monads is perpetuated by by a desire to be the [best language for every thing and everybody] (https://www.youtube.com/watch?feature=player_detailpage&v=2egL4y_VpYg#t=122) **and every part**.
