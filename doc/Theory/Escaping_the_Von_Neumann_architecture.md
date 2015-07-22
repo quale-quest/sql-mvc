@@ -48,7 +48,7 @@ I contend that even modern functional languages regress to the Von Neumann archi
 A further insistence on IO monads is perpetuated by by a desire to be the [best language for every thing and everybody] (https://www.youtube.com/watch?feature=player_detailpage&v=2egL4y_VpYg#t=122) **and every part**.
 
 
-##Eliminating the artefacts of our technical limits from the architecture
+##Eliminating the artifacts of our technical limits from the architecture
 
 Imagine how different our programming architecture would be today, if all computer memory right from the first bits in the first stored program computer to every QB today was directly accessible and non-volatile memory, imagine some or all of that memory being [content (or context) addressable memory] (https://en.wikipedia.org/wiki/Content-addressable_memory). Imagine if we could reach into that memory and observe and change it and trigger execution directly.
 
@@ -71,13 +71,14 @@ Comparing a simple Haskell example [5]
 	  name <- getLine
 	  putStrLn ("Hello, " ++ name ++ ".")
 
-	--vs Haskell with new architecture where user input, output and events is provided declaratively by a host. 
+	--vs pseudo Haskell with HTML as IO directives
 
 	<input name="name" placeholder="Please enter your name">
 	<span name="message"></span>
 	message = "Hello, " ++ name ++ "."
 
-	--vs Haskell with new architecture where output and events is provided declarative by a host, and the database is considered part of non-volatile context addressable memory.
+	--vs pseudo Haskell with HTML as IO directives
+	--  and the database is considered part of non-volatile context addressable memory.
 	
 	<span name="message"></span>
 	message = "Hello, " ++ context.name ++ "."
