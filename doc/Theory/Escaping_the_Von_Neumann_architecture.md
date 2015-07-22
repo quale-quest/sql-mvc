@@ -1,6 +1,6 @@
 #Introduction
 
-In January 2015 published some pretty cool stuff, but nobody seems to notice it between all the "noise" of new technologies, So I started to try and document the theory behind it, I actually had to discover what I invented and find a way to express it in a theoretical manner that would illustrate the benefits, this has been great and has lead to more abstract thinking and further evolution of the concepts - truly a Quest.
+In January 2015, I published a pretty cool open source project, but nobody seems to notice it between all the "noise" of new technologies. So I started to document the theory behind it. I actually had to discover what I invented and find a way to express it in a theoretical manner that would illustrate the benefits, this has been great and has lead to more abstract thinking and further evolution of the concepts - truly a Quest.
 
 #Escaping the Von Neumann architecture (in web and app programming)
 
