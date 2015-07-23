@@ -4,6 +4,7 @@ In January 2015, I published a pretty cool open source project, but nobody seems
 
 #Escaping the Von Neumann hardware architecture
 
+
 Firstly the definition of the Von Neumann hardware architecture: "A design architecture for an electronic digital computer with parts consisting of a 1) processing unit containing an arithmetic logic unit and processor registers, a control unit containing an instruction register and program counter, 2) a memory to store both data and instructions, 3) external mass storage, and 4) input and output mechanisms." [7]
 
 Late 1930's researchers were searching for a means to implement a "Universal Turing machine", then in 1945, Von Neumann described a practical means by which this could be implemented using the very limited technology of that time,  the first successful run of a stored-program was made in 1948.  
@@ -26,7 +27,7 @@ John Backus stated the Von Neumann hardware architecture creates an intellectual
 
 ##Alternatives  of the Von Neumann hardware architecture :
 
-**Functional programming** : John Backus introduces Functional programming as a non Von Neumann hardware architecture [1], however implementations of Functional programs still run on hardware based on Von Neumann hardware architecture, to my knowledge no commercially successful general-purpose computer hardware implements a hardware architecture based on Functional programming, although this could be possible.
+**an unnamed non-Von Neumann hardware architectures better suited to functional programming** : *if anyone knows of a name used by early researches please comment on the reddit thread*. - John Backus introduces Functional programming as a non Von Neumann hardware architecture [1], however implementations of Functional programs still run on hardware based on Von Neumann hardware architecture, to my knowledge no commercially successful general-purpose computer hardware implements a hardware architecture based on Functional programming, although this could be possible.
 
 **Dataflow architecture** :  (also see above) [" Dataflow architectures do not have a program counter, or (at least conceptually) the executability and execution of instructions is solely determined based on the availability of input arguments to the instructions, so that the order of instruction execution is unpredictable; no commercially successful general-purpose computer hardware has used a dataflow architecture"] (https://en.wikipedia.org/wiki/Dataflow_architecture),  although event driven(data arriving) programming is a common programming paradigm.
 
