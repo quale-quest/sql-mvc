@@ -2,10 +2,10 @@
 
 In January 2015, I published a pretty cool open source project, but nobody seems to notice it between all the "noise" of new technologies. So I started to document the theory behind it. I actually had to discover what I invented and find a way to express it in a theoretical manner that would illustrate the benefits, this has been great and has lead to more abstract thinking and further evolution of the concepts - truly a Quest.
 
-#Escaping the Von Neumann hardware architecture
+#Escaping the Von Neumann programming paradigm
 
 
-Firstly the definition of the Von Neumann hardware architecture: "A design architecture for an electronic digital computer with parts consisting of a 1) processing unit containing an arithmetic logic unit and processor registers, a control unit containing an instruction register and program counter, 2) a memory to store both data and instructions, 3) external mass storage, and 4) input and output mechanisms." [7]
+Firstly the definition of the Von Neumann hardware architecture: "A design architecture for an electronic digital computer with parts consisting of a 1) processing unit containing an arithmetic logic unit and processor registers, a control unit containing an instruction register and [program counter] (https://en.wikipedia.org/wiki/Program_counter), 2) a memory to store both data and instructions, 3) external mass storage, and 4) input and output mechanisms." [7]
 
 Late 1930's researchers were searching for a means to implement a "Universal Turing machine", then in 1945, Von Neumann described a practical means by which this could be implemented using the very limited technology of that time,  the first successful run of a stored-program was made in 1948.  
 
@@ -87,7 +87,7 @@ As demonstrated by this very simple example, this "new programming paradigm" is 
 
 I don't suggest that it would be practical to build such hardware. The reason to imagine such a hypothetical and impractical architecture is to eliminate the  "Von Neumann intellectual bottleneck".
 
-SQL is a functional language (that could be considered [the successful cousin of Haskell] (http://thoughts.davisjeff.com/2011/09/25/sql-the-successful-cousin-of-haskell/) ), it is very widely used and easily understood with human like language syntax, in contrast to most functional languages with algebraic syntax. On comparison a SQL database is a very close approximation of the "new architecture". Once we get the abstraction of the input, output and events correct, SQL becomes a candidate to test the hypothesis of the "new programming paradigm"  in the real world, hence my platform QualeQuest/SQL-MVC, which uses SQL to deliver a fully operational declarative / functional application language.
+SQL is a declarative language, it is very widely used and easily understood with human like language syntax. On comparison a SQL database is a very close approximation of the "new architecture". Once we get the abstraction of the input, output and events correct, SQL becomes a candidate to test the hypothesis of the "new programming paradigm"  in the real world, hence my platform QualeQuest/SQL-MVC, which uses SQL to deliver a fully operational declarative application language.
 
 Please visit my home page <http://qualequest.com/> or the Github repository <https://github.com/quale-quest/sql-mvc> for some more detail on the platform, Or <http://todomvc.sql-mvc.com/> for a demo web application written using this "new programming paradigm".
 
