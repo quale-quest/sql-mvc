@@ -1,5 +1,7 @@
 #Introduction
 
+This paper is not ready for publication yet! If you do find it, please don't post it to Reddit or others.
+
 In January 2015 published some pretty cool stuff, but nobody seems to notice it between all the "noise" of new technologies, So I started to try and document the theory behind it, I actually had to discover what I invented and find a way to express it in a theoretical manner that would illustrate the benefits, this has been great and has lead to more abstract thinking and further evolution of the concepts - truly a Quest.
 
 

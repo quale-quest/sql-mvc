@@ -1,5 +1,7 @@
 # Paradigm 
 
+This paper is not ready for publication yet! If you do find it, please don't post it to Reddit or others.
+
 A brief overview of some programming paradigms and how Quale fits in.
 
 ref1: https://en.wikipedia.org/wiki/Programming_paradigm

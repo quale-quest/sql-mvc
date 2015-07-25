@@ -1,5 +1,7 @@
 #Is it possible for a paradigm shift to change the face of app programming forever?
 
+This paper is not ready for publication yet! If you do find it, please don't post it to Reddit or others.
+
 Since whenever, imperative programming paradigm has been driving web development forward, declarative (functional) programming languages, have had only minor attention.
 
 For some years I have been implementing web apps in a declarative/reactive paradigm.
