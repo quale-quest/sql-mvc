@@ -1,10 +1,10 @@
-Thanks to all [redditors who commented on my first draft] (https://www.reddit.com/r/programming/comments/3e7avo/escaping_the_von_neumann_architecture/), this is an almost complete rewrite, I hope I have made it better.
+Thanks for [all the input from the redditors who commented on my first draft] (https://www.reddit.com/r/programming/comments/3e7avo/escaping_the_von_neumann_architecture/), this is an almost complete rewrite, I hope I have made it better.
 
 This paper is not ready for publication yet! If you do find it, please don't post it to Reddit or others.
 
 #Escaping the Von Neumann programming paradigm
 
-**This is not about imperative vs functional programming paradigms.**
+**This is not about the imperative vs functional programming paradigms.**
 
 ##Firstly the definitions
 
@@ -12,7 +12,7 @@ I am making use of the following verbose terms, with their corresponding definit
 
 **PC** - [program counter] (https://en.wikipedia.org/wiki/Program_counter) / Instruction pointer.
 
-**CPU**  to facilitate the discussion herein I define the CPU as a  processing unit containing, arithmetic logic unit and a control unit only. Deliberately omitting the PC, and ignoring the internal/external nature of the registers and requirement for an instruction registers.
+**CPU**  to facilitate the discussion herein I define the CPU as a  processing unit containing, arithmetic logic unit and a control unit only. Deliberately omitting the PC, and ignoring the internal/external nature of the registers and requirement for an instruction register.
 
 **DISK** - any non-volatile storage outside of the CPU.
 
@@ -36,11 +36,11 @@ I am making use of the following verbose terms, with their corresponding definit
 
 The Von Neumann hardware architecture was a practical means by which to implement a [Universal Turing machine] (https://en.wikipedia.org/wiki/Universal_Turing_machine) using the very limited technology available in 1945, and  has been robust enough to evolve into the foundation for today's mass computing phenomena.
 
-John Backus contemplating a minimal Von Neumann hardware architecture (CPU,PROGRAM_COUNTER,RAM), sees there a limitation in the architecture that creates a bottle neck in the "connecting tube" - between the CPU and RAM, he goes on to say: *"Surely there must be a less primitive way of making big changes in the store than by pushing vast numbers of words back and forth through the von Neumann bottleneck. Not only is this tube a literal bottleneck for the data traffic of a problem, but, more importantly, it is an intellectual bottleneck"* - Thus the "Pure Backus hardware architecture", could consist of a CPU instantly operating on massively parallel RAM  (CPU & RAM).
+John Backus contemplating a minimal Von Neumann hardware architecture (CPU,PC,RAM), sees there a limitation in the architecture that creates a bottle neck in the "connecting tube" - between the CPU and RAM, he goes on to say: *"Surely there must be a less primitive way of making big changes in the store than by pushing vast numbers of words back and forth through the von Neumann bottleneck. Not only is this tube a literal bottleneck for the data traffic of a problem, but, more importantly, it is an intellectual bottleneck"* - Thus the "Pure Backus hardware architecture", could consist of a CPU instantly operating on massively parallel RAM  (CPU & RAM).
 
 ##The TRAP
 
-Backus states : *"In seeking an alternative to conventional language we must first recognize that a system cannot be history sensitive (permit execution of one program to affect the behaviour of a subsequent one) unless the system has some kind of state (which the first program can change and the second can access). Thus a history-sensitive model of a computing system must have a state-transition semantics, at least in this weak sense. But this does not mean that every computation must depend heavily on a complex state, with many state changes required for each small part of the computation (as in von Neumann languages)."* - This is where Backus himself gets caught in the TRAP, considering in 1945, technology like non-volatile RAM was not practical, and the only practical means to make a state persistent was to write it to external storage. - Thus the "Practical Backus hardware architecture", consist of a CPU instantly operating on massively parallel RAM, and means to perform DISK and IO operations (CPU & RAM & DISK & IO).
+Backus states : *"In seeking an alternative to conventional language we must first recognize that a system cannot be history sensitive (permit execution of one program to affect the behaviour of a subsequent one) unless the system has some kind of state (which the first program can change and the second can access). Thus a history-sensitive model of a computing system must have a state-transition semantics, at least in this weak sense. But this does not mean that every computation must depend heavily on a complex state, with many state changes required for each small part of the computation (as in von Neumann languages)."* - This is where Backus himself, in searching for a pragmatic solution, gets caught in the TRAP, as in 1945, technology like non-volatile RAM was not practical, and the only practical means to make a state persistent was to write it to external storage. - Thus the "Practical Backus hardware architecture", consist of a CPU instantly operating on massively parallel RAM, and means to perform DISK and IO operations (CPU & RAM & DISK & IO).
 
 
 ##Next: part 2 - [Eliminating the artefacts of our technical limits from the architecture] (https://github.com/quale-quest/sql-mvc/blob/master/doc/Theory/Escaping_the_Von_Neumann_programming_paradigm_part2.md/),
