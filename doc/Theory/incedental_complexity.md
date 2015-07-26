@@ -18,6 +18,13 @@ As a program grows in complexity and in the number of users, a lot of issues tha
  
 As your incidental complexity increases, complexity arises from those complexities, this is exponential incidental complexity (EIC). *To Illustrate, in [build-worlds-hottest-startups] (http://thenextweb.com/dd/2013/12/02/much-cost-build-worlds-hottest-startups/) it states to write a Facebook start-up would cost $500k, however according to [Facebook-Software-Engineer-Salaries] (http://www.glassdoor.com/Salary/Facebook-Software-Engineer-Salaries-E40772_D_KO9,26.htm) Facebook has spent more than $140M ( 300 times the start-up estimate) on development in only the last 2 years, this discrepancy is partly due to the exponential incidental complexity.*
  
+Total Incidental complexity could be expressed as 
+	TIC = F1^(F2^IC + F3^UC)
+	Where
+		IC is Incidental Complexity.
+		UC is User Count factor.
+		F are factors specific to a particular solution.
+ 
 Incidental complexity is not a simple number but has many vectors, for example:
 
 
@@ -37,6 +44,8 @@ Incidental complexity is not a simple number but has many vectors, for example:
 | Endpoint trust complexity       | Internet| vs | LAN    | very high	  |
 
 (this is a short and subjective list for illustration only )	
+
+This can be called Complex Incidental Complexity (CIC)
 
 As a result some language/ecosystems are known to be better choices for some problem domains, and It could be argued that all languages / platforms got started due to an attempt to reduce some unacceptably high complexity vector in another language. 
  
