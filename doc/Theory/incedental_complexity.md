@@ -49,7 +49,7 @@ In a secure network you can write a simpler single client side application that 
 
 ##Network performance Incidental complexity
 
-If you focus only on web applications or you use a abstraction like Cardova for minimising Diversity Incidental complexity, then the second most significant, is Network performance Incidental complexity, a developer is easily lulled into a false sense of accomplishment when testing a app in a high performance network, but if you expect your app to become vastly popular, then coping with network issues is going to add significant complexity to your app. Caching, parallel requests, demand for good battery life, all make for complex workarounds to a basic problem.
+If you focus only on web applications or you use a abstraction like Cardova for minimising Diversity Incidental complexity, then the second most significant, is Network performance Incidental complexity, a developer is easily lulled into a false sense of accomplishment when testing an app in a high performance network, but if you expect your app to become vastly popular, then coping with network issues is going to add significant complexity to your app. Caching, parallel requests, demand for good battery life, all make for complex workarounds to a basic problem.
 
 ##Diversity Incidental complexity
 
@@ -66,8 +66,8 @@ in [react-native] (https://facebook.github.io/react-native/docs/videos.html#cont
 
 ##Others
 Language syntax - I prefer braces for code blocks, but have had very enjoyable times in python's indentation blocks,
-however I disliked PHP's syntax intensely, however these are superficial differences which probably 
-add very little incidental complexity. 
+however I disliked PHP's syntax intensely. These are superficial differences which probably 
+add very little incidental complexity.
 
 
 
@@ -89,26 +89,37 @@ although a bit idealistic, this is a great principle well worth striving for.
 
 **Declarative vs Imperative** - Only use imperative paradigm where a declarative paradigm is not possible.
 
-**Separation of concerns** - There are many arguments at which point / angle concerns should be separated, I believe primary separation should be based on human talent, i.e. separate programmers from designers and analysts (as the 3 talents are seldom found in one individual). The second separation should be on application code vs system code, application code is best written by programmers that have a thorough understanding of the business use case, whereas system programming very seldom is dependent on the use case and is very infrastructure driven. Thus by its very nature, there are three primary natural separations. I think this separation should be so severe that it must not be possible to mix the Application code, the design art and the system code at all.
+**Separation of concerns** - There are many arguments at which point / angle concerns should be separated, I believe for most practial benefit the primary separation should be based on human talent, i.e. separate programmers from designers and analysts (as the 3 talents are seldom found in one individual). The second separation should be on application code vs system code, application code is best written by programmers that have a thorough understanding of the business use case, whereas system programming very seldom is dependent on the use case and is very infrastructure driven. Thus by its very nature, there are three primary natural separations. I think this separation should be so severe that it must not be possible to mix the Application code, the design art and the system code at all.
 
 **early optimization** - vs *premature optimization* - For most projects, there is a good chance you won't ever need to consider optimization, but if your app is busy going viral you will loose your window of opportunity as there will be no time to optimise. The best practise is early optimization, you need to choose the right base technology to scale, you need to design the architecture to scale, most importantly the language and architecture should make it easy to continuously write optimal code. Leaving optimisations until you need them is an anti-pattern.
 
+**Quality is speed** - To put it simply, to write code fast, you need to have quality code. If you don't have quality code, you cannot be fast. 
+In other words, if you cut corners to reach the first milestone as fast as possible, each successive milestone will become slower and slower, as the weight of the technical debt pulls you back! 
 
+**choose the right tool** - I pledge allegiance to the irrefutable truth that there is [no best language for everything and everybody] (https://www.youtube.com/watch?feature=player_detailpage&v=2egL4y_VpYg#t=122) **and every part**.
 
 ##Anti-establishment 
 
 The above description is pretty straight forward, fairly self-evident and not really controversial, but it does start to create the mindset we need to look at the problem from a incidental complexity point of view. 
 
-*Go against convention.* "Conventional wisdom is bad. It is what the majority of the world follows and the majority of the world is in the big part of the bell shaped curve. Do things differently and you will end up with a very different result." [reference] (https://www.quora.com/What-are-the-top-10-things-that-we-should-be-informed-about-in-life)
+**Go against convention.** ["Conventional wisdom is bad. It is what the majority of the world follows and the majority of the world is in the big part of the bell shaped curve. Do things differently and you will end up with a very different result."] (https://www.quora.com/What-are-the-top-10-things-that-we-should-be-informed-about-in-life)
 
-In a [keynote address at Curry ON Prague] (<https://www.youtube.com/watch?feature=player_detailpage&v=2egL4y_VpYg#t=399>, Bjarne Stousstrup describes the early days of C++ and how he had faced ridicule because of anti-establishment thinking, this is inevitable, if you do not get ridiculed you are not radical enough.
+In a [keynote address at Curry ON Prague] (<https://www.youtube.com/watch?feature=player_detailpage&v=2egL4y_VpYg#t=399>, Bjarne Stousstrup describes the early days of C++ and how he had faced ridicule because of anti-establishment thinking. This is inevitable, if you do not get ridiculed you are not radical enough.
 
 ##Anti-Patterns of Fundamental best practises
 
-**test driven development** - over emphasis on testing is a artefact of a fragile unpredictable environment. You should be able to code with confidence that your app wont break because of some strange side effect.
+**Loosing control** - You can't loose control, if you loose control to a "black box", that you cannot change or swap-out then you face the worst level of Incidental complexity - complete rewrite.
 
 **choose what is popular** - 
-The software industry, contrary to what you might expect, is absolutely filled with people who hate progress, most of the software industry makes its decisions like a high school teenager: they obsessively check for what’s cool in their clique. [reference](http://blog.circleci.com/it-really-is-the-future/) 
+[The software industry, contrary to what you might expect, is absolutely filled with people who hate progress, most of the software industry makes its decisions like a high school teenager: they obsessively check for what’s cool in their clique.](http://blog.circleci.com/it-really-is-the-future/) 
+
+**test driven development** - over emphasis on testing is a artefact of a fragile unpredictable environment. You should be able to code with confidence that your app wont break because of some strange side effect.
+
+**GUI Tools** - tools are nice, they help when you are lost and don't know what to do or you just don't know where to start. However they have considerable drawbacks 1) Lack of, or weak support for source control, 2) Slower development - an experienced textual coder will out code any click-clicker by a mile. 3) Lack of flexibility - when using a GUI you can only use the features in the manner the publisher envisioned you would, you are TRAPPED by their insight. 4) Loosing control (see above), a GUI tool can be the worst possible anti-pattern.
+Note: Some cite poorly generated or large chunks of boiler plate code as the worst aspect, but to me that is not so significant, after all, if you don't need to look at the code then who cares how big or how bad it is.
+
+
+
 
 #Creating better solutions
 
@@ -147,8 +158,14 @@ At a sufficiently abstracted application programming level, it becomes more abou
 All above is a pointless discussion if it cannot be put into practise, The outcome is a system with decreased complexity and improved performance, QualeQuest/SQL-MVC is the first platform built with this concept.
 
 
-Please visit my home page <http://qualequest.com/> or the Github repository <https://github.com/quale-quest/sql-mvc> for some more detail on the platform.
 
+This paper is the second in a series, to get us out of the TRAP, the next paper will tackle the problem from a whole new angle, and by the end of the series, hopefully, at last we will be free of the TRAP.
+
+If you would like to receive the next papers, send an email to redditsubscribe@qualequest.com in order to subscribe to the QualeQuest newsletter (Don't worry I don't spam).
+
+My research project is [QualeQuest] (http://qualequest.com/) it is *"the search for the essential property"*,  and [QualeQuest/SQL-MVC] (https://github.com/quale-quest/sql-mvc), is the first working iteration with a [demo web application] (http://todomvc.sql-mvc.com/).
 
 [About Lafras] (https://github.com/quale-quest/sql-mvc/blob/master/doc/Theory/About_Lafras.md)
+
+Finally I am saying that there is a certain type of thinking, "new programming paradigm" , that exists but is almost completely unknown, and not being explored, and to dismiss it without thorough exploration is unwise.
 	

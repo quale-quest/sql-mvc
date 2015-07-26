@@ -1,5 +1,5 @@
 
-This is part 3 of [Escaping the Von Neumann programming paradigm] (This is part 2 of [Escaping the Von Neumann programming paradigm] (https://github.com/quale-quest/sql-mvc/blob/master/doc/Theory/Escaping_the_Von_Neumann_programming_paradigm.md/),
+This is part 3 of [Escaping the Von Neumann programming paradigm] (https://github.com/quale-quest/sql-mvc/blob/master/doc/Theory/Escaping_the_Von_Neumann_programming_paradigm.md/),
 
 #Putting it into practice - The Proof of concept (POC)
 
@@ -7,7 +7,7 @@ I have built a POC, a fully functional web app platform(alpha version).
 
 It is possible to build the POC in any language, however I have combined the new programming paradigm with a few other concepts. Hence my odd choice of language.
 
-SQL is a declarative language, and Procedural SQL adds an imperative paradigm, however it is mostly not seen as a programming language, rather just a way to store and query our data.
+SQL is a declarative language, and [Procedural SQL] (https://en.wikipedia.org/wiki/PL/SQL) adds an imperative/procedural paradigm, however it is mostly not seen as a programming language, rather just a way to store and query our data.
 
 On contemplation, a SQL database is a very close approximation of the "new architecture", and once we abstract the input, output and events, SQL becomes an excellent candidate to test the hypothesis of the "new programming paradigm" 
 
@@ -32,7 +32,7 @@ Done
 
 WTF?/ROFL?, What happened here?
 
-I pledge allegiance to the irrefutable truth that there is [no best language for every thing and everybody] (https://www.youtube.com/watch?feature=player_detailpage&v=2egL4y_VpYg#t=122) **and every part**.
+I pledge allegiance to the irrefutable truth that there is [no best language for everything and everybody] (https://www.youtube.com/watch?feature=player_detailpage&v=2egL4y_VpYg#t=122) **and every part**.
 
 The the host is responsible for:
 1. the IO, as directed by the declarative syntax in the comments --:{}.
@@ -45,7 +45,7 @@ This paper is the first in a series, to get us out of the TRAP, the next paper w
 
 If you would like to receive the next papers, send an email to redditsubscribe@qualequest.com in order to subscribe to the QualeQuest newsletter (Don't worry I don't spam).
 
-[QualeQuest] (http://qualequest.com/) is *"the search for the essential property"*, which my research project, and [QualeQuest/SQL-MVC] (https://github.com/quale-quest/sql-mvc), is the first working iteration with a [demo web application] (http://todomvc.sql-mvc.com/)
+My research project is [QualeQuest] (http://qualequest.com/) it is *"the search for the essential property"*,  and [QualeQuest/SQL-MVC] (https://github.com/quale-quest/sql-mvc), is the first working iteration with a [demo web application] (http://todomvc.sql-mvc.com/).
 
 [About Lafras] (https://github.com/quale-quest/sql-mvc/blob/master/doc/Theory/About_Lafras.md)
 
