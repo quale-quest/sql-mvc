@@ -19,6 +19,7 @@ As a program grows in complexity and in the number of users, a lot of issues tha
 As your incidental complexity increases, complexity arises from those complexities, this is exponential incidental complexity (EIC). *To Illustrate, in [build-worlds-hottest-startups] (http://thenextweb.com/dd/2013/12/02/much-cost-build-worlds-hottest-startups/) it states to write a Facebook start-up would cost $500k, however according to [Facebook-Software-Engineer-Salaries] (http://www.glassdoor.com/Salary/Facebook-Software-Engineer-Salaries-E40772_D_KO9,26.htm) Facebook has spent more than $140M ( 300 times the start-up estimate) on development in only the last 2 years, this discrepancy is partly due to the exponential incidental complexity.*
  
 Total Incidental complexity could be expressed as 
+
 	TIC = F1^(F2^IC + F3^UC)
 	Where
 		IC is Incidental Complexity.
