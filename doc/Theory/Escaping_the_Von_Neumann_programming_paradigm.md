@@ -20,15 +20,15 @@ I am making use of the following verbose terms, with their corresponding definit
 
 **hardware architecture**: - Actual real hardware implemented in circuits, or virtual hardware implemented in a computer program that may imperfectly emulate the hardware.
 
-**Von Neumann hardware architecture**: "*A design architecture for an electronic digital computer with parts consisting of a 1) processing unit containing an arithmetic logic unit and processor registers, a control unit containing an instruction register and [program counter] (https://en.wikipedia.org/wiki/Program_counter), 2) a memory to store both data and instructions, 3) external mass storage, and 4) input and output mechanisms.*" [7] 
+**Von Neumann hardware architecture**: "*A design architecture for an electronic digital computer with parts consisting of a 1) processing unit containing an arithmetic logic unit and processor registers, a control unit containing an instruction register and [program counter] (https://en.wikipedia.org/wiki/Program_counter), 2) a memory to store both data and instructions, 3) external mass storage, and 4) input and output mechanisms.*" [7] Thus (CPU & PC & RAM & DISK & IO)
 
 **von Neumann language**: "*A von Neumann language is any of those programming languages that are high-level abstract isomorphic copies of von Neumann hardware architectures.*", further "*The differences between Fortran, C, and even Java, although considerable, are ultimately constrained by all three being based on the programming style of the von Neumann computer* [6]",
 
 **von Neumann programming paradigm** is a the paradigm used when a program is written following an abstract isomorphic copy of von Neumann hardware architecture. **There is an important distinction between a von Neumann language and the von Neumann programming paradigm**.
 
-**Pure Backus hardware architecture** : A hardware architecture ( example: [The Reduceron] (https://www.cs.york.ac.uk/fp/reduceron/) ) ideally suited to the pure functional programming paradigm.
+**Pure Backus hardware architecture** : A hardware architecture ( example: [The Reduceron] (https://www.cs.york.ac.uk/fp/reduceron/) or  [The Non-Von] (http://www.chrisfenton.com/non-von-1/) ) ideally suited to the pure functional programming paradigm. Thus (CPU & RAM)
 
-**Practical Backus hardware architectures** : A hardware architecture ideally suited to the impure functional programming paradigm.
+**Practical Backus hardware architectures** : A hardware architecture ideally suited to the impure functional programming paradigm. Thus (CPU & RAM & DISK & IO).
 
 **the TRAP** or **Von Neumann intellectual bottleneck** : John Backus stated the Von Neumann hardware architecture creates an intellectual bottleneck [1]
 
@@ -36,7 +36,7 @@ I am making use of the following verbose terms, with their corresponding definit
 
 The Von Neumann hardware architecture was a practical means by which to implement a [Universal Turing machine] (https://en.wikipedia.org/wiki/Universal_Turing_machine) using the very limited technology available in 1945, and  has been robust enough to evolve into the foundation for today's mass computing phenomena.
 
-John Backus contemplating a minimal Von Neumann hardware architecture (CPU,PC,RAM), sees there a limitation in the architecture that creates a bottle neck in the "connecting tube" - between the CPU and RAM, he goes on to say: *"Surely there must be a less primitive way of making big changes in the store than by pushing vast numbers of words back and forth through the von Neumann bottleneck. Not only is this tube a literal bottleneck for the data traffic of a problem, but, more importantly, it is an intellectual bottleneck"* - Thus the "Pure Backus hardware architecture", could consist of a CPU instantly operating on massively parallel RAM  (CPU & RAM).
+John Backus contemplating a minimal Von Neumann hardware architecture (CPU & PC & RAM), sees there a limitation in the architecture that creates a bottle neck in the "connecting tube" - between the CPU and RAM, he goes on to say: *"Surely there must be a less primitive way of making big changes in the store than by pushing vast numbers of words back and forth through the von Neumann bottleneck. Not only is this tube a literal bottleneck for the data traffic of a problem, but, more importantly, it is an intellectual bottleneck"* - Thus the "Pure Backus hardware architecture", could consist of a CPU instantly operating on massively parallel RAM  (CPU & RAM).
 
 ##The TRAP
 

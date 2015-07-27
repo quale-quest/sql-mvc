@@ -30,7 +30,7 @@ This example will use pseudo SQL(could be any language) with mark-up in  comment
 		
 Done 
 
-WTF?/ROFL?, What happened here?
+What happened here?
 
 I pledge allegiance to the irrefutable truth that there is [no best language for everything and everybody] (https://www.youtube.com/watch?feature=player_detailpage&v=2egL4y_VpYg#t=122) **and every part**.
 
