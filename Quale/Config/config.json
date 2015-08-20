@@ -76,6 +76,7 @@
         },
         "pk": "ref"
     },
+    "packages":["sql-mvc-ui-dark"],	
     "email": {},
     "async": {
         "database": {},

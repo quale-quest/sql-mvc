@@ -210,12 +210,16 @@ function inheritFiles(dir, files_, root, regex_prefix, regex_extn, debug) { //ba
 }
 
 
-var getDropinPackages = exports.getDropinPackages = function(dir, dir_regex, files_) { //regular recursive search
+var getDropinPackages = exports.getDropinPackages = function(dir, dir_regex,package_list, files_) { //regular recursive search
 	files_ = files_ || [];
 	if (typeof files_ === 'undefined')
 		files_ = [];
 	var files = fs.readdirSync(dir);
     //console.log('getFiles found:',files);
+    
+    
+    
+    
 	for (var i in files) { //is this ok??? should it not be foreach???  TODO
 		if (!files.hasOwnProperty(i))
 			continue;
@@ -232,6 +236,22 @@ var getDropinPackages = exports.getDropinPackages = function(dir, dir_regex, fil
             }
         } catch (err) {}
 	}
+    
+    console.log('getFiles plugin package_list:',package_list);
+	for (var i in package_list) { //is this ok??? should it not be foreach???  TODO
+		if (!package_list.hasOwnProperty(i))
+			continue;
+		var name = package_list[i];
+        var libname = path.join(dir , name, 'Quale', 'Lib');
+        try {
+            if (fs.statSync(libname).isDirectory()) {
+                console.log('getFiles plugin pathname:',libname);
+                files_.push(libname);           
+            } else {
+            }
+        } catch (err) {}
+	}
+        
     
     //console.log('getFiles found list:',files_);
 	return files_;

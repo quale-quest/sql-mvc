@@ -54,29 +54,40 @@ exports.load_config = function (root_folder, Application) {
 	console.log('Inital Application is',initial, Application,' located at:',search);
 	while (fileContents === "" && search !== '/') {
 		try {
-			fileContents = fs.readFileSync(search + '/config.json');            
+			fileContents = fs.readFileSync(search + '/config.json').toString();            
 		} catch (e) {
 			//console.log('App config error: for ', search,e);
 			search = path.resolve(search + '/..');
 		}
 	}
-	//console.log("Config file from : ", search); //,fileContents);
-    //console.trace("Stack!")
-
-	var conf = exports.check_run_mode(fileContents);        
+    var config = {},next_config = {};
+    while (fileContents!=="") {
+        try {
+            next_config = JSON.parse(fileContents);
+        } catch (e) {
+            console.log("WARN Error parsing config.quicc 175908 :", e, 'string:',fileContents);
+            console.trace("Stack!")
+            process.exit(2);
+        }   
+        //console.log("config.quicc 175909 :", fileContents,next_config,next_config.config_inherit);
+        
+        fileContents="";
+        if (next_config.config_inherit) {
+            if (next_config.config_inherit === "base")
+                next_config.config_inherit="../../../node_modules/sql-mvc/Quale/Config/config.json";
+            fileContents = fs.readFileSync(path.join(search,next_config.config_inherit)).toString();             
+            //console.log("config.quicc 175910 :", fileContents);
+        } 
+        config = extend(true,next_config, config); //second one has the priority        
+    }
+    
+	var conf = exports.check_run_mode(config);        
+    //console.log("config.quicc 175911 :", config);
 
 	return conf;
 }
 
-exports.check_run_mode = function (str) {
-    var config;
-	try {
-		config = JSON.parse(str);
-	} catch (e) {
-		console.log("WARN Error parsing config.quicc 175908 :", e, 'string:',str);
-        console.trace("Stack!")
-		process.exit(2);
-	}
+exports.check_run_mode = function (config) {
 
 	//console.log("check_run_mode a : ", config);
 	if (config.run_mode === "auto") {

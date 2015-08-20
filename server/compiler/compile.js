@@ -224,10 +224,11 @@ function getDirectories(srcpath,Filter) {
         
         
         //Find Installable drop-in folders
+        zx.config
         if (fs.existsSync('./node_modules'))
-            fileutils.getDropinPackages('./node_modules/',/sql-mvc/, zx.build_roots);
+            fileutils.getDropinPackages('./node_modules/',/sql-mvc-di/,zx.config.packages, zx.build_roots);
         else
-            fileutils.getDropinPackages('../node_modules/',/sql-mvc/, zx.build_roots);
+            fileutils.getDropinPackages('../node_modules/',/sql-mvc-di/,zx.config.packages, zx.build_roots);
         
         //Add plug-in folders
         
