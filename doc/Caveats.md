@@ -1,5 +1,11 @@
 # Caveats
 
+##Features and changes still to be added to the docs
+
+the drop-in package name prefix has changed from sql-mvc to sql-mvc-di
+plug-ins are now called sql-mvc-*, and are manually configured under packages in the config file
+
+
 ##Server
 
 all parameters passed from command line get leading 0's stripped
