@@ -1,5 +1,5 @@
 
-This is part 3 of [Escaping the Von Neumann programming paradigm] (https://github.com/quale-quest/sql-mvc/blob/master/doc/Theory/Escaping_the_Von_Neumann_programming_paradigm.md/),
+This is part 3 of [Escaping the Von Neumann programming paradigm] (https://github.com/quale-quest/sql-mvc/blob/master/doc/Theory/Escaping_the_Von_Neumann_programming_paradigm.md/ ),
 
 #Putting it into practice - The Proof of concept (POC)
 

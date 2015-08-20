@@ -11,9 +11,9 @@ To be different, you have to start of being different
 ##Background
 <https://www.youtube.com/watch?feature=player_detailpage&v=2egL4y_VpYg#t=447>  is a graph showing C++'s origin being in Simula, a general purpose abstraction and C, a hardware abstraction. All modern  languages have borrowed from this general purpose abstraction(GPA) ancestry , leaving behind Domain Specific Abstractions(DSA) like Fortran and Cobol, branding them as legacy and deprecated.
 
-This general purpose abstraction(GPA) mirrors the basic hardware architecture of being a processing unit attached to storage units (Von Neumann model). Subsequent scripted languages and higher abstractions, even practical functional programming use IO monads followed this model.
+This general purpose abstraction(GPA) mirrors the basic hardware architecture of being a processing unit attached to storage units (Von Neumann model). Subsequent scripted languages and higher abstractions, even practical functional programming use IO monads to follow this model.
 
-About the same time as C++ the client server model started to appear, first only as file storage and later as record level storage in the form of server based DBMS. This still fitted the Von Neumann model. 
+About the same time as C++ the client server model started to appear, first only as file storage and later as record level storage in the form of server based DBMS. This still fit the Von Neumann model. 
 
 As the internet evolved and security became an issue the server's role changed from primarily a storage device to a processing device, but in order to make the servers be able to serve as many clients as possible, the modern trend of Single Page applications have developed , requiring a application to be split into a service part and a client part - it has been touted that service API is the future of the web. Still the programming of the two parts follow the Von Neumann model, whilst the architecture clearly does not fit any-more.
 
@@ -21,9 +21,9 @@ As the internet evolved and security became an issue the server's role changed f
 ##To be different, you have to start of different
 Imagine how different our programming architecture would be today, if all computer memory right from the first bits in the first stored program computer to every QB today was directly accessible and non volatile memory.
 
-Without the need for external mass storage, the Von Neumann model would not exist. This is a artefact of our technical limits and not of our purpose. We program computers today using better "machine code assemblers" , our thinking is still locked in to the "machine" and how it works.
+Without the need for external mass storage, the Von Neumann model would not exist. This is a artefact of our technical limits and not of our purpose. We program computers today using better "machine code assemblers" , our thinking is still locked in to the "machine" and how it works. This is the TRAP!!!
 
-To quote John Backus "Not only is this (Von Neumann) tube a literal bottleneck for the data traffic of a problem, but, more importantly, it is an intellectual bottleneck."
+To quote John Backus "Not only is this (Von Neumann) tube a literal bottleneck for the data traffic of a problem, but, more importantly, it is an intellectual bottleneck." This is the TRAP!!!
  
 
 Abolishing the Von Neumann model is the foundation of our re-think of the programming paradigm.
@@ -31,9 +31,11 @@ Abolishing the Von Neumann model is the foundation of our re-think of the progra
 ##Application Architecture Abstraction Paradigm (AAAP)
 AAAP is a new way of implementing of a very old paradigm (Domain Specific Abstraction DSA).
 
-Many rapid application development tools and libraries exist to help abstract away some or all of the hardware architecture such as ROR, Django, Web forms, Oracle APEX, Iron speed, CodeOnTime, and others, RAD tools go back as far as the 1980's . These platforms can be described as technology specific / Domain Specific abstractions (TSDSA). Some have very nice GUI's to assist and make the abstractions as user friendly as possible. But TSDA abstractions can be easily identified by the some aspect of their technology stack such as the look and feel, networking model or database systems, the application is locked into that specific technology and moving the application to new platforms or technologies, and modernising them is a hard rewrite. 
+Many rapid application development tools and libraries exist to help abstract away some or all of the hardware architecture such as ROR, Django, Web forms, Oracle APEX, Iron speed, CodeOnTime, and others, RAD tools go back as far as the 1980's . These platforms can be described as Technology Specific / Domain Specific  (TSDS) abstractions. Some have very nice GUI's to assist and make the abstractions as user friendly as possible. But TSDS abstractions can be easily identified by the some aspect of their technology stack such as the look and feel, networking model or database systems, the application is locked into that specific technology and moving the application to new platforms or technologies, and modernising them is a hard rewrite. 
 
-The key difference between TSDSA and AAAP is in the technology agnostic compiler, AAAP applications are agnostic to the underlying technologies, so can easily be updated to new technologies or moved to alternative technologies for example from web to native. Your application will not be locked into a underlying technology.
+The key difference between TSDS abstractions and AAAP is in the technology agnostic compiler, AAAP applications are agnostic to the underlying technologies, so can easily be updated to new technologies or moved to alternative technologies for example from web to native. Your application will not be locked into a underlying technology.
+
+Even the primary language is abstracted, AAAP is a high level wrapper/mover/manipulator/organiser that massages your code written in your favourite language into the correct compartments.
 
 Think of AAAP more as a linker that links your application with the appropriate technology, rather than a platform and libraries such as traditional application development acceleration platforms.
 

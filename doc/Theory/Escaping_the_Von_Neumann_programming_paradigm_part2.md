@@ -13,7 +13,7 @@ Thus the architecture consists of 4 parts ( (CPU & NVRAM & EVENT-CONTEXT) + HOST
 
 What is critical, is the notion that a HOST provides the user interface and events within a CONTEXT, a practical scheme for imperative hardware may consist of : 1) The CPU+PC sitting idle, 2) on an event such as a user action, network, timer or chained event, The HOST pushes the CONTEXT to the CPU stack , and sets the PC address to that of the code associated with that event, 3) The CPU can then run and alter the non-volatile state (NVRAM) based on the code and the CONTEXT, 4) at the end of the routine the CPU returns, this triggers the HOST to examine the NVRAM and handle any output to the user.
 
-In order to avoid the trap, It is equally important that the CPU & NVRAM boundary not be confused or moved to the CPU & HOST boundary in order to try and emulate DISK or IO), even though the host is likely to emulate the NVRAM using DISK.
+In order to avoid the trap, It is equally important that the CPU & NVRAM boundary not be moved to the CPU & HOST boundary in order to try and emulate DISK or IO), even though the host is likely to emulate the NVRAM using DISK.
 
 Notice, in the new architecture definition there is no reference to a program counter, this is an implementation detail we don't need to deal with, the new architecture, will work equally well with imperative or [functional] (https://www.cs.york.ac.uk/fp/reduceron/) suited processors.
 
@@ -23,6 +23,8 @@ I don't suggest that it would be economical to build such hardware for general p
 #the "new programming paradigm"
 
 At this point we switch from contemplating the hardware architecture, to contemplating the effects of removing the intellectual bottleneck has on our programming paradigms.
+
+The current programming paradigm, can be expressed as Repeat(Input, Process, Output) - this is an isomorphic copy of von Neumann hardware architecture. 
 
 From this "new architecture" we can derive a "new programming paradigm" that eliminates external mass storage, input and output. 
 
@@ -36,11 +38,13 @@ There is no IO in the new programming paradigm. There is no DISK in the new prog
 
 The new programming paradigm is not a universal best solution, like all other architectures, paradigms and languages, each has its strengths and there is no universal best solution, but within a certain number of problem domains, this new programming paradigm will be a better solution.
 
+By example: the use case of a web application is more suitable to the new paradigm, small amounts of data (form fields) arrive in the context and gets saved to the NVRAM(database) as the user uses the application, this data gets manipulated and presented back to the user or other users as they use the application. If you have some background process that opens, parses and store log files into the database, that process is likely to be written in Python or some other imperative language.
+
 The new programming paradigm has a need for a notation/directive/mark-up of the boundary between the CPU and HOST. The language can, but, does not need to provide those natively, we can have directives in the source file to specify what the host must provide. However the moment you try to manipulate the HOST like you would IO or DISK, you have fallen back into the TRAP.
 
 The new programming paradigm can be used to provide a useful and state-full model for pure functional programming that do not require monads to handle state transitions in either DISK or IO.
 
-#Self criticism
+##Self criticism
 
 There are probably more issues that what can be mentioned here.
 

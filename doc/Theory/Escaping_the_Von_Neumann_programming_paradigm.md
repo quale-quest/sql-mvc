@@ -1,5 +1,7 @@
 Thanks for [all the input from the redditors who commented on my first draft] (https://www.reddit.com/r/programming/comments/3e7avo/escaping_the_von_neumann_architecture/), this is an almost complete rewrite, I hope I have made it better.
 
+
+
 This paper is not ready for publication yet! If you do find it, please don't post it to Reddit or others.
 
 #Escaping the Von Neumann programming paradigm
