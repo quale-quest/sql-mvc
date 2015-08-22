@@ -5,7 +5,15 @@
 the drop-in package name prefix has changed from sql-mvc to sql-mvc-di
 plug-ins are now called sql-mvc-*, and are manually configured under packages in the config file
 
+We can now inherit config files in a chain, 
+  or from the base install when we are in the super directory under a project name
+example :
+	{
+		"config_inherit":"base" ,
+		"db": {"database": "/var/lib/firebird/2.5/data/demo_db_gm1.fdb"}
+	}
 
+	
 ##Server
 
 all parameters passed from command line get leading 0's stripped

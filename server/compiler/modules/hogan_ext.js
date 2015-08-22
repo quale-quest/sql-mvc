@@ -55,7 +55,15 @@ exports.compile_render = function (zx, cx , Template) {
 				return Result;
 			};
 		}
-                
+	cx.urlescape = function () {
+			return function (val) {
+				var template = hogan.compile(val);                
+				var Result = template.render(cx);
+                Result = encodeURIComponent(Result);
+                //Result = Result.replace(/\'/g,'"');				
+				return Result;
+			};
+		}                
         
         
 	var code = hogan.compile(Template);

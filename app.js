@@ -200,7 +200,7 @@ ss.client.set({
 
 // Start web server
 var server = http.Server(ss.http.middleware);
-var config = db.check_run_mode(require('fs').readFileSync('Quale/Config/config.json').toString());
+var config = db.load_config('', '');
 
 console.log('serveClient config.run.serve_port:', config.run.serve_port);
 server.listen(config.run.serve_port);
@@ -226,5 +226,4 @@ if (config.run_mode === "c9") {
     console.log('To edit the application home page edit the file '+path.resolve(__dirname)+'/Quale/Standard/Home/Guest/Index.quicc');    
     console.log('To access the application open http://'+process.env['C9_HOSTNAME']+':'+config.run.serve_port+'');    
 } //win has its own IDE start up
-
 

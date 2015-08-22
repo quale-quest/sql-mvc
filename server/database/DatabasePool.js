@@ -79,17 +79,19 @@ exports.load_config = function (root_folder, Application) {
             //console.log("config.quicc 175910 :", fileContents);
         } 
         config = extend(true,next_config, config); //second one has the priority        
+        //console.log("config.quicc 175912 :", config);
     }
     
+    //console.log("config.quicc 175914 :", config);
 	var conf = exports.check_run_mode(config);        
-    //console.log("config.quicc 175911 :", config);
+    //console.log("config.quicc 175915 :", config);
 
 	return conf;
 }
 
 exports.check_run_mode = function (config) {
 
-	//console.log("check_run_mode a : ", config);
+	//console.trace("check_run_mode a : ", config);
 	if (config.run_mode === "auto") {
 		config.run_mode = os.platform().substring(0, 3);
 		var fn = '/mnt/shared/bin/c9';//path.resolve(process.env.HOME ,'.c9')
