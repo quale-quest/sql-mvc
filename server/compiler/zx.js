@@ -644,11 +644,10 @@ var forFields = exports.forFields = function (object,callback) {
         }
     }                    
     return false;
-}                        
-
+}    
 var forFieldsx = exports.forFieldsx = function (object,callback) {
 //returns true and stops if a match is found - acts like arr.some
-//redbin: combinef orFieldsx with forFields and test all code using it for side effects
+//redbin: combine with forFields and test all code using it for side effects
     if (Array.isArray(object))         
         return object.some(callback);
         
@@ -664,7 +663,6 @@ var forFieldsx = exports.forFieldsx = function (object,callback) {
     }
     //return false;
 }                      
-
 
 var stringify_2 = exports.stringify_2 = function (object,depth) {
 //returns true and stops if a match is found - acts like arr.some

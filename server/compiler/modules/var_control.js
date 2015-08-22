@@ -124,18 +124,24 @@ exports.AssignKeys = function (zx, line_obj) {
 	////assigns come in 2 variances, a)static text substitution, b)sql query results
 
 	//console.log('AssignKeys: ',line_obj);
-	if (line_obj.assign !== undefined)
+	if (line_obj.assign !== undefined) {
 		line_obj.assign.forEach(function (entry) {
 			assignFromText(zx, line_obj, entry, "assign");
 		});
-	if (line_obj["var"] !== undefined)
-		line_obj["var"].forEach(function (entry) {
+    }
+	if (line_obj["var"] !== undefined) {
+        console.log('assignFromText: line_obj[var] ',line_obj["var"]);        
+        zx.forFieldsx(line_obj["var"],function (entry) {
+		//line_obj["var"].forEach(function (entry) {
+             console.log('assignFromText: var ',entry);
 			assignFromText(zx, line_obj, entry, "var");
 		});
-	if (line_obj.macro !== undefined)
+    }
+	if (line_obj.macro !== undefined) {
 		line_obj.macro.forEach(function (entry) {
 			assignFromText(zx, line_obj, entry, "macro");
 		});
+    }    
 
 	//console.log('script: ',line_obj);
 	return line_obj;

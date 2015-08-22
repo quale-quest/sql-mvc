@@ -83,16 +83,17 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
 			[message.session, message.typ, message.cid, message.pkf, message.valu, public_parameters, update],
 			function (err, result) {
 
-			if (err !== undefined) {
+            //console.log('dbresult raw:', result);
+			if (err !== undefined || result===null || result.length<1 || result[0].scriptnamed===null) {
 				console.log('dberror:', err);
-				//console.log('dbresult: empty' );
+				//console.log('dbresult on err: ',result );
 				//todo - show operator some kind of server error
 				transaction.rollback();
 			} else {
 
-                //console.log('dbresult:', result);
-                if (!recursive && rambase.conf.run.monitor_mode === "jit") {
-                    if (result.length > 0 && result[0].scriptnamed) {
+            
+                if (!recursive && rambase.conf.run.monitor_mode === "jit" && result[0].scriptnamed) {
+                    if (result.length > 0) {
                         
                         console.log('db -jit- ScriptNamed:', result[0].scriptnamed.toString());
                         if (app_utils.check_children(result[0].scriptnamed))  {
@@ -123,7 +124,7 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
 							console.log('no database results'); //this could be use full for save only instructions that don't feedback
 						else {
 							//if ((rambase.conf.run_mode=="dev")&&result[0].res)
-                            var infos = String(result[0].info);    
+                            var infos=String(result[0].info);    
 							//console.log('dbresult infos:', infos, '');
 							if (infos === 'exception') {
 								var str = '\n\n\n\nSET TERM ^ ;' + result[0].res + '^\nSET TERM ; ^\n\n\n\n';
@@ -149,7 +150,7 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
 							    console.log('db - NOW_CID    :', rambase.current_cid);
                                 rambase.current_script = (result[0].scriptnamed||'').toString();
                                 //todo filter developers on some key value - so only a small subset of users can to live editing of source
-                                db.developers[message.session] = rambase.current_script;
+                                db.developers[message.session] = (result[0].scriptnamed||'').toString();
 
                                 if (infos === 'logout') {
                                     rambase.logged_out = true;
@@ -157,10 +158,9 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
                                 } else rambase.logged_out = false;   
 
                                 
-
                                 //console.log('=================================rambase.current_cid> ',rambase.current_cid );
                                 console.timeEnd("========================DB QUERY");
-                                if (cb) cb(rambase.current_script,newdata)
+                                if (cb) cb((result[0].scriptnamed||'').toString(),newdata)
                                 else {    
                                     if (ss.publish && ss.publish.socketId) {
                                     ss.publish.socketId(req.socketId, 'newData', 'content', newdata);
@@ -419,8 +419,9 @@ exports.actions = function (req, res, ss) {
 
 		NavSubmit : function (message) {
 			if (message && message.length > 0) { // Check for blank messages
-
-                db.locateRambaseReq(req,function (rambase) {            
+            
+                db.locateRambaseReq(req,
+                function (rambase) {            
 				console.log('My session is',req.session.myStartID,' and my database is ', rambase);
 				message = JSON.parse(message);
 

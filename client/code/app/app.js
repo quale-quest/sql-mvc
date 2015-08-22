@@ -4,8 +4,9 @@
 
 
 var zx_client_side_plugins = require('./zx_client_side_plugins.js');
-   
+/*var without var goes into dom root*/ //zx_za_cdv = require('./za_cdv.js');   
 
+   
    
 var zx_view_page='#PAGE_3';       
 var zx_prev_page='#PAGE_3';
@@ -416,6 +417,8 @@ init_from_fullstash_internal = function (Target) {
             zxUploaderInit(); //todo make this conditional call only if it is inclueded
             zx_gallery_adaptive_touch_init();
             zx_SyntaxHighlighter_init();
+            
+//            zx_cdv();
 
 }
 
