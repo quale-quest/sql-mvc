@@ -365,6 +365,7 @@ exports.actions = function (req, res, ss) {
                 };
                 
                 console.log("Connected message reloading 065230 :");
+                exports.push_passed_params(rambase,messagelist);
                 messagelist.push(message);
                 exports.produce_div(req, res, ss, rambase, messagelist, req.session.myStartID);
             }

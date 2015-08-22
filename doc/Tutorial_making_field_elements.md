@@ -15,4 +15,7 @@ quotes - escape the text into one, single quoted string, converts new lines to s
 urlescape - escape a string suitable for passing as a uri
 marked - escape markdown text to display as html
 
+Thease translate functions can only run on static content,
+To translate content from the database you must use softcodecs
+
 
