@@ -18,7 +18,10 @@ var zxGase;
 var ServerProcess = require("./server/rpc/ServerProcess"); 
 var severside_render = require("./server/lib/severside_render"); 
 
-
+var crypto = require('crypto');
+var crypto_prefix = crypto.randomBytes(16).toString('base64');
+var crypto_count=0;
+console.log("crypto_prefix :",crypto_prefix);
 
 
 // Define a single-page client called 'main'
@@ -77,7 +80,9 @@ ss.http.route('/', function (req, res) {
     var session_save = 0;
 	if (req.session.myStartID === undefined) {
 		//ss.session.options.secret = crypto.randomBytes(32).toString();
-		req.session.myStartID = app_utils.timestamp();//crypto.randomBytes(32).toString();
+		//req.session.myStartID = app_utils.timestamp();
+        req.session.myStartID = crypto_prefix + "." + crypto_count;
+        crypto_count++;
         //console.log('===========================Assigned new session ID ',req.session.myStartID);
 		session_save = 1;
 	}    
