@@ -483,7 +483,48 @@ exports.actions = function (req, res, ss) {
 			} else {
 				return res(false);
 			}
-		}
+		},
+        trace_to_server : function (message) {
+			if (message && message.length > 0) { // Check for blank messages
+            
+                db.locateRambaseReq(req,
+                function (rambase) {            
+				//console.log('My session is',req.session.myStartID,' and my database is ', rambase);
+                
+                //console.log('trace_to_server recieved:',rambase.tr_last_contact, message);
+                if (!rambase.tr_log) rambase.tr_log=[];
+                message.forEach(function (msg) {
+                    try {
+                        //console.log(' proc:', msg);
+                        if (msg[0]=='get') {                             
+                            rambase.tr_dt = msg[1] - Date.now();                    
+                            rambase.tr_last_contact = msg[1];                    
+                            msg[1] = msg[1] - rambase.tr_dt;
+                            rambase.tr_log.push([rambase.connectionID,msg[0],new Date(msg[1]),msg[2],msg[3]]);
+                            //console.log('dt client-server:',rambase.tr_dt,msg[1],typeof msg[1],new Date(),new Date(msg[1]));
+                        } else  if (msg[0]=='x') {
+                            msg[1] = msg[1] - rambase.tr_dt;
+                            rambase.tr_last_contact = new Date(msg[1]);
+                        } else {
+                            msg[1] = msg[1] - rambase.tr_dt;
+                            rambase.tr_log.push([rambase.connectionID,msg[0],new Date(msg[1]),msg[2],msg[3]]);                            
+                            //rambase.tr_log.push(msg);                                                        
+                        }
+
+                    } catch (e) {}
+                    
+                    
+                });
+                
+                });
+
+				
+			}    
+            return res(true); // Confirm it was sent to the originating client            
+            
+            
+            return res(true);
+        }    
 
 	};
 

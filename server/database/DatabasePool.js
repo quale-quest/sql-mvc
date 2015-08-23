@@ -22,6 +22,17 @@ exports.list = function (/*connectionID*/
 	return exports.connections;
 };
 
+exports.insert_array = function (db,sql,arry,index,cb) {  
+//console.log('insert_array...:',index);  
+  if( index >= arry.length ) cb(); else {
+        db.query(sql, arry[index], function(err, result) {       
+        //console.log('insert_array...:',index,err);  
+        exports.insert_array(db,sql,arry,index+1,cb); 
+    });        
+  }
+}    
+
+
 var maintenance_timer = setInterval(function () {
 	//console.log('maintenance_timer...:');
 	var to= Date.now() - 300000; //5mins
@@ -30,15 +41,37 @@ var maintenance_timer = setInterval(function () {
 			var c = exports.connections[key];
 			if (c && c.db)
 				if (c.last_connect_stamp < to) {
-					console.log('maintenance_timer...: Detached :',key);
-					c.db.detach();
-					c.db =null;
+					console.log('maintenance_timer...: Detaching :',
+                        key);
+                    if (c.tr_log&&c.tr_log.length>0) {
+                        c.tr_log.push([c.connectionID,'x',c.tr_last_contact,'','']);
+                        c.tr_log_send = c.tr_log;
+                        c.tr_log = [];
+					    console.log('maintenance_timer...: logging :',
+                            key,c.tr_last_contact,c.tr_log.length);   
+
+                        exports.insert_array(c.db
+                            ,'INSERT INTO track (session, act, stamp, par1, par2) VALUES(?, ?, ?, ?, ?)'
+                            ,c.tr_log_send
+                            ,0
+                            ,function () {
+                                c.db.detach();
+                                c.db =null;                                
+                            });
+                        
+                    } else {
+                        c.db.detach();
+                        c.db =null;
+                    }
 				}
 		}
 	};
 						
 	}, 500);
 
+
+
+    
 exports.load_config = function (root_folder, Application) {
 
 	if (Application === '')
