@@ -7,12 +7,14 @@ but then the page must be stored on the db server, else we will have to ask it a
 
  */
 
-var ide = require("../../server/IDE/debugger");
+
 var db = require("../../server/database/DatabasePool");
+var ide = require("../../server/IDE/debugger");
 var fb = require("node-firebird");
 var app_utils = require("../lib/app_utils");
 var fs = require('fs');
 var path = require('path');
+var winston = require('winston');
 
 exports.produce_div = function (req, res, ss, rambase, messages, session,recursive,cb) {    
     
@@ -501,13 +503,15 @@ exports.actions = function (req, res, ss) {
                             rambase.tr_last_contact = msg[1];                    
                             msg[1] = msg[1] - rambase.tr_dt;
                             rambase.tr_log.push([rambase.connectionID,msg[0],new Date(msg[1]),msg[2],msg[3]]);
+                            winston.info('tacking',[rambase.connectionID,msg[0],new Date(msg[1]),msg[2],msg[3]]);
                             //console.log('dt client-server:',rambase.tr_dt,msg[1],typeof msg[1],new Date(),new Date(msg[1]));
                         } else  if (msg[0]=='x') {
                             msg[1] = msg[1] - rambase.tr_dt;
                             rambase.tr_last_contact = new Date(msg[1]);
                         } else {
                             msg[1] = msg[1] - rambase.tr_dt;
-                            rambase.tr_log.push([rambase.connectionID,msg[0],new Date(msg[1]),msg[2],msg[3]]);                            
+                            rambase.tr_log.push([rambase.connectionID,msg[0],new Date(msg[1]),msg[2],msg[3]]);
+                            winston.info('tacking',[rambase.connectionID,msg[0],new Date(msg[1]),msg[2],msg[3]]);                            
                             //rambase.tr_log.push(msg);                                                        
                         }
 

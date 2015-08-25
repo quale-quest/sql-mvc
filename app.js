@@ -23,6 +23,18 @@ var crypto_prefix = crypto.randomBytes(16).toString('base64');
 var crypto_count=0;
 console.log("crypto_prefix :",crypto_prefix);
 
+var winston = require('winston');
+//winston.add(winston.transports.File, { filename: 'clients.log' });
+
+  winston.add(winston.transports.File, {
+    filename: 'events.log',
+    handleExceptions: true,
+    exceptionHandlers: [
+      new winston.transports.File({ filename: 'exceptions.log' })
+    ]
+  });
+
+winston.error('Reloaded');  
 
 // Define a single-page client called 'main'
 ss.client.define('main', {
@@ -73,15 +85,22 @@ ss.http.route('/', function (req, res) {
 
 	//...rest of normal socket stream code ....
 
-
+    var ip = req.headers['x-forwarded-for'] || 
+         req.connection.remoteAddress || 
+         req.socket.remoteAddress ||
+         req.connection.socket.remoteAddress;
+     
+    winston.info('Connect from',ip); 
+     
 	//console.log('===========================Initial contents of my session is ', req.session.myStartID);
-	console.log('===========================Inital contents of my session is ',
+	console.log('===========================Inital contents of my session is ',ip,
         req.session.myStartID,  req.headers.host, req.url);
     var session_save = 0;
 	if (req.session.myStartID === undefined) {
 		//ss.session.options.secret = crypto.randomBytes(32).toString();
 		//req.session.myStartID = app_utils.timestamp();
         req.session.myStartID = crypto_prefix + "." + crypto_count;
+        req.session.ip = ip;
         crypto_count++;
         //console.log('===========================Assigned new session ID ',req.session.myStartID);
 		session_save = 1;

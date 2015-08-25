@@ -12,6 +12,9 @@ var os = require('os');
 var extend = require('node.extend');
 var deasync = require('deasync');
 
+var winston = require('winston');
+//winston.add(winston.transports.File, { filename: 'gm.log' });
+
 exports.connections = {};
 exports.developers = {}; //stores all the developer id and where they are viewing for JIT compiler
 
@@ -25,11 +28,19 @@ exports.list = function (/*connectionID*/
 exports.insert_array = function (db,sql,arry,index,cb) {  
 //console.log('insert_array...:',index);  
   if( index >= arry.length ) cb(); else {
+        console.log('inserting record:',index,"of",arry.length,arry[index]);
+        try{
         db.query(sql, arry[index], function(err, result) {       
+        console.log('done inserting record:',index);
         //console.log('insert_array...:',index,err);  
         exports.insert_array(db,sql,arry,index+1,cb); 
-    });        
-  }
+        });        
+        } catch (e) {
+            exports.insert_array(db,sql,arry,index+1,cb); 
+            console.log('Error inserting tacking data:',index,e); 
+            winston.error('Error inserting tacking data 170901',e,index,arry.length,arry[index]);
+        }
+    }
 }    
 
 
@@ -41,10 +52,10 @@ var maintenance_timer = setInterval(function () {
 			var c = exports.connections[key];
 			if (c && c.db)
 				if (c.last_connect_stamp < to) {
-					console.log('maintenance_timer...: Detaching :',
-                        key);
+					console.log('maintenance_timer...: Preparing to Detach :',key);
                     if (c.tr_log&&c.tr_log.length>0) {
                         c.tr_log.push([c.connectionID,'x',c.tr_last_contact,'','']);
+                        winston.info('tacking',[c.connectionID,'x',c.tr_last_contact,'','']);
                         c.tr_log_send = c.tr_log;
                         c.tr_log = [];
 					    console.log('maintenance_timer...: logging :',
@@ -55,13 +66,22 @@ var maintenance_timer = setInterval(function () {
                             ,c.tr_log_send
                             ,0
                             ,function () {
+                                console.log('maintenance_timer...: Detaching after loging :',key,c);
+                                try {
                                 c.db.detach();
                                 c.db =null;                                
+                                } catch (e) {
+                                    winston.error('Error detatching db 170900',key);
+                                }    
+                                console.log('maintenance_timer...: Done Detaching  after loging:',key);
+                                
                             });
                         
                     } else {
+                        console.log('maintenance_timer...: Detaching :',key);
                         c.db.detach();
                         c.db =null;
+                        console.log('maintenance_timer...: Done Detaching :',key);
                     }
 				}
 		}
@@ -250,8 +270,9 @@ exports.connect_if_needed = function (connection, callback) {
 			function (err, dbref) {
             console.log('connect_if_needed connected 080005 :');    
 			if (err) {
-                console.log('connect_if_needed connected error 080005 :');    
+                console.log('connect_if_needed connected error 080006 :');    
 				console.log(err.message);
+                winston.error('Error connect_if_needed connected 080006 ',err.message);
 				if (callback !== undefined)
 					callback(err, "Error");
 			} else {

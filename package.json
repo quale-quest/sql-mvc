@@ -1,6 +1,6 @@
 {
   "name": "sql-mvc",
-  "version": "0.0.124",
+  "version": "0.0.125",
   "description": "Paradigm inversion-write web applications in SQL instead of JavaScript",
   "main": "./app.js",
   "scripts": {
@@ -32,7 +32,8 @@
     "sql-mvc-ui-dark": "0.0.1",
     "ss-hogan": "0.1.x",
     "ss-stylus": "^0.1.9",
-    "temp": "^0.8.1"
+    "temp": "^0.8.1",
+    "winston": "^1.0.1"
   },
   "repository": {
     "type": "git",
