@@ -2,10 +2,10 @@
 
 #read -p "When running this script, if prompted for [more] or password, press the enter key, like now...[more]"
 
-
-DEBIAN_FRONTEND=noninteractive sudo apt-get install -y  -qq  firebird2.5-classic firebird-dev
-sudo service firebird2.5-classic start
-sudo chmod o+r /etc/firebird/2.5/SYSDBA.password
+echo Post_Script :
+#DEBIAN_FRONTEND=noninteractive sudo apt-get install -y  -qq  firebird2.5-classic firebird-dev
+#service firebird2.5-classic start
+#chmod o+r /etc/firebird/2.5/SYSDBA.password
 
 node server/compiler/compile.js app Home/Guest all
 
@@ -21,4 +21,4 @@ echo cd node_modules/sql-mvc/;node app.js
 
 #node app.js
 
-
+echo Post_Script done:

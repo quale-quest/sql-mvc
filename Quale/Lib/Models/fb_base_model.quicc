@@ -63,6 +63,15 @@ CREATE DOMAIN LONG_NAME
  AS VARCHAR(20)
  DEFAULT ''; 
  
+ CREATE DOMAIN Z$PHONE_NUMBER
+ AS VARCHAR(20)
+ DEFAULT ''; 
+ 
+  CREATE DOMAIN Z$EMAIL
+ AS VARCHAR(30)
+ DEFAULT ''; 	
+ 
+ 
 --:{regex:"regex:/SHORT_NAME/i",Default_length:"20",length:"regex:/(\\d+)/",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} 
  
 /****************** GENERATORS ********************/

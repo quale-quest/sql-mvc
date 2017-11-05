@@ -1,6 +1,6 @@
 "use strict";
 
-var hogan = require("hogan");
+var hogan = require("hogan.js");
 var marked = require('marked');
 
 exports.module_name = 'hogan_ext.js';

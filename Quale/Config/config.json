@@ -19,7 +19,7 @@
             "serve_port": "3000",
             "debugkey": "",
             "db": {
-                "database": "demo_db.fdb",
+                "database": "demo_db_2.fdb",
                 "username": "sysdba",
                 "password": "masterkey",
                 "authfile": ""
@@ -54,7 +54,7 @@
     "db": {
         "dialect": "fb25",
         "server": "127.0.0.1",
-        "database": "/var/lib/firebird/2.5/data/demo_db.fdb",
+        "database": "/var/lib/firebird/2.5/data/demo_db_2.fdb",
         "username": "using the value from authfile, make authfile blank to use this value.",
         "password": "using the value from authfile, make authfile blank to use this value.",
         "authfile": "/etc/firebird/2.5/SYSDBA.password",
