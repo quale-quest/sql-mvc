@@ -4,7 +4,7 @@ speed/memory performance  is not important
 ease of use is important
  */
 
-var fileutils = require('../../../compiler/modules/fileutils.js');
+var fileutils = require('../../../lib/fileutils.js');
 var path = require('path');
 var fs = require('fs');
 var page = require('../../modules/page.js');

@@ -27,7 +27,7 @@ with 2 dictionaries
 
 var fs = require('fs');
 //var path = require('path');
-var fileutils = require('./fileutils.js');
+var fileutils = require('../../lib/fileutils.js');
 
 exports.module_name='Inject_Procedures.js';
 exports.tags=[{name:"inject_point"}];

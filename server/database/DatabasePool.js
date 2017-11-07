@@ -135,9 +135,9 @@ exports.load_config = function (root_folder, Application) {
         //console.log("config.quicc 175912 :", config);
     }
     
-    //console.log("config.quicc 175914 :", config);
+    console.log("config.quicc 175914 :", config);
 	var conf = exports.check_run_mode(config);        
-    //console.log("config.quicc 175915 :", config);
+    console.log("config.quicc 175915 :", config);
 
 	return conf;
 }
@@ -190,7 +190,7 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 		//console.log("Config file Contents : ", fileContents,conf );
 		rambase.conf = conf;
 		rambase.host = conf.db.server;
-		//console.log('db connections json 165225 :', JSON.stringify(rambase, null, 4));
+		console.log('db connections json 165225 :', JSON.stringify(rambase, null, 4));
 		rambase.database = conf.db.database;
 		if (conf.db.authfile !== undefined && conf.db.authfile !== "") {
 			var str;
@@ -219,12 +219,16 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 		if (conf.run.db_create==="yes")
 			fn = fb.attachOrCreate;
 
+		
         rambase.connection_string = {
 			host : rambase.host,
 			database : rambase.database,
 			user : rambase.user,
 			password : rambase.password
 		};
+		
+		console.log('Database config and passwords :', JSON.stringify(rambase.connection_string,null,4));
+		console.log('conf.run :', JSON.stringify(conf.run,null,4));
 		fn(rambase.connection_string,
 			function (err, dbref) {
 			if (err) {

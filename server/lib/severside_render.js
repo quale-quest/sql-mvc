@@ -5,7 +5,7 @@ path = require('path'),
 os = require('os');
 var fs = require('fs');
 var zx_client_side_plugins = require('../../client/code/app/zx_client_side_plugins.js');
-var fileutils = require('../../server/compiler/modules/fileutils.js');
+var fileutils = require('../../server/lib/fileutils.js');
 
 //var ss = require('socketstream');
 var Hogan = require('ss-hogan/client.js');

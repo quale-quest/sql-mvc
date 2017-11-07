@@ -93,7 +93,7 @@ var fsx = require('node-fs');
 
 //var Sync = require('sync'); // https://github.com/ybogdanov/node-sync
 
-var fileutils = require('./modules/fileutils.js');
+var fileutils = require('../lib/fileutils.js');
 
 var queue_file_to_be_compiled = function (zx, dfn) {
 	var fileobj,
@@ -227,7 +227,7 @@ function getDirectories(srcpath,Filter) {
         zx.config
         if (fs.existsSync('./node_modules'))
             fileutils.getDropinPackages('./node_modules/',/sql-mvc-di/,zx.config.packages, zx.build_roots);
-        else
+        if (fs.existsSync('../node_modules'))
             fileutils.getDropinPackages('../node_modules/',/sql-mvc-di/,zx.config.packages, zx.build_roots);
         
         //Add plug-in folders

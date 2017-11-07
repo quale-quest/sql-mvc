@@ -107,7 +107,8 @@ http://stackoverflow.com/questions/14197935/how-to-connect-to-a-redis-server-via
 
 //var path = require('path');
 //var fs = require('fs');
-var fileutils = require('../compiler/modules/fileutils.js');
+var fileutils = require('../lib/fileutils.js');
+
 
 var indent = function (zx) {
 	return zx.indent(zx.sql.dent);

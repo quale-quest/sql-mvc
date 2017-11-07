@@ -6,7 +6,7 @@ ease of use is important
 
 //var Sync = require('sync'); // https://github.com/ybogdanov/node-sync
 var path = require('path');
-var fileutils = require('./fileutils.js');
+var fileutils = require('../../lib/fileutils.js');
 var extend = require('node.extend');
 var deepcopy = require('deepcopy');
 var json_like = require("../../lib/json_like");
