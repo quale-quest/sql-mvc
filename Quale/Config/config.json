@@ -2,7 +2,7 @@
     "run_mode": "auto",
     "run_settings": {
         "lin": {
-            "monitor_mode": "jit",
+            "monitor_mode": "none",
             "help": [
                 "check",
                 "gaze",

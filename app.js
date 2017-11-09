@@ -236,8 +236,15 @@ if (config.run_settings[config.run_mode].monitor_mode === "check") {
 }
 
 if (config.run_settings[config.run_mode].monitor_mode === "jit") { 	
-    zxGase= require("./server/compiler/quicc-gaze");
-    zxGase.gaze_start(app_utils.check_zx_depends_list);
+		try {
+			zxGase= require("./server/compiler/quicc-gaze");
+			zxGase.gaze_start(app_utils.check_zx_depends_list);			
+		}
+		catch (e) {		
+			console.log("JIT set but compiler not found - app.js:248");
+			throw e;
+		}
+
 }
 // Start SocketStream
 ss.start(server);
