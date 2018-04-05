@@ -54,11 +54,14 @@ else
 begin
 end
 
+
 any db language code can ge generated as long as it follows this flow pattern
 the else part is optional
 
 it does not matter what the db is  as long as it can produce the
 fullstach json format
+
+
 
 
 
@@ -76,6 +79,8 @@ BEGIN
 
 st='select name from user_table_name where user_table_name.user_pk_field = '''||operator_ref||'''';
 execute statement st into operator_name;
+
+
 
 
 
@@ -99,7 +104,9 @@ From external, redis paramstr
 a=F_STRINGLISTITEM(parmstr, 'varname')
 
 
+
 http://stackoverflow.com/questions/14197935/how-to-connect-to-a-redis-server-via-unix-domain-socket-using-hedis-in-haskell
+
 
 
 
@@ -108,6 +115,7 @@ http://stackoverflow.com/questions/14197935/how-to-connect-to-a-redis-server-via
 //var path = require('path');
 //var fs = require('fs');
 var fileutils = require('../lib/fileutils.js');
+
 
 
 var indent = function (zx) {
@@ -140,19 +148,58 @@ var emit = function (zx, line_obj, statement , comment
         if ((comment===undefined)||(comment===""))
 		   zx.sql.script.push(statement);
        else
-           zx.sql.script.push(statement + " --"+comment);
+           zx.sql.script.push(statement + " -- "+comment);
 		zx.sql.filelinemap.push(line_obj);
 	}
 };
 
+
+var sqlconcat = function (zx,comment) {
+	
+	var res = zx.config.db.sql_concat_prefix;
+	res = res + arguments[2];
+	for(var i=3;i<arguments.length;i++) {
+	  res = res + zx.config.db.sql_concat_seperator + arguments[i];	
+	}
+	res = res + zx.config.db.sql_concat_postfix ;	
+	return res;
+};
+
+var vr = function (zx,name) {  
+return zx.config.db.var_actaul+name;
+};
+
+var emitdeclare = function (zx, obj, name,type,val,comment) {
+	if (zx.conf.db.dialect=="fb25")
+	    emit(zx, obj, "declare "+name+" "+type+"="+val+";", "",comment);
+    if (zx.conf.db.dialect=="mysql57")
+	    emit(zx, obj, "declare "+name+" "+type+" default "+val+";", "",comment);
+	
+};
+
+
+var emitset = function (zx,line_obj, comment ) { //followed by a number of strings to be concatenated 
+	var res = zx.config.db.sql_set_prefix + zx.config.db.sql_concat_res;
+	res = res + arguments[3];
+	for(var i=4;i<arguments.length;i++) {
+	  res = res + zx.config.db.sql_concat_seperator + arguments[i];	
+	}
+	res = res + zx.config.db.sql_concat_postfix +";";
+	emit(zx, 0,res, comment);
+}
+
+
 var emito = function (zx, obj, val) {
-	emit(zx, 0, "res=res||',``" + obj + "``:``" + val + "``';", "");
+	//emit(zx, 0, "res=res||',``" + obj + "``:``" + val + "``';", "");
+	emitset( zx,0, "",    "',``" + obj + "``:``" + val + "``'" );
 };
 var emits = function (zx, str) {
-	emit(zx, 0, "res=res||'," + str + "';", "");
+	//emit(zx, 0, "res=res||'," + str + "';", "");
+	emitset( zx,0, "",   "'," + str + "'" );
 };
 var emit_mt_obj = function (zx, name, str) {
-	emit(zx, 0, "res=res||'," + fb_escapetoString('"' + name + '":' + str) + "';", "");
+	//emit(zx, 0, "res=res||'," + fb_escapetoString('"' + name + '":' + str) + "';", "");
+	emitset( zx,0, "",  "'," + fb_escapetoString('"' + name + '":' + str) + "'")  ;
 };
 exports.emit = emit;
 exports.emito = emito;
@@ -171,7 +218,7 @@ var fb_AsString = function (str) { //should make the content safe and prevent SQ
 };
 
 exports.var_subst = "/***/";
-exports.var_actaul = ":";
+exports.var_actaul = ":"; //will later be replaced with  zx.config.db.var_actaul
 
 var make_concats = function (zx, line_obj, str) { //should make the parameters concatenate as strings, as script to be executed
 	//make ref=:operator_ref  to ref='||:operator_ref||'
@@ -219,7 +266,12 @@ exports.EmitConditionAndBegin = function (zx, line_obj, bid,comment) {
 	//compiles sql
 
 	//this is conditional so we need to emit a value to fullstash also
-	emit(zx, line_obj, "res=res||',``" + bid + "``:'||iif(cond<>0,'[``true``]','[]')||'';", "");
+	//emit(zx, line_obj, "res=res||',``" + bid + "``:'||iif(cond<>0,'[``true``]','[]')||'';", "");
+	emitset( zx,0,"",  
+		"',``" + bid + "``:'",
+		"iif(cond<>0,'[``true``]','[]')",
+		"''"		
+		);
 	emit(zx, line_obj, "if (cond<>0) then ", "");
 	emit(zx, line_obj, "begin",' '+ comment);
 	zx.sql.dent += 4;
@@ -250,7 +302,7 @@ exports.unblock = function (zx, line_obj,comment) {
 	//compiles sql
 
 	zx.sql.dent -= 4;
-	emit(zx, line_obj, "end  ",comment);
+	emit(zx, line_obj, "end  "+zx.config.db.sql_end_postfix,comment);
 
 	return line_obj;
 };
@@ -443,24 +495,23 @@ exports.makeexpression = function (zx, line_obj, varx) {
 };
 
 exports.F_F2J = function (zx, line_obj, str) {
-    //console.log('exports.F_F2J  1: ',zx);
     if (zx.config.db.useUDF === "yes") return "Z$F_F2J(" + str + ")";
-    //else return "'\"'||REPLACE(coalesce(" + str + ",''),'\"','\\\"')||'\"'";    
-    else return "'\"'||REPLACE(REPLACE(coalesce(" + str + ",''),'\"','\\\"'),'\n','CRLF')||'\"'";    
+	else return zx.config.db.sql_concat_prefix + "'\"'"+
+		zx.config.db.sql_concat_seperator+"REPLACE(REPLACE(coalesce(" + str + ",''),'\"','\\\"'),'\n','CRLF')"+
+		zx.config.db.sql_concat_seperator+"'\"'"+
+		zx.config.db.sql_concat_postfix; 	
 }
 
 exports.F_F2SQL = function (zx, line_obj, str) {
     //console.log('exports.F_SQL  1: ',zx);
     if (zx.config.db.useUDF === "yes") return "Z$F_F2SQL(" + str + ")";
-    else return "''''||REPLACE(coalesce(" + str + ",''),'''','''''')||''''";    
+    else return  sqlconcat(zx,"",  "''''","REPLACE(coalesce(" + str + ",''),'''','''''')","''''"   );	
 }
 
 
 
-exports.EmitVariable = function (zx, line_obj, bid) {
-    
-    
-	emit(zx, line_obj, "res=res||',``" + bid + "``:'||"+exports.F_F2J(zx, line_obj, bid)+";", "");
+exports.EmitVariable = function (zx, line_obj, bid) {       
+	emitset( zx,line_obj, "", "',``" + bid + "``:'",exports.F_F2J(zx, line_obj, bid) );
 	return line_obj;
 };
 
@@ -546,10 +597,10 @@ exports.link_from = function (zx, line_obj) {
 	    links+= "\n--pass singleton link  TODO "+JSON.stringify(line_obj);// + fld_obj.pass.Divout;//:cid,:tfid,
 	
 	links += "\nINSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,TARGET,QUERY, PAGE_PARAMS)" +
-		"VALUES (:cid," + zx.sql.cidi + ",'click'," + fb_AsString(from) + ", " + 
+		"VALUES ("+vr(zx,"cid") + "," + zx.sql.cidi + ",'click'," + fb_AsString(from) + ", " + 
         fb_AsString(zx.Current_main_page_name.replace(/\\/g, "/")) + "," + (wherex /*+" "+ zx.gets(line_obj.nonkeyd)..check above TODO note*/
 		) + "," +
-		"'" + PAGE_PARAMS + "');  ";
+		"'" + PAGE_PARAMS + "');  ";		
 	//console.log('=================================\n',
 	//        'link_from: ',wheresx,"\n",
 	//        where,"\n",links,line_obj.nonkeyd,line_obj,line_obj.where,"\n","\n");
@@ -612,9 +663,12 @@ exports.link_from_table = function (zx,cx, fld_obj) {
 		//TODO  this string limitation of 999 should through an compiler error if the sum of all the master fields could be longer than 999
 
 		fld_obj.PAGE_PARAMS.forEach(function (fld, i) {
-			PAGE_PARAMS += "||MF" + i + "=coalesce(:F" + fld + ",'')||';\n'||";
+			PAGE_PARAMS += zx.config.db.sql_concat_seperator + "MF" + i + "=coalesce("+ zx.config.db.var_actaul+"F" + fld + ",''),';\n'||";
 		});
-		PAGE_PARAMS = "\n    substring((" + PAGE_PARAMS + "'') from 1 for 999)";
+		PAGE_PARAMS = "\n    substring((''" + 
+		    zx.config.db.sql_concat_prefix + PAGE_PARAMS + zx.config.db.sql_concat_postfix + 
+			"'') from 1 for 999)";		
+		
 	}
 
 	zx.Inject_procedures.check_inline_link_procedure(zx, fld_obj.cf[0],'link_from_table');
@@ -632,9 +686,13 @@ if (fld_obj.cf[0].pointer===undefined)
     
 	var proc = zx.gets(fld_obj.cf[0].execute);
     //console.log('run_procedure_as : ',proc );
-	if ((proc !== undefined) && (proc !== "")) {
-		PAGE_PARAMS = PAGE_PARAMS + "||'run_procedure=''" + proc + "'';";
-		PAGE_PARAMS = PAGE_PARAMS + "run_procedure_pk='||"+exports.F_F2SQL(zx, zx.line_obj,":F" + fld_obj.cf[0].pointer )+"||';";
+	if ((proc !== undefined) && (proc !== "")) {		
+		PAGE_PARAMS = PAGE_PARAMS + zx.config.db.sql_concat_seperator + "'run_procedure=''" + proc + "'';";
+		PAGE_PARAMS = PAGE_PARAMS + "run_procedure_pk='"+zx.config.db.sql_concat_seperator +exports.F_F2SQL(zx, zx.line_obj, zx.config.db.var_actaul+"F" + fld_obj.cf[0].pointer )+zx.config.db.sql_concat_seperator + "';";
+
+		
+		
+		
         //PAGE_PARAMS = PAGE_PARAMS + "run_procedure_pk='||Z$F_F2SQL(:F" + fld_obj.cf[0].pointer + ")||';";
         
 		var param = zx.gets(fld_obj.cf[0].param);
@@ -649,14 +707,12 @@ if (fld_obj.cf[0].pointer===undefined)
 	var links = '';
 	if (fld_obj.cf[0].pass)
 	    links+= exports.build_variable_pass_all(zx,fld_obj,fld_obj.cf[0].pass,'lft123737')
-	
-	links += "\nINSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS)" +
-		"VALUES (:cid,:tfid,'tfid','" + from +
+			
+		links += "\nINSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS)" +
+		"VALUES ("+zx.config.db.var_actaul+"cid,"+zx.config.db.var_actaul+"tfid,'tfid','" + from +
         "','" + pkname +
-		"', '" + zx.Current_main_page_name.replace(/\\/g, "/") + "', "+
-        
-        ":F" + fld_obj.cf[0].pointer 
-        
+		"', '" + zx.Current_main_page_name.replace(/\\/g, "/") + "', "+        
+         zx.config.db.var_actaul+"F" + fld_obj.cf[0].pointer         
         + " ," + PAGE_PARAMS + ");tfid=tfid+1;";
 	//console.log('link_from_table links: ',links,fld_obj.cf[0] );
 	fld_obj.postback = links;
@@ -730,7 +786,7 @@ exports.edit_from_table = function (zx, cx, fld_obj) {
 	var TARGET_VALUES = "''";
 	var TARGET_FIELDS = "";
 	if (fld_obj.cf[0].onupdate !== undefined) {
-		TARGET_VALUES = "\n        ''";
+		TARGET_VALUES = "\n   "+zx.config.db.sql_concat_prefix+"     ''";
 		//accept an array of key value pairs
 		//console.log('TARGET_VALUES a:',fld_obj.cf[0].onupdate);
 		var kv = zx.stripQ(fld_obj.cf[0].onupdate);
@@ -745,10 +801,12 @@ exports.edit_from_table = function (zx, cx, fld_obj) {
 
 			var expressed_value = zx.expressions.ConstantExpressions(zx, zx.line_obj, val, "postback");
 			//console.log('TARGET_VALUES expr:',expressed_value);
-            TARGET_VALUES += "||','||" + exports.F_F2SQL(zx, zx.line_obj,expressed_value ) + "";
+            //TARGET_VALUES += "||','||" + exports.F_F2SQL(zx, zx.line_obj,expressed_value ) + "";
 			//TARGET_VALUES += "||','||Z$F_F2SQL(" + expressed_value + ")";
+			TARGET_VALUES += zx.config.db.sql_concat_seperator + "','"+zx.config.db.sql_concat_seperator+ exports.F_F2SQL(zx, zx.line_obj,expressed_value ) + "";
             
 		}
+        TARGET_VALUES += zx.config.db.sql_concat_postfix;		
 	}
  
 	var links = '';
@@ -756,13 +814,20 @@ exports.edit_from_table = function (zx, cx, fld_obj) {
 	if (fld_obj.cf[0].pass)
 	    links+= exports.build_variable_pass_all(zx,fld_obj,fld_obj.cf[0].pass,'lft123737')
 	   
-	links += "\nINSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS,TARGET_FIELDS,TARGET_VALUES,baserecord)" +
-		"VALUES (:cid,:tfid,'updateonpk','" + /*valu*/
-		from +
-		"','" + pkname + "', '" + fld_obj.name + "', :F" + fld_obj.cf[0].pointer + " ,'" + Soft_decode + "' ,'" + TARGET_FIELDS + "'," + TARGET_VALUES + ","+baserecord_ref+");tfid=tfid+1;";
-	//console.log('=================================\n',fld_obj, pkname );
-	// process.exit(2);
-	//done the postback must also be informed of any softcodec required
+	//links += "\nINSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS,TARGET_FIELDS,TARGET_VALUES,baserecord)" +
+	//	"VALUES (:cid,:tfid,'updateonpk','" + /*valu*/
+	//	from +
+	//	"','" + pkname + "', '" + fld_obj.name + "', :F" + fld_obj.cf[0].pointer + " ,'" + Soft_decode + "' ,'" + TARGET_FIELDS + "'," + TARGET_VALUES + ","+baserecord_ref+");tfid=tfid+1;";
+	links += "\nINSERT INTO Z$PK_CACHE ("+
+			  "MASTER, INDX, FIELD_NAME, VALU,"+
+			  "Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS,"+
+			  "TARGET_FIELDS,TARGET_VALUES,baserecord)" +
+			  
+			  "VALUES (:cid,:tfid,'updateonpk','" + /*valu*/	from + "',"+
+		      "'" + pkname + "', '" + fld_obj.name + "', :F" + fld_obj.cf[0].pointer + " ,'" + Soft_decode + "' ,"+
+			  "'" + TARGET_FIELDS + "'," + TARGET_VALUES + ","+baserecord_ref+");tfid=tfid+1;";				
+				
+		
 	
         
 	fld_obj.postback = links;
@@ -819,28 +884,32 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 	moreseperators,
 	recordseperator,
 	cend;
+
 	if (QueryType === "Table") {
-		open = "tfid=" + zx.sql.cidi * zx.sql.cidti_factor + ";first=' '; res=res||',\n``" + cx.tid_name + "``:[';";
-		sql = "row=first||'[``'||:tfid||'``";
+		open = "tfid=" + zx.sql.cidi * zx.sql.cidti_factor + ";"+
+		  "first=' '; "+zx.config.db.sql_set_prefix + zx.config.db.sql_concat_res+"',\n``" + cx.tid_name + "``:[';";
+		sql = "row="+sqlconcat(zx,"", "first","'[``'",zx.config.db.var_actaul+"tfid","'``");		
 		firstseperator = ',';
 		secondseperator = ",";
 		moreseperators = ',';
 		aclose = "]';";
 		recordseperator = "first=',\n ';";
-		cend = "res=res||']';";
+		cend = zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + sqlconcat(zx,"", "res", "']'" ) + ";";
 	}
 	if (QueryType === "List") {
-		open = "tfid=" + zx.sql.cidi * zx.sql.cidti_factor + ";first=' '; res=res||',\n``" + cx.tid_name + "``:[';";
-		sql = "row=first||'[``'||:tfid||'``";
+		open = "tfid=" + zx.sql.cidi * zx.sql.cidti_factor + ";"+
+		  "first=' '; "+zx.config.db.sql_set_prefix + zx.config.db.sql_concat_res+"',\n``" + cx.tid_name + "``:[';";
+		sql = "row="+sqlconcat(zx,"", "first","'[``'",zx.config.db.var_actaul+"tfid","'``");
 		firstseperator = '';
 		secondseperator = ",";
 		moreseperators = ',';
 		aclose = "]';";
 		recordseperator = "first=',\n ';";
-		cend = "res=res||']';";
+		cend = zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + sqlconcat(zx,"", "res", "']'" ) + ";";
 	}
-	if (QueryType === "Dict") {
-		open = "tfid=" + zx.sql.cidi * zx.sql.cidti_factor + ";first=' '; res=res||',\n``" + cx.tid_name + "``:{';";
+	if (QueryType === "Dict") {		
+		open = "tfid=" + zx.sql.cidi * zx.sql.cidti_factor + ";"+
+		  "first=' '; "+zx.config.db.sql_set_prefix + zx.config.db.sql_concat_res+"',\n``" + cx.tid_name + "``:{';";
 		sql = "row=first||'";
 		if (fields.length < 3) { //name:value
 			firstseperator = '';
@@ -848,14 +917,14 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 			moreseperators = ',';
 			aclose = "';";
 			recordseperator = "first=',\n ';";
-			cend = "res=res||'}';";
+		    cend = zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + sqlconcat(zx,"", "res", "'}'" ) + ";";
 		} else { //name:[value,value]
 			firstseperator = '';
 			secondseperator = ":[";
 			moreseperators = ',';
 			aclose = "'];";
 			recordseperator = "first=',\n ';";
-			cend = "res=res||'}';";
+		    cend = zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + sqlconcat(zx,"", "res", "'}'" ) + ";";
 		}
 	}
 
@@ -864,7 +933,8 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 		if (i > 0) {
 			into += ",";
 		}
-		into += ":f" + i;
+
+		into += zx.config.db.var_actaul + "f" + i;
 
 		if (i === 0)
 			comma = firstseperator;
@@ -876,11 +946,8 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 		if (widget.method === 'hide')
 			sql += comma + "``hide``";
 		else
-            sql += comma + "'||"+exports.F_F2J(zx, line_obj,"SUBSTRING(:f" + i + " FROM 1 FOR 254)")+"||'";
-			//sql += comma + "'||"+"Z$F_F2J(SUBSTRING(:f" + i + " FROM 1 FOR 254))"+"||'";
-            
-        
-		//sql += comma + "``'||replace(coalesce(:f"+i+",''),'``','\\``')||'``"; //other dbs can also work without udf's
+            sql += comma + "'"+zx.config.db.sql_concat_seperator+exports.F_F2J(zx, line_obj,"SUBSTRING("+zx.config.db.var_actaul+"f" + i + " FROM 1 FOR 254)")
+		                 +  zx.config.db.sql_concat_seperator + "'";
 
 		if (widget.postback !== undefined) {
 			postfields++;
@@ -918,7 +985,7 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 
 	sql += aclose;
 	sql += recordseperator;
-	sql += "res=res||coalesce(row,'\"row_element_is_null\"')||'';";
+	sql += zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + sqlconcat(zx,"", "res","coalesce(row,'\"row_element_is_null\"')","''" ) + ";";
 
 	emit(zx, 0, open + '\nfor ' + queryx + into + " do \n begin", "");
 	emit(zx, 0, "" + SoftCodecs + "", "");
@@ -947,13 +1014,23 @@ exports.start_pass = function (zx /*, line_objects*/
 	zx.sql.cidti = []; //each table will have id's starting from a range 100000000+  //limits 10 million records per table - 4 hundred tables on one page
 	zx.sql.cidti_factor = 10000000;
 
+    if (zx.conf.db.dialect=="fb25") 	
 	zx.sql.testhead =
 		"\n\n\nset term #;\n" +
 		"EXECUTE BLOCK RETURNS  (cid  integer,info varchar(200), res blob SUB_TYPE 1)AS \n" +
 		"declare pki integer=12345678;\n" +
 		"declare pkf integer=12345678;\n" +
 		"declare Z$SESSIONID varchar(40)='12345678';\n\n\n";
-	zx.sql.testfoot = "\n--no need to - set term ;#\n";
+		
+	if (zx.conf.db.dialect=="mysql57") 
+		zx.sql.testhead =
+		"\n\n\nDELIMITER $$\nDROP PROCEDURE IF EXISTS execute_test $$\n" +
+		"CREATE PROCEDURE execute_test (cid  integer,info varchar(200), res TEXT)\nBEGIN\n" +
+		"declare pki integer default 12345678;\n" +
+		"declare pkf integer default 12345678;\n" +
+		"declare Z$SESSIONID varchar(40) default '12345678';\n\n\n";		
+		
+	zx.sql.testfoot = "\n-- no need to - set term ;#\n";
 
 	if (zx.sql.engine === 'flamerobin') { //flamerobin
 		emit(zx, 0, "set term #;", "");
@@ -964,23 +1041,18 @@ exports.start_pass = function (zx /*, line_objects*/
 		emit(zx, 0, "pki integer=?,pkf integer=?,upd varchar(30000)=? ", "");
 		emit(zx, 0, ")RETURNS  (cid integer, res blob SUB_TYPE 1)AS", "");
 	}
-	emit(zx, 0, "declare cond integer=0;", "");
-	//emit(zx, 0, "declare cid  integer;", "");
-	//emit(zx,0,"declare cidi  integer=1;","");
-	/*emit(zx,0,"declare left varchar(1000)='';","");*/
-	/*emit(zx,0,"declare right varchar(1000)='';","");*/
-	emit(zx, 0, "declare st varchar(1000)='';", "");
-	emit(zx, 0, "declare row varchar(1000)='';", "");
-	emit(zx, 0, "declare first varchar(10)='';", "");
-	emit(zx, 0, "declare tfid integer=0;", "");
-	emit(zx, 0, "declare run_procedure varchar(254)='';", "");
-	emit(zx, 0, "declare run_procedure_pk varchar(254)='';", "");
-	emit(zx, 0, "declare run_procedure_param varchar(254)='';", "");
-	emit(zx, 0, "declare page_name_hash varchar(40)='" + zx.ShortHash(zx.main_page_name) + "';", "");
+	
+	emitdeclare(zx, 0,"cond","integer","0");
+	emitdeclare(zx, 0, "st","varchar(1000)","''");
+	emitdeclare(zx, 0, "row","varchar(1000)","''");
+	emitdeclare(zx, 0, "first","varchar(10)","''");
+	emitdeclare(zx, 0, "tfid","integer","0");
+	emitdeclare(zx, 0, "run_procedure","varchar(254)","''");
+	emitdeclare(zx, 0, "run_procedure_pk","varchar(254)","''");
+	emitdeclare(zx, 0, "run_procedure_param","varchar(254)","''");
+	emitdeclare(zx, 0, "page_name_hash","varchar(40)","'" + zx.ShortHash(zx.main_page_name) + "'");	
+	
 
-	//emit(zx,0,"declare operator_ref varchar(1000)='';","");
-	//emit(zx,0,"declare pki integer=12345678;","");
-	//emit(zx,0,"declare pkf integer=12;","");
 
 	/*other defines*/
 
@@ -989,27 +1061,27 @@ exports.start_pass = function (zx /*, line_objects*/
 
 		var decl = zx.sql.declare_above[name];
 		//console.log('declare_above : ',name,decl);
-		emit(zx, 0, "declare " + exports.emit_var_def(decl.name) + " " + decl.db_type + "='';", "");
+		emitdeclare(zx, 0, exports.emit_var_def(decl.name),decl.db_type,"''");
 	}
 	for (var i = 0; i < zx.sql.max_f; i++) {
-		emit(zx, 0, "declare f" + i + " varchar(200)='';", "");
+		emitdeclare(zx, 0, "f" + i,"varchar(200)","''");
 	}
 
-	emit(zx, 0, "BEGIN", "");
-	emit(zx, 0, "--assign_params", "");
+	if (zx.conf.db.dialect=="fb25")  emit(zx, 0, "BEGIN", "");
+	emit(zx, 0, "-- assign_params", "");
 
 	/*this is very node dependant and would be moded to a plugin*/
-	emit(zx, 0, "res='[{``start``:``true``';", "");
+	emit(zx, 0, zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + "'[{``start``:``true``';", "");
 	emito(zx, "Object", "fullstash");
     
-    emit(zx, 0, "res=res||',``Session``:``'||Z$SESSIONID||'``';", "");
+    emitset( zx,0,"", "',``Session``:``'","Z$SESSIONID","'``'"     );
     
 	var v = {
 		table : 'passed',
 		field : 'DivoutName'
 	};
 	var container = zx.dbg.emit_variable_getter(zx, 0, v, "maincontainer", "maincontainer variable_getter");
-	emit(zx, 0, "res=res||',``Target``:``#'||"+container+"||'``';");
+	emitset( zx,0,"","',``Target``:``#'",container,"'``'");
 	//emito(zx, "Target", "#maincontainer");
 	
 	emito(zx, "Stash", zx.main_page_name.substring(2).replace(/[\/\\]/g, '-')); //windows
@@ -1017,13 +1089,14 @@ exports.start_pass = function (zx /*, line_objects*/
 	emito(zx, "ContainerId", "GUIDofTheTemplate");
 	emits(zx, "``Data``:{``start``:``true``");
 
-	emit(zx, 0, "cid = gen_id( Z$CONTEXT_seq, 1 );");
+	if (zx.conf.db.dialect=="fb25")    emit(zx, 0, "cid = gen_id( Z$CONTEXT_seq, 1 );");
+	if (zx.conf.db.dialect=="mysql57") emit(zx, 0, "set cid = (SELECT GEN_Z$CONTEXT_SEQ() );");
 
 	//emit(zx,0,'st=\'select operator_ref from Z$CONTEXT where pk = \'||pki;');
 	//emit(zx,0,'execute statement st into operator_ref;');
 
 	//emit(zx,0,"INSERT INTO Z$CONTEXT (PK, TSTAMP, OPERATOR_REF, SESSION_REF) VALUES (:cid,'now', :operator_ref,:z$sessionid );");
-	emit(zx, 0, "res=res||',``cid``:``'||:cid||'``';");
+	emitset( zx,0,"",  "',``cid``:``'",zx.config.db.var_actaul+"cid", "'``'" );
 
 };
 
@@ -1033,12 +1106,26 @@ exports.done_pass = function (zx /*, line_objects*/
 
 	//console.log('sqlgen_fb declare_above: ',zx.sql.declare_above);
 	
-	emit(zx, 0, "if ( exists(select first 1 valu from Z$VARIABLES where Z$VARIABLES.REF='pass'||:pki||'-'||:pkf||'-DivoutName')) then cid=0;", "");
-	emit(zx, 0, "res=res||'}}]';", "");
-	emit(zx, 0, "suspend;", "");
+	emit(zx, 0, "if ( exists(select " + zx.config.db.sql_First1+" valu from Z$VARIABLES where Z$VARIABLES.REF='pass'||"+
+	    zx.config.db.var_actaul+"pki||'-'||"+zx.config.db.var_actaul+"pkf||'-DivoutName'"+zx.config.db.sql_Limit1+
+	    ")) then "+zx.config.db.sql_set_prefix+""+/*zx.config.db.var_actaul+*/ "cid=0;"+zx.config.db.sql_endif_postfix, "");
+	  
+	emitset( zx,0, "","'}}]'");
+	//emit(zx, 0, "/*zx.sql.engine:"+ zx.sql.engine+"*/", "");
+	
+	
+	if (zx.conf.db.dialect=="fb25")
+	    emit(zx, 0, "suspend;", "");
+	
 	if (zx.sql.engine === 'Z$RUN') {
-		emit(zx, 0, "END", "");
+		if (zx.conf.db.dialect=="fb25") emit(zx, 0, "END", "");
+		if (zx.conf.db.dialect=="mysql57") {
+				emit(zx, 0, "end$$", "");
+				emit(zx, 0, "DELIMITER ;", "");
+		}
 	}
+
+
 	if (zx.sql.engine === 'node-fb') {
 		emit(zx, 0, "END", "");
 	}
@@ -1049,31 +1136,59 @@ exports.done_pass = function (zx /*, line_objects*/
 
 };
 
-var get_variable_table_expression = function (v) {
+var get_variable_table_expression = function (zx,v) {
 	var where;
 	switch (v.table) {        
 	case 'here': {
-			where = ":operator$ref||'-'||:page_name_hash||'-" + v.field + "'";
+			where = sqlconcat(zx,"", 
+			            vr(zx,"operator$ref"),
+						"'-'",
+						vr(zx,"page_name_hash"),
+						"'-" + v.field + "'"
+						);
 		}
 		break;
 	case 'session': {
-			where = "'session-'||:operator$ref||'-'||:z$sessionid||'-" + v.field + "'";
+			where = sqlconcat(zx,"", 
+					    "'session-'",
+			            vr(zx,"operator$ref"),
+						"'-'",
+						vr(zx,"z$sessionid"),
+						"'-" + v.field + "'"
+						);
+						
 		}
 		break;
 	case 'params': {
-			where = "'params-'||:z$sessionid||'-" + v.field + "'";
+			where = sqlconcat(zx,"", 
+					    "'params-'",
+			            vr(zx,"z$sessionid"),
+						"'-" + v.field + "'"
+						);		
 		}
 		break;        
 	case 'my': {
-			where = ":operator$ref||'-" + v.field + "'";
+			where = sqlconcat(zx,"", 
+			            vr(zx,"operator$ref"),
+						"'-" + v.field + "'"
+						);		
 		}
 		break;
 	case 'system': {
-			where = "'system'||'-" + v.field + "'";
+			where = sqlconcat(zx,"", 
+			            "'system'",
+						"'-" + v.field + "'"
+						);			
 		}
 		break;
 	case 'passed': {
-			where = "'pass'||:pki||'-'||:pkf||'-" + v.field + "'";
+			where = sqlconcat(zx,"", 
+			            "'pass'",
+						vr(zx,"pki"),
+						"'-'",
+						vr(zx,"pkf"),						
+						"'-" + v.field + "'"						
+						);		
 		}
 		break;
 
@@ -1082,7 +1197,7 @@ var get_variable_table_expression = function (v) {
 };
 
 exports.emit_variable_setter = function (zx, line_obj, v, comment) {
-	var where = get_variable_table_expression(v);
+	var where = get_variable_table_expression(zx,v);
     if (where)
     {
 	var statement = "UPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),(" + v.params + ")) matching (REF);";
@@ -1099,7 +1214,7 @@ exports.emit_variable_getter = function (zx, line_obj, v , coalesce /*, comment*
     if (v.table === 'key') {
         var keyquery="exists(select * from "
            + zx.conf.db.platform_user_table.user_table_name
-           + " where " + zx.conf.db.platform_user_table.user_pk_field + "=:operator$ref "
+           + " where " + zx.conf.db.platform_user_table.user_pk_field + "="+vr(zx,"operator$ref")+" "
            + " and " + zx.conf.db.platform_user_table.user_keys_field + " containing '" + v.field + ",'"
            +")"
         //console.log('emit_variable_getter key : ',keyquery); //process.exit(2);
@@ -1111,28 +1226,28 @@ exports.emit_variable_getter = function (zx, line_obj, v , coalesce /*, comment*
         
         v.table = v.field.split('_')[0];
         v.field = v.field.split('_')[1];
-        var where = get_variable_table_expression(v);
+        var where = get_variable_table_expression(zx,v);
         var oresult = "((SELECT DO_SHOW FROM Z$ONCE ("+where+", 1, 100, 1))=1)";           
 		return oresult;
     }
     
-	var where = get_variable_table_expression(v);
+	var where = get_variable_table_expression(zx,v);
     
 	if ((v.table === 'session') && (v.field === 'id'))
-		return "(:z$sessionid)";
+		return "("+vr(zx,"z$sessionid")+")" ;
 	if ((v.table === 'session') && (v.field === 'master_context'))
-		return "(:pki)";	
+		return "("+vr(zx,"pki")+")";	
 	if ((v.table === 'session') && (v.field === 'master_offset'))
-		return "(:pkf)";
+		return "("+vr(zx,"pkf")+")";
     
-	var result = "(coalesce((select first 1 valu from Z$VARIABLES where Z$VARIABLES.REF=" + where + "),'"+coalesce+"'))";
+	var result = "(coalesce((select " + zx.config.db.sql_First1+" valu from Z$VARIABLES where Z$VARIABLES.REF=" + where + "" + zx.config.db.sql_Limit1+"),'"+coalesce+"'))";
 	return result;
 };
 
 
 exports.build_variable_passing = function (zx, fld_obj, v,key, comment) {
 	
-	var where = "'pass'||:cid||'-'||:tfid||'-" + key + "'";    
+	var where = "'pass',"+vr(zx,"cid")+",'-',"+vr(zx,"tfid")+",'-" + key + "'";    
 	var statement = "\nUPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),('" + v + "')) matching (REF);";
 	return statement;
     

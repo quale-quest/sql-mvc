@@ -58,6 +58,36 @@
         "username": "using the value from authfile, make authfile blank to use this value.",
         "password": "using the value from authfile, make authfile blank to use this value.",
         "authfile": "/etc/firebird/2.5/SYSDBA.password",
+		
+	    "var_subst": "/***/",
+		"var_actaul": ":",
+		
+        "sql_set_prefix": "",		
+		"sql_concat_set": "res=",
+		"sql_concat_prefix": "",
+		"sql_concat_res": "res=res||",
+		
+		"sql_concat_seperator": "||",
+		"sql_concat_postfix": "",
+		"sql_end_postfix": "",		
+		"sql_endif_postfix": "",		
+		"sql_First1": "first 1",
+		"sql_Limit1": "",		
+
+		
+        "mysql_set_prefix": "set",		
+		"mysql_concat_set": "res=",
+		"mysql_concat_prefix": "concat(",
+		"mysql_concat_res": "res=concat(res,",
+		
+		"mysql_concat_seperator": ",",
+		"mysql_concat_postfix": ")",
+		"mysql_end_postfix": ";",			
+		"mysql_endif_postfix": "end if;",			
+		"mysql_First1": " ",		
+		"mysql_Limit1": " limit 1 ",		
+		
+		
         "useUDF": "no",
         "schema_mode": "master",
         "schema_rebuild": "onchange",
