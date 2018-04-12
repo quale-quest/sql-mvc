@@ -54,14 +54,11 @@ else
 begin
 end
 
-
 any db language code can ge generated as long as it follows this flow pattern
 the else part is optional
 
 it does not matter what the db is  as long as it can produce the
 fullstach json format
-
-
 
 
 
@@ -79,8 +76,6 @@ BEGIN
 
 st='select name from user_table_name where user_table_name.user_pk_field = '''||operator_ref||'''';
 execute statement st into operator_name;
-
-
 
 
 
@@ -104,9 +99,7 @@ From external, redis paramstr
 a=F_STRINGLISTITEM(parmstr, 'varname')
 
 
-
 http://stackoverflow.com/questions/14197935/how-to-connect-to-a-redis-server-via-unix-domain-socket-using-hedis-in-haskell
-
 
 
 
@@ -117,10 +110,16 @@ http://stackoverflow.com/questions/14197935/how-to-connect-to-a-redis-server-via
 var fileutils = require('../lib/fileutils.js');
 
 
-
 var indent = function (zx) {
 	return zx.indent(zx.sql.dent);
 };
+
+function indent_str(zx,str) {
+	if (zx.conf.db.dialect=="fb25") return str;
+	const regex = /^(?!\s*$)/mg;
+	return str.replace(regex, " ".repeat(zx.sql.dent));	
+}
+
 
 var emit = function (zx, line_obj, statement , comment
 ) {
@@ -139,6 +138,7 @@ var emit = function (zx, line_obj, statement , comment
 		if (zx.debug > 4)
 			ObjText = " line_obj:" + JSON.stringify(line_obj);
 		var full = String(zx.mt.stack) + indent(zx) + statement + "/*" + (comment||'') + BlockText + LabelText + " " + ObjText + "*/";
+		//console.log(full );
 		zx.sql.script.push(full);
 		zx.sql.filelinemap.push(line_obj);
 		if (zx.debug_conditional_structure > 4)
@@ -146,9 +146,9 @@ var emit = function (zx, line_obj, statement , comment
 	} else {
         comment=undefined; //disable the debug output
         if ((comment===undefined)||(comment===""))
-		   zx.sql.script.push(statement);
+		   zx.sql.script.push(indent_str(zx,statement));
        else
-           zx.sql.script.push(statement + " -- "+comment);
+           zx.sql.script.push( indent_str(zx,statement+ " -- "+comment) );
 		zx.sql.filelinemap.push(line_obj);
 	}
 };
@@ -189,16 +189,13 @@ var emitset = function (zx,line_obj, comment ) { //followed by a number of strin
 }
 
 
-var emito = function (zx, obj, val) {
-	//emit(zx, 0, "res=res||',``" + obj + "``:``" + val + "``';", "");
+var emito = function (zx, obj, val) {	
 	emitset( zx,0, "",    "',``" + obj + "``:``" + val + "``'" );
 };
-var emits = function (zx, str) {
-	//emit(zx, 0, "res=res||'," + str + "';", "");
+var emits = function (zx, str) {	
 	emitset( zx,0, "",   "'," + str + "'" );
 };
-var emit_mt_obj = function (zx, name, str) {
-	//emit(zx, 0, "res=res||'," + fb_escapetoString('"' + name + '":' + str) + "';", "");
+var emit_mt_obj = function (zx, name, str) {	
 	emitset( zx,0, "",  "'," + fb_escapetoString('"' + name + '":' + str) + "'")  ;
 };
 exports.emit = emit;
@@ -239,7 +236,7 @@ exports.emit_var_def = function (name) {
 
 exports.eval_start = function (zx, line_obj) {
 	//compiles sql
-	emit(zx, line_obj, "cond=1;", "");
+	emit(zx, line_obj, zx.config.db.sql_set_prefix + "cond=1;", "");
 	return line_obj;
 };
 
@@ -257,24 +254,25 @@ exports.eval_cond = function (zx, line_obj, conditionals) {
 			entry.post = '';
 		if (entry.pre === undefined)
 			entry.pre = '';
-		emit(zx, conditionals, "if (cond<>0) then if (" + entry.pre + expr + entry.post + " ) then cond=0;", "");
+		emit(zx, conditionals, "if (cond<>0) then if (" + entry.pre + expr + entry.post + " ) then "+zx.config.db.sql_set_prefix +"cond=0;", "");
+	    if (zx.conf.db.dialect=="mysql57") emit(zx, zx.line_obj, "    end if;\r\nend if;");
 	});
 	return conditionals;
 };
 
 exports.EmitConditionAndBegin = function (zx, line_obj, bid,comment) {
-	//compiles sql
 
-	//this is conditional so we need to emit a value to fullstash also
-	//emit(zx, line_obj, "res=res||',``" + bid + "``:'||iif(cond<>0,'[``true``]','[]')||'';", "");
+	//this is conditional so we need to emit a value to fullstash also	
 	emitset( zx,0,"",  
 		"',``" + bid + "``:'",
-		"iif(cond<>0,'[``true``]','[]')",
+		((zx.conf.db.dialect=="mysql57")?"if":"iif")+
+		"(cond<>0,'[``true``]','[]')",
 		"''"		
 		);
 	emit(zx, line_obj, "if (cond<>0) then ", "");
-	emit(zx, line_obj, "begin",' '+ comment);
+	if (zx.conf.db.dialect=="fb25") emit(zx, line_obj, "begin",' '+ comment);
 	zx.sql.dent += 4;
+	zx.sql.blocktypes.push((zx.conf.db.dialect=="mysql57")?"if":"");
 
 	return line_obj;
 };
@@ -283,33 +281,31 @@ exports.EmitUnconditionalBegin = function (zx, line_obj) {
 	//compiles sql   if there is no goto this wont begin a real block
 	emit(zx, line_obj, "begin", line_obj.Block);
 	zx.sql.dent += 4;
+	zx.sql.blocktypes.push("");
 	return line_obj;
 };
 
 exports.elseblock = function (zx, line_obj) {
 	//compiles sql
 	zx.sql.dent -= 4;
-	emit(zx, line_obj, "end  ", "");
+	if (zx.conf.db.dialect=="fb25") emit(zx, line_obj, "end  ", "");
 	zx.sql.dent -= 4;
 	emit(zx, line_obj, "else  ", "");
 	zx.sql.dent += 4;
-	emit(zx, line_obj, "begin", "");
+	if (zx.conf.db.dialect=="fb25") emit(zx, line_obj, "begin", "");
 	zx.sql.dent += 4;
 	return line_obj;
 };
 
 exports.unblock = function (zx, line_obj,comment) {
-	//compiles sql
-
 	zx.sql.dent -= 4;
-	emit(zx, line_obj, "end  "+zx.config.db.sql_end_postfix,comment);
+	emit(zx, line_obj, "end  "+zx.sql.blocktypes.pop()+zx.config.db.sql_end_postfix,comment);
 
 	return line_obj;
 };
 
 exports.emit_log_out = function (zx, line_obj,comment) {
-    //console.trace();
-	emit(zx, line_obj, "info='logout';",comment);
+	emit(zx, line_obj, zx.config.db.sql_set_prefix +  "info='logout';",comment);
 
 	return line_obj;
 };
@@ -523,13 +519,13 @@ exports.DeclareVar = function (zx, line_obj, varx) {
 		db_type : "varchar(1000)"
 	};
 	if (varx.code !== undefined) {
-		emit(zx, line_obj, "st='" + varx.code + "';", ""); //for now
+		emit(zx, line_obj, zx.config.db.sql_set_prefix + "st='" + varx.code + "';", ""); //for now
 		emit(zx, line_obj, "execute statement st into " + exports.emit_var_def(varx.key) + ";", ""); //for now
 	}
 	if (varx.expr !== undefined) {
 		var expr = varx.expr; //exports.makeexpression(zx,line_obj,varx);
 		//console.log('DeclareVar: ',varx,"\n",expr,"\n\n");
-		emit(zx, line_obj, "" + exports.emit_var_def(varx.key) + "=" + expr + ";", ""); //for now
+		emit(zx, line_obj, zx.config.db.sql_set_prefix + exports.emit_var_def(varx.key) + "=" + expr + ";", ""); //for now
 	}
 
 	return line_obj;
@@ -663,7 +659,7 @@ exports.link_from_table = function (zx,cx, fld_obj) {
 		//TODO  this string limitation of 999 should through an compiler error if the sum of all the master fields could be longer than 999
 
 		fld_obj.PAGE_PARAMS.forEach(function (fld, i) {
-			PAGE_PARAMS += zx.config.db.sql_concat_seperator + "MF" + i + "=coalesce("+ zx.config.db.var_actaul+"F" + fld + ",''),';\n'||";
+			PAGE_PARAMS += zx.config.db.sql_concat_seperator + "F" + i + "=coalesce("+ zx.config.db.var_actaul+"F" + fld + ",''),';\n'||";
 		});
 		PAGE_PARAMS = "\n    substring((''" + 
 		    zx.config.db.sql_concat_prefix + PAGE_PARAMS + zx.config.db.sql_concat_postfix + 
@@ -1007,6 +1003,7 @@ exports.start_pass = function (zx /*, line_objects*/
 
 
 	zx.sql.dent = 4;
+	zx.sql.blocktypes = [];
 	zx.sql.script = [];
 	zx.sql.filelinemap = [];
 
@@ -1014,23 +1011,42 @@ exports.start_pass = function (zx /*, line_objects*/
 	zx.sql.cidti = []; //each table will have id's starting from a range 100000000+  //limits 10 million records per table - 4 hundred tables on one page
 	zx.sql.cidti_factor = 10000000;
 
-    if (zx.conf.db.dialect=="fb25") 	
-	zx.sql.testhead =
+    if (zx.conf.db.dialect=="fb25")  { 	
+		zx.sql.testhead =
 		"\n\n\nset term #;\n" +
 		"EXECUTE BLOCK RETURNS  (cid  integer,info varchar(200), res blob SUB_TYPE 1)AS \n" +
 		"declare pki integer=12345678;\n" +
 		"declare pkf integer=12345678;\n" +
 		"declare Z$SESSIONID varchar(40)='12345678';\n\n\n";
+		zx.sql.testfoot = "\n-- no need to - set term ;#\n";	
+	}
 		
-	if (zx.conf.db.dialect=="mysql57") 
+	if (zx.conf.db.dialect=="mysql57") {
+		var pname = "ZZ$"+zx.ShortHash(zx.main_page_name);
 		zx.sql.testhead =
-		"\n\n\nDELIMITER $$\nDROP PROCEDURE IF EXISTS execute_test $$\n" +
-		"CREATE PROCEDURE execute_test (cid  integer,info varchar(200), res TEXT)\nBEGIN\n" +
+		//"\n\n\nDELIMITER $$\nDROP PROCEDURE IF EXISTS "+pname+" $$\n" +
+		"CREATE PROCEDURE "+pname+" ("+
+			"Z$SESSIONID VARCHAR(40), "+
+			"CID        integer, "+
+			"PKREF_IN INTEGER, "+
+			"UPDATES_IN TEXT, "+
+			
+			"OUT NEW_CID INTEGER,   "+
+			"OUT INFO VARCHAR(1000),"+
+			"OUT RES TEXT,"+
+			"OUT SCRIPTNAMED VARCHAR(250) "+
+			")\nBEGIN\n" +
 		"declare pki integer default 12345678;\n" +
 		"declare pkf integer default 12345678;\n" +
-		"declare Z$SESSIONID varchar(40) default '12345678';\n\n\n";		
+		"\n\n\n";		
 		
-	zx.sql.testfoot = "\n-- no need to - set term ;#\n";
+	
+	
+		//console.log('zx.sql.testhead : ',zx.sql.testhead);
+	    zx.sql.testfoot = "\nend\n-- no need to - set term ;#\n";	
+	}
+		
+	
 
 	if (zx.sql.engine === 'flamerobin') { //flamerobin
 		emit(zx, 0, "set term #;", "");
@@ -1047,7 +1063,7 @@ exports.start_pass = function (zx /*, line_objects*/
 	emitdeclare(zx, 0, "row","varchar(1000)","''");
 	emitdeclare(zx, 0, "first","varchar(10)","''");
 	emitdeclare(zx, 0, "tfid","integer","0");
-	emitdeclare(zx, 0, "run_procedure","varchar(254)","''");
+	emitdeclare(zx, 0, "run_procedure","varchar(254)","''","Passed as page parameter");
 	emitdeclare(zx, 0, "run_procedure_pk","varchar(254)","''");
 	emitdeclare(zx, 0, "run_procedure_param","varchar(254)","''");
 	emitdeclare(zx, 0, "page_name_hash","varchar(40)","'" + zx.ShortHash(zx.main_page_name) + "'");	
@@ -1069,6 +1085,10 @@ exports.start_pass = function (zx /*, line_objects*/
 
 	if (zx.conf.db.dialect=="fb25")  emit(zx, 0, "BEGIN", "");
 	emit(zx, 0, "-- assign_params", "");
+	
+   // emit(zx, 0, " CALL Z$RUN_SUP(SESSION_IN, CID_IN, PKREF_IN, UPDATES_IN, NEW_CID, INFO, RES, SCRIPTNAMED);", "");	
+	
+
 
 	/*this is very node dependant and would be moded to a plugin*/
 	emit(zx, 0, zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + "'[{``start``:``true``';", "");
@@ -1120,8 +1140,8 @@ exports.done_pass = function (zx /*, line_objects*/
 	if (zx.sql.engine === 'Z$RUN') {
 		if (zx.conf.db.dialect=="fb25") emit(zx, 0, "END", "");
 		if (zx.conf.db.dialect=="mysql57") {
-				emit(zx, 0, "end$$", "");
-				emit(zx, 0, "DELIMITER ;", "");
+			//	emit(zx, 0, "end$$", "");
+			//	emit(zx, 0, "DELIMITER ;", "");
 		}
 	}
 
@@ -1200,7 +1220,13 @@ exports.emit_variable_setter = function (zx, line_obj, v, comment) {
 	var where = get_variable_table_expression(zx,v);
     if (where)
     {
-	var statement = "UPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),(" + v.params + ")) matching (REF);";
+	var statement;
+	
+	if (zx.conf.db.dialect=="fb25")  statement = "UPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),(" + v.params + ")) matching (REF);";
+	
+	if (zx.conf.db.dialect=="mysql57")
+		statement = "INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),(" + v.params + "))ON DUPLICATE KEY UPDATE VALU="+v.params + ";";
+	
 	emit(zx, line_obj, statement, comment);
     }
     else
@@ -1248,7 +1274,13 @@ exports.emit_variable_getter = function (zx, line_obj, v , coalesce /*, comment*
 exports.build_variable_passing = function (zx, fld_obj, v,key, comment) {
 	
 	var where = "'pass',"+vr(zx,"cid")+",'-',"+vr(zx,"tfid")+",'-" + key + "'";    
-	var statement = "\nUPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),('" + v + "')) matching (REF);";
+	var statement ;
+	if (zx.conf.db.dialect=="fb25")  
+		statement = "UPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),('" + v + "')) matching (REF);";
+	
+    if (zx.conf.db.dialect=="mysql57")
+		statement = "INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),(" + v.params + "))ON DUPLICATE KEY UPDATE VALU="+v.params + ";";
+	
 	return statement;
     
 };
@@ -1322,6 +1354,7 @@ exports.init = function (zx) {
 	//console.log('init sqlgen_fb: ');
 	zx.sql = {}; //sql data
 	zx.sql.dent = 4;
+	zx.sql.blocktypes = [];
 	zx.sql.declare_above = [];
 	zx.sql.args = [];
 	zx.sql.script = [];
@@ -1339,3 +1372,4 @@ exports.init = function (zx) {
 	//     zx.sql.engine='flamerobin';
     zx.sql.triggers =[];
 };
+

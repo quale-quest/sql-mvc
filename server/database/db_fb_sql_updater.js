@@ -777,7 +777,7 @@ exports.Execute_DDL = function (zx, blocks) {
 		} else {			
 			var qrystr = block.qrystr;
 			cx.expect = block.expect;
-			console.log('block.Hashes missmatch:', block.name,exports.lastHashes[block.name],block.Hash,'"'+qrystr+'"');
+			//console.log('block.Hashes missmatch:', block.name,exports.lastHashes[block.name],block.Hash,'"'+qrystr+'"');
 			//console.log('exports.Execute_DDL item:', i,block.method,(qrystr||'').substring(0,40),'q:',(block.q||'').substring(0,40));
 			var ex = block.src.src_obj.srcinfo;
 			//delete block.src.src_obj.body;
