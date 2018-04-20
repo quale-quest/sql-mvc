@@ -544,19 +544,25 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 				//console.log('include this tag : ', zx.pages[zx.pgi].name);
 			} {
 				file_name = zx.gets(obj[i].file);
-				//console.log('include this tag found m: ', file_name);
+				//console.log('include this tag check m: ', file_name);
 				if (file_name === "") {
-					console.log('file not specified : ', obj[i]);
+					//console.log('file not specified : ', obj[i]);
 				} else {
 					if (!fs.existsSync(file_name)) {
 						file_name = zx.gets(obj[i].file) + zx.app_incl_extn;
-						// console.log('include this tag found m2: ', file_name);
+						 //console.log('include this tag check m2: ', file_name);
 						if (!fs.existsSync(file_name)) {
 							file_name = fileutils.locatefile(zx, zx.gets(obj[i].file) + zx.app_incl_extn, zx.file_name, obj[i], 120014);
-							//console.log('include this tag found m3: ', file_name);
-							if (file_name !== "") {
+							//console.log('include this tag check m3: ', file_name);
+							if (!fs.existsSync(file_name)) {
 								file_name = file_name + zx.app_incl_extn;
-								// console.log('include this tag found m4: ', file_name);
+								//console.log('include this tag check m4: ', file_name);
+								if (!fs.existsSync(file_name))  {
+									console.log('include this tag not found m5: ', file_name);
+									file_name="";
+								} else {
+									//console.log('include this tag found m5: ', file_name);
+								}
 							}
 						}
 					}

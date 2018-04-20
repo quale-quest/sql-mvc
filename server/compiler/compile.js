@@ -196,9 +196,19 @@ function getDirectories(srcpath,Filter) {
 
         
         zx.config = db.load_config(zx.root_folder, '');//always in Quale/Config
+		//console.log('zx.config :', zx.config);
+		zx.fb25=false;
+		zx.fb30=false;
+		zx.mysql57=false;
+        if (zx.config.db.dialect=="fb25")    zx.fb25=true;
+		if (zx.config.db.dialect=="mysql57") zx.mysql57=true;
+		
+		
+
         
 		console.log('zx.root_folder :', zx.root_folder);
 		zx.build_roots = ["Quale/Config", "Quale/Custom", "Quale/Standard", "Quale/Lib"]; 
+		zx.build_roots.push("Quale/Database/"+zx.config.db.dialect);
         
         //order find first file
         /*  Application folders :   
@@ -224,18 +234,21 @@ function getDirectories(srcpath,Filter) {
         
         
         //Find Installable drop-in folders
-        zx.config
-        if (fs.existsSync('./node_modules'))
-            fileutils.getDropinPackages('./node_modules/',/sql-mvc-di/,zx.config.packages, zx.build_roots);
-        if (fs.existsSync('../node_modules'))
-            fileutils.getDropinPackages('../node_modules/',/sql-mvc-di/,zx.config.packages, zx.build_roots);
+        if (fs.existsSync('./node_modules')) {
+			fileutils.getDropinPackages('./node_modules/',/sql-mvc-di/,zx.config.packages, zx.build_roots);
+            fileutils.getDropinPackages('./node_modules/',/sql-mvc-di/,zx.config.db.packages, zx.build_roots);
+		}
+        if (fs.existsSync('../node_modules')) {
+			fileutils.getDropinPackages('../node_modules/',/sql-mvc-di/,zx.config.packages, zx.build_roots);
+            fileutils.getDropinPackages('../node_modules/',/sql-mvc-di/,zx.config.db.packages, zx.build_roots);
+		}	
         
         //Add plug-in folders
         
         zx.build_roots.push(""); //last one MUST be "" 
 
 
-        console.error("Quale Search path ",zx.build_roots);
+        console.error("\r\n\r\nQuale Search path ",zx.build_roots);
         console.error("==================================================================== ");
         
 		//if dev mode zx.build_roots.unshift("sandbox");
@@ -250,6 +263,10 @@ function getDirectories(srcpath,Filter) {
             process.exit(2);
           }
 		}
+		zx.sql_log_file_name = zx.output_folder + 'sql_log.json'; 
+		zx.error_file_name = zx.output_folder + 'last_error.txt';	
+		zx.sql_log_file_obj=[];
+		zx.error_log_file_name = zx.output_folder + 'error_log.json';
         
         zx.hogan_folder = path.resolve('./client/templates/') +path.sep;
         
@@ -281,6 +298,7 @@ function getDirectories(srcpath,Filter) {
         }
 		zx.dbg = require('../database/db_fb_sql_gen.js');
 		zx.plugins.push(zx.dbg);
+		zx.dbg.var_actaul = zx.config.db.var_actaul;
 
 		zx.db_update = require('../database/db_fb_sql_updater.js');
 		zx.plugins.push(zx.db_update);
@@ -450,7 +468,7 @@ function getDirectories(srcpath,Filter) {
 				}
 
 				filelist = fs.readFileSync(fn, 'utf8').split(/\r\n|\r|\n/);
-				//console.log('filelist  :', filelist);
+				console.log('filelist  :', filelist);
 
 				filelist.forEach(function (dfn) {
 					queue_file_to_be_compiled(zx, dfn);
@@ -575,8 +593,7 @@ var seq_page = function (zx) {
 		//console.warn('',zx.rel_file,fn );
 		page.appendToDepenance(zx, fn);
 
-		zx.error_log_file_name = zx.output_folder + 'error_log.json';
-		zx.error_file_name = zx.output_folder + 'last_error.txt';
+
 		var lokfn = zx.output_folder + 'last_ok.txt';
 
 		var ofn = zx.output_folder + zx.rel_file;
@@ -664,6 +681,12 @@ var seq_page = function (zx) {
 		script = script.replace(/``/g, '"');
 		script = script.replace(/\/\*\*\*\//g, ':');
 
+		if (zx.conf.db.dialect=="mysql57") {
+			script = script.replace(/begin\s+end\s*;/gi, "");	 //removed blank blocks - later also do for fb - //todo-fb
+     		script = script.replace(/--:/g, "-- :"); //fb to mysql
+	    	script = script.replace(/cast\s*\(\s*'now'\s+as\s+timestamp\s*\)/gi, " NOW() ");	//fb to mysql	
+		}
+	
 
         fs.writeFileSync(ofn + '.mt', zx.mtscript);
 		//validate this using a prepare command
@@ -683,8 +706,10 @@ var seq_page = function (zx) {
 			throw new Error("local known error");
 		} else {}
 
-		console.log('validate_script...........................................', zx.main_page_name, JSON.stringify(script, null, 4).length);
-		var valid = zx.dbu.validate_script(zx, zx.main_page_name, script);
+		console.log('validate_script...........................................', zx.main_page_name, JSON.stringify(script, null, 4).length);		
+		var valid = "ok";
+		if (zx.fb25) valid = zx.dbu.validate_script(zx, zx.main_page_name, script);
+
 		//console.log('validate_script...........................................',valid);
 		//if (valid.result) {};
 		//console.log('validate_scriptxxx-----------------------------',valid);
@@ -750,9 +775,9 @@ var seq_pages = function (zx) {
 				zx.error.caught_exception(zx, e, " iterating pages mark-114230 ");
 			}
             if (!ok)     {
-                    console.log('\n...........................................No file\n');
-                    throw new Error("no file - known error");                
-            }                
+                    console.log('\n...........................................No output,No Exception, suggests compiler caught it`s own error, throwing now\n');                    
+				throw new Error("No output,No Exception, - known error");
+      		}                
 			zx.eachplugin(zx, "done_page", zx.pages[zx.pgi]);
 
 			zx.pgi++;
@@ -771,10 +796,15 @@ var seq_pages = function (zx) {
 
 
 console.log('compiler started');
-if (!fs.existsSync("Quale")) {
+if (!fs.existsSync("Quale")||!fs.existsSync("node_modules/sql-mvc-ui-dark")) {
     // Do something
+	console.log('\r\n...........................................');
     console.log('The compiler must be run with the current working directory being the root of the project to be compiled.');
-    console.trace('process.exit(2) from existsSync Quale : '); process.exit(2);
+	console.log('In addition at least one UI package must be available from the current working directory such as node_modules/sql-mvc-ui-dark  .');
+	
+    console.log('\r\nprocess.exit(2) from existsSync Quale : '); 
+	console.log('...........................................');
+	process.exit(2);
 }
 
 //Sync(function () {

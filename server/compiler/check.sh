@@ -3,6 +3,8 @@
 #
 
 
+clear
+printf '\033[3J'
  
 # The absolute path of the directory containing this script.
 DIR="$( cd "$( dirname "$0" )" && pwd -P)"

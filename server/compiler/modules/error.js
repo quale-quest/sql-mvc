@@ -153,7 +153,10 @@ exports.caught_exception = function (zx,e,msg) {
 }
 
 exports.commit = function (zx) {
-	fs.writeFileSync(zx.error_log_file_name, JSON.stringify(exports.error_log_obj, null, 4));
+	if (zx.error_log_file_name)
+	    fs.writeFileSync(zx.error_log_file_name, JSON.stringify(exports.error_log_obj, null, 4));
+	if (zx.sql_log_file_name)
+		fs.writeFileSync(zx.sql_log_file_name, JSON.stringify(zx.sql_log_file_obj, null, 4));
 };
 
 exports.shut_down = function (zx) {

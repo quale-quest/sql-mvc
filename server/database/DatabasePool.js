@@ -99,12 +99,19 @@ exports.load_config = function (root_folder, Application) {
 	if (Application === '/')
 		Application = '/Home';
         
+    root_folder=path.normalize(root_folder);		
+	Application=path.normalize(Application);	
+
+	if (root_folder.substr(-1) != '/') root_folder += '/';	
+	//if (Application.substr(-1) != '/') Application += '/';	
+		
     var initial   =root_folder + 'Quale/Config' + Application; 
 
 	var fileContents = '',
 	search = path.resolve(initial);
 
-	console.log('Inital Application is',initial, Application,' located at:',search);
+	//console.log('Inital Application is',initial, '\r\n app:',Application,'\r\n located at:',search);
+	console.log('load_config\r\n root_folder:',root_folder, '\r\n Application:',Application,'\r\n initial:',initial,'\r\n located at:',search);
 	while (fileContents === "" && search !== '/') {
 		try {
 			fileContents = fs.readFileSync(search + '/config.json').toString();            
@@ -135,9 +142,13 @@ exports.load_config = function (root_folder, Application) {
         //console.log("config.quicc 175912 :", config);
     }
     
-    console.log("config.quicc 175914 :", config);
+    //console.log("config.quicc 175914 :", config);
+	if (Object.keys(config).length<1) {
+		console.log("\r\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> config file not found :", config);
+		process.exit(2);
+	}
 	var conf = exports.check_run_mode(config);        
-    console.log("config.quicc 175915 :", config);
+    //console.log("config.quicc 175915 :", config);
 
 	return conf;
 }
@@ -190,8 +201,48 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 		//console.log("Config file Contents : ", fileContents,conf );
 		rambase.conf = conf;
 		rambase.host = conf.db.server;
-		console.log('db connections json 165225 :', JSON.stringify(rambase, null, 4));
+		//console.log('db connections json 165225 :', JSON.stringify(rambase, null, 4));
 		rambase.database = conf.db.database;
+
+
+		//console.log("\n\n============================: ",JSON.stringify(rambase.conf.db.dialect, null, 4) );
+		 
+		if (rambase.conf.db.dialect=="mysql57")  {
+			zx.mysql = require('mysql');
+			rambase.user = conf.db.username;
+			rambase.password = conf.db.password;		
+			rambase.user_table = conf.db.user_table;
+			rambase.pk = conf.pk;			
+			var dbref = zx.mysql.createConnection({
+			  host: rambase.host,
+			  user: rambase.user,
+			  password: rambase.password,
+			  database : rambase.database
+			});
+			
+			dbref.connect(function(err) {
+			  if (err) throw err;
+			  else {
+			    console.log("MySQL Connected!");
+				rambase.db = dbref;
+				rambase.connectionID = connectionID;
+                rambase.ready = true;
+				rambase.last_connect_stamp = Date.now();
+				exports.connections[connectionID] = rambase;
+                deasync.sleep(15); //on windows this is needed to prevent the compiler form hanging
+				if (callback !== undefined)
+					callback(null, "Connected", exports.connections[connectionID]);			  			  
+			  }
+			});			
+			
+			
+			
+		}
+		else 
+		{
+		
+
+
 		if (conf.db.authfile !== undefined && conf.db.authfile !== "") {
 			var str;
 			try {
@@ -227,8 +278,8 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 			password : rambase.password
 		};
 		
-		console.log('Database config and passwords :', JSON.stringify(rambase.connection_string,null,4));
-		console.log('conf.run :', JSON.stringify(conf.run,null,4));
+		//console.log('Database config and passwords :', JSON.stringify(rambase.connection_string,null,4));
+		//console.log('conf.run :', JSON.stringify(conf.run,null,4));
 		fn(rambase.connection_string,
 			function (err, dbref) {
 			if (err) {
@@ -261,7 +312,7 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 			}
 		});
 	}
-
+	}	
 	return;
 };
 

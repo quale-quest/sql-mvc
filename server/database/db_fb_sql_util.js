@@ -13,6 +13,7 @@ this provides data base utility functions to the compiler, at compile time.
 //var fb = require("node-firebird");
 
 var db = require("../../server/database/DatabasePool");
+var fs = require('fs');
 //var Sync = require('sync');
 var deasync = require('deasync');
 var deasync_const=5; 
@@ -203,19 +204,37 @@ exports.getquery_info_async = function (zx, name, script, line_obj, return_callb
 
 exports.validate_script_async = function (zx, name, script, callback) {
 
-	var querys = 'EXECUTE BLOCK RETURNS  (cid integer,info varchar(200),res blob SUB_TYPE 1)AS declare pki integer=0;declare pkf integer=0;declare z$sessionid varchar(40)=\'\';' + script;
+var querys;
+
+if (zx.conf.db.dialect=="fb25")
+	querys = 'EXECUTE BLOCK RETURNS  (cid integer,info varchar(200),res blob SUB_TYPE 1)AS declare pki integer=0;declare pkf integer=0;declare z$sessionid varchar(40)=\'\';' + script;
+if (zx.conf.db.dialect=="mysql57")
+	querys =
+		"\n\n\nDELIMITER  $$\nDROP PROCEDURE IF EXISTS execute_test $$\n" +
+		"CREATE PROCEDURE execute_test (cid  integer,info varchar(200), res TEXT)\nBEGIN\n" +
+		"declare pki integer default 0;\n" +
+		"declare pkf integer default 0;\n" +
+		"declare Z$SESSIONID varchar(40) default '';\n\n\n"+ script + "\n-- no need to - set term ;#\n";
+	
+	
+	console.log('validate_script_async : ',querys );
 	connection.db.query(querys, [],
 		function (err, result) {
+	    
 		//console.log('validation result: write',err,result );
 		if (!result || result.length === 0) {
-			//parse the error
+			//parse the error			
 			var script_err = parse_error(zx, err);
+			var	sql_log_obj=['validate_script_async',querys,script_err];
+			zx.sql_log_file_obj.push(sql_log_obj);
 			zx.err = script_err;
 			//todo - show operator some kind of server error
             console.log('script_nok:',script_err );
 			callback(null, script_err);
 		} else {
 			//console.log('script_ok:'); //,result );
+			var	sql_log_obj=['validate_script_async ok',querys];
+			zx.sql_log_file_obj.push(sql_log_obj);				
 			callback(null, "ok");
 		}
 
@@ -252,6 +271,8 @@ exports.dataset = function (cx, name, script, line_obj, callback) {
 			//parse the error
 			console.log('exports.dataset err: ');
 			var script_err = parse_error(cx.zx, err);
+			var	sql_log_obj=['dataset',querys,script_err];
+			cx.zx.sql_log_file_obj.push(sql_log_obj);			
 			cx.zx.err = script_err;
 			//todo - show operator some kind of server error
 			callback(null, script_err);
@@ -259,6 +280,8 @@ exports.dataset = function (cx, name, script, line_obj, callback) {
 			//console.log('dataset result:', result);
 			if (result === undefined)
 				result = [];
+			var	sql_log_obj=['dataset ok',querys];
+			cx.zx.sql_log_file_obj.push(sql_log_obj);						
 			callback(null, result);
 		}
 
@@ -301,6 +324,8 @@ exports.singleton = function (zx, field, qrys) {
 	if (res[0][field] !== undefined) {
 
 		//console.log("singleton a:" ,res[0][field])
+		if (res[0][field] === null)
+			return '';
 		if (res[0][field].low_ === undefined)
 			return res[0][field];
 		return res[0][field].low_ + (res[0][field].high_ * 65536 * 65536);
@@ -327,19 +352,23 @@ exports.exec_qry_cb_async = function (cx, name, script, line_obj, callback) {
 		if (err) {
 			//parse the error
 			var script_err = JSON.stringify(err);
-
+			var	sql_log_obj=['dataset',qrystr,script_err];
+			cx.zx.sql_log_file_obj.push(sql_log_obj);	
 			if (cx.expect !== undefined && cx.expect.test(script_err)) {
 				//console.log('Acceptable error:', cx.expect,qrystr);
 			} else {
-				console.log('script_err:', script_err, err, ' in :------------------>\n', script);
-				script_err = parse_error(cx.zx, err, line_obj);
+				console.log('exec_qry_cb_async:', script_err, err, ' in :------------------>\n', script);
+				script_err = parse_error(cx.zx, err, line_obj);				
 				cx.zx.err = script_err;
+				cx.zx.eachplugin(cx.zx, "commit", 0);
 				throw new Error("update script error.", script_err + '/n' + script);
 				//todo - show operator some            kind of server error
 			}
 			callback(null, script_err);
 		} else {
 			//console.log('exec_qry_cb result:', result,qrystr);
+			var	sql_log_obj=['exec_qry_cb_async ok',qrystr];
+			cx.zx.sql_log_file_obj.push(sql_log_obj);				
 			callback(null, result);
 		}
 
@@ -363,8 +392,22 @@ exports.exec_qry_cb = function (cx, name, script, line_obj) {
     
   return  result;
 };
+exports.getUpdateOrInsert = function (zx, name) {
+	
+	var CurrentPageIndex = exports.singleton(zx, "pk", "select pk from Z$SP where FILE_NAME='" + name + "'");
+	//console.log('getUpdateOrInsert a: ' +CurrentPageIndex);
+	if (CurrentPageIndex=="") {
+		//console.log('getUpdateOrInsert c: ' +name);
+		exports.singleton(zx, "", "INSERT INTO Z$SP (FILE_NAME)VALUES ('" + name + "') ");
+		CurrentPageIndex = exports.singleton(zx, "pk", "select pk from Z$SP where FILE_NAME='" + name + "'");
+	}
+	//console.log('getUpdateOrInsert z: ' +CurrentPageIndex);
+	return CurrentPageIndex;
+	
+}
 
 exports.getPageIndexNumber = function (zx, name) {
+    if (zx.conf.db.dialect=="fb25") {
 	//console.log('getPageIndexNumber : A' ,name);
 	exports.singleton(zx, "", "UPDATE OR INSERT INTO Z$SP (FILE_NAME)VALUES ('" + name + "') MATCHING (FILE_NAME) ");
 	//console.log('getPageIndexNumber : B' );
@@ -372,7 +415,46 @@ exports.getPageIndexNumber = function (zx, name) {
 
 	//console.log('getPageIndexNumber : ' +CurrentPageIndex);
 	return CurrentPageIndex;
+	}
+
+    if (zx.conf.db.dialect=="mysql57")
+	    return exports.getUpdateOrInsert(zx, name);
 }
+
+
+exports.create_script_async = function (zx, real, spi, name, mtHash, script, code, callback) {
+//
+
+	//console.log('.write_script_async - ' +spi,'>',name,'<',zx.sql.testhead, '>',script);
+	var pname = "ZZ$"+zx.ShortHash(name);
+    var drops = "\nDROP PROCEDURE IF EXISTS "+pname+" " ;		
+	
+	connection.db.query(drops, [],
+		function (err, result) {
+			//console.log('droped real SP :',pname,err,result );
+			var compoundscript = zx.sql.testhead +script + zx.sql.testfoot;;
+			connection.db.query(compoundscript, 
+			   [ ],
+				function (err, result) {
+					if (err) {
+						console.log('Error in creating real SP :',"\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n",compoundscript,"\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n",err,result );
+						
+						fs.writeFileSync("exit2.sql",compoundscript +"\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ err);
+						
+					    process.exit(2);
+					}
+					callback(null, err);
+
+			});
+
+			
+			
+
+		});
+	
+};
+
+
 
 exports.write_script_async = function (zx, real, spi, name, mtHash, script, code, callback) {
 	name = name.replace(/\\/g, '/'); //windows
@@ -381,7 +463,8 @@ exports.write_script_async = function (zx, real, spi, name, mtHash, script, code
 
 	//name = 'Z$$' + spi;
 	//console.log('write_script_async to Z$SP : ', name);
-	connection.db.query("UPDATE OR INSERT INTO Z$SP (PK,TSTAMP,FILE_NAME,SCRIPT,CODE,MT_HASH)VALUES (?,'now',?,?,?,?) MATCHING (PK) ", [spi, name, script, JSON.stringify(code),mtHash],
+	var querys="UPDATE OR INSERT INTO Z$SP (PK,TSTAMP,FILE_NAME,SCRIPT,CODE,MT_HASH)VALUES (?,'now',?,?,?,?) MATCHING (PK) ";
+	connection.db.query(querys, [spi, name, script, JSON.stringify(code),mtHash],
 		function (err, result) {
 
 		if (real) {
@@ -389,6 +472,8 @@ exports.write_script_async = function (zx, real, spi, name, mtHash, script, code
 			//console.log('create real SP : ', script);
 			connection.db.query(script, [],
 				function (err, result) {
+				var	sql_log_obj=['dataset',querys,err];
+				zx.sql_log_file_obj.push(sql_log_obj);						
 				//console.log('dbresult: write' );
 				//also write it to the table for convenience and access to code field
 				//console.log('dbresult: write' );
@@ -641,3 +726,11 @@ exports.init = function (/*zx*/
 
 
 };
+
+
+exports.sqltype = function (zx,fb,mysql) {	
+	if (zx.conf.db.dialect=="fb25")    return fb;
+	if (zx.conf.db.dialect=="mysql57") return mysql;
+	return fb;
+}
+
