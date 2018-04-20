@@ -99,7 +99,7 @@ var queue_file_to_be_compiled = function (zx, dfn) {
 	var fileobj,
 	br,
 	name;
-	console.log('queue_file_to_be_compiled:', dfn);
+	//console.log('queue_file_to_be_compiled:', dfn);
 
 	if (dfn !== '') {
 		dfn = path.resolve(dfn);
@@ -208,7 +208,7 @@ function getDirectories(srcpath,Filter) {
         
 		console.log('zx.root_folder :', zx.root_folder);
 		zx.build_roots = ["Quale/Config", "Quale/Custom", "Quale/Standard", "Quale/Lib"]; 
-		zx.build_roots.push("Quale/Database/"+zx.config.db.dialect);
+		zx.build_roots.push("Quale/Database/"+zx.config.db.dialect); //database dependant files
         
         //order find first file
         /*  Application folders :   
@@ -563,9 +563,11 @@ var seq_page = function (zx) {
            
         
 		var fn = fileutils.locatefile(zx, zx.pages[zx.pgi].name, zx.root_folder, "Compile " + zx.pages[zx.pgi].name, 120022);
-		console.warn('file located : ',fn);
+		//console.warn('file located : ',fn);
 
 		zx.model_files = get_model_files(zx, fn);
+		
+		//console.warn('zx.model_files :',zx.model_files);
 
 	} catch (e) {
 		zx.error.caught_exception(zx, e, " seq_page db/config start mark-114231 ");
@@ -632,7 +634,7 @@ var seq_page = function (zx) {
 			//console.log('RecurseParseFileToObject done:',fn);
 		} catch (e) {
 			zx.error.caught_exception(zx, e, " RecurseParseFileToObject mark-114232 ");
-			throw new Error("local known error");
+			throw new Error("local known error 117010");
 		}
 
       
@@ -656,7 +658,7 @@ var seq_page = function (zx) {
 			//console.log('diviner.compile done:');
 		} catch (e) {
 			zx.error.caught_exception(zx, e, " diviner.compile mark-114233 ");
-			throw new Error("local known error");
+			throw new Error("local known error 117011");
 		}
 		fs.writeFileSync(ofn + '.linkfiles.txt', JSON.stringify(zx.linkfiles, null, 4));
 
@@ -679,7 +681,7 @@ var seq_page = function (zx) {
 
 		var script = zx.sql.script.join('\n');
 		script = script.replace(/``/g, '"');
-		script = script.replace(/\/\*\*\*\//g, ':');
+		script = script.replace(/\/\*\*\*\//g, zx.config.db.var_actaul);		
 
 		if (zx.conf.db.dialect=="mysql57") {
 			script = script.replace(/begin\s+end\s*;/gi, "");	 //removed blank blocks - later also do for fb - //todo-fb
@@ -703,7 +705,7 @@ var seq_page = function (zx) {
 			script = zx.sql.testhead + script + zx.sql.testfoot;
 			zx.error.log_validation_fail(zx, 'Compile Error', script, zx.err);
 			console.log('>>>>>>>>>>>>>>>Throwing known error (1)');
-			throw new Error("local known error");
+			throw new Error("local known error 117013");
 		} else {}
 
 		console.log('validate_script...........................................', zx.main_page_name, JSON.stringify(script, null, 4).length);		
@@ -735,7 +737,7 @@ var seq_page = function (zx) {
             fs.writeFileSync(fnhc,mtjs);    
 
                    
-			zx.dbu.write_script(zx,false, zx.CurrentPageIndex ,zx.main_page_name,zx.mtHash, script,'');
+			zx.dbu.write_script(zx,true, zx.CurrentPageIndex ,zx.main_page_name,zx.mtHash, script,'');
 
 			console.log('Wrote script to database - ' + zx.main_page_name, 'size:', script.length);
 
@@ -751,12 +753,12 @@ var seq_page = function (zx) {
 				zx.error.log_SQL_fail(zx, 'Quale definition missing',
                         "Each field in a table select statement must have a -:{} even if empty.",{}, {});
                 
-				throw new Error("local known error");
+				throw new Error("local known error 117014");
 			} else {
 				console.log('Script validation failed - ', valid);
 				
 				zx.error.log_validation_fail(zx, 'Script validation failed', script, valid);				
-				throw new Error("local known error");
+				throw new Error("local known error 117015");
 			}
 		}
 	}
@@ -841,5 +843,6 @@ if (!fs.existsSync("Quale")||!fs.existsSync("node_modules/sql-mvc-ui-dark")) {
 	zx.eachplugin(zx, "shut_down", 0);
 	console.log("shut_down");
 	zx.dbu.exit();
+	console.log("dbu.exited");
 //});
 //eof

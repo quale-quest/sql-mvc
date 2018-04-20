@@ -199,9 +199,21 @@ function dll_blocks_seperate_term(inputs, src_obj) { //splits the input into blo
 	//console.log('dll_blocks_seperate_term start  A :', inputs, ':z');//.substring(0,20));
 	var open_term = ";";
 	var blocks = [];
+
+	if (zx.mysql57) {	
+		//replace mysql DELIMITER ;;    and DELIMITER ;  with firebird DELIMITERs
+		inputs = inputs.replace(/DELIMITER\s*;;/i, "SET TERM ^ ; ");
+		inputs = inputs.replace(/DELIMITER\s*;/i, "SET TERM ; ^ ");
+	}
+
 	while (inputs !== '') {
 		//console.log('dll_blocks_seperate_term :', inputs);
-		var regs = '([\\S\\s]*?)set\\s+term\\s+(.)\\s+\\' + open_term + '([\\S\\s]*)';
+		var regs;
+		if (zx.fb25)
+		    regs= '([\\S\\s]*?)set\\s+term\\s+(.)\\s+\\' + open_term + '([\\S\\s]*)';
+		if (zx.mysql57) 	
+		    regs = '([\\S\\s]*?)delimiter\\s+(.)\\s+\\' + open_term + '([\\S\\s]*)'; //mysql
+		
 		//  ([\S\s]*)set\s+term\s+(.)\s+;([\S\s]*)
 		var re = new RegExp(regs, 'i');
 		var m = inputs.match(re);
@@ -242,19 +254,22 @@ function dll_blocks_seperate_term(inputs, src_obj) { //splits the input into blo
 				//if (/*indx==1&&*/statement.match('PK_CACHE2')) process.exit(2);
 				var ms = statement.match(/(\s*)([\S\s]+)/i); //remove leading lines
 				//console.log('    statement   :', ms);
-				l = countLines(ms[2]);
-				o += countLines(ms[1]);
-				var block = {
-					t : ';',
-					q : ms[2] + ';\n\n',
-					src : {
-						l : l,
-						o : o,
-						src_obj : src_obj //lots of lines can share the same source file object
-					}
-				};
-				//interpret_sorting_order(block);
-				blocks.push(block);
+				if ((ms === null) || (ms === undefined)) {}
+				else {
+					l = countLines(ms[2]);
+					o += countLines(ms[1]);
+					var block = {
+						t : ';',
+						q : ms[2] + ';\n\n',
+						src : {
+							l : l,
+							o : o,
+							src_obj : src_obj //lots of lines can share the same source file object
+						}
+					};
+					//interpret_sorting_order(block);
+					blocks.push(block);
+				}
 
 				o = 0;
 
@@ -281,6 +296,12 @@ function dll_blocks_seperate_term(inputs, src_obj) { //splits the input into blo
 }
 
 var exec_qry = function (cx, qrys) {
+	
+	if (zx.mysql57) {
+		qrys = qrys.replace(/--:/g, "-- :");
+		qrys = qrys.replace(/cast\s*\(\s*'now'\s+as\s+timestamp\s*\)/gi, " NOW() "); //also check compile.js:687
+	}
+	
 
 	exports.write_log.push(qrys);
 	//fs.writeFileSync(zx.output_folder + 'build.sql', exports.write_log.join(''));
@@ -305,10 +326,19 @@ var dataset = function (zx, qrys) {//could use the one from sql_utils
 var singleton = function (zx, field, qrys) {//could use the one from sql_utils
     //console.log("singleton qrys:" ,qrys);
 	var result = zx.dbu.fetch_dataset(zx, "updater singleton", qrys, 0);
-    //console.log("singleton res:" ,result);
+    //console.log("singleton res:" ,typeof result, result);
 	if (result[0] === undefined) {
-		console.log("singleton:", result);
+		console.log("singleton:", typeof result, result);
 	}
+	
+	//console.log("singleton res fields:" ,fields[0].name);
+	//console.log("singleton res x:" ,typeof result[0], result[0]['count(*)']);
+	//console.log("singleton res JSON:" ,JSON.stringify(result,null,4));
+	
+	//console.log("singleton res z:" ,typeof result[0].RowDataPacket, result[0].RowDataPacket);
+	//console.log("singleton res z:" ,result[0].['count(*)']);
+	
+	//if (result[0].RowDataPacket[field] !== undefined) {	}
 	if (result[0][field] !== undefined) {
 		//console.log("singleton:" ,result[0][field].low_)
 		if (result[0][field].low_ === undefined)
@@ -318,13 +348,22 @@ var singleton = function (zx, field, qrys) {//could use the one from sql_utils
 		return '';
 };
 var checkTable = function (zx, name) {
-	return singleton(zx, "count", "select count(*) from rdb$relations where rdb$relation_name ='" + name.toUpperCase() + "' ;");
+	if (zx.mysql57)
+        return singleton(zx, "count(*)", "select count(*) from information_schema.tables where table_schema = 'demo_db_2' AND table_name = '" + name.toUpperCase() + "' ;");
+	if (zx.fb25)
+        return singleton(zx, "count", "select count(*) from rdb$relations where rdb$relation_name ='" + name.toUpperCase() + "' ;");
 };
 var checkView = function (zx, name) {
-	return singleton(zx, "count", "select count(*) from rdb$relations where rdb$relation_name ='" + name + "' AND (rdb$view_blr IS NOT NULL);");
+	if (zx.mysql57)
+        return singleton(zx, "count(*)", "select count(*) from information_schema.tables where table_schema = 'demo_db_2' AND table_name = '" + name.toUpperCase() + "' AND TABLE_TYPE='VIEW' ;");
+	if (zx.fb25)
+	    return singleton(zx, "count(*)", "select count(*) from rdb$relations where rdb$relation_name ='" + name + "' AND (rdb$view_blr IS NOT NULL);");
 };
 var checkGenerator = function (zx, name) {
-	return singleton(zx, "count", "SELECT count(*) FROM RDB$GENERATORS  where RDB$GENERATOR_NAME='" + name + "' ;");
+	if (zx.mysql57)
+        return singleton(zx, "count(*)", "select count(*) from information_schema.tables where table_schema = 'demo_db_2' AND table_name = 'Z$GEN_" + name.toUpperCase() + "' AND TABLE_TYPE='BASE VIEW' ;");
+	if (zx.fb25)
+	    return singleton(zx, "count(*)", "SELECT count(*) FROM RDB$GENERATORS  where RDB$GENERATOR_NAME='" + name + "' ;");
 };
 var getGenerator = function (zx, name, increment) {
 	return singleton(zx, "gen_id", "SELECT GEN_ID( " + name + "," + increment + " ) FROM RDB$DATABASE;");
@@ -401,58 +440,126 @@ var CREATE_TABLE = function (zx, qrystr) {
 	//console.log("CREATE_TABLE:",Table,tableexists,"qrystr:",qrystr," barestr:",barestr);
 	if (tableexists === 0) // create new table as is
 	{
+		var recodesql;
         console.log('Table does not exist  - attempt to create as defined '+Table);
+		
+		recodesql = qrystr.replace(/AUTO_INCREMENT/i, "/*AUTO INCREMENT*/");
+		//console.log('**************************************************************AUTO_INCREMENT type check:', recodesql);
+			
+		var AUTO_INCREMENT=(recodesql != qrystr);		
+		if (zx.fb25){
+				//if (fb30) //has syntax for auto creating				
+				if (AUTO_INCREMENT) qrystr=recodesql;
+				//add trigger code
+				qrystr = qrystr.replace(/MEDIUMTEXT/i, "BLOB SUB_TYPE 1");				
+			}		
+		if (zx.mysql57){
+			    qrystr = qrystr.replace(/BLOB\s+SUB_TYPE\s+1/i, "MEDIUMTEXT");
+			}
 		exec_qry(cx, qrystr);
 		return "";
 	}
 
 	var fields = splitNoParen(barestr, ',');
 	var FieldNumber = 0;
-	//console.log('Table fields:',fields );
+	var newfield;
+	//console.log('Table ',Table,' fields:',fields );
 
 	fields.forEach(function (field) {
 		field = field.trim();
 		if ((field !== ")" && field !== ";")) {
 			FieldNumber = FieldNumber + 1;
-			cx.expect = /335544351/;
+			cx.expect = (zx.mysql57)?/ER_DUP_FIELDNAME/:/335544351/;
 			exec_qry(cx, "ALTER TABLE " + Table + " ADD " + field);
             if (cx.zx.config.db.schema_alter_fields === "yes") { 
-			if (field.match(/\sblob\s/i) || field.match(/\sCOMPUTED BY\s/i)) {
+			
+			//find and remove unique key			
+			newfield = field.replace(/UNIQUE/i, " ");	
+			var Unique=(newfield != field);
+			field=newfield;
+			
+			newfield = field.replace(/NOT NULL/i, " ");	
+			var NOT_NULL=(newfield != field);
+			field=newfield;
+			
+			//todo mysql update  Unique and NOT_NULL only if wrong
+			
+			newfield = field.replace(/AUTO_INCREMENT/i, "/*AUTO INCREMENT*/");
+			//console.log('**************************************************************AUTO_INCREMENT type check:', newfield);
+			
+			var AUTO_INCREMENT=(newfield != field);
+			field=newfield;
+			if ((zx.fb25)&&(AUTO_INCREMENT)){
+				//if (fb30) //has syntax for auto creating
+				//add trigger code
+				
+			}
+			
+			//console.log('Blob type check:', field);
+			if (field.match(/\sblob\s*/i) 
+				|| field.match(/\sCOMPUTED BY\s*/i)
+			    || field.match(/\sMEDIUMTEXT\s*/i)
+			    || field.match(/\sLONGTEXT\s*/i)
+				|| AUTO_INCREMENT
+				) {
 				//Blobs cant be altered
 				//Computed by gets dropped as part of cleanup ??WTF
+				//console.log('Blob type has no default:', field);
+				
+				
 			} else {
 
 				var FFD = field.match(/(\S+)\s+(\S+)\s+(default)?\s?(not\s+null)?\s?(.*)/i);
 				//console.log('Table fields FFD:', field, FFD);
 				if (FFD) {
-					var FieldName = FFD[1],
-					FieldType = FFD[2],
-					Default = FFD[5];
+					{
+					var FieldName = FFD[1].trim(),
+					FieldType = FFD[2].trim(),
+					Default = FFD[5].trim();
 					if (FFD[4])
 						console.log('WARN: Cannot update "NOT NULL" property for :', Table + '.' + FieldName);
-                    cx.expect = /335544351/;    
-					exec_qry(cx, "ALTER TABLE " + Table + " alter " + FieldName + " TYPE " + FieldType);
+                    //cx.expect = (zx.conf.db.dialect=="mysql57")?/ER_DUP_FIELDNAME/:/335544351/; 
+					cx.expect = zx.dbu.sqltype(zx,/335544351/,/ER_DUP_FIELDNAME/);
+					if (zx.fb25)    exec_qry(cx, "ALTER TABLE " + Table + " alter " + FieldName + " TYPE " + FieldType); 
+					if (zx.mysql57) exec_qry(cx, "ALTER TABLE " + Table + " MODIFY " + FieldName + "  " + FieldType);
+					//console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Default:', Default,":");
 					if (Default !== "") {
                         //console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Table fields FFD Default:', FieldName,Default);// FFD);
                         
                         cx.expect = /335544351/; 
-						exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " set DEFAULT " + Default);
+						if (zx.fb25)    exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " set DEFAULT " + Default);
+						if (zx.mysql57) exec_qry(cx, "ALTER TABLE " + Table + "   MODIFY column  " + FieldName + "  " + FieldType + " DEFAULT " + Default);
                         //exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " set " + Default);
 						// updating the default before commit seems a problem ... this should be moved to phase 2
 						//caused an error in carlton update ->    exec_qry("update "+Table +" set " + FieldName + "="+Default+" where " +FieldName + " is null ")
 					} else {
                         
 						cx.expect = /335544351/;
-						exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " DROP DEFAULT ");
+						if (zx.fb25)    exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " DROP DEFAULT ");
+						if (zx.mysql57) exec_qry(cx,  "ALTER TABLE " + Table + "   alter column  " + FieldName + " DROP DEFAULT ");
                         
 					}
-                                            
+				}                                            
+
+				}else { //no default so drop it
+						
+						var FFD = field.match(/(\S+)\s+(\S+)/i);
+						if (FFD) {							
+							var FieldName = FFD[1];
+							//console.log('\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  Field default not found :', field,FFD);
+							//should be dropping
+							cx.expect = /335544351/;
+							if (zx.fb25)    exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " DROP DEFAULT ");
+							if (zx.mysql57) exec_qry(cx,  "ALTER TABLE " + Table + "   alter column  " + FieldName + " DROP DEFAULT ");
+							}
+						
+				}
+			}
                     if (cx.zx.config.db.schema_reorder_fields === "yes") { 
                         cx.expect = /335544351/; 
 						exec_qry(cx, "ALTER TABLE " + Table + " ALTER " + FieldName + " POSITION " + FieldNumber);						
                     }
-				}
-			}
+			
             }
 		}
 	});
@@ -469,7 +576,10 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 		inputs = inputsx;
 
 	//inputs = comment_replace(inputs);
-	//console.log('Prepare_DDL  :', inputs.length);
+	//console.log('Prepare_DDL filename  :', filename);
+	//console.log('Prepare_DDL len :', inputs.length);
+	//console.log('Prepare_DDL  :', inputs);
+	
 	var LineNr = 1;
 	var BlockNr = exports.blocks.length;
 	var insertmatchingfield = '';
@@ -504,6 +614,9 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
         //console.log('blocks.forEach subs:',qrystr.substring(0,50));
 
 
+		//name=qrystr.match(/CREATE\s+TRIGGER\s+(\'*\"*[\w$]+\'*\"*)/i);
+		//console.log('blocks.forEach trigger^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^:',name);
+		
 		qrystr = qrystr.replace(/^ALTER\s+PROCEDURE\s/i, "CREATE PROCEDURE ");
 		block.method = "exec";
 		block.qrystr = 'xxxxx';
@@ -597,7 +710,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			block.order = 800;
 		} else if (name=qrystr.match(/CREATE\s+INDEX\s+([\w$]+)/)) {
 			block.name = 'INDEX_' + name[1];
-			block.expect = /335544351/;
+			block.expect = (zx.mysql57)?/ER_DUP_KEYNAME/:/335544351/;  
 			block.order = 900;
 			//console.log("show CREATE INDEX:", qrystr);
 		} else if (name=qrystr.match(/CREATE\s+VIEW\s+([\w$]+)/i)) {
@@ -618,22 +731,55 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			block.name = 'EXCEPTION_' + name[1];
 			block.order = 1400;
 		} else if (name=qrystr.match(/CREATE\s+(?:OR\s+ALTER\s+)?PROCEDURE\s+([\w$]+)/i)) {
+			//console.log("\n\n\n\n========================================CREATE PROCEDURE");
 			block.name = 'PROCEDURE_' + name[1];
-			qrystr = qrystr.replace(/CREATE\s+PROCEDURE\s/i, "CREATE OR ALTER PROCEDURE ");
+			
 			var DECLARE_PROCEDURE = deepcopy(block);
-			DECLARE_PROCEDURE.method = "DECLARE_PROCEDURE";
-			DECLARE_PROCEDURE.order = 850;
-			DECLARE_PROCEDURE.qrystr = qrystr;
-            DECLARE_PROCEDURE.Hash = zx.ShortHash(qrystr);
-			blocks.push(DECLARE_PROCEDURE);
+			if (zx.fb25)
+			{
+			    qrystr = qrystr.replace(/CREATE\s+PROCEDURE\s/i, "CREATE OR ALTER PROCEDURE ");
+				DECLARE_PROCEDURE.method = "DECLARE_PROCEDURE";
+				DECLARE_PROCEDURE.order = 850;
+				DECLARE_PROCEDURE.qrystr = qrystr;
+				DECLARE_PROCEDURE.Hash = zx.ShortHash(qrystr);
+				blocks.push(DECLARE_PROCEDURE);				
+			}
+			if (zx.mysql57) {
+				qrystr = "\r\n"+qrystr+"\r\n ;\r\n";
+				
+				DECLARE_PROCEDURE.method = "DROP_PROCEDURE";
+				DECLARE_PROCEDURE.order = 1499;
+				DECLARE_PROCEDURE.qrystr = "DROP PROCEDURE IF EXISTS "+ name[1] +";";
+				DECLARE_PROCEDURE.Hash = zx.ShortHash(qrystr);
+				blocks.push(DECLARE_PROCEDURE);
+			}
+
 			block.order = 1500;
 		} else if (name=qrystr.match(/ALTER\s+PROCEDURE\s+([\w$]+)/i)) {
 			block.name = 'PROCEDURE_' + name[1];
 			//execute as is
 			block.order = 1700;
-		} else if (name=qrystr.match(/CREATE\s+TRIGGER\s+([\w$]+)/i)) {
+		//} else if (name=qrystr.match(/CREATE\s+TRIGGER\s+([\w$]+)/i)) {
+		} else if (name=qrystr.match(/CREATE\s+TRIGGER\s+\`*\'*\"*([\w$]+)\'*\"*\`*/i)) {
+			//console.log("\n\n\n\n========================================CREATE TRIGGER");
 			block.name = 'TRIGGER_' + name[1];
-			qrystr = qrystr.replace(/CREATE\s+TRIGGER\s/i, "CREATE OR ALTER TRIGGER ");
+			//var trigger_ = qrystr.match(/CREATE\s+TRIGGER\s(\S*)/i);			
+			//console.log("\n\n\n\n====================TRIGGER_function :",name[1]);
+			
+			if (zx.mysql57) {
+				//qrystr = "LOCK TABLES t1 WRITE; DROP TRIGGER test.ins_sum;" + qrystr +"UNLOCK TABLES;";
+				
+				var Drop_trigger = deepcopy(block);
+				Drop_trigger.method = "DROP TRIGGER";
+				//Drop_trigger.order--;
+				Drop_trigger.order = 860;
+				Drop_trigger.qrystr = "DROP TRIGGER IF EXISTS "+name[1]+";";
+				Drop_trigger.Hash = zx.ShortHash(qrystr);
+				blocks.push(Drop_trigger);
+				
+				//qrystr = "DELIMITER ;;\n " + qrystr  +"\nDELIMITER ;\n";
+		    }else{qrystr = qrystr.replace(/CREATE\s+TRIGGER\s/i, "CREATE OR ALTER TRIGGER ");
+			}
 			block.order = 1800;
 		} else if (name=qrystr.match(/CREATE\s+OR\s+ALTER\s+TRIGGER\s+([\w$]+)/i)) { //execute as is
 			block.name = 'TRIGGER_' + name[1];
@@ -740,7 +886,7 @@ exports.Sort_DDL = function (zx, blocks) {
 			qrystr = "DECLARE" + zx.show_longstring(qrystr);
 		build_str.push(" BORDER:" + block.order + " BNR:" + block.src.BlockNr + " method:" + block.method + " SRC:" + qrystr);
 		
-		build_exec_str.push("--block "+block.name+" #"+block.Hash);
+		build_exec_str.push("-- block "+ block.order + " BNR:" + block.src.BlockNr + " Name:" +block.name+" #"+block.Hash);
 		build_exec_str.push(qrystr);
 	});
 	block_hashes["Complete"] = Hash;
@@ -912,15 +1058,15 @@ exports.update = function (zx) {
     
 	if ((exports.lastHash === null) || (exports.lastHash !== B.Hashes["Complete"]) || (zx.config.db.schema_rebuild==="always")) {
 	    //console.log('exports.Execute_DDL hashed:',exports.lastHash,"\n   B.Hash 210425:",B.Hash);
-		console.log('Backup_DDL');
+		//console.log('Backup_DDL');
 		exports.Backup_DDL(zx, 0, 1); //audit trail
-		console.log('Backup_DDL-done');
+		//console.log('Backup_DDL-done');
 	    //console.log('exports.Execute_DDL hashed aaa:');	
 		//exports.show_DDL(zx, "After sort b4 exec ", exports.blocks);
 	    //console.log('exports.Execute_DDL hashed bbb:');	
-        console.log('Update DDL :')        
+        //console.log('Update DDL :')        
 		exports.Execute_DDL(zx, exports.blocks, 0);
-        console.log('Update DDL done :');		
+        //console.log('Update DDL done :');		
         //console.log('exports.Execute_DDL hashed ccc:');			
 		exports.Backup_DDL(zx, 1, 0); //reflection.sql
         //console.log('exports.Execute_DDL hashed ddd:');	

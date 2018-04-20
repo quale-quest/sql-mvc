@@ -13,7 +13,7 @@ exports.module_name = 'error.js';
 function print_error(zx, err) {
 
 	var message =
-		'--error compiling  ' + zx.main_page_name +
+		'-- error compiling  ' + zx.main_page_name +
 		'  msg:' + err.message +
 		'\n-- on line:' + (+err.source_line) +
 		' col:' + err.source_col +
@@ -126,7 +126,7 @@ exports.caught_exception = function (zx,e,msg) {
         
 		//continue with the next file
 	} else {
-        console.log('e.stack 112234 :',e.stack);
+        console.log('---------------------------------e.stack 112234 :',e.stack);
         
 		var linecopy = deepcopy(zx.line_obj);
 		if (linecopy && linecopy.srcinfo) {
@@ -153,10 +153,11 @@ exports.caught_exception = function (zx,e,msg) {
 }
 
 exports.commit = function (zx) {
+	//console.log("error.js  commit :", zx.error_log_file_name);
 	if (zx.error_log_file_name)
-	    fs.writeFileSync(zx.error_log_file_name, JSON.stringify(exports.error_log_obj, null, 4));
-	if (zx.sql_log_file_name)
-		fs.writeFileSync(zx.sql_log_file_name, JSON.stringify(zx.sql_log_file_obj, null, 4));
+	  fs.writeFileSync(zx.error_log_file_name, JSON.stringify(exports.error_log_obj, null, 4));
+    if (zx.sql_log_file_name)
+        fs.writeFileSync(zx.sql_log_file_name, JSON.stringify(zx.sql_log_file_obj, null, 4));
 };
 
 exports.shut_down = function (zx) {

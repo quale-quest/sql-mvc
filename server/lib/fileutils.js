@@ -182,8 +182,8 @@ function inheritFiles(dir, files_, root, regex_prefix, regex_extn, debug) { //ba
 		var files = fs.readdirSync(dir);
 		files.forEach(function (name) {
 			var pathname = path.join(dir, name);
-			if (debug === 1)
-				console.log('inheritFiles pathname:', pathname);
+			//if (debug === 1)
+				//console.log('inheritFiles pathname:', pathname);
 			if (regex_prefix !== undefined) {
 				if (regex_prefix.test(name)) {
 					//pathname = pathname + " vvvv";

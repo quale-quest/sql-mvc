@@ -58,10 +58,11 @@ var script_into = function (zx, line_obj, r) {
 	var recprefix = zx.parseword(params).toLowerCase() + '.';
 	params = zx.removeword(params);
 	//console.log('tag_script xxxxxxxxx : ', params,' of ',recprefix);
+	//console.log('tag_script xxxxxxxxxzz : ',zx.variables);
 	var fieldnames = [];
 	var varnames = [];
 	for (name in zx.variables.required) {
-		//                         console.log('tag_script  fields for : ', recprefix,' of ',name);
+		                         //console.log('tag_script  fields for : ', recprefix,' of ',name);
 		if (recprefix === name.substring(0, recprefix.length)) {
 
 			var varx = {
@@ -69,8 +70,12 @@ var script_into = function (zx, line_obj, r) {
 				isvariable : true
 			};
 			//console.log('tag_script  fields for : ', recprefix,' of ',name);
-			varnames.push(zx.dbg.emit_var_ref(name));
+			//zx.dbg.emit(zx, line_obj, "--p4 ='" + name + "'", "script_into");
+			var vname=zx.dbg.emit_var_ref(name,zx);
+			varnames.push(vname);
+			//zx.dbg.emit(zx, line_obj, "--p4.1 ='" +name +";"+ vname +";"+JSON.stringify(varnames)  + "'", "script_into");
 			fieldnames.push(name.substring(recprefix.length));
+			//zx.dbg.emit(zx, line_obj, "--p5 ='" + JSON.stringify(fieldnames) + "'", "script_into");
 			//- we should do a better way - not direct - split declare and define  functionszx.dbg.DeclareVar(zx,line_obj,varx);
 			zx.sql.declare_above[varx.key] = {
 				name : varx.key,
@@ -79,19 +84,22 @@ var script_into = function (zx, line_obj, r) {
 			zx.variables.named[name.toLowerCase()] = varx;
 		}
 	}
+	//zx.dbg.emit(zx, line_obj, "--p6 ='" + JSON.stringify(varnames) + "'", "script_into");
+	//console.log('tag_script ww... : ', fieldnames);
 
 	if (fieldnames.length > 0) {
 		var field = fieldnames.join(',');
 		var vars = varnames.join(',');
 		//console.log('tag_script  fields into : ', recprefix,' of ',field);
 		params = params.replace(/\*/, field);
-
+		//zx.dbg.emit(zx, line_obj, "--p12 ='" + JSON.stringify(field) + "'", "script_into");
+		//zx.dbg.emit(zx, line_obj, "--p13 ='" + JSON.stringify(varnames) + "'", "script_into");
 		var complex = false;
 		if (params.indexOf('#defaultmastertable#') > 0) {
 			params = params.replace(/#defaultmastertable#/g, zx.conf.db.platform_user_table.user_table_name);
 		}
 		if (params.indexOf('::') > 0) {
-			params = params.replace(/::/g, ':');
+			params = params.replace(/::/g, zx.config.db.var_actaul);
 			complex = true;
 		}
 		/*                    if (params.indexOf('#overridemastertable#')>0){
@@ -102,10 +110,12 @@ var script_into = function (zx, line_obj, r) {
 		complex=true;
 		}*/
 
-		//console.log('TextWithEmbededExpressions tag_script',params,vars);
+		//zx.dbg.emit(zx, line_obj, "--p3 ='" + vars + "'", "select into statement");
+		//console.log('TextWithEmbededExpressions tag_script i',params,vars);
+		
 		var b4 = params;
 		params = zx.expressions.TextWithEmbededExpressions(zx, line_obj, params, "sql", "tag_script");
-		//console.log('TextWithEmbededExpressions tag_script',params,vars);
+		//console.log('TextWithEmbededExpressions tag_script r',params,vars);
 		if (b4 !== params) {
 			//process.exit(2);
 			complex = true;
@@ -116,17 +126,20 @@ var script_into = function (zx, line_obj, r) {
 			// provide for unqoted syntax with :-
 			params = zx.escape_scriptstring(zx, params, 1, /:[^\-]/g, "", "'''||:", "||'''");
 			params = zx.escape_scriptstring(zx, params, 2, /:-/g, "", "'||:", "||'");
-
-			zx.dbg.emit(zx, line_obj, "st='" + params + "';", "select into statement");
+			zx.dbg.emit(zx, line_obj, "-- p1 ='" + params + "'", "select into statement");
+			zx.dbg.emit(zx, line_obj, zx.config.db.sql_set_prefix + "st='" + params + "';", "select into statement");
 			zx.dbg.emit(zx, line_obj, "execute statement st into " + vars + ";", "select into statement");
 		} else { //simple direct query
 			params = params + ' into ' + vars + ';';
+			//zx.dbg.emit(zx, line_obj, "-- p2 ='" + params + "'", "select into statement");
 			zx.dbg.emit(zx, line_obj, params, "select into");
 		}
-
+		//console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!! : {', r.content,'}',params, '\n',zx.variables.named);
 		//console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!! : {', r.content,'}', line_obj,'\n',zx.variables.named);
 		//process.exit(2);
 	}
+	//console.log('tag_script ...rrrrrrrr : ', params);
+	//process.exit(2);
 };
 
 var script_remark = function (/*zx, line_obj, r*/
@@ -330,10 +343,19 @@ var TagTypes =
 		"open" : "begin",
 		"xclose" : "",
 		"callback" : script_as_is
+	}, {			
+		"open" : "end if;",
+		"xclose" : "",
+		"callback" : script_as_is				
 	}, {
+		"open" : "end;",
+		"xclose" : "",
+		"callback" : script_as_is
+	}, {			
 		"open" : "end",
 		"xclose" : "",
 		"callback" : script_as_is
+
 	}
 
 ];
@@ -369,6 +391,8 @@ exports.ExtractFirstScript = function (o, r, debugmsg) {
 		var p = lower.indexOf(tag.open);
 		//console.log('ExtractFirstScript tag.open: ', lower,tag.open, p);
 		if ((p >= 0) && (p < firstp)) {
+			//emit(zx, 0, "-- sc1:"+ p + " " + tag.open, "");
+			//console.log('TagTypes.forEach tag.open: ', tag.open, p);
 			ftag = tag;
 			firstp = p;
 		}
@@ -378,6 +402,7 @@ exports.ExtractFirstScript = function (o, r, debugmsg) {
 		console.log('ExtractFirstScript found: ', debugmsg, firstp, ftag);
 
 	if (firstp > 0) { //found const first
+	    //console.log('ExtractFirstScript the tagaaaa: ',ftag);
 		r.tag = TagTypeConst;
 		r.method = r.tag.method;
 		r.content = o.left.substr(0, firstp);
@@ -452,14 +477,14 @@ exports.tag_script = function (zx, line_obj) {
 		// it will be usefull if this diver does some sql normilastion between dialects
 		if (r.tag.callback !== undefined) {
 			r.tag.callback(zx, line_obj, r);
-
+			//console.log('-------------------------returened tag.callback o,r : ', o, r);
 		} else {
 			var s = r.content.trim();
 			if (s === ';')
 				s = '';
 			if (s !== "" && s !== '()') {
-				console.log('-------------------------tag_script unknown s,o,r : {'+ s+ '}\n', o, r);
-                zx.error.log_syntax_warning(zx, "tag_script unknown :" , s, zx.line_obj);
+				//console.log('-------------------------tag_script unknown s,o,r : {'+ s+ '}\n', o, r);
+                //zx.error.log_syntax_warning(zx, "tag_script unknown :" , s, zx.line_obj);
 				//process.exit(2); //tag_script unknown
 			}
 		}

@@ -87,10 +87,10 @@ exports.is_conditional = function (zx, o) {
 	}
 
     var keyqry =   
-            "select first 1 "+zx.conf.db.platform_user_table.user_pk_field+" from "+
+            "select " + zx.config.db.sql_First1+" "+zx.conf.db.platform_user_table.user_pk_field+" from "+
              zx.conf.db.platform_user_table.user_table_name + " where "+
-             zx.conf.db.platform_user_table.user_pk_field+"=:operator$ref and  "+
-             zx.conf.db.platform_user_table.user_keys_field + " containing '";
+             zx.conf.db.platform_user_table.user_pk_field+"="+ zx.config.db.var_actaul+ "operator$ref and  "+
+             zx.conf.db.platform_user_table.user_keys_field + " containing '"+zx.config.db.sql_Limit1+'"';
              
 	if (o.key !== undefined) { //make the database query and add it to if exists list
 		append_conditional(o.and_if, zx.getA(o.key),"not exists ("+keyqry,"')");
@@ -262,7 +262,7 @@ exports.implicid_unblock = function (zx, line_obj) {
     
 	if (zx.fc.immediate_block_id  !== undefined) { //immediate blocks can only last 1 instruction
         zx.dbg.emit_comment(zx,"implicid_unblock : "+zx.fc.immediate_block_id+" : " + line_obj.tag);
-		zx.dbg.unblock(zx, line_obj,"imp "+line_obj.tag);
+		zx.dbg.unblock(zx, line_obj,"imp "+line_obj.tag,"");
 
 		zx.mt.lines.push("{{/" + zx.fc.immediate_block_id  + "}}");
 		delete zx.fc.immediate_block_id ;
@@ -273,7 +273,7 @@ exports.implicid_unblock = function (zx, line_obj) {
 };
 
 
-exports.explicid_unblock = function (zx, line_obj) {
+exports.explicid_unblock = function (zx, line_obj,mysqlendif) {
     zx.dbg.emit_comment(zx,"explicid_unblock : "+zx.fc.block_stack.length+" : " + line_obj.tag);
     //console.log('explicid_unblock: block_stack  ', line_obj.Label, zx.fc.block_stack);
 	if (!exports.implicid_unblock(zx, line_obj)) {
@@ -285,7 +285,7 @@ exports.explicid_unblock = function (zx, line_obj) {
         }
         
 		//console.trace('unblock: ',local_immediate_block_id ,zx.fc.blockactive,zx.fc.blockactive[local_immediate_block_id ]);
-		zx.dbg.unblock(zx, line_obj,"expl "+line_obj.tag + " : " + local_immediate_block_id);
+		zx.dbg.unblock(zx, line_obj,"expl "+line_obj.tag + " : " + local_immediate_block_id,mysqlendif);
 		if (zx.fc.blockactive[local_immediate_block_id ] !== undefined) {
 			zx.mt.lines.push("{{/" + local_immediate_block_id  + "}}");
 		}
@@ -303,7 +303,7 @@ exports.tag_elsequery = exports.tag_elseblock = function (zx, o) {
 exports.tag_endquery = exports.tag_unblock = function (zx, o) {
 	//if (active_pass!=zx.pass) return;
 	//console.log('unblock Tag ',i,o );
-	exports.explicid_unblock(zx, o);
+	exports.explicid_unblock(zx, o, "");
 };
 
 

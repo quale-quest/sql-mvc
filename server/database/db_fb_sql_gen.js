@@ -215,7 +215,7 @@ var fb_AsString = function (str) { //should make the content safe and prevent SQ
 };
 
 exports.var_subst = "/***/";
-exports.var_actaul = ":"; //will later be replaced with  zx.config.db.var_actaul
+exports.var_actaul = ""; //will later be loaded with  zx.config.db.var_actaul
 
 var make_concats = function (zx, line_obj, str) { //should make the parameters concatenate as strings, as script to be executed
 	//make ref=:operator_ref  to ref='||:operator_ref||'
@@ -279,7 +279,7 @@ exports.EmitConditionAndBegin = function (zx, line_obj, bid,comment) {
 
 exports.EmitUnconditionalBegin = function (zx, line_obj) {
 	//compiles sql   if there is no goto this wont begin a real block
-	emit(zx, line_obj, "begin", line_obj.Block);
+	emit(zx, line_obj, "begin", line_obj.Block); //unconditional always on
 	zx.sql.dent += 4;
 	zx.sql.blocktypes.push("");
 	return line_obj;
@@ -668,7 +668,7 @@ exports.link_from_table = function (zx,cx, fld_obj) {
 	}
 
 	zx.Inject_procedures.check_inline_link_procedure(zx, fld_obj.cf[0],'link_from_table');
-    console.log('run_procedure_ table: ' );
+    //console.log('run_procedure_ table: ' );
     
 
 if (fld_obj.cf[0].pointer===undefined)
@@ -1025,20 +1025,16 @@ exports.start_pass = function (zx /*, line_objects*/
 		var pname = "ZZ$"+zx.ShortHash(zx.main_page_name);
 		zx.sql.testhead =
 		//"\n\n\nDELIMITER $$\nDROP PROCEDURE IF EXISTS "+pname+" $$\n" +
-		"CREATE PROCEDURE "+pname+" ("+
-			"Z$SESSIONID VARCHAR(40), "+
-			"CID        integer, "+
-			"PKREF_IN INTEGER, "+
-			"UPDATES_IN TEXT, "+
-			
-			"OUT NEW_CID INTEGER,   "+
-			"OUT INFO VARCHAR(1000),"+
-			"OUT RES TEXT,"+
-			"OUT SCRIPTNAMED VARCHAR(250) "+
-			")\nBEGIN\n" +
-		"declare pki integer default 12345678;\n" +
-		"declare pkf integer default 12345678;\n" +
-		"\n\n\n";		
+		"CREATE PROCEDURE "+pname+"()\nBEGIN\n" +
+		"declare Z$SESSIONID VARCHAR(40);\n" +
+		"declare pki INTEGER;\n"+
+		"declare pkf INTEGER;\n"+
+		"declare cid INTEGER;\n"+
+		"declare NEW_CID INTEGER;\n"+
+		"declare INFO VARCHAR(1000);\n"+
+		"declare RES TEXT;\n"+
+		"declare SCRIPTNAMED VARCHAR(250);\n"+		
+		"";		
 		
 	
 	
@@ -1085,6 +1081,13 @@ exports.start_pass = function (zx /*, line_objects*/
 
 	if (zx.conf.db.dialect=="fb25")  emit(zx, 0, "BEGIN", "");
 	emit(zx, 0, "-- assign_params", "");
+
+	if (zx.conf.db.dialect=="mysql57") {
+		emit(zx, 0, "set Z$SESSIONID=@IN_SESSIONID;", "");
+		emit(zx, 0, "set pki=@IN_CID;", "");
+		emit(zx, 0, "set pkf=@IN_PKREF;", "");
+		}
+
 	
    // emit(zx, 0, " CALL Z$RUN_SUP(SESSION_IN, CID_IN, PKREF_IN, UPDATES_IN, NEW_CID, INFO, RES, SCRIPTNAMED);", "");	
 	
@@ -1126,12 +1129,16 @@ exports.done_pass = function (zx /*, line_objects*/
 
 	//console.log('sqlgen_fb declare_above: ',zx.sql.declare_above);
 	
-	emit(zx, 0, "if ( exists(select " + zx.config.db.sql_First1+" valu from Z$VARIABLES where Z$VARIABLES.REF='pass'||"+
-	    zx.config.db.var_actaul+"pki||'-'||"+zx.config.db.var_actaul+"pkf||'-DivoutName'"+zx.config.db.sql_Limit1+
-	    ")) then "+zx.config.db.sql_set_prefix+""+/*zx.config.db.var_actaul+*/ "cid=0;"+zx.config.db.sql_endif_postfix, "");
+	emit(zx, 0, "if ( exists(select " + zx.config.db.sql_First1+" valu from Z$VARIABLES where Z$VARIABLES.REF=" + 
+		sqlconcat(zx,"","'pass'", zx.config.db.var_actaul+"pki","'-'",zx.config.db.var_actaul+"pkf","'-DivoutName'")
+		+zx.config.db.sql_Limit1+ ")) then "+zx.config.db.sql_set_prefix+""+/*zx.config.db.var_actaul+*/ "cid=0;"+zx.config.db.sql_endif_postfix, "");
 	  
 	emitset( zx,0, "","'}}]'");
 	//emit(zx, 0, "/*zx.sql.engine:"+ zx.sql.engine+"*/", "");
+		if (zx.conf.db.dialect=="mysql57") {
+				emit(zx, 0, "set @res_ret=res;", "");
+				emit(zx, 0, "set @cid_ret=cid;", "");
+		}	
 	
 	
 	if (zx.conf.db.dialect=="fb25")

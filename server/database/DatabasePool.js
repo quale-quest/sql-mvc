@@ -101,16 +101,13 @@ exports.load_config = function (root_folder, Application) {
         
     root_folder=path.normalize(root_folder);		
 	Application=path.normalize(Application);	
+	if (root_folder.substr(-1) != '/') root_folder += '/';
 
-	if (root_folder.substr(-1) != '/') root_folder += '/';	
-	//if (Application.substr(-1) != '/') Application += '/';	
-		
     var initial   =root_folder + 'Quale/Config' + Application; 
 
 	var fileContents = '',
 	search = path.resolve(initial);
 
-	//console.log('Inital Application is',initial, '\r\n app:',Application,'\r\n located at:',search);
 	console.log('load_config\r\n root_folder:',root_folder, '\r\n Application:',Application,'\r\n initial:',initial,'\r\n located at:',search);
 	while (fileContents === "" && search !== '/') {
 		try {
@@ -312,7 +309,7 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 			}
 		});
 	}
-	}	
+	}
 	return;
 };
 

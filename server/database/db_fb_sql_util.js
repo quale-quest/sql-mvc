@@ -217,10 +217,9 @@ if (zx.conf.db.dialect=="mysql57")
 		"declare Z$SESSIONID varchar(40) default '';\n\n\n"+ script + "\n-- no need to - set term ;#\n";
 	
 	
-	console.log('validate_script_async : ',querys );
+	//console.log('validate_script_async : ',querys );
 	connection.db.query(querys, [],
 		function (err, result) {
-	    
 		//console.log('validation result: write',err,result );
 		if (!result || result.length === 0) {
 			//parse the error			
@@ -244,6 +243,8 @@ if (zx.conf.db.dialect=="mysql57")
 
 exports.validate_script = function (zx, name, script) {
     var result, done=false;
+	//console.log("================================\n validate_script input :" ,script);
+	
     exports.validate_script_async(zx, name, script, 
 		function (err,res) {
 		result = res;
@@ -253,7 +254,8 @@ exports.validate_script = function (zx, name, script) {
 	while (!done) {		
 		deasync.sleep(deasync_const);
 	}
-    //console.log("validate_script:" ,result);
+    //console.log("validate_script result:" ,result);
+	//console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" );
 	return result;
 };
 
@@ -265,8 +267,8 @@ exports.dataset = function (cx, name, script, line_obj, callback) {
 	//    fn=connection.db.execute;
 
 	connection.db.query(querys, [],
-		function (err, result) {
-		//console.log('validation result: write',err,result );
+		function (err, result,fields) {
+		//console.log('exports.dataset: result ',err,result,fields );
 		if (err) {
 			//parse the error
 			console.log('exports.dataset err: ');
@@ -307,23 +309,24 @@ exports.fetch_dataset = function (zx,name, qrys) {
     //console.log("fetch_dataset:" ,result);
 	return result;
 };
-exports.singleton = function (zx, field, qrys) {
-	//console.log('singleton q: ',qrys);
+exports.singleton = function (zx, field, qrys,trace) {
+	if (trace) console.log('singleton q: ',qrys,' field:',field);
     
     var res = exports.fetch_dataset(zx,"util singleton", qrys);
-	//console.log('singleton r: ',field);
+	if (trace) console.log('singleton r: ',field,res);
 	if (field === "")
 		return '';
 	//console.log('singleton 7: ',res);
 	if (res[0] === undefined) {
-		console.log('singleton q: ', qrys);
+		console.log('singleton rq: ', qrys);
 		console.log("singleton unknown record :", res);
 		return '';
 	}
 	//console.log('singleton s: ',field);
 	if (res[0][field] !== undefined) {
 
-		//console.log("singleton a:" ,res[0][field])
+		//console.log("singleton a:" ,typeof res[0][field], res[0][field])
+		
 		if (res[0][field] === null)
 			return '';
 		if (res[0][field].low_ === undefined)
@@ -343,9 +346,10 @@ exports.getGenerator = function (zx, name, increment) {
 exports.exec_qry_cb_async = function (cx, name, script, line_obj, callback) {
 
 	var qrystr = script;
-	connection.db.execute(qrystr, [],
-		function (err, result) {
-		//console.log('validation result: write',err,result );
+	//console.log('exec_qry_cb_async :',qrystr );
+	connection.db.query(qrystr, [],
+		function (err, result, fields) {
+		//console.log('exec_qry_cb_async result: write',err,result, fields );
 		//if (verbosity>5)
 		//   console.log(" Executed without error, from line:", Lastddlcount,' lines:',DDLLen,'text:',qrystr);
 
@@ -354,13 +358,18 @@ exports.exec_qry_cb_async = function (cx, name, script, line_obj, callback) {
 			var script_err = JSON.stringify(err);
 			var	sql_log_obj=['dataset',qrystr,script_err];
 			cx.zx.sql_log_file_obj.push(sql_log_obj);	
+			//console.log('exec_qry_cb_async error:', cx.expect,script_err);
+
 			if (cx.expect !== undefined && cx.expect.test(script_err)) {
-				//console.log('Acceptable error:', cx.expect,qrystr);
+				{
+				//	console.log('Acceptable error:', cx.expect,qrystr);
+				}	
 			} else {
-				console.log('exec_qry_cb_async:', script_err, err, ' in :------------------>\n', script);
-				script_err = parse_error(cx.zx, err, line_obj);				
+				console.log('script_err:', cx.expect,script_err, err, ' in :------------------>\n', script);
+				script_err = parse_error(cx.zx, err, line_obj);
 				cx.zx.err = script_err;
 				cx.zx.eachplugin(cx.zx, "commit", 0);
+				fs.writeFileSync("exit2.sql",qrystr +"\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message);
 				throw new Error("update script error.", script_err + '/n' + script);
 				//todo - show operator some            kind of server error
 			}
@@ -411,7 +420,7 @@ exports.getPageIndexNumber = function (zx, name) {
 	//console.log('getPageIndexNumber : A' ,name);
 	exports.singleton(zx, "", "UPDATE OR INSERT INTO Z$SP (FILE_NAME)VALUES ('" + name + "') MATCHING (FILE_NAME) ");
 	//console.log('getPageIndexNumber : B' );
-	var CurrentPageIndex = exports.singleton(zx, "pk", "select pk from z$SP where FILE_NAME='" + name + "'");
+	var CurrentPageIndex = exports.singleton(zx, "pk", "select pk from Z$SP where FILE_NAME='" + name + "'");
 
 	//console.log('getPageIndexNumber : ' +CurrentPageIndex);
 	return CurrentPageIndex;
@@ -460,11 +469,10 @@ exports.write_script_async = function (zx, real, spi, name, mtHash, script, code
 	name = name.replace(/\\/g, '/'); //windows
 	//console.log('.write_script_async - ' +spi,'>',name,'<',script);
 	script = script.replace('Z$$integer', 'Z$$' + spi);
-
-	//name = 'Z$$' + spi;
-	//console.log('write_script_async to Z$SP : ', name);
-	var querys="UPDATE OR INSERT INTO Z$SP (PK,TSTAMP,FILE_NAME,SCRIPT,CODE,MT_HASH)VALUES (?,'now',?,?,?,?) MATCHING (PK) ";
-	connection.db.query(querys, [spi, name, script, JSON.stringify(code),mtHash],
+    var FN_HASH = 'Z$$' + spi; //zx.ShortHash(name);
+    if (zx.conf.db.dialect=="fb25") {
+	var querys="UPDATE OR INSERT INTO Z$SP (PK,TSTAMP,FILE_NAME,SCRIPT,CODE,MT_HASH,FN_HASH)VALUES (?,'now',?,?,?,?,?) MATCHING (PK) ";
+	connection.db.query(querys, [spi, name, script, JSON.stringify(code),mtHash,FN_HASH],
 		function (err, result) {
 
 		if (real) {
@@ -483,11 +491,40 @@ exports.write_script_async = function (zx, real, spi, name, mtHash, script, code
 		} else
 			callback(null, err);
 	});
+    }
+
+    if (zx.conf.db.dialect=="mysql57") {
+		var call_script = "call ZZ$"+FN_HASH+";";
+		connection.db.query("UPDATE Z$SP set FILE_NAME=? , SCRIPT= ? , CODE=?, MT_HASH = ?, FN_HASH=?  where PK=? ", [ name, call_script, JSON.stringify(code),mtHash,FN_HASH,spi],
+			function (err, result) {
+
+			if (real) {
+				//name = 'Z$$' + spi;
+				//console.log('create real SP : ', script);
+				connection.db.query(script, [],
+					function (err, result) {
+					//console.log('dbresult: write',result );
+					//also write it to the table for convenience and access to code field
+					//console.log('dbresult: write' );
+					//console.log('write_script_async done : ');
+					
+					exports.create_script_async(zx, real, spi, name, mtHash, script, code, 
+							function (err, result) {
+									callback(null, err);
+							}	
+							);
+					
+					
+				});
+			} else
+				callback(null, err);
+		});
+    }
 
 };
 
 exports.write_script = function (zx, real, spi, name, mtHash, script, code) {
-	//onsole.log('.write_script - ' +spi,name,'script:',script);
+	//console.log('.write_script - ' +spi,name,'script:',script);
     var  err,done=false;
 	name = name.replace(/\\/g, '/'); //windows
     
@@ -712,11 +749,14 @@ exports.exit = function (/*zx*/
 ) {
 	//console.trace('database detaching');
     if (connection.db)
-	connection.db.detach(
-		function () {
-		console.log('database detached');
-		process.exit(0);
-	});
+		if (connection.db.detach) {
+		connection.db.detach(
+			function () {
+			console.log('database detached');
+			process.exit(0);
+			
+		});
+	}
 };
 
 exports.init = function (/*zx*/
@@ -727,10 +767,8 @@ exports.init = function (/*zx*/
 
 };
 
-
 exports.sqltype = function (zx,fb,mysql) {	
 	if (zx.conf.db.dialect=="fb25")    return fb;
 	if (zx.conf.db.dialect=="mysql57") return mysql;
 	return fb;
 }
-
