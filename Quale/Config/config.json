@@ -54,10 +54,12 @@
     "db": {
         "dialect": "fb25",
         "server": "127.0.0.1",
-        "database": "/var/lib/firebird/2.5/data/demo_db_2.fdb",
+        "database": "/var/lib/firebird/2.5/data/demo_db_3.fdb",
         "username": "using the value from authfile, make authfile blank to use this value.",
         "password": "using the value from authfile, make authfile blank to use this value.",
         "authfile": "/etc/firebird/2.5/SYSDBA.password",
+		
+		
 		
 	    "var_subst": "/***/",
 		"var_actaul": ":",
@@ -73,19 +75,6 @@
 		"sql_endif_postfix": "",		
 		"sql_First1": "first 1",
 		"sql_Limit1": "",		
-
-		
-        "mysql_set_prefix": "set",		
-		"mysql_concat_set": "res=",
-		"mysql_concat_prefix": "concat(",
-		"mysql_concat_res": "res=concat(res,",
-		
-		"mysql_concat_seperator": ",",
-		"mysql_concat_postfix": ")",
-		"mysql_end_postfix": ";",			
-		"mysql_endif_postfix": "end if;",			
-		"mysql_First1": " ",		
-		"mysql_Limit1": " limit 1 ",		
 		
 		
         "useUDF": "no",
@@ -104,9 +93,55 @@
 			"user_guest_name": "Guest",			
             "user_keys_field": "key_list"
         },
-        "pk": "ref"
+        "pk": "ref",
+		"packages":["sql-mvc-ui-dark"]
+    },		   
+    "dbx": {
+        "dialect": "mysql57",
+        "server": "127.0.0.1",
+        "database": "demo_db_2",
+        "username": "root",
+        "password": "zxpabx",
+        "authfile": "",
+		
+		
+	    "var_subst": "/***/",
+		"var_actaul": "",
+				
+		
+			"sql_set_prefix": "set ",		
+			"sql_concat_set": "res=",
+			"sql_concat_prefix": "concat(",
+			"sql_concat_res": "res=concat(res,",
+			
+			"sql_concat_seperator": ",",
+			"sql_concat_postfix": ")",
+			"sql_end_postfix": ";",			
+		"sql_endif_postfix": "end if;",			
+		"sql_First1": " ",		
+		"sql_Limit1": " limit 1 ",		
+		
+        "useUDF": "no",
+		
+        "schema_mode": "master",
+        "schema_rebuild": "onchange",
+        "schema_backup": 0,
+        "schema_alter_fields": "yes",
+        "schema_reorder_fields": "no",
+        "platform_user_table": {
+            "user_table_name": "Z$USER",		
+            "user_display_field": "name",
+            "user_pk_field": "id",
+            "user_name_field": "login_name",
+            "user_password_field": "passwd",
+			"user_landing_page": "LANDING_PAGE",
+			"user_guest_name": "Guest",			
+            "user_keys_field": "key_list"
+        },
+        "pk": "ref",
+		"packages":["sql-mvc-ui-dark-mysql"]
     },
-    "packages":["sql-mvc-ui-dark"],	
+    
     "email": {},
     "async": {
         "database": {},
