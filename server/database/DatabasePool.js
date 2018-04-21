@@ -4,7 +4,7 @@
 // later we can have alternatives for nuodb,mssql ...
 
 //there may be a better way to do this...it is a version 0.0.1 - learning node.js,ss-node ....
-var fb = require("node-firebird");
+
 var fs = require('fs');
 var path = require('path');
 var util = require('util');
@@ -14,6 +14,8 @@ var deasync = require('deasync');
 
 var winston = require('winston');
 //winston.add(winston.transports.File, { filename: 'gm.log' });
+
+var db_req = {};
 
 exports.connections = {};
 exports.developers = {}; //stores all the developer id and where they are viewing for JIT compiler
@@ -205,12 +207,12 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 		//console.log("\n\n============================: ",JSON.stringify(rambase.conf.db.dialect, null, 4) );
 		 
 		if (rambase.conf.db.dialect=="mysql57")  {
-			zx.mysql = require('mysql');
+			db_req.mysql = require('mysql');
 			rambase.user = conf.db.username;
 			rambase.password = conf.db.password;		
 			rambase.user_table = conf.db.user_table;
 			rambase.pk = conf.pk;			
-			var dbref = zx.mysql.createConnection({
+			var dbref = db_req.mysql.createConnection({
 			  host: rambase.host,
 			  user: rambase.user,
 			  password: rambase.password,
@@ -237,7 +239,7 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 		}
 		else 
 		{
-		
+		db_req.fb = require("node-firebird");
 
 
 		if (conf.db.authfile !== undefined && conf.db.authfile !== "") {
@@ -263,9 +265,9 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 		rambase.isql_extract_dll_cmdln = ['-ex', '-user', rambase.user, '-password', rambase.password, rambase.host + ':' + rambase.database];
 		//console.log("isql_extract_dll_cmdln :",rambase.isql_extract_dll_cmdln);
 
-		var fn = fb.attach;
+		var fn = db_req.fb.attach;
 		if (conf.run.db_create==="yes")
-			fn = fb.attachOrCreate;
+			fn = db_req.fb.attachOrCreate;
 
 		
         rambase.connection_string = {
@@ -318,7 +320,7 @@ exports.connect_if_needed = function (connection, callback) {
 	
 	if (!connection.db) { 
         console.log('connect_if_needed connecting 080005 :');
-        fb.attach(connection.connection_string,
+        db_req.fb.attach(connection.connection_string,
 			function (err, dbref) {
             console.log('connect_if_needed connected 080005 :');    
 			if (err) {

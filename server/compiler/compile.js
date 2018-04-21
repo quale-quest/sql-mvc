@@ -183,6 +183,7 @@ function getDirectories(srcpath,Filter) {
 
 		zx.debug = 1;
 		zx.debug_conditional_structure = 0;
+		zx.exit_on_error=1;
         start_page_compiler(zx);
 
         zx.pass=0;

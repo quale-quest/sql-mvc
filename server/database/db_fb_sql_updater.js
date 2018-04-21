@@ -208,12 +208,12 @@ function dll_blocks_seperate_term(inputs, src_obj) { //splits the input into blo
 
 	while (inputs !== '') {
 		//console.log('dll_blocks_seperate_term :', inputs);
-		var regs;
-		if (zx.fb25)
-		    regs= '([\\S\\s]*?)set\\s+term\\s+(.)\\s+\\' + open_term + '([\\S\\s]*)';
-		if (zx.mysql57) 	
-		    regs = '([\\S\\s]*?)delimiter\\s+(.)\\s+\\' + open_term + '([\\S\\s]*)'; //mysql
 		
+		//remove leading comments
+		inputs=inputs.replace(/(\s*\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$)/,"");
+		
+		var regs;
+	    regs= '([\\S\\s]*?)set\\s+term\\s+(.)\\s+\\' + open_term + '([\\S\\s]*)';		
 		//  ([\S\s]*)set\s+term\s+(.)\s+;([\S\s]*)
 		var re = new RegExp(regs, 'i');
 		var m = inputs.match(re);
@@ -811,6 +811,10 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 		} else if (qrystr.match(/UPDATE\s/i)) {
 			//block.name = 'DOMAIN_' + name[1];
 			block.order = 2300;
+		} else if (qrystr.match(/SET\s+TERM\s/i)) {
+			block.name = 'SETTERM';
+			qrystr = "";
+			block.order = 2300;			
 		} else {
 			block.name = 'UNKNOWNSQL_' + zx.ShortHash(qrystr);
 
@@ -827,9 +831,14 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 
 			if (verbosity > 1) {
 				console.log(" Unexpected DDL, from line : ",
-					block.src.LineNr, ' lines:', block.src.l + 1, 'text:', qrystr, ' after:',
-					blocks[bi ? bi - 1 : 0].q);
+					block.src.LineNr, ' lines:', block.src.l + 1, 'file: ',block.src.src_obj.srcinfo.filename,
+					'\r\ntext:', qrystr, 
+					'\r\n after:',blocks[bi ? bi - 1 : 0].q);
+					
 				zx.error.log_SQL_warning(zx, "Unexpected DDL :" + qrystr, zx.line_obj);
+				fs.writeFileSync(zx.output_folder + 'blocks.json', JSON.stringify(blocks,null,4));
+				exports.commit(zx);				
+				if (zx.exit_on_error) process.exit(2);
 			}
             }
 		}
@@ -1075,11 +1084,14 @@ exports.update = function (zx) {
 	//console.log('exports.write_log.length  :', exports.write_log.length);
 	exports.lastHash = B.Hashes["Complete"];
 	exports.lastHashes = extend(exports.lastHashes, B.Hashes); //second one has the priority
-    
+	fs.writeFileSync(zx.output_folder + 'update.hash', JSON.stringify(B.Hashes,null,4));
+	exports.commit(zx);
+}
+  
+exports.commit = function (zx) {  
 	fs.writeFileSync(zx.output_folder + 'input.sql', exports.input_audit.join(''));
 	fs.writeFileSync(zx.output_folder + 'build.sql', exports.write_log.join(''));
-	fs.writeFileSync(zx.output_folder + 'update.hash', JSON.stringify(B.Hashes,null,4));
-
+	
 };
 
 function recreate(zx, model_text) {}
