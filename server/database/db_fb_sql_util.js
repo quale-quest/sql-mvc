@@ -469,7 +469,7 @@ exports.write_script_async = function (zx, real, spi, name, mtHash, script, code
 	name = name.replace(/\\/g, '/'); //windows
 	//console.log('.write_script_async - ' +spi,'>',name,'<',script);
 	script = script.replace('Z$$integer', 'Z$$' + spi);
-    var FN_HASH = 'Z$$' + spi; //zx.ShortHash(name);
+    var FN_HASH = 'ZZ$' + zx.ShortHash(name); //spi; //zx.ShortHash(name);
     if (zx.conf.db.dialect=="fb25") {
 	var querys="UPDATE OR INSERT INTO Z$SP (PK,TSTAMP,FILE_NAME,SCRIPT,CODE,MT_HASH,FN_HASH)VALUES (?,'now',?,?,?,?,?) MATCHING (PK) ";
 	connection.db.query(querys, [spi, name, script, JSON.stringify(code),mtHash,FN_HASH],
@@ -494,7 +494,7 @@ exports.write_script_async = function (zx, real, spi, name, mtHash, script, code
     }
 
     if (zx.conf.db.dialect=="mysql57") {
-		var call_script = "call ZZ$"+FN_HASH+";";
+		var call_script = "call "+FN_HASH+";";
 		connection.db.query("UPDATE Z$SP set FILE_NAME=? , SCRIPT= ? , CODE=?, MT_HASH = ?, FN_HASH=?  where PK=? ", [ name, call_script, JSON.stringify(code),mtHash,FN_HASH,spi],
 			function (err, result) {
 
