@@ -455,14 +455,14 @@ BEGIN
 		    --refresh page
 			if (PKRef=0) then
 			    begin
-				    SELECT r.LINKED_FROM_CID, r.LINKED_FROM_INDX FROM Z$CONTEXT r where r.pk=:CID into :CID,:PKRef;
+				    SELECT r.LINKED_FROM_CID, r.LINKED_FROM_INDX FROM Z$CONTEXT r where r.pk=:CID and r.id=SESSION into :CID,:PKRef;
 					SELECT a.target,COALESCE(a.PAGE_PARAMS,'')||:page_params FROM Z$PK_CACHE a WHERE a.MASTER = :CID AND a.INDX = :PKRef into :currentpage,:page_params;              				    
 				end
 				
 
 				
             /*get the new page, and context info */                
-            SELECT r.OPERATOR_REF, r.ID FROM Z$CONTEXT r where r.pk=:CID into :o_ref,:o_session;
+            SELECT r.OPERATOR_REF, r.ID FROM Z$CONTEXT r where r.pk=:CID and r.id=SESSION into :o_ref,:o_session;
             /*todo validate o_session against session*/
                         
             SELECT user_landing_page FROM user_table_name WHERE user_pk_field = :o_ref into :user_landing_page;
@@ -647,7 +647,7 @@ BEGIN
 END^
 SET TERM ; ^
 
-
+/******************* RECORDS ******************/
 INSERT MATCHING NON_MATCH;
 INSERT INTO Z$INSERTREF (NON_MATCH, INSERT_REF) VALUES ('NON_MATCH_1', '1');
 INSERT INTO Z$INSERTREF (NON_MATCH, INSERT_REF) VALUES ('NON_MATCH_2', '2');

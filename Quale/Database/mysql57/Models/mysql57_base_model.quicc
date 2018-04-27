@@ -1,0 +1,525 @@
+
+<#:model()
+
+--:{regex:"regex:/create\\s+table/i",rl_context:"regex:/create\\s+table\\s+([\\w_$]+)/i"}
+--:{regex:"regex:/varchar/i",Default_length:"20",length:"regex:/(\\d+)/",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} --comment
+--:{regex:"regex:/integer/i",Default_length:"10",                        name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} 
+--:{regex:"regex:/timestamp/i",Default_length:"20",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} 
+--:{regex:"regex:/float/i",Default_length:"10",name:"regex:([\\w_$]+)/",Type:"Text",Action:"View"} 
+
+
+--:{class:"pk",Action:View,Type:Hide,PrimaryKey:true,fb_trigger:true}
+--:{class:"existing_pk",Action:View,Type:Hide,PrimaryKey:true,fb_trigger:false}
+--:{class:"fk",Action:Link,Type:Link}
+
+/******************** DOMAINS *********************/
+/****************** GENERATORS ********************/
+CREATE TABLE Z$GEN_PK_SEQ
+(
+  PK INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY ,
+  X INTEGER
+);
+
+CREATE TABLE Z$CONTEXT_SEQ(
+ id INT AUTO_INCREMENT PRIMARY KEY,
+ x int
+); 
+
+
+-- SET xTERM ^ ;
+-- CREATE FUNCTION GEN_Z$CONTEXT_SEQ () 
+-- RETURNS decimal
+-- BEGIN 
+-- DECLARE dist int;
+  
+--   INSERT INTO Z$CONTEXT_SEQ (x) VALUES (0);
+--   SET dist = (SELECT LAST_INSERT_ID());
+  
+--   RETURN dist;
+-- END^
+-- SET xTERM ; ^
+
+/******************** TABLES **********************/
+CREATE TABLE Z$SP
+(
+  PK INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY ,
+  TSTAMP TIMESTAMP,
+  FILE_NAME VARCHAR(250),
+  CODE VARCHAR(8000),
+  SCRIPT MEDIUMTEXT,
+  REMOVE_STAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FN_HASH VARCHAR(32),
+  MT_HASH VARCHAR(32) 
+  
+);
+CREATE INDEX IDX_Z$SP1 ON Z$SP (PK);
+CREATE INDEX IDX_Z$SP2 ON Z$SP (FILE_NAME);
+
+
+SET TERM ^ ;
+CREATE TRIGGER `Z$SP_before_insert`
+BEFORE INSERT ON Z$SP FOR EACH ROW 
+BEGIN
+END;;
+SET TERM ; ^
+
+
+
+
+CREATE TABLE Z$CONTEXT
+(
+  PK INTEGER,
+  TSTAMP TIMESTAMP,
+  OPERATOR_REF VARCHAR(32),
+  SESSION_REF VARCHAR(32),
+  CURRENT_PAGE INTEGER,
+  LINKED_FROM_CID INTEGER,
+  LINKED_FROM_INDX INTEGER,
+  ID VARCHAR(32)
+);
+CREATE INDEX IDX_Z$CONTEXT1 ON Z$CONTEXT (PK);
+
+CREATE TABLE Z$DICTIONARY
+(
+  REF VARCHAR(20),
+  COY VARCHAR(20),
+  NAME VARCHAR(40),
+  CONTEXT VARCHAR(20),
+  INDX INTEGER,
+  VALU VARCHAR(40),
+  EXTRA VARCHAR(40),
+  BIN MEDIUMTEXT
+);
+CREATE INDEX IDX_Z$DICTIONARY$1 ON Z$DICTIONARY (REF);
+CREATE INDEX IDX_Z$DICTIONARY$2 ON Z$DICTIONARY (CONTEXT,INDX);
+
+CREATE TABLE Z$INSERTREF
+(
+  NON_MATCH VARCHAR(20),
+  INSERT_REF VARCHAR(20)
+);
+
+CREATE TABLE Z$PK_CACHE
+(
+  MASTER INTEGER,
+  INDX INTEGER,
+  FIELD_NAME VARCHAR(40),
+  VALU VARCHAR(1000),
+  BASERECORD INTEGER,
+  TARGET VARCHAR(100),
+  QUERY VARCHAR(100),
+  BODY VARCHAR(1000),
+  PAGE_PARAMS VARCHAR(1000),
+  PK_FIELD_NAME VARCHAR(40),
+  NEW_VALUE VARCHAR(1000),
+  OLD_VALUE VARCHAR(1000),
+  NEW_VALUE_SET INTEGER,
+  TARGET_VALUES VARCHAR(256),
+  TARGET_FIELDS VARCHAR(100)
+);
+CREATE INDEX IDX_Z$PK_CACHE1 ON Z$PK_CACHE (MASTER,INDX);
+CREATE INDEX IDX_Z$PK_CACHE2 ON Z$PK_CACHE (MASTER,NEW_VALUE_SET); 
+
+
+CREATE TABLE Z$VARIABLES
+(
+  REF VARCHAR(80)  NOT NULL UNIQUE,
+  VALU VARCHAR(256),
+  STAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  EXPIRE TIMESTAMP
+);
+
+
+CREATE TABLE SOMEX                         --:{as:"Table"} 
+(
+  REF  INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,   --:{as:"pk"}
+  NAME VARCHAR(40),			                         --:{as:"text",title:"Full Name"}  
+  PASSS VARCHAR(40)			                         --:{as:"text",title:"Name"}  
+);
+CREATE INDEX IDX_SOMEX1 ON SOMEX (NAME);
+
+
+
+CREATE INDEX IDX_ZVARIABLES1 ON Z$VARIABLES (REF);
+
+
+  CREATE TABLE user_table_name                         --:{as:"Table"} 
+(
+  user_pk_field INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY ,   --:{as:"pk"}
+  NAME VARCHAR(40),			                         --:{as:"text",title:"Full Name"}  
+  First_NAME VARCHAR(40),	                         --:{as:"text",title:"First Name"}  
+  Last_NAME VARCHAR(40),	                         --:{as:"text",title:"Last Name"}  
+  Gender VARCHAR(40),                            	 --:{as:"text",title:"Gender"}  
+  
+  
+  photo 	     VARCHAR(100),						 --:{as:image}
+  photo_filename VARCHAR(100),	    				 --:{as:image_filename}  
+  
+  user_name_field VARCHAR(40),                       --:{as:"text",title:"Login Name"}  
+  user_password_field VARCHAR(40),			  		 --:{as:"text",title:"Password"}  
+  FB_LINK VARCHAR(320) DEFAULT '',					 --:{as:"text",title:"Facebook timeline"}  
+  FB_updated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,			 --:{as:"text",title:"FB_UPDATED"} 
+  INVITED_BY VARCHAR(32),							 --:{as:"text",title:"Invited by"}  
+  SITE_ID    VARCHAR(32),									 --:{as:"text",title:"Currently visiting"}  
+  
+  
+  Country    VARCHAR(32),									 --:{as:"text",title:"Currently visiting"}  
+  
+  timezone	 VARCHAR(20),							 --:{as:"text"}  
+  user_landing_page VARCHAR(80) DEFAULT 'Home/Guest',     --:{as:"text"}  
+  user_keys_field VARCHAR(250),						 --:{as:"text",title:"Key list"}  
+  LANGUAGE VARCHAR(32),										 --:{as:"text",title:"Language"}  
+  GP_INPUT VARCHAR(250),  						  	 --:{Type:"Hide"}
+
+  OWNER VARCHAR(32),
+  ACTIVATION_DATE TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  EXPIRY_DATE TIMESTAMP DEFAULT '2030-01-01',
+  FLAGS VARCHAR(20),
+  SKILL_LIST VARCHAR(250),
+  FORCE_CHANGE_ON TIMESTAMP,
+  TEAM VARCHAR(32),
+  IMAGE VARCHAR(32),
+  MOBILE_NUMBER VARCHAR(40),						--:{as:"text",title:"Password"}  
+  EMAIL VARCHAR(40),									--:{as:"text",title:"Password"}  
+  IM VARCHAR(200)									--:{as:"text",title:"Password"}  
+  
+);
+CREATE INDEX IDX_ME1 ON user_table_name (user_pk_field);
+CREATE INDEX IDX_ME4 ON user_table_name (user_name_field);
+
+/******************** TRIGGERS ********************/
+
+
+/******************* PROCEDURES ******************/
+
+/*Mysql RUN_SUB
+
+test code:
+new function returns currentpage==null for save only
+
+SELECT info,currentpage,page_params FROM Z$RUN_SUB ('SESSION1', 999,999,  'u05Guestp11AnyPasswordx00end') p;
+
+SELECT info,currentpage,page_params FROM Z$RUN_SUB ('SESSION1', 999,999,  'u05Guestp041258x00end') p;
+
+SELECT info,currentpage,page_params FROM Z$RUN_SUB ('SESSION1', 999,-1,  'x00end') p;
+
+
+call Z$RUN_SUB ('SESSION1', 999,999,  'u05Guestp11AnyPasswordx00end',v1,v2,v3,v4,v5);
+
+call Z$RUN_SUB ('SESSION1', 0,0,  'u05Guestp11AnyPasswordx00end',@v1,@v2,@v3,@v4,@v5);
+
+*/
+
+SET TERM ^ ;
+
+CREATE PROCEDURE Z$RUN_SUB(
+
+    IN SESSION Varchar(40),
+    IN CID Integer,
+    IN PKREF Integer,
+    IN UPDATES TEXT ,
+
+    OUT INFO Varchar(1000),
+    OUT CURRENTPAGE Varchar(100),
+    OUT page_params_in Varchar(1000),
+    OUT CIDRETURN Integer,
+    OUT PKREFRETURN Integer )
+
+
+proc_label: BEGIN
+	DECLARE  o_ref    varchar(40);
+	DECLARE  o_session varchar(40);
+	DECLARE  passw    varchar(20) DEFAULT '';
+	DECLARE  usern    varchar(20) DEFAULT '';
+	DECLARE  LANDING_PAGE_R varchar(100) ;
+	DECLARE  table_name varchar(100);
+	DECLARE  target_field_name  varchar(100);
+	DECLARE  target_fields     varchar(100);
+	DECLARE  pk_field_name  varchar(100);
+	DECLARE  pk_val  varchar(100);    
+	DECLARE  current_page_pk  integer;
+	DECLARE  i        integer;
+	DECLARE  update_cid integer;
+	DECLARE  bp        integer;
+	DECLARE  val       varchar(8001);
+	DECLARE  c         integer;
+	DECLARE  len       integer;
+	DECLARE  bt        char(1);
+	DECLARE  pk        integer;
+	DECLARE  script    TEXT; 
+	DECLARE  Openstr   varchar(1000);
+
+	set currentpage='';
+	set page_params_in='';
+	set CIDRETURN=CID;
+	
+	
+	set bp=1;    
+    set c=0;
+    while (c<1000) do 
+     
+        set c=c+1;
+        set bt=SUBSTRING(UPDATES,bp,1);             
+        if (bt>='a') THEN /*lower case are short fields*/
+				  set len=CONVERT(SUBSTRING(UPDATES,bp+1,2),SIGNED INTEGER) ;
+                  set val=SUBSTRING(UPDATES,bp+3,len);        
+                  set bp=bp+3+len;              
+        ELSE
+                  set len=CONVERT(SUBSTRING(UPDATES,bp+1,5),SIGNED INTEGER);      
+                  set val=SUBSTRING(UPDATES,bp+6,len);        
+                  set bp=bp+6+len;              
+        END IF;
+          
+		set bt=LOWER(bt);
+		
+		
+		CASE bt
+			WHEN 'u' THEN set usern=val ;       
+			WHEN 'p' THEN set passw=val ;  
+			WHEN 'l' THEN set currentpage=val ;
+			WHEN 't' THEN set Openstr=val ;	 -- used as temporary storage 		
+			WHEN 'c' THEN set update_cid=val ;  -- used as temporary storage                 
+			WHEN 'k' THEN set i=CONVERT(val,SIGNED INTEGER); /*Key field update - used as temporary storage                 */
+			WHEN 'r' THEN /*parameter value from first load Openstr=name*/
+					-- UPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES ('params-'||:SESSION||'-'||:Openstr,:val) matching (REF); 					 			
+					INSERT INTO Z$VARIABLES (REF,VALU) VALUES (concat('params-',SESSION,'-',Openstr),val)
+						ON DUPLICATE KEY UPDATE REF=concat('params-',SESSION,'-',Openstr),VALU=val;
+  
+			WHEN 'v' THEN /*Key value update - temp cache*/
+				 
+					-- softcodec code from the compiler	
+					SELECT COALESCE(b.page_params,'') INTO script FROM Z$PK_CACHE b 
+						WHERE b.MASTER = update_cid AND b.INDX = i limit 1;
+--					if (script<>'') THEN
+--						EXECUTE STATEMENT(script)(:val) INTO :val; 
+					
+					-- val=clean_escape(val);-- not needed we are using paramitzed stament
+					update Z$PK_CACHE a set a.new_value=val , a.NEW_VALUE_SET=1
+						WHERE a.MASTER = update_cid AND a.INDX = i;						
+				                    
+			WHEN 'w'  THEN /*Key value update - write updates per record*/
+					BEGIN
+					DECLARE cache_done INT DEFAULT FALSE;
+				    DECLARE cache_cursor cursor for select VALU, QUERY, PK_FIELD_NAME from Z$PK_CACHE b
+						WHERE b.MASTER = update_cid and b.NEW_VALUE_SET=1
+						GROUP by b.MASTER,b.NEW_VALUE_SET,b.VALU,b.QUERY,b.PK_FIELD_NAME;
+					DECLARE CONTINUE HANDLER FOR NOT FOUND SET cache_done = TRUE;	
+						
+					OPEN cache_cursor;
+					update_loop: LOOP					
+						FETCH cache_cursor INTO table_name,pk_val,pk_field_name;					
+						IF cache_done THEN 
+							LEAVE update_loop;
+						END IF; 
+						
+						set val = pk_field_name;
+						set script = '?';
+						BEGIN
+							DECLARE fields_done INT DEFAULT FALSE;
+							DECLARE fields_cursor cursor 
+							for SELECT c.TARGET,c.INDX,c.TARGET_FIELDS,c.TARGET_VALUES FROM Z$PK_CACHE c
+								WHERE c.MASTER = update_cid 
+								and c.NEW_VALUE_SET=1
+								and c.VALU=table_name and c.QUERY=pk_val and c.PK_FIELD_NAME=pk_field_name;
+							DECLARE CONTINUE HANDLER FOR NOT FOUND SET fields_done = TRUE;	
+								
+							set fields_done = FALSE;	
+
+							OPEN fields_cursor;
+							fields_loop: LOOP					
+								FETCH fields_cursor INTO target_field_name,i,target_fields,Openstr;					
+								IF fields_done THEN 
+									LEAVE fields_loop;
+								END IF; 
+
+								set val = concat(val,',',target_field_name,COALESCE(target_fields,'') );
+								set script = concat(script , ',(select a.new_value from Z$PK_CACHE a where a.MASTER =',update_cid,
+								' AND a.INDX = ',i,')',COALESCE(Openstr,''));                             
+							
+								set script = concat('update or insert into ',table_name,' (',
+										val,') values (',script,') matching (',pk_field_name,')');
+
+							END LOOP fields_loop;					 
+							CLOSE fields_cursor;										
+							
+							-- fixup pk for insert methods
+							if ((pk_val is null ) or (OCTET_LENGTH(pk_val)<=1)) THEN
+								    INSERT INTO Z$GEN_PK_SEQ (x) VALUES (0);
+									SET pk_val = (SELECT LAST_INSERT_ID());
+								END IF;
+  
+--							EXECUTE STATEMENT(script)(pk_val); 
+							update Z$PK_CACHE a set new_value=null,a.NEW_VALUE_SET=null WHERE a.MASTER = update_cid;
+							-- trigger based validations will emit erors into a log that can be fed back to the user
+						
+						END;	
+
+					END LOOP update_loop;					 
+					CLOSE cache_cursor;
+ 					END;
+
+		ELSE set c=1001;
+		END CASE;
+                  
+      END WHILE;
+	  
+	  
+	  
+	 -- select  usern, passw,PKRef;
+    /*part of post updates is creating a new session if login info is supplied*/
+    if (usern='') THEN    
+			if (PKRef=-1) then -- save without refreshing
+				  set info='saved';
+				  LEAVE proc_label;
+				end if;			
+		
+			if (PKRef<>0) then
+					SELECT a.target,COALESCE(a.PAGE_PARAMS,'') into currentpage,page_params_in FROM Z$PK_CACHE a WHERE a.MASTER = CID AND a.INDX = PKRef  limit 1;              
+					if (currentpage='') then set PKRef=0;
+					end if;	
+				end if;	
+		
+		    -- refresh page
+			if (PKRef=0) then
+				    SELECT r.LINKED_FROM_CID, r.LINKED_FROM_INDX into CID,PKRef FROM Z$CONTEXT r where r.pk=CID and r.id=SESSION limit 1;
+					SELECT a.target,concat(COALESCE(a.PAGE_PARAMS,''),page_params_in) into currentpage,page_params_in 
+					    FROM Z$PK_CACHE a WHERE a.MASTER = CID AND a.INDX = PKRef  limit 1;              				    
+				end if;
+				
+
+				
+            /*get the new page, and context info */                
+           SELECT r.OPERATOR_REF, r.ID into o_ref,o_session FROM Z$CONTEXT r where r.pk=CID and r.id=SESSION limit 1 ;                        
+           SELECT landing_page into LANDING_PAGE_R FROM Z$USER WHERE id = o_ref  limit 1 ;
+            
+        END IF;
+    
+    if (usern<>'') THEN        
+        set o_ref=NULL;
+        /*allow them to login even if expired,  the dashboard gives information that they have expired...*/
+        select id,landing_page into o_ref,LANDING_PAGE_R from Z$USER where login_name=usern and passwd=passw limit 1 ;
+        /*if null then select the nobody user */
+        if (o_ref is NULL) then 
+            select id,landing_page into o_ref,LANDING_PAGE_R from Z$USER where login_name='Guest' limit 1;
+         end if;	
+         -- info=COALESCE(:o_ref,'NULL')||'&'||COALESCE(:LANDING_PAGE_R,'NULL')||'&'||COALESCE(:passw,'NULL')||'&';  suspend;
+		IF ( currentpage <> '') THEN set currentpage = concat('//',LANDING_PAGE_R,currentpage);
+        ELSE set currentpage = concat('//',LANDING_PAGE_R,'/Index');
+		END IF;  
+		 
+        set current_page_pk=NULL;
+
+		INSERT INTO Z$GEN_PK_SEQ (x) VALUES (0);
+		SET pk = (SELECT LAST_INSERT_ID());
+		
+        INSERT INTO Z$CONTEXT (PK, TSTAMP, OPERATOR_REF, ID) VALUES (pk,CURRENT_TIMESTAMP, o_ref, SESSION );
+         
+        -- this record is so we can save and reload the first page                    
+        INSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,TARGET,QUERY, PAGE_PARAMS)
+            VALUES (pk,0,'click','Z$USER', currentpage , concat('id=''', replace(o_ref,'''','''''') , ''''),'' );  
+                             
+        set CID = pk;           
+          
+        END IF;           
+        
+	  set PKREFRETURN=PKREF;
+      set CIDRETURN=CID;
+	
+      -- select INFO,currentpage,page_params_in,CIDRETURN,PKREFRETURN;
+	  
+	  
+END^
+SET TERM ; ^
+
+
+
+SET TERM ^ ;
+CREATE PROCEDURE Z$RUN_SUP (
+    Z$SESSIONID VARCHAR(40),
+    CID INTEGER,
+    PKREF INTEGER,
+    UPDATES TEXT
+    )
+proc_label:  BEGIN
+
+	DECLARE o_ref    varchar(40);
+	DECLARE currentpage varchar(100) default '';
+	DECLARE current_page_pk  integer;
+	DECLARE exec_script    TEXT;
+	DECLARE page_params  varchar(1000) default '';  -- retrieved from the database injected into  script at --assign_params 
+	DECLARE NEW_CID INTEGER;
+	DECLARE info VARCHAR(1000);
+	DECLARE res TEXT;
+	DECLARE ScriptNamed VARCHAR(250) ;
+	
+	set @IN_SESSIONID=Z$SESSIONID;
+
+
+    call Z$RUN_SUB (Z$SESSIONID,CID,PKREF,UPDATES,   info,ScriptNamed,page_params,@IN_CID,@IN_PKREF);
+    -- select 'a',Z$SESSIONID,CID,PKREF,UPDATES,   info,ScriptNamed,page_params,@IN_CID,@IN_PKREF;
+	if (info='saved') then -- saved without refreshing				 
+				  set res= '' ;  
+				  set ScriptNamed= '' ;  				   					
+				  LEAVE proc_label;
+   		   end if;
+
+    /*execute the page or SP*/  
+
+    -- further match language and coy custom files  
+	-- SELECT 'sc',ScriptNamed,pk,script FROM Z$SP  where file_name=ScriptNamed limit 1  ;
+    SELECT pk,script into current_page_pk,exec_script FROM Z$SP  where file_name=ScriptNamed limit 1  ;
+    if (exec_script is null) then /*back home or direct to an 404 error page ..?*/         
+        SELECT pk,script into current_page_pk,exec_script FROM Z$SP where 
+                   concat(file_name='//',(SELECT user_landing_page FROM user_table_name WHERE user_pk_field = o_ref),'/404')  limit 1 ;                        
+    end if;            
+    if (exec_script is null) then /*global 404 error page */
+        SELECT pk,script into current_page_pk,exec_script FROM Z$SP q where file_name='//Default/404'  limit 1 ;                        
+    end if;       
+	 
+	-- select 'sc',exec_script;
+    if (exec_script is null) then
+           set info=concat('No script named : ',COALESCE(ScriptNamed,'')); 
+        ELSE            
+			set @script_exec = replace(exec_script,'--assign_params',COALESCE(page_params,''));
+			PREPARE stmt1 FROM @script_exec;      
+			EXECUTE stmt1; 
+			set NEW_CID = @cid_ret;
+			set res     = @res_ret;	       
+			DEALLOCATE PREPARE stmt1; 
+			-- select 'vv',@cid_ret,@res_ret;
+        end if;   
+
+	select NEW_CID,info,res,ScriptNamed;
+
+END^
+SET TERM ; ^
+
+
+/******************* RECORDS ******************/
+
+/*
+
+INSERT MATCHING NON_MATCH;
+INSERT INTO Z$INSERTREF (NON_MATCH, INSERT_REF) VALUES ('NON_MATCH_1', '1');
+INSERT INTO Z$INSERTREF (NON_MATCH, INSERT_REF) VALUES ('NON_MATCH_2', '2');
+INSERT INTO Z$INSERTREF (NON_MATCH, INSERT_REF) VALUES ('NON_MATCH_3', '3');
+
+
+INSERT MATCHING user_name_field;
+INSERT INTO user_table_name (user_landing_page,user_display_field,user_name_field,user_password_field) values ('Home/Guest','Guest','user_guest_name','AnyPassword');
+INSERT INTO user_table_name (user_landing_page,user_display_field,user_name_field,user_password_field) values ('Home/SysAdmin','sysadmin','sysadmin','changethis');
+*/
+
+-- INSERT INTO Z$USER (LANDING_PAGE,name,login_name,passwd) values ('Home/Guest','Guest','Guest','AnyPassword');
+
+
+#>
+
+
+
+
+
+
+
+
+

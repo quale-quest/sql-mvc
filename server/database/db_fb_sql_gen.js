@@ -242,7 +242,7 @@ exports.eval_start = function (zx, line_obj) {
 
 exports.emit_comment = function (zx,comment) {
 	//compiles sql
-	emit(zx, zx.line_obj, "  ", comment);
+	emit(zx, zx.line_obj, "/*" + comment + "*/");
 	return zx.line_obj;
 };
 
@@ -255,7 +255,7 @@ exports.eval_cond = function (zx, line_obj, conditionals) {
 		if (entry.pre === undefined)
 			entry.pre = '';
 		emit(zx, conditionals, "if (cond<>0) then if (" + entry.pre + expr + entry.post + " ) then "+zx.config.db.sql_set_prefix +"cond=0;", "");
-	    if (zx.conf.db.dialect=="mysql57") emit(zx, zx.line_obj, "    end if;\r\nend if;");
+	    if (zx.conf.db.dialect=="mysql57") emit(zx, zx.line_obj, "    end if; end if;");
 	});
 	return conditionals;
 };
@@ -492,8 +492,8 @@ exports.makeexpression = function (zx, line_obj, varx) {
 
 exports.F_F2J = function (zx, line_obj, str) {
     if (zx.config.db.useUDF === "yes") return "Z$F_F2J(" + str + ")";
-	else return zx.config.db.sql_concat_prefix + "'\"'"+
-		zx.config.db.sql_concat_seperator+"REPLACE(REPLACE(coalesce(" + str + ",''),'\"','\\\"'),'\n','CRLF')"+
+	else return "\n      "+zx.config.db.sql_concat_prefix + "'\"'"+
+		zx.config.db.sql_concat_seperator+"REPLACE(REPLACE(coalesce(" + str + ",''),'\"','\\\"'),'\\n','CRLF')"+
 		zx.config.db.sql_concat_seperator+"'\"'"+
 		zx.config.db.sql_concat_postfix; 	
 }
@@ -709,7 +709,7 @@ if (fld_obj.cf[0].pointer===undefined)
         "','" + pkname +
 		"', '" + zx.Current_main_page_name.replace(/\\/g, "/") + "', "+        
          zx.config.db.var_actaul+"F" + fld_obj.cf[0].pointer         
-        + " ," + PAGE_PARAMS + ");tfid=tfid+1;";
+        + " ," + PAGE_PARAMS + ");"+zx.config.db.sql_set_prefix+"tfid=tfid+1;";
 	//console.log('link_from_table links: ',links,fld_obj.cf[0] );
 	fld_obj.postback = links;
 	fld_obj.tfidOffset = zx.tfidOffset;
@@ -810,18 +810,15 @@ exports.edit_from_table = function (zx, cx, fld_obj) {
 	if (fld_obj.cf[0].pass)
 	    links+= exports.build_variable_pass_all(zx,fld_obj,fld_obj.cf[0].pass,'lft123737')
 	   
-	//links += "\nINSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS,TARGET_FIELDS,TARGET_VALUES,baserecord)" +
-	//	"VALUES (:cid,:tfid,'updateonpk','" + /*valu*/
-	//	from +
-	//	"','" + pkname + "', '" + fld_obj.name + "', :F" + fld_obj.cf[0].pointer + " ,'" + Soft_decode + "' ,'" + TARGET_FIELDS + "'," + TARGET_VALUES + ","+baserecord_ref+");tfid=tfid+1;";
+
 	links += "\nINSERT INTO Z$PK_CACHE ("+
 			  "MASTER, INDX, FIELD_NAME, VALU,"+
 			  "Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS,"+
 			  "TARGET_FIELDS,TARGET_VALUES,baserecord)" +
 			  
-			  "VALUES (:cid,:tfid,'updateonpk','" + /*valu*/	from + "',"+
-		      "'" + pkname + "', '" + fld_obj.name + "', :F" + fld_obj.cf[0].pointer + " ,'" + Soft_decode + "' ,"+
-			  "'" + TARGET_FIELDS + "'," + TARGET_VALUES + ","+baserecord_ref+");tfid=tfid+1;";				
+			  "VALUES ("+zx.config.db.var_actaul+"cid,"+zx.config.db.var_actaul+"tfid,'updateonpk','" + /*valu*/	from + "',"+
+		      "'" + pkname + "', '" + fld_obj.name + "', "+zx.config.db.var_actaul+"F" + fld_obj.cf[0].pointer + " ,'" + Soft_decode + "' ,"+
+			  "'" + TARGET_FIELDS + "'," + TARGET_VALUES + ","+baserecord_ref+");"+zx.config.db.sql_set_prefix+"tfid=tfid+1;";				
 				
 		
 	
@@ -882,44 +879,55 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 	cend;
 
 	if (QueryType === "Table") {
-		open = "tfid=" + zx.sql.cidi * zx.sql.cidti_factor + ";"+
-		  "first=' '; "+zx.config.db.sql_set_prefix + zx.config.db.sql_concat_res+"',\n``" + cx.tid_name + "``:[';";
-		sql = "row="+sqlconcat(zx,"", "first","'[``'",zx.config.db.var_actaul+"tfid","'``");		
+		open = zx.config.db.sql_set_prefix +"tfid=" + zx.sql.cidi * zx.sql.cidti_factor + ";\n"+
+		       zx.config.db.sql_set_prefix +"first=' '"+";\r"+
+		       zx.config.db.sql_set_prefix + zx.config.db.sql_concat_res+"', ``" + cx.tid_name + "``:['"+zx.config.db.sql_concat_postfix+";\n";
+
+		sql =  zx.config.db.sql_set_prefix +"row="+
+			    zx.config.db.sql_concat_prefix+
+			     "first"+ zx.config.db.sql_concat_seperator +"'[``'"+zx.config.db.sql_concat_seperator +
+				 zx.config.db.var_actaul+"tfid"+ zx.config.db.sql_concat_seperator +"'``";
+			   
 		firstseperator = ',';
 		secondseperator = ",";
 		moreseperators = ',';
-		aclose = "]';";
-		recordseperator = "first=',\n ';";
+		aclose = "]'"+zx.config.db.sql_concat_postfix+";";
+		recordseperator = "\n    "+  zx.config.db.sql_set_prefix +"first=', ';";
 		cend = zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + sqlconcat(zx,"", "res", "']'" ) + ";";
 	}
 	if (QueryType === "List") {
-		open = "tfid=" + zx.sql.cidi * zx.sql.cidti_factor + ";"+
-		  "first=' '; "+zx.config.db.sql_set_prefix + zx.config.db.sql_concat_res+"',\n``" + cx.tid_name + "``:[';";
-		sql = "row="+sqlconcat(zx,"", "first","'[``'",zx.config.db.var_actaul+"tfid","'``");
+		open = zx.config.db.sql_set_prefix +"tfid=" + zx.sql.cidi * zx.sql.cidti_factor + ";"+
+		  zx.config.db.sql_set_prefix + "first=' '; "+zx.config.db.sql_set_prefix + zx.config.db.sql_concat_res+"', ``" + cx.tid_name + "``:['"+zx.config.db.sql_concat_postfix+";\n";
+
+		sql =  zx.config.db.sql_set_prefix +"row="+
+			    zx.config.db.sql_concat_prefix+
+			     "first"+ zx.config.db.sql_concat_seperator +"'[``'"+zx.config.db.sql_concat_seperator +
+				 zx.config.db.var_actaul+"tfid"+ zx.config.db.sql_concat_seperator +"'``";
+
 		firstseperator = '';
 		secondseperator = ",";
 		moreseperators = ',';
-		aclose = "]';";
-		recordseperator = "first=',\n ';";
+		aclose = "]'"+zx.config.db.sql_concat_postfix+";";
+		recordseperator = "\n    "+  zx.config.db.sql_set_prefix + "first=', ';";
 		cend = zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + sqlconcat(zx,"", "res", "']'" ) + ";";
 	}
 	if (QueryType === "Dict") {		
-		open = "tfid=" + zx.sql.cidi * zx.sql.cidti_factor + ";"+
-		  "first=' '; "+zx.config.db.sql_set_prefix + zx.config.db.sql_concat_res+"',\n``" + cx.tid_name + "``:{';";
-		sql = "row=first||'";
+		open = zx.config.db.sql_set_prefix +"tfid=" + zx.sql.cidi * zx.sql.cidti_factor + ";\n"+
+		   zx.config.db.sql_set_prefix + "first=' '; "+zx.config.db.sql_set_prefix + zx.config.db.sql_concat_res+"',  ``" + cx.tid_name + "``:{'"+sql_concat_postfix+";";
+		sql = "\n    "+ zx.config.db.sql_set_prefix +"row=first "+ zx.config.db.sql_concat_seperator +" '";
 		if (fields.length < 3) { //name:value
 			firstseperator = '';
 			secondseperator = ":";
 			moreseperators = ',';
-			aclose = "';";
-			recordseperator = "first=',\n ';";
+			aclose = "'"+zx.config.db.sql_concat_postfix+";";
+			recordseperator = "\n    "+  zx.config.db.sql_set_prefix +"first=', ';";
 		    cend = zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + sqlconcat(zx,"", "res", "'}'" ) + ";";
 		} else { //name:[value,value]
 			firstseperator = '';
 			secondseperator = ":[";
 			moreseperators = ',';
-			aclose = "'];";
-			recordseperator = "first=',\n ';";
+			aclose = "']"+zx.config.db.sql_concat_postfix+";";
+			recordseperator = "\n    "+  zx.config.db.sql_set_prefix +"first=', ';";
 		    cend = zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + sqlconcat(zx,"", "res", "'}'" ) + ";";
 		}
 	}
@@ -983,7 +991,23 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 	sql += recordseperator;
 	sql += zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + sqlconcat(zx,"", "res","coalesce(row,'\"row_element_is_null\"')","''" ) + ";";
 
-	emit(zx, 0, open + '\nfor ' + queryx + into + " do \n begin", "");
+    if (zx.fb25) 
+	    emit(zx, 0, open + '\nfor ' + queryx + into + " do \n begin", "");
+
+    if (zx.mysql57) {
+		emit(zx, 0, open );
+		emit(zx, 0, "begin", "");	
+		emit(zx, 0, "    declare done int default false;", "");
+		emit(zx, 0, "    declare cur1 cursor for "+queryx+";", "");	
+	    emit(zx, 0, "    declare continue handler for not found set done=1;", "");		
+		emit(zx, 0, "    set done = 0;", "");
+		emit(zx, 0, "    open cur1;", "");
+		emit(zx, 0, "    cur1Loop: loop", "");
+		emit(zx, 0, "        fetch cur1 "+into+";", "");
+		emit(zx, 0, "        if done = 1 then leave cur1Loop; end if;", "");
+	}
+	
+	
 	emit(zx, 0, "" + SoftCodecs + "", "");
 	emit(zx, 0, "\n    " + sql, "");
 
@@ -991,8 +1015,16 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 	if (postbacks !== "")
 		emit(zx, 0, postbacks, "");
 
-	emit(zx, 0, "\n end", "");
-	emit(zx, 0, cend, "");
+	if (zx.fb25) {
+		emit(zx, 0, "\n end", "");	
+		emit(zx, 0, cend, "");
+	}
+
+    if (zx.mysql57) {
+		emit(zx, 0, "    end loop cur1Loop;", "");
+		emit(zx, 0, cend, "");
+		emit(zx, 0, "end;", "");
+	}
 
 	return zx.sql.cidi;
 };
@@ -1307,18 +1339,38 @@ return zx.dbu.getPageIndexNumber(zx,name);
 }
 
 var make_pk_seq = function (zx,NAME,FIELD) {
-var triggerscript=
-["SET TERM ^ ;",
-"CREATE TRIGGER AI_"+NAME+"_BI FOR "+NAME+" ACTIVE",
-"BEFORE INSERT POSITION 0",
-"AS",
-"BEGIN",
-"  if (new."+FIELD+" is null) then",
-"     select ref from Z$GEN_PK(1) into new."+FIELD+";",
-"END^",
-"SET TERM ; ^"].join('\n');
+var triggerscript;
 
-//console.log('triggerscript : ',triggerscript);
+if (zx.fb25) {
+	triggerscript=
+	["SET TERM ^ ;",
+	"CREATE TRIGGER AI_"+NAME+"_BI FOR "+NAME+" ACTIVE",
+	"BEFORE INSERT POSITION 0",
+	"AS",
+	"BEGIN",
+	"  if (new."+FIELD+" is null) then",
+	"     select ref from Z$GEN_PK(1) into new."+FIELD+";",
+	"END^",
+	"SET TERM ; ^"].join('\n');
+}
+
+if (zx.mysql57) {
+	//console.log('triggerscript : ',triggerscript);
+	//DROP TRIGGER test.ins_sum;
+	triggerscript=
+	["SET TERM ^ ;",	
+	 "CREATE TRIGGER \`"+NAME+"_before_insert\` BEFORE INSERT ON \`"+NAME+"\` FOR EACH ROW BEGIN \r\n",
+	 " INSERT INTO Z$CONTEXT_SEQ (x) VALUES (0); ",
+	 " SET NEW."+FIELD+" = (SELECT LAST_INSERT_ID()); ",
+	 "END;",
+	"SET TERM ; ^"].join('\n');
+	//console.log('make_pk_seq: ',triggerscript);
+
+}
+
+
+
+
 return triggerscript;
 }
 
@@ -1337,7 +1389,7 @@ function compare_triggers(a,b) {
 
 
 exports.AutoMaticDLL = function (zx,line_obj) {
-
+//console.log('\r\nAutoMaticDLL : ',zx.sql.triggers);   
     zx.sql.triggers.sort(compare_triggers);
 
     for(var i = 1; i < zx.sql.triggers.length; ){
@@ -1354,6 +1406,7 @@ exports.AutoMaticDLL = function (zx,line_obj) {
    //console.log('    sqlgen_fb AutoMaticDLL for : ',trigger.Table,trigger.Field,pk_seq.substring(0,80));   
    zx.db_update.Prepare_DDL(zx, null, pk_seq, line_obj)
  });
+ console.log('\r\nAutoMaticDLL done: ');   
 }
 
 exports.init = function (zx) {
@@ -1379,4 +1432,3 @@ exports.init = function (zx) {
 	//     zx.sql.engine='flamerobin';
     zx.sql.triggers =[];
 };
-

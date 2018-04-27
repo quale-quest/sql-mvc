@@ -110,9 +110,9 @@ else
 
 	#touch $PROJECT_DIR/output/built_complete   
 
-	diff output/Home/Guest/Index.sql ../Index.sql
-	diff output/Home/User/Index.sql ../UserIndex.sql
-	diff output/Home/Guest/Dashboard/Dashboard.sql ../Dashboard.sql
+	#diff output/Home/Guest/Index.sql ../Index.sql
+	#diff output/Home/User/Index.sql ../UserIndex.sql
+	#diff output/Home/Guest/Dashboard/Dashboard.sql ../Dashboard.sql
 
 
 	

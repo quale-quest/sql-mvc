@@ -61,7 +61,7 @@ exports.parse = function (zx, line_obj, str, tag,Quale_eval) {
 
 	//console.log('B4 Quic remove_comments');//,str.length);
 	str = exports.remove_comments(zx, line_obj, str);
-	//console.log('Quic remove_comments',str);
+	//console.log('Quic remove_comments',str.length,str.replace(/\r?\n/g, "CRNL") );
 	try {
 
 		var parse_from = 0;
@@ -282,8 +282,11 @@ function tokens_eval_eachRecursive(obj, zx, line_obj, quickinput) {
 }
 
 var watch = function (zx, msg) {
-	//if (zx.q.contexts['TODO_MVC'] && zx.q.contexts['TODO_MVC'].STATUS)
-	//	console.log('>>>>>>>>>>>>WATCH ' + msg, zx.q.contexts[' TODO_MVC '][' STATUS '].Type);
+	if (zx.q.contexts['TODO_MVC']) {
+         if (zx.q.contexts['TODO_MVC'].STATUS) {
+		//console.log('>>>>>>>>>>>>WATCH ' + msg, zx.q.contexts['TODO_MVC']['STATUS'].Type);
+		 }
+	}	 
     //console.log('>>>>>>>>>>>>WATCH ' + msg);
 };
 
@@ -375,7 +378,7 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 //find the name if it is not yet found
 	watch(zx, " at 134245 ");
 	//merge with any context information
-	//console.log('quale b4 context:',quale);
+	//console.log('\r\n************************************************************quale b4 context:',quale);
 	if ((tag.toLowerCase() !== 'model') && (quale.name === undefined) && quale.from === undefined) {
 		var firstword = quickinput.match(/([\w_$.]+)/); 
 		//console.log('Quale firstword extract :', firstword);
@@ -408,11 +411,13 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 		}
 		watch(zx, " at 134255 ");
         //console.log('quale z5 context:',quale ,' in ',Object.keys(zx.q.contexts));
+		//console.log('quale z5 context:',quale.table ,' in ',Object.keys(zx.q.contexts));
         if (zx.q.contexts[quale.table]!==undefined)
 		    extend(true, quale, zx.q.contexts[quale.table][quale.name], deepcopy(quale)); //second one has the priority
          else
           {
           console.trace("Unknown Table 160901 - Quale Table names are case sensitive :",quale.table);//,zx.q.contexts);
+		  process.exit(2);
         }          
 		watch(zx, " at 134258 ");
 
@@ -426,15 +431,19 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 	watch(zx, " at 134248 ");
 	if (tag.toLowerCase() === 'model') {
 		//console.log('Quale model  122444:',quale);
-		if (quale.regex !== undefined)
+		if (quale.regex !== undefined) {
+			//console.log('Quale model with regex  122444.1:',quale);
 			zx.q.regex.push(quale);
+		}
 		else {
+			//console.log('Quale model  122444.2:',quale);
 			if (quale.rl_context !== undefined)
 				zx.q.rl_context = quale.rl_context;
 
 			if ((zx.q.rl_context !== undefined) && (zx.q.rl_context !== ''))
 				quale.context = zx.q.rl_context;
 
+			//console.log('Quale model  122444.3:',quale);
 			if (quale.context !== undefined) {
 				if (zx.q.contexts[quale.context] === undefined)
 					zx.q.contexts[quale.context] = {};

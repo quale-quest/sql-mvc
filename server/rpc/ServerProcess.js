@@ -80,7 +80,7 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
 
 function connect_and_produce_div_sub_fbsql(req,ss,rambase,message,recursive,public_parameters,update,cb)  {
 	console.log('\n\nxx SELECT NEW_CID,info,RES,ScriptNamed FROM Z$RUN (\'' + message.session + '\',\'' + message.typ + '\',' + 
-	  message.cid + ',' + message.pkf + ',\'' + message.valu + '\',\'' + public_parameters + // '\',\'' + update + 
+	  message.cid + ',' + message.pkf + ',\'' + message.valu + '\',\'' + public_parameters + '\',\'' + update + 
 	  '\')\n\n');
 	//var query_str = 'SELECT NEW_CID,info,RES,scriptnamed FROM Z$RUN (?,?,?,?,?,?,?)';
 	//var query_par = [message.session, message.typ, message.cid, message.pkf, message.valu, public_parameters, update];

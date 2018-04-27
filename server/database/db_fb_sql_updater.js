@@ -199,6 +199,7 @@ function dll_blocks_seperate_term(inputs, src_obj) { //splits the input into blo
 	//console.log('dll_blocks_seperate_term start  A :', inputs, ':z');//.substring(0,20));
 	var open_term = ";";
 	var blocks = [];
+	var inputsx='';
 
 	if (zx.mysql57) {	
 		//replace mysql DELIMITER ;;    and DELIMITER ;  with firebird DELIMITERs
@@ -210,7 +211,10 @@ function dll_blocks_seperate_term(inputs, src_obj) { //splits the input into blo
 		//console.log('dll_blocks_seperate_term :', inputs);
 		
 		//remove leading comments
-		inputs=inputs.replace(/(\s*\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$)/,"");
+		do {
+			inputsx=inputs;
+		    inputs=inputsx.replace(/(\s*\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$)/,"");
+		} while (inputsx!=inputs);
 		
 		var regs;
 	    regs= '([\\S\\s]*?)set\\s+term\\s+(.)\\s+\\' + open_term + '([\\S\\s]*)';		

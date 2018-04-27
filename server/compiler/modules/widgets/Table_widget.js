@@ -156,13 +156,17 @@ var prep_query = function (zx, cx, tcx, o) {
 			}
 
 		tcx.query = 'select ';
-		if (+cx.table.autoinsert_internal > 0)
-			tcx.query += ' first ' + cx.table.autoinsert_internal + ' ';
-		else
-			tcx.query += ' first ' + LimitRecordCount + ' ';
-
-		if (o.skip !== undefined)
-			tcx.query += ' skip ' + zx.gets(o.skip) + " ";
+		if (zx.fb25) {
+			if (+cx.table.autoinsert_internal > 0)
+				tcx.query += ' first ' + cx.table.autoinsert_internal + ' ';
+			else
+				tcx.query += ' first ' + LimitRecordCount + ' ';
+			if (o.skip !== undefined)
+				tcx.query += ' skip ' + zx.gets(o.skip) + " ";
+		}
+		
+		
+		
 		tcx.query += fieldnamelist;
 
 		/* add implied keys - unless aggregating*/
@@ -201,6 +205,17 @@ var prep_query = function (zx, cx, tcx, o) {
 			if (o.orderby !== undefined)
 				tcx.query += ' order by ' + zx.gets(o.orderby);
 		}
+		
+		
+		if (zx.mysql57) {
+			if (+cx.table.autoinsert_internal > 0) 
+				LimitRecordCount = cx.table.autoinsert_internal;
+			tcx.query += ' LIMIT ' + LimitRecordCount + ' ';			
+			if (o.skip !== undefined)
+				tcx.query += ' OFFSET ' + zx.gets(o.skip) + " ";
+		}
+		
+		
 	}
 	//should take the output from the query and process it in the complete way
 	//prepare query
@@ -352,6 +367,12 @@ var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx,
 
 	if (+cx.table.autoinsert_internal > 0) { //for inserts we have to modify the query
 		//this should be part of the driver code
+/*	The insert record works as follows:
+	Only the field from the query is kept,
+	then the field names are joined with the Z$INSERTREF table, without any
+	actual records from the main table.
+	i.e. the main table only supplies the field structure, it does not supply any values.
+*/		
         
 		o.q.Fields.some(function (wip) {
 			if ((wip.PrimaryKey === 'true')) {
@@ -394,6 +415,8 @@ var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx,
 		if (tcx.implied_pk_name !== '')
 			tcx.query = tcx.query.replace(tcx.implied_pk_name, 'INSERT_REF');
 
+		
+		if (zx.fb25) {
 		//only 1 record on a insert
 		var pat = /select\s+first\s+\d+/i;
 		//console.log('regex first test :',tcx.query.search(pat),tcx.query);
@@ -401,9 +424,17 @@ var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx,
 
 			tcx.query = tcx.query.replace(pat, "select first " + cx.table.autoinsert_internal + " ");
 			//console.log('regex first match :');
-		} else
+		} else {
 			tcx.query = tcx.query.replace(/select\s/i, "select first " + cx.table.autoinsert_internal + " ");
+		}
+
 		//console.log('autoinsert_internal :',tcx.query);
+		}
+		
+		if (zx.mysql57) {
+			tcx.query += " Limit 1 ";
+		}
+			
 
 	}
 
@@ -433,6 +464,9 @@ var formulatemodel = exports.formulatemodel = function (zx, cx, o) {
 
 	cx.fields = tcx.fields;
 	cx.query = tcx.query;
+
+	//zx.dbg.emit_comment(zx,"cx.query:"+cx.query);
+	//console.log("cx.query:"+cx.query);
 
 	//map widget fields to real fields
 	try {

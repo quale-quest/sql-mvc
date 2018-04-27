@@ -471,10 +471,10 @@ exports.write_script_async = function (zx, real, spi, name, mtHash, script, code
 	script = script.replace('Z$$integer', 'Z$$' + spi);
     var FN_HASH = 'ZZ$' + zx.ShortHash(name); //spi; //zx.ShortHash(name);
     if (zx.conf.db.dialect=="fb25") {
-	var querys="UPDATE OR INSERT INTO Z$SP (PK,TSTAMP,FILE_NAME,SCRIPT,CODE,MT_HASH,FN_HASH)VALUES (?,'now',?,?,?,?,?) MATCHING (PK) ";
-	connection.db.query(querys, [spi, name, script, JSON.stringify(code),mtHash,FN_HASH],
+	var querys="UPDATE OR INSERT INTO Z$SP (PK,TSTAMP,FILE_NAME,SCRIPT,CODE,MT_HASH)VALUES (?,'now',?,?,?,?) MATCHING (PK) ";
+	connection.db.query(querys, [spi, name, script, JSON.stringify(code),mtHash],	
 		function (err, result) {
-
+		if (err) console.log('.write_script_async err- ' ,err, result);
 		if (real) {
 			name = 'Z$$' + spi;
 			//console.log('create real SP : ', script);
