@@ -82,7 +82,7 @@ exports.is_conditional = function (zx, o) {
 
 	if (o.when !== undefined) { //make the database query and add it to if exists list
 		append_conditional(o.and_if, zx.getA(o.when),
-			'not run_procedure=\'',
+			'not '+zx.conf.db.var_global_get+'run_procedure=\'',
 			'\'');
 	}
 
@@ -274,7 +274,7 @@ exports.implicid_unblock = function (zx, line_obj) {
 
 
 exports.explicid_unblock = function (zx, line_obj,mysqlendif) {
-    zx.dbg.emit_comment(zx,"explicid_unblock : "+zx.fc.block_stack.length+" : " + line_obj.tag);
+    //zx.dbg.emit_comment(zx,"explicid_unblock : "+zx.fc.block_stack.length+" : " + line_obj.tag);
     //console.log('explicid_unblock: block_stack  ', line_obj.Label, zx.fc.block_stack);
 	if (!exports.implicid_unblock(zx, line_obj)) {
 		var local_immediate_block_id  = line_obj.Label;

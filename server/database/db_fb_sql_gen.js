@@ -579,11 +579,11 @@ exports.link_from = function (zx, line_obj) {
 	var proc = zx.gets(line_obj.execute);
     //console.log('run_procedure_as table: ',proc );
 	if ((proc !== undefined) && (proc !== "")) {
-		PAGE_PARAMS = PAGE_PARAMS + "run_procedure=''" + proc + "'';";
+		PAGE_PARAMS = PAGE_PARAMS +  zx.conf.db.var_global_set + "run_procedure=''" + proc + "'';";
 		//maybe master_ref?? PAGE_PARAMS=PAGE_PARAMS+"run_procedure_pk='||Z$F_F2SQL(:F"+fld_obj.cf[0].pointer+")||';'";
 		var param = zx.gets(line_obj.param);
 		if ((param !== undefined) && (param !== ""))
-			PAGE_PARAMS = PAGE_PARAMS + "run_procedure_param=''" + param + "'';";
+			PAGE_PARAMS = PAGE_PARAMS + zx.conf.db.var_global_set + "run_procedure_param=''" + param + "'';";
 
 		//console.log('run_procedure_param: ',PAGE_PARAMS );
 	}
@@ -683,17 +683,12 @@ if (fld_obj.cf[0].pointer===undefined)
 	var proc = zx.gets(fld_obj.cf[0].execute);
     //console.log('run_procedure_as : ',proc );
 	if ((proc !== undefined) && (proc !== "")) {		
-		PAGE_PARAMS = PAGE_PARAMS + zx.config.db.sql_concat_seperator + "'run_procedure=''" + proc + "'';";
-		PAGE_PARAMS = PAGE_PARAMS + "run_procedure_pk='"+zx.config.db.sql_concat_seperator +exports.F_F2SQL(zx, zx.line_obj, zx.config.db.var_actaul+"F" + fld_obj.cf[0].pointer )+zx.config.db.sql_concat_seperator + "';";
+		PAGE_PARAMS = PAGE_PARAMS + zx.config.db.sql_concat_seperator + "'"+zx.conf.db.var_global_set+"run_procedure=''" + proc + "'';";
+		PAGE_PARAMS = PAGE_PARAMS + zx.conf.db.var_global_set+"run_procedure_pk='"+zx.config.db.sql_concat_seperator +exports.F_F2SQL(zx, zx.line_obj, zx.config.db.var_actaul+"F" + fld_obj.cf[0].pointer )+zx.config.db.sql_concat_seperator + "';";
 
-		
-		
-		
-        //PAGE_PARAMS = PAGE_PARAMS + "run_procedure_pk='||Z$F_F2SQL(:F" + fld_obj.cf[0].pointer + ")||';";
-        
 		var param = zx.gets(fld_obj.cf[0].param);
 		if ((param !== undefined) && (param !== ""))
-			PAGE_PARAMS = PAGE_PARAMS + "run_procedure_param=''" + param + "'';";
+			PAGE_PARAMS = PAGE_PARAMS +  zx.conf.db.var_global_set + "run_procedure_param=''" + param + "'';";
 		PAGE_PARAMS = PAGE_PARAMS += "'";
 		//console.log('run_procedure_param: ',PAGE_PARAMS );
 	}
@@ -1091,9 +1086,9 @@ exports.start_pass = function (zx /*, line_objects*/
 	emitdeclare(zx, 0, "row","varchar(1000)","''");
 	emitdeclare(zx, 0, "first","varchar(10)","''");
 	emitdeclare(zx, 0, "tfid","integer","0");
-	emitdeclare(zx, 0, "run_procedure","varchar(254)","''","Passed as page parameter");
-	emitdeclare(zx, 0, "run_procedure_pk","varchar(254)","''");
-	emitdeclare(zx, 0, "run_procedure_param","varchar(254)","''");
+	//emitdeclare(zx, 0, "run_procedure","varchar(254)","''","Passed as page parameter"); //wip
+	//emitdeclare(zx, 0, "run_procedure_pk","varchar(254)","''");
+	//emitdeclare(zx, 0, "run_procedure_param","varchar(254)","''");
 	emitdeclare(zx, 0, "page_name_hash","varchar(40)","'" + zx.ShortHash(zx.main_page_name) + "'");	
 	
 

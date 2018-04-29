@@ -51,18 +51,18 @@
 	"run": {
 				"login_first":false
 	       },
-    "db": {
+    "dbfb": {
         "dialect": "fb25",
         "server": "127.0.0.1",
-        "database": "/var/lib/firebird/2.5/data/demo_db_3.fdb",
+        "database": "/var/lib/firebird/2.5/data/demo_db_3b.fdb",
         "username": "using the value from authfile, make authfile blank to use this value.",
         "password": "using the value from authfile, make authfile blank to use this value.",
         "authfile": "/etc/firebird/2.5/SYSDBA.password",
 		
-		
-		
 	    "var_subst": "/***/",
 		"var_actaul": ":",
+		"var_global_get": "",
+		"var_global_set": "",
 		
         "sql_set_prefix": "",		
 		"sql_concat_set": "res=",
@@ -75,7 +75,6 @@
 		"sql_endif_postfix": "",		
 		"sql_First1": "first 1",
 		"sql_Limit1": "",		
-		
 		
         "useUDF": "no",
         "schema_mode": "master",
@@ -96,7 +95,7 @@
         "pk": "ref",
 		"packages":["sql-mvc-ui-dark"]
     },		   
-    "dbx": {
+    "db": {
         "dialect": "mysql57",
         "server": "127.0.0.1",
         "database": "demo_db_2",
@@ -104,19 +103,19 @@
         "password": "zxpabx",
         "authfile": "",
 		
-		
 	    "var_subst": "/***/",
 		"var_actaul": "",
+		"var_global_get": "@",
+		"var_global_set" : "set @",
 				
-		
-			"sql_set_prefix": "set ",		
-			"sql_concat_set": "res=",
-			"sql_concat_prefix": "concat(",
-			"sql_concat_res": "res=concat(res,",
+		"sql_set_prefix": "set ",		
+		"sql_concat_set": "res=",
+		"sql_concat_prefix": "concat(",
+		"sql_concat_res": "res=concat(res,",
 			
-			"sql_concat_seperator": ",",
-			"sql_concat_postfix": ")",
-			"sql_end_postfix": ";",			
+		"sql_concat_seperator": ",",
+		"sql_concat_postfix": ")",
+		"sql_end_postfix": ";",			
 		"sql_endif_postfix": "end if;",			
 		"sql_First1": " ",		
 		"sql_Limit1": " limit 1 ",		

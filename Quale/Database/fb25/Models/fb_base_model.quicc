@@ -292,7 +292,7 @@ SELECT info,currentpage,page_params,CIDRETURN,PKREFRETURN FROM Z$RUN_SUB ('SESSI
 
 */
 CREATE OR ALTER PROCEDURE Z$RUN_SUB (
-    SESSION VARCHAR(40),
+    SESSION_ID VARCHAR(40),
     CID INTEGER,
     PKREF INTEGER,
     UPDATES BLOB SUB_TYPE 1 
@@ -426,7 +426,7 @@ BEGIN
                      END       
             else if (bt='r') THEN /*parameter value from first load Openstr=name*/
                      BEGIN					 					
-						UPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES ('params-'||:SESSION||'-'||:Openstr,:val) matching (REF);
+						UPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES ('params-'||:SESSION_ID||'-'||:Openstr,:val) matching (REF);
                      END  					 
             else c=1001;
                   
@@ -455,14 +455,14 @@ BEGIN
 		    --refresh page
 			if (PKRef=0) then
 			    begin
-				    SELECT r.LINKED_FROM_CID, r.LINKED_FROM_INDX FROM Z$CONTEXT r where r.pk=:CID and r.id=SESSION into :CID,:PKRef;
+				    SELECT r.LINKED_FROM_CID, r.LINKED_FROM_INDX FROM Z$CONTEXT r where r.pk=:CID and r.id=:SESSION_ID into :CID,:PKRef;
 					SELECT a.target,COALESCE(a.PAGE_PARAMS,'')||:page_params FROM Z$PK_CACHE a WHERE a.MASTER = :CID AND a.INDX = :PKRef into :currentpage,:page_params;              				    
 				end
 				
 
 				
             /*get the new page, and context info */                
-            SELECT r.OPERATOR_REF, r.ID FROM Z$CONTEXT r where r.pk=:CID and r.id=SESSION into :o_ref,:o_session;
+            SELECT r.OPERATOR_REF, r.ID FROM Z$CONTEXT r where r.pk=:CID and r.id=:SESSION_ID into :o_ref,:o_session;
             /*todo validate o_session against session*/
                         
             SELECT user_landing_page FROM user_table_name WHERE user_pk_field = :o_ref into :user_landing_page;
@@ -494,7 +494,7 @@ BEGIN
          current_page_pk=NULL;
          pk = gen_id( Z$CONTEXT_seq, 1 );          
          INSERT INTO Z$CONTEXT (PK, TSTAMP, OPERATOR_REF, ID) 
-                             VALUES (:pk,'now', :o_ref,       :SESSION    );
+                             VALUES (:pk,'now', :o_ref,       :SESSION_ID    );
          
          --this record is so we can save and reload the first page                    
          INSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,TARGET,QUERY, PAGE_PARAMS)
@@ -527,7 +527,7 @@ SELECT NEW_CID,SCRIPTNAMED FROM Z$RUN ('SESSION1','', 999,999, '','',  'u05Guest
 
 */
 CREATE OR ALTER PROCEDURE Z$RUN (
-    SESSION VARCHAR(40),
+    SESSIONID VARCHAR(40),
     ACT VARCHAR(40),
     CID INTEGER,
     PKREF INTEGER,
@@ -550,7 +550,7 @@ DECLARE VARIABLE page_params  varchar(1000)='';  -- retrieved from the database 
 
 BEGIN
 
-	SELECT INFO,currentpage,page_params,CIDRETURN,PKREFRETURN FROM Z$RUN_SUB(:SESSION, :CID,:PKREF, :UPDATES) p into :INFO,:ScriptNamed,:page_params,:CID,:PKREF  ;
+	SELECT INFO,currentpage,page_params,CIDRETURN,PKREFRETURN FROM Z$RUN_SUB(:SESSIONID, :CID,:PKREF, :UPDATES) p into :INFO,:ScriptNamed,:page_params,:CID,:PKREF  ;
 	if (info='saved') then --saved without refreshing
 			    begin				 
 				  res= '' ;  
@@ -564,7 +564,7 @@ BEGIN
     Openstr = 'EXECUTE BLOCK RETURNS  (cid integer, info varchar(200),res blob SUB_TYPE 1)AS declare pki integer='||CID||';declare pkf integer='||PKRef||';'
          --||COALESCE(:public_parameters,'')
 		 --||COALESCE(:page_params,'')
-         ||'declare z$sessionid varchar(40)='''||:SESSION||''''
+         ||'declare z$sessionid varchar(40)='''||:SESSIONID||''''
          ||';'; 
     
     --info='mark361'; RES=:ScriptNamed;  suspend;    

@@ -12,6 +12,10 @@
 --:{class:"existing_pk",Action:View,Type:Hide,PrimaryKey:true,fb_trigger:false}
 --:{class:"fk",Action:Link,Type:Link}
 
+--:{class:ticked,Type:Pick,List:Ticked}  
+--:{class:gender,Type:Pick,List:Gender}  
+--:{class:yesno,Type:Pick,List:YesNo}  
+
 /******************** DOMAINS *********************/
 /****************** GENERATORS ********************/
 CREATE TABLE Z$GEN_PK_SEQ
@@ -235,7 +239,7 @@ proc_label: BEGIN
 	DECLARE  table_name varchar(100);
 	DECLARE  target_field_name  varchar(100);
 	DECLARE  target_fields     varchar(100);
-	DECLARE  pk_field_name  varchar(100);
+	DECLARE  pk_field_name_local  varchar(100);
 	DECLARE  pk_val  varchar(100);    
 	DECLARE  current_page_pk  integer;
 	DECLARE  i        integer;
@@ -248,9 +252,12 @@ proc_label: BEGIN
 	DECLARE  pk        integer;
 	DECLARE  script    TEXT; 
 	DECLARE  Openstr   varchar(1000);
+	DECLARE  updatelist   TEXT; 
+	DECLARE  fieldvalue varchar(1000);
+	DECLARE  fieldname  varchar(1000);
 
 	set currentpage='';
-	set page_params_in='';
+	set @page_params_in='';
 	set CIDRETURN=CID;
 	
 	
@@ -290,6 +297,7 @@ proc_label: BEGIN
 					-- softcodec code from the compiler	
 					SELECT COALESCE(b.page_params,'') INTO script FROM Z$PK_CACHE b 
 						WHERE b.MASTER = update_cid AND b.INDX = i limit 1;
+					/*TODO my sql soft codec function*/	
 --					if (script<>'') THEN
 --						EXECUTE STATEMENT(script)(:val) INTO :val; 
 					
@@ -307,24 +315,25 @@ proc_label: BEGIN
 						
 					OPEN cache_cursor;
 					update_loop: LOOP					
-						FETCH cache_cursor INTO table_name,pk_val,pk_field_name;					
+						FETCH cache_cursor INTO table_name,pk_val,pk_field_name_local;					
 						IF cache_done THEN 
 							LEAVE update_loop;
 						END IF; 
 						
-						set val = pk_field_name;
+						set val = pk_field_name_local;
 						set script = '?';
+						set updatelist='';
 						BEGIN
 							DECLARE fields_done INT DEFAULT FALSE;
 							DECLARE fields_cursor cursor 
 							for SELECT c.TARGET,c.INDX,c.TARGET_FIELDS,c.TARGET_VALUES FROM Z$PK_CACHE c
 								WHERE c.MASTER = update_cid 
 								and c.NEW_VALUE_SET=1
-								and c.VALU=table_name and c.QUERY=pk_val and c.PK_FIELD_NAME=pk_field_name;
+								and c.VALU=table_name and c.QUERY=pk_val and c.PK_FIELD_NAME=pk_field_name_local;
 							DECLARE CONTINUE HANDLER FOR NOT FOUND SET fields_done = TRUE;	
 								
 							set fields_done = FALSE;	
-
+							-- todo target fields and openstr can be redone as just a second record
 							OPEN fields_cursor;
 							fields_loop: LOOP					
 								FETCH fields_cursor INTO target_field_name,i,target_fields,Openstr;					
@@ -332,25 +341,47 @@ proc_label: BEGIN
 									LEAVE fields_loop;
 								END IF; 
 
-								set val = concat(val,',',target_field_name,COALESCE(target_fields,'') );
-								set script = concat(script , ',(select a.new_value from Z$PK_CACHE a where a.MASTER =',update_cid,
-								' AND a.INDX = ',i,')',COALESCE(Openstr,''));                             
-							
-								set script = concat('update or insert into ',table_name,' (',
-										val,') values (',script,') matching (',pk_field_name,')');
+								-- select 'FETCH ',table_name,pk_val,pk_field_name_local,' ---- ', target_field_name,i,target_fields,Openstr;
 
+								
+								set fieldname  = concat(target_field_name,COALESCE(target_fields,'') );
+								set fieldvalue = concat('(select a.new_value from Z$PK_CACHE a where a.MASTER =',update_cid,' AND a.INDX = ',i,')');								
+								-- select 'val ',val,fieldname,target_field_name,target_fields;
+								set val = concat(val,',',fieldname );	
+								-- select 'script ',script,fieldvalue,Openstr,fieldname,'=',fieldvalue;
+								set script = concat(script , ',', fieldvalue ,COALESCE(Openstr,''));                             
+								set updatelist = concat(updatelist,', ',target_field_name,'=',fieldvalue );
+								-- select 'valz ',updatelist;
+								
+								
 							END LOOP fields_loop;					 
 							CLOSE fields_cursor;										
-							
+
+
 							-- fixup pk for insert methods
 							if ((pk_val is null ) or (OCTET_LENGTH(pk_val)<=1)) THEN
 								    INSERT INTO Z$GEN_PK_SEQ (x) VALUES (0);
-									SET pk_val = (SELECT LAST_INSERT_ID());
+									SET @pk_val_exec = (SELECT LAST_INSERT_ID());
+									set @stmti_exec = concat('insert into ',table_name,' (',val,') values (',script,')' );
+							   	--	select 'exec ',@pk_val_exec,@stmti_exec;
+
+								ELSE
+								
+									set updatelist = SUBSTRING(concat(updatelist,' ',target_fields,'=',SUBSTRING(Openstr,2) ),2);
+									-- select 'valz ',updatelist;
+									set @pk_val_exec=pk_val;
+									set @stmti_exec = concat('update ',table_name,' set ',updatelist,' where ',pk_field_name_local,'=?;' );
+								 	-- select 'upd ',@pk_val_exec,@stmti_exec;
+
+								
 								END IF;
-  
---							EXECUTE STATEMENT(script)(pk_val); 
+							 PREPARE stmti FROM @stmti_exec;  									
+							 EXECUTE stmti USING @pk_val_exec;       
+							 DEALLOCATE PREPARE stmti;  
+
 							update Z$PK_CACHE a set new_value=null,a.NEW_VALUE_SET=null WHERE a.MASTER = update_cid;
-							-- trigger based validations will emit erors into a log that can be fed back to the user
+							-- Todo trigger based validations will emit erors into a log that can be fed back to the user
+
 						
 						END;	
 
@@ -373,8 +404,8 @@ proc_label: BEGIN
 				  LEAVE proc_label;
 				end if;			
 		
-			if (PKRef<>0) then
-					SELECT a.target,COALESCE(a.PAGE_PARAMS,'') into currentpage,page_params_in FROM Z$PK_CACHE a WHERE a.MASTER = CID AND a.INDX = PKRef  limit 1;              
+			if (PKRef<>0) then -- load in updated page and page parameters
+					SELECT a.target,COALESCE(a.PAGE_PARAMS,'') into currentpage,@page_params_in FROM Z$PK_CACHE a WHERE a.MASTER = CID AND a.INDX = PKRef  limit 1;              					
 					if (currentpage='') then set PKRef=0;
 					end if;	
 				end if;	
@@ -382,11 +413,11 @@ proc_label: BEGIN
 		    -- refresh page
 			if (PKRef=0) then
 				    SELECT r.LINKED_FROM_CID, r.LINKED_FROM_INDX into CID,PKRef FROM Z$CONTEXT r where r.pk=CID and r.id=SESSION limit 1;
-					SELECT a.target,concat(COALESCE(a.PAGE_PARAMS,''),page_params_in) into currentpage,page_params_in 
+					SELECT a.target,concat(COALESCE(a.PAGE_PARAMS,''),@page_params_in) into currentpage,@page_params_in 
 					    FROM Z$PK_CACHE a WHERE a.MASTER = CID AND a.INDX = PKRef  limit 1;              				    
 				end if;
 				
-
+	
 				
             /*get the new page, and context info */                
            SELECT r.OPERATOR_REF, r.ID into o_ref,o_session FROM Z$CONTEXT r where r.pk=CID and r.id=SESSION limit 1 ;                        
@@ -453,6 +484,8 @@ proc_label:  BEGIN
 	DECLARE ScriptNamed VARCHAR(250) ;
 	
 	set @IN_SESSIONID=Z$SESSIONID;
+	set @page_params_in='';
+	set @run_procedure='';
 
 
     call Z$RUN_SUB (Z$SESSIONID,CID,PKREF,UPDATES,   info,ScriptNamed,page_params,@IN_CID,@IN_PKREF);
@@ -481,6 +514,18 @@ proc_label:  BEGIN
            set info=concat('No script named : ',COALESCE(ScriptNamed,'')); 
         ELSE            
 			set @script_exec = replace(exec_script,'--assign_params',COALESCE(page_params,''));
+			-- extract variables from page_params
+			
+			
+
+			if (@page_params_in<>'') then						
+					PREPARE stmt1x FROM @page_params_in;      
+					EXECUTE stmt1x;       
+					DEALLOCATE PREPARE stmt1x; 
+					-- select 'params ',@page_params_in,@run_procedure;
+			end if; 			
+			
+			
 			PREPARE stmt1 FROM @script_exec;      
 			EXECUTE stmt1; 
 			set NEW_CID = @cid_ret;
