@@ -597,7 +597,7 @@ BEGIN
         end
         ELSE   
         begin           
-		  script = replace(:script,'--assign_params',COALESCE(:page_params,''));
+		  script = replace(:script,'-- assign_params',COALESCE(:page_params,''));
           --res= :script ;  suspend;
           FOR EXECUTE STATEMENT script INTO :NEW_CID, :info,:res DO suspend;
           WHEN ANY DO

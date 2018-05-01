@@ -1142,7 +1142,7 @@ exports.start_pass = function (zx /*, line_objects*/
 	emits(zx, "``Data``:{``start``:``true``");
 
 	if (zx.conf.db.dialect=="fb25")    emit(zx, 0, "cid = gen_id( Z$CONTEXT_seq, 1 );");
-	if (zx.conf.db.dialect=="mysql57") emit(zx, 0, "set cid = (SELECT GEN_Z$CONTEXT_SEQ() );");
+	if (zx.conf.db.dialect=="mysql57") emit(zx, 0, "set cid = (SELECT Z$GEN_CONTEXT_SEQ() );");
 
 	//emit(zx,0,'st=\'select operator_ref from Z$CONTEXT where pk = \'||pki;');
 	//emit(zx,0,'execute statement st into operator_ref;');
@@ -1359,8 +1359,10 @@ if (zx.mysql57) {
 	triggerscript=
 	["SET TERM ^ ;",	
 	 "CREATE TRIGGER \`"+NAME+"_before_insert\` BEFORE INSERT ON \`"+NAME+"\` FOR EACH ROW BEGIN \r\n",
+	 "IF (NEW."+FIELD+" IS NULL) THEN ",
 	 " INSERT INTO Z$CONTEXT_SEQ (x) VALUES (0); ",
 	 " SET NEW."+FIELD+" = (SELECT LAST_INSERT_ID()); ",
+	 "END IF;",
 	 "END;",
 	"SET TERM ; ^"].join('\n');
 	//console.log('make_pk_seq: ',triggerscript);

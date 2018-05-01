@@ -30,18 +30,18 @@ CREATE TABLE Z$CONTEXT_SEQ(
 ); 
 
 
--- SET xTERM ^ ;
--- CREATE FUNCTION GEN_Z$CONTEXT_SEQ () 
--- RETURNS decimal
--- BEGIN 
--- DECLARE dist int;
+SET TERM ^ ;
+CREATE FUNCTION Z$GEN_CONTEXT_SEQ () 
+RETURNS decimal
+BEGIN 
+  DECLARE dist int;
   
---   INSERT INTO Z$CONTEXT_SEQ (x) VALUES (0);
---   SET dist = (SELECT LAST_INSERT_ID());
+  INSERT INTO Z$CONTEXT_SEQ (x) VALUES (0);
+   SET dist = (SELECT LAST_INSERT_ID());
   
---   RETURN dist;
--- END^
--- SET xTERM ; ^
+   RETURN dist;
+END^
+SET TERM ; ^
 
 /******************** TABLES **********************/
 CREATE TABLE Z$SP
@@ -363,7 +363,7 @@ proc_label: BEGIN
 								    INSERT INTO Z$GEN_PK_SEQ (x) VALUES (0);
 									SET @pk_val_exec = (SELECT LAST_INSERT_ID());
 									set @stmti_exec = concat('insert into ',table_name,' (',val,') values (',script,')' );
-							   	--	select 'exec ',@pk_val_exec,@stmti_exec;
+									-- select 'ins ',@pk_val_exec,@stmti_exec;
 
 								ELSE
 								
@@ -513,7 +513,7 @@ proc_label:  BEGIN
     if (exec_script is null) then
            set info=concat('No script named : ',COALESCE(ScriptNamed,'')); 
         ELSE            
-			set @script_exec = replace(exec_script,'--assign_params',COALESCE(page_params,''));
+			set @script_exec = replace(exec_script,'-- assign_params',COALESCE(page_params,''));
 			-- extract variables from page_params
 			
 			
@@ -538,6 +538,38 @@ proc_label:  BEGIN
 
 END^
 SET TERM ; ^
+
+
+SET TERM ^ ;
+CREATE FUNCTION Z$ONCE(
+	CONTEXT VARCHAR(80),
+	INITIAL_TIMES INTEGER,
+	PROGRESSIVE_TIMES INTEGER,
+	MAX_TIMES INTEGER
+    ) RETURNS INTEGER
+BEGIN
+    DECLARE counter integer default 0; 
+    DECLARE DO_SHOW INTEGER;
+
+    -- This is to popup once and/or occationally remind the user of some action 
+    -- It also has a "_disable" Context that will disable the reminder 
+    set DO_SHOW=0;
+    select valu into counter from Z$VARIABLES where Z$VARIABLES.REF=concat(context,'_disable') limit 1;
+    if (counter=0) THEN  
+            select valu into counter from Z$VARIABLES where Z$VARIABLES.REF=context limit 1;
+				INSERT INTO Z$VARIABLES (REF,VALU) VALUES (context,counter+1)
+						ON DUPLICATE KEY UPDATE VALU=counter+1;              
+            if (counter<Max_times) THEN            
+                if (counter<Initial_times) then set DO_SHOW=1; END IF;
+                if (MOD(counter,Progressive_times)=0) then set DO_SHOW=1; END IF;
+            END IF;            
+      END IF;            
+      
+RETURN(DO_SHOW);	  
+
+END^
+SET TERM ; ^
+
 
 
 /******************* RECORDS ******************/

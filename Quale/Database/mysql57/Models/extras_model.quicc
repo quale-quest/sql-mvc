@@ -32,11 +32,6 @@ list{name=Ticked,values={
 /********************* UDFS ***********************/
 
  
---:{class:ticked,Type:Pick,List:Ticked}  
---:{class:gender,Type:Pick,List:Gender}  
---:{class:yesno,Type:Pick,List:YesNo}  
-
-
  
  
 /******************* PROCEDURES ******************/

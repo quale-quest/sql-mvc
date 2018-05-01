@@ -759,11 +759,38 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			}
 
 			block.order = 1500;
+		} else if (name=qrystr.match(/CREATE\s+(?:OR\s+ALTER\s+)?FUNCTION\s+([\w$]+)/i)) {
+			//console.log("\n\n\n\n========================================CREATE FUNCTION");
+			block.name = 'PROCEDURE_' + name[1];
+			
+			var DECLARE_FUNCTION = deepcopy(block);
+			if (zx.fb25)
+			{
+			    qrystr = qrystr.replace(/CREATE\s+FUNCTION\s/i, "CREATE OR ALTER PROCEDURE ");
+				DECLARE_FUNCTION.method = "DECLARE_FUNCTION_TODO"; //todo more 
+				DECLARE_FUNCTION.order = 850;
+				DECLARE_FUNCTION.qrystr = qrystr;
+				DECLARE_FUNCTION.Hash = zx.ShortHash(qrystr);
+				blocks.push(DECLARE_FUNCTION);				
+			}
+			if (zx.mysql57) {
+				qrystr = "\r\n"+qrystr+"\r\n ;\r\n";
+				
+				DECLARE_FUNCTION.method = "DROP_FUNCTION";
+				DECLARE_FUNCTION.order = 1499;
+				DECLARE_FUNCTION.qrystr = "DROP FUNCTION IF EXISTS "+ name[1] +";";
+				DECLARE_FUNCTION.Hash = zx.ShortHash(qrystr);
+				blocks.push(DECLARE_FUNCTION);
+			}
+
+			block.order = 1500;
+			
 		} else if (name=qrystr.match(/ALTER\s+PROCEDURE\s+([\w$]+)/i)) {
 			block.name = 'PROCEDURE_' + name[1];
 			//execute as is
 			block.order = 1700;
 		//} else if (name=qrystr.match(/CREATE\s+TRIGGER\s+([\w$]+)/i)) {
+			
 		} else if (name=qrystr.match(/CREATE\s+TRIGGER\s+\`*\'*\"*([\w$]+)\'*\"*\`*/i)) {
 			//console.log("\n\n\n\n========================================CREATE TRIGGER");
 			block.name = 'TRIGGER_' + name[1];

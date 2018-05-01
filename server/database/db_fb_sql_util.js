@@ -782,9 +782,15 @@ var instr='';
 
 //simple convertions
 	if (zx.mysql57) {
+		
+			qrystr = qrystr.replace(/then\s+end\s+if\s*;/gi, "then set @stuffed=1; end if;");	 //null conditional blocks not allowed - add stuffing
+			qrystr = qrystr.replace(/else\s+end\s+if\s*;/gi, "else set @stuffed=1; end if;");	 //null conditional blocks not allowed - add stuffing
 			qrystr = qrystr.replace(/begin\s+end\s*;/gi, "");	 //removed blank blocks - later also do for fb - //todo-fb
      		qrystr = qrystr.replace(/--:/g, "-- :"); //fb to mysql
-	    	qrystr = qrystr.replace(/cast\s*\(\s*'now'\s+as\s+timestamp\s*\)/gi, " NOW() ");	//fb to mysql					
+	    	qrystr = qrystr.replace(/cast\s*\(\s*'now'\s+as\s+timestamp\s*\)/gi, " NOW() ");	//fb to mysql				
+
+ 
+			
 	}
 
 
