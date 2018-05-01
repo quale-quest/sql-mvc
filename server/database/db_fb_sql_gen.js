@@ -1086,9 +1086,11 @@ exports.start_pass = function (zx /*, line_objects*/
 	emitdeclare(zx, 0, "row","varchar(1000)","''");
 	emitdeclare(zx, 0, "first","varchar(10)","''");
 	emitdeclare(zx, 0, "tfid","integer","0");
-	//emitdeclare(zx, 0, "run_procedure","varchar(254)","''","Passed as page parameter"); //wip
-	//emitdeclare(zx, 0, "run_procedure_pk","varchar(254)","''");
-	//emitdeclare(zx, 0, "run_procedure_param","varchar(254)","''");
+	if (zx.fb25) {
+			emitdeclare(zx, 0, "run_procedure","varchar(254)","''","Passed as page parameter"); //wip
+			emitdeclare(zx, 0, "run_procedure_pk","varchar(254)","''");
+			emitdeclare(zx, 0, "run_procedure_param","varchar(254)","''");
+		}
 	emitdeclare(zx, 0, "page_name_hash","varchar(40)","'" + zx.ShortHash(zx.main_page_name) + "'");	
 	
 
@@ -1287,7 +1289,9 @@ exports.emit_variable_getter = function (zx, line_obj, v , coalesce /*, comment*
         v.table = v.field.split('_')[0];
         v.field = v.field.split('_')[1];
         var where = get_variable_table_expression(zx,v);
-        var oresult = "((SELECT DO_SHOW FROM Z$ONCE ("+where+", 1, 100, 1))=1)";           
+		var oresult;
+		if (zx.fb25)    oresult = "((SELECT DO_SHOW FROM Z$ONCE ("+where+", 1, 100, 1))=1)";           
+		if (zx.mysql57) oresult = "(select (Z$ONCE("+where+",1,100,1) )=1)";
 		return oresult;
     }
     

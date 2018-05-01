@@ -684,12 +684,7 @@ var seq_page = function (zx) {
 		script = script.replace(/``/g, '"');
 		script = script.replace(/\/\*\*\*\//g, zx.config.db.var_actaul);		
 
-		if (zx.conf.db.dialect=="mysql57") {
-			script = script.replace(/begin\s+end\s*;/gi, "");	 //removed blank blocks - later also do for fb - //todo-fb
-     		script = script.replace(/--:/g, "-- :"); //fb to mysql
-	    	script = script.replace(/cast\s*\(\s*'now'\s+as\s+timestamp\s*\)/gi, " NOW() ");	//fb to mysql	
-		}
-	
+	    script = zx.dbu.sql_make_compatable(zx,script);
 
         fs.writeFileSync(ofn + '.mt', zx.mtscript);
 		//validate this using a prepare command

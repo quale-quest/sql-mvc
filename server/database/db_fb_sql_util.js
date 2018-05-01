@@ -772,3 +772,89 @@ exports.sqltype = function (zx,fb,mysql) {
 	if (zx.conf.db.dialect=="mysql57") return mysql;
 	return fb;
 }
+
+
+exports.sql_make_compatable = function (zx,qrystr) {	
+/* Take common sql syntax used by many engines and convert it to the current engine
+*/
+var name;
+var instr='';
+
+//simple convertions
+	if (zx.mysql57) {
+			qrystr = qrystr.replace(/begin\s+end\s*;/gi, "");	 //removed blank blocks - later also do for fb - //todo-fb
+     		qrystr = qrystr.replace(/--:/g, "-- :"); //fb to mysql
+	    	qrystr = qrystr.replace(/cast\s*\(\s*'now'\s+as\s+timestamp\s*\)/gi, " NOW() ");	//fb to mysql					
+	}
+
+
+//more complex convertions
+	while (instr!=qrystr) {
+		instr=qrystr;
+		
+		if (name=qrystr.match(/(\w+)\s+containing\s+'([^']*)'/i)) {
+			if (zx.mysql57) {
+				var inj = "INSTR(" + name[1] + ",'" + name[2] + "') ";
+				qrystr=qrystr.replace(name[0],inj);
+			}
+				//console.log('sql_make_compatable ',inj, name,'\r\n',	qrystr);
+		}	
+		
+		
+		
+		
+	}
+	return qrystr;
+}
+
+exports.sql_make_compatable_TestOne = function (zx,desc,qrystr,resultstr) {
+		
+	var res=exports.sql_make_compatable(zx,qrystr);
+	if (res!=resultstr) {
+			console.log(zx.conf.db.dialect,":",desc,":");
+			console.log("\t\t\t>>>'",qrystr,"'<<<Original");
+			console.log("\t\t\t>>>'",res,"'<<<Translation");	
+			console.log("\t\t\t>>>'",resultstr,"'<<<Should be");
+			return 1;
+	}
+	else{
+		console.log("sql_make_compatable Pass:",desc);
+		return 0;
+	}
+}	
+
+exports.sql_make_compatable_TestX = function (desc,qrystr,fbstr,mystr) {
+	var zxfb = {conf:{db:{dialect:"fb25"   }},fb25:1,mysql57:0};
+	var zxmy = {conf:{db:{dialect:"mysql57"}},fb25:0,mysql57:1};
+	var errors=0;
+	errors+=exports.sql_make_compatable_TestOne(zxfb,desc,qrystr,fbstr);
+	errors+=exports.sql_make_compatable_TestOne(zxmy,desc,qrystr,mystr);
+	return errors;	
+}	
+
+exports.sql_make_compatable_test = function () {
+	var errors=0;
+	console.log('sql_make_compatable unit_test');	
+	//errors+=exports.sql_make_compatable_TestX("containing","and key_list containing 'admin,')) ) ");
+	errors+=exports.sql_make_compatable_TestX("containing",
+			"and key_list containing 'admin,' or key_list containing 'all')) )",
+			"and key_list containing 'admin,' or key_list containing 'all')) )",
+			"and INSTR(key_list,'admin,')  or INSTR(key_list,'all') )) )");
+	
+	
+	
+	
+	
+	//errors+=1;
+	if (errors>0){
+	    console.log('Fail sql_make_compatable unit_test, errors:',errors);
+		process.exit(2);		    
+	}
+	
+}	
+
+
+exports.sql_make_compatable_test();
+
+
+
