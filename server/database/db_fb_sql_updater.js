@@ -485,20 +485,26 @@ var CREATE_TABLE = function (zx, qrystr) {
 			
 			
 			
-			var default_value=null;
-			var FFD = field.match(/default\s+('.+')/i);
+			var default_value='';
+			var default_set=0;
+			var FFD = field.match(/default\s+(\S+)/i);
 			if (FFD) {					
 					//console.log('Table fields FFD:', field, FFD,default_value);
 					default_value = FFD[1].trim();	
+					default_set=1;
 					field = field.replace(FFD[0], "");
 					//console.log('Table fields FFDx:', field, default_value);					
 				}
+				
+				 
+			field = field.replace(/MAXDATE/i,   "'2030/01/01'");		
 			
 			if (zx.mysql57) {
 				//simple fb to mysql types
 				field = field.replace(/BLOB\s*SUB_TYPE\s*1/i,   "MEDIUMTEXT");
 				if (default_value) {
 					default_value = default_value.replace(/'now'/i, "CURRENT_TIMESTAMP");
+					default_set=1;
 					}
 				}
 			if (zx.fb25) {
@@ -512,7 +518,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 			//console.log('--> ',field );	
 			if (defs=field.match(/([`\w$]+)\s+([()\w$]+)/i)) {				
 				// replace with fake domains				
-				var fake_domain = zx.sql.fake_domains[defs[2]];
+				var fake_domain = zx.sql.fake_domains[defs[2].toUpperCase()];
 				//console.log('defs  :',defs,' type :',defs[2], ' fd:',fake_domain );	
 				if (fake_domain) {
 				    //console.log('defs  name:',defs[1],' type :',defs[2], ' fd:',fake_domain );	
@@ -544,9 +550,9 @@ var CREATE_TABLE = function (zx, qrystr) {
 	if (CREATE_GLOBAL_TEMPORARY_TABLE==1) qryout = "CREATE GLOBAL TEMPORARY TABLE (\r\n" + barestr;		
 	qryout = qryout + "\r\n)";
 	
-	//console.log('Table        :', Table,tableexists,fields); 
+	//console.log('Table        :', Table,tableexists,qryout); 
 	//console.log('Table qryout :\r\n', qryout );	
-	//console.log('Table qryout :\r\n', qryout );
+	//console.log('\r\n\r\n\r\nTable qryout -----------------------------:\r\n', qryout );
 	//if (Table=="MAIL") process.exit(2);		
 	qrystr = qryout;
 	if (tableexists === 0) // create new table as is
@@ -577,6 +583,8 @@ var CREATE_TABLE = function (zx, qrystr) {
 	fields.forEach(function (field) {
 		field = field.trim();
 		if ((field !== ")" && field !== ";")) {
+			field = field.replace(/MAXDATE/i,   "'2030/01/01'");		
+			//console.log('Table fields ---:', Table,'>',field,'<');
 			FieldNumber = FieldNumber + 1;
 			cx.expect = (zx.mysql57)?/ER_DUP_FIELDNAME/:/335544351/;
 			exec_qry(cx, "ALTER TABLE " + Table + " ADD " + field);
@@ -619,7 +627,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 			} else {
 
 				var FFD = field.match(/(\S+)\s+(\S+)\s+(default)?\s?(not\s+null)?\s?(.*)/i);
-				//console.log('Table fields FFD:', field, FFD);
+				//console.log('Table fields FFD:', Table,'>',field,'<', FFD);
 				if (FFD) {
 					{
 					var FieldName = FFD[1].trim(),
@@ -633,7 +641,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 					if (zx.mysql57) exec_qry(cx, "ALTER TABLE " + Table + " MODIFY " + FieldName + "  " + FieldType);
 					//console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Default:', Default,":");
 					if (Default !== "") {
-                        //console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Table fields FFD Default:', FieldName,Default);// FFD);
+                        //console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Table fields FFD Default:', Table,' . ',FieldName,Default);
                         
                         cx.expect = /335544351/; 
 						if (zx.fb25)    exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " set DEFAULT " + Default);
@@ -642,7 +650,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 						// updating the default before commit seems a problem ... this should be moved to phase 2
 						//caused an error in carlton update ->    exec_qry("update "+Table +" set " + FieldName + "="+Default+" where " +FieldName + " is null ")
 					} else {
-                        
+                        //console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Table fields FFD        :', Table,' . ',FieldName);// FFD);
 						cx.expect = /335544351/;
 						if (zx.fb25)    exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " DROP DEFAULT ");
 						if (zx.mysql57) exec_qry(cx,  "ALTER TABLE " + Table + "   alter column  " + FieldName + " DROP DEFAULT ");
@@ -764,7 +772,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 				if (cdinfo===null) {						
 					cdinfo=qrystr.match(/CREATE\s+DOMAIN\s+([\w$]+)\s+as\s+([()\w$]+)\s+default\s+([''\w$]+)\s*;/i);
 					if (cdinfo!==null) {						
-						console.log(" match DOMAIN and default in mysql:  ",cdinfo);	
+						//console.log(" match DOMAIN and default in mysql:  ",cdinfo);	
 						default_val=cdinfo[3];default_set=1;
 						}
 				}
@@ -776,7 +784,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 				}
 				//console.log(" mysql DOMAIN: ",cdinfo[1],' type:',cdinfo[2],' default:',default_set,' v:',default_val);		
 				
-				zx.sql.fake_domains[cdinfo[1]] = { type:cdinfo[2], set:default_set, value:default_val };
+				zx.sql.fake_domains[cdinfo[1].toUpperCase()] = { type:cdinfo[2], set:default_set, value:default_val };
 				
 				//console.log("zx.fake_domains:  ",zx.sql.fake_domains);
 				block.method = "bypass";
