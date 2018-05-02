@@ -426,10 +426,14 @@ var CREATE_TABLE = function (zx, qrystr) {
 	var cx = {
 		zx : zx
 	};
+	var qryout='';
+	var CREATE_GLOBAL_TEMPORARY_TABLE =0;
 	var barestr = comment_suppress(qrystr); 
 	var Table = barestr.match(/CREATE\s+TABLE\s+([\w$]+)(\s*\(\s)([\S\s]*)\)/i);
-	if (!Table)
+	if (!Table) {
 		Table = barestr.match(/CREATE\s+GLOBAL\s+TEMPORARY\s+TABLE\s+([\w$]+)(\s*\(\s)([\S\s]*)\)/i);
+		if (Table) CREATE_GLOBAL_TEMPORARY_TABLE =1;
+	}
 	if (!Table)
 		{//did not understand try to create as is
         console.log('Could not undestand the table code - attempt to update as is');
@@ -439,9 +443,112 @@ var CREATE_TABLE = function (zx, qrystr) {
 	barestr = Table[3];
     //onsole.log('Table re:', Table, barestr,' >',qrystr,'[',Table);
 	Table = Table[1];
+
 	
 	var tableexists = checkTable(zx, Table);
 	//console.log("CREATE_TABLE:",Table,tableexists,"qrystr:",qrystr," barestr:",barestr);
+	
+	var fields = splitNoParen(barestr, ',');
+	var FieldNumber = 0;
+	var newfield,defs;
+	
+	//console.log('CREATE_TABLE ',Table);
+	//console.log('Table ',Table,' fields:',fields );	
+	
+	
+
+	//console.log('-------------------------------: fake_domains(empty on fb engine):\r',zx.sql.fake_domains );
+	barestr = "";
+	
+	fields.forEach(function (field) {
+		field = field.trim();
+		
+		//console.log('\r\n-------------------------------: fields:\r\n>',field,'<');
+		if ((field !== ")" && field !== ";")) {
+			FieldNumber = FieldNumber + 1;
+			
+			newfield = field.replace(/UNIQUE/i, " ");	
+			var Unique=(newfield != field);
+			field=newfield;
+			
+			newfield = field.replace(/NOT\s*NULL/i, " ");	
+			var NOT_NULL=(newfield != field);
+			field=newfield;
+					
+			newfield = field.replace(/AUTO_INCREMENT/i, " ");
+			var AUTO_INCREMENT=(newfield != field);
+			field=newfield;
+			
+			newfield = field.replace(/PRIMARY\s+KEY/i, " ");
+			var PRIMARY_KEY=(newfield != field);
+			field=newfield;
+			
+			
+			
+			var default_value=null;
+			var FFD = field.match(/default\s+('.+')/i);
+			if (FFD) {					
+					//console.log('Table fields FFD:', field, FFD,default_value);
+					default_value = FFD[1].trim();	
+					field = field.replace(FFD[0], "");
+					//console.log('Table fields FFDx:', field, default_value);					
+				}
+			
+			if (zx.mysql57) {
+				//simple fb to mysql types
+				field = field.replace(/BLOB\s*SUB_TYPE\s*1/i,   "MEDIUMTEXT");
+				if (default_value) {
+					default_value = default_value.replace(/'now'/i, "CURRENT_TIMESTAMP");
+					}
+				}
+			if (zx.fb25) {
+				//simple types
+				field = field.replace(/TINYTEXT/i,   "VARCHAR(256)");	
+				field = field.replace(/\sTEXT\s/i,   "BLOB SUB_TYPE 1");	
+				field = field.replace(/MEDIUMTEXT/i, "BLOB SUB_TYPE 1");					
+				field = field.replace(/LONGTEXT/i,   "BLOB SUB_TYPE 1");	
+				}
+			
+			//console.log('--> ',field );	
+			if (defs=field.match(/([`\w$]+)\s+([()\w$]+)/i)) {				
+				// replace with fake domains				
+				var fake_domain = zx.sql.fake_domains[defs[2]];
+				//console.log('defs  :',defs,' type :',defs[2], ' fd:',fake_domain );	
+				if (fake_domain) {
+				    //console.log('defs  name:',defs[1],' type :',defs[2], ' fd:',fake_domain );	
+					defs[2] = fake_domain.type;
+					if (fake_domain.set==1) {
+					}
+				}
+			}
+				
+			field = defs[1] + " " + defs[2]	+ (NOT_NULL?" NOT NULL":"") 
+					+ (Unique?" UNIQUE":"") 
+					+ (AUTO_INCREMENT?" AUTO_INCREMENT":"")  
+					+ (PRIMARY_KEY?(" PRIMARY KEY "):"")
+					+ (default_value?(" DEFAULT "+default_value):"")
+					;
+					
+					
+				
+			//block.name = 'TABLE_' + name[1];
+			barestr = barestr + ",\r\n    " +field + ""; 
+			//console.log('--> ',field );	
+			
+		}
+	});
+	
+	barestr=barestr.substring(1);
+	
+	if (CREATE_GLOBAL_TEMPORARY_TABLE==0) qryout = "CREATE TABLE "+Table+" (\r\n" + barestr;
+	if (CREATE_GLOBAL_TEMPORARY_TABLE==1) qryout = "CREATE GLOBAL TEMPORARY TABLE (\r\n" + barestr;		
+	qryout = qryout + "\r\n)";
+	
+	//console.log('Table        :', Table,tableexists,fields); 
+	//console.log('Table qryout :\r\n', qryout );	
+	//console.log('Table qryout :\r\n', qryout );
+	//if (Table=="MAIL") process.exit(2);		
+	qrystr = qryout;
 	if (tableexists === 0) // create new table as is
 	{
 		var recodesql;
@@ -462,13 +569,11 @@ var CREATE_TABLE = function (zx, qrystr) {
 			}
 		exec_qry(cx, qrystr);
 		return "";
-	}
+	} else {
 
-	var fields = splitNoParen(barestr, ',');
-	var FieldNumber = 0;
-	var newfield;
-	//console.log('Table ',Table,' fields:',fields );
+	
 
+	fields = splitNoParen(barestr, ',');
 	fields.forEach(function (field) {
 		field = field.trim();
 		if ((field !== ")" && field !== ";")) {
@@ -567,6 +672,8 @@ var CREATE_TABLE = function (zx, qrystr) {
             }
 		}
 	});
+	
+	}
 
 	return "";
 };
@@ -642,6 +749,41 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			block.name = 'DOMAIN_' + name[1];
 			block.expect = /335544351/;
 			block.order = 300;
+
+			if (zx.mysql57) {
+				var default_val="''";
+				var default_set=0;
+				var cdinfo;
+				
+				var clr = qrystr.replace(/NOT\s+NULL/i, " ");
+				var  NOT_NULL=(clr != qrystr);
+				qrystr=clr;				
+				
+				cdinfo=qrystr.match(/CREATE\s+DOMAIN\s+([\w$]+)\s+as\s+([()\w$]+)\s*;/i);
+				//console.log(" match DOMAIN in mysql:  ",cdinfo);						
+				if (cdinfo===null) {						
+					cdinfo=qrystr.match(/CREATE\s+DOMAIN\s+([\w$]+)\s+as\s+([()\w$]+)\s+default\s+([''\w$]+)\s*;/i);
+					if (cdinfo!==null) {						
+						console.log(" match DOMAIN and default in mysql:  ",cdinfo);	
+						default_val=cdinfo[3];default_set=1;
+						}
+				}
+				
+				
+				if (cdinfo===null) {						
+					console.log("fake_domain fail:  ",qrystr);
+					process.exit(2);
+				}
+				//console.log(" mysql DOMAIN: ",cdinfo[1],' type:',cdinfo[2],' default:',default_set,' v:',default_val);		
+				
+				zx.sql.fake_domains[cdinfo[1]] = { type:cdinfo[2], set:default_set, value:default_val };
+				
+				//console.log("zx.fake_domains:  ",zx.sql.fake_domains);
+				block.method = "bypass";
+				//process.exit(2);
+				}
+			
+			
 		} else if (name=qrystr.match(/DECLARE\s+EXTERNAL\s+FUNCTION\s+([\w$]+)/)) {
 			block.name = 'FUNCTION_' + name[1];
 			block.expect = /335544351/;

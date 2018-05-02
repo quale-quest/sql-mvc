@@ -369,7 +369,7 @@ exports.exec_qry_cb_async = function (cx, name, script, line_obj, callback) {
 				script_err = parse_error(cx.zx, err, line_obj);
 				cx.zx.err = script_err;
 				cx.zx.eachplugin(cx.zx, "commit", 0);
-				fs.writeFileSync("exit2.sql",qrystr +"\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message);
+				fs.writeFileSync("exit2.sql","DELIMITER //\n" +qrystr +"//\nDELIMITER ;\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message);
 				throw new Error("update script error.", script_err + '/n' + script);
 				//todo - show operator some            kind of server error
 			}
@@ -448,8 +448,8 @@ exports.create_script_async = function (zx, real, spi, name, mtHash, script, cod
 					if (err) {
 						console.log('Error in creating real SP :',"\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n",compoundscript,"\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n",err,result );
 						
-						fs.writeFileSync("exit2.sql",compoundscript +"\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ err);
-						
+						fs.writeFileSync("exit2.sql","DELIMITER //\n" +compoundscript +"//\nDELIMITER ;\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ err);
+				
 					    process.exit(2);
 					}
 					callback(null, err);
@@ -784,6 +784,7 @@ var instr='';
 	if (zx.mysql57) {
 		
 			qrystr = qrystr.replace(/then\s+end\s+if\s*;/gi, "then set @stuffed=1; end if;");	 //null conditional blocks not allowed - add stuffing
+			qrystr = qrystr.replace(/then\s+else\s+/gi, "then set @stuffed=1; else ");	 //null conditional blocks not allowed - add stuffing
 			qrystr = qrystr.replace(/else\s+end\s+if\s*;/gi, "else set @stuffed=1; end if;");	 //null conditional blocks not allowed - add stuffing
 			qrystr = qrystr.replace(/begin\s+end\s*;/gi, "");	 //removed blank blocks - later also do for fb - //todo-fb
      		qrystr = qrystr.replace(/--:/g, "-- :"); //fb to mysql

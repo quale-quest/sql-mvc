@@ -550,7 +550,7 @@ exports.TextWithEmbededExpressions = function (zx, line_obj, QryStr, dest, Conte
 			if (dest === "mt")
 				result += "{{" + varx.key + "}}";
 			else
-				result += ":" + varx.key + " ";
+				result += zx.config.db.var_actaul + varx.key + " ";
 			//zx.mt.lines.push("eval(" + varx.key+ " as " + varx.source + ")");
 		}
         }

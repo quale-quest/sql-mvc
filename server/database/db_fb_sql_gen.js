@@ -265,7 +265,7 @@ exports.EmitConditionAndBegin = function (zx, line_obj, bid,comment) {
 	//this is conditional so we need to emit a value to fullstash also	
 	emitset( zx,0,"",  
 		"',``" + bid + "``:'",
-		((zx.conf.db.dialect=="mysql57")?"if":"iif")+
+		((zx.mysql57)?"if":"iif")+
 		"(cond<>0,'[``true``]','[]')",
 		"''"		
 		);
@@ -1066,7 +1066,7 @@ exports.start_pass = function (zx /*, line_objects*/
 	
 	
 		//console.log('zx.sql.testhead : ',zx.sql.testhead);
-	    zx.sql.testfoot = "\nend\n-- no need to - set term ;#\n";	
+	    zx.sql.testfoot = "\nend\n";	
 	}
 		
 	
@@ -1432,4 +1432,6 @@ exports.init = function (zx) {
 	//     zx.sql.engine='node-fb';
 	//     zx.sql.engine='flamerobin';
     zx.sql.triggers =[];
+	
+	zx.sql.fake_domains = {};//for mysql - maybe others
 };

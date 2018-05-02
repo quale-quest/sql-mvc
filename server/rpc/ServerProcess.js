@@ -561,7 +561,7 @@ exports.actions = function (req, res, ss) {
             
                 db.locateRambaseReq(req,
                 function (rambase) {            
-				console.log('My session is',req.session.myStartID,' and my database is ', rambase);
+				//console.log('My session is',req.session.myStartID,' and my database is ', rambase);
 				message = JSON.parse(message);
 
 				//console.log("message do:", message);
