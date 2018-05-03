@@ -201,6 +201,10 @@ function getDirectories(srcpath,Filter) {
 		zx.fb25=false;
 		zx.fb30=false;
 		zx.mysql57=false;
+		zx.mssql=false; // MS Sql Server
+		zx.pgsql=false; // Postgres
+		zx.odsql=false; // Oracle
+		
         if (zx.config.db.dialect=="fb25")    zx.fb25=true;
 		if (zx.config.db.dialect=="mysql57") zx.mysql57=true;
 		
@@ -684,7 +688,7 @@ var seq_page = function (zx) {
 		script = script.replace(/``/g, '"');
 		script = script.replace(/\/\*\*\*\//g, zx.config.db.var_actaul);		
 
-	    script = zx.dbu.sql_make_compatable(zx,script);
+	    script = zx.dbu.sql_make_compatable_final_pass(zx,script);
 
         fs.writeFileSync(ofn + '.mt', zx.mtscript);
 		//validate this using a prepare command

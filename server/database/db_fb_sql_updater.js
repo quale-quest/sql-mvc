@@ -483,6 +483,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 			var PRIMARY_KEY=(newfield != field);
 			field=newfield;
 			
+			field = field.replace(/MAXDATE/i,   "'2030/01/01'");		
 			
 			
 			var default_value='';
@@ -497,7 +498,6 @@ var CREATE_TABLE = function (zx, qrystr) {
 				}
 				
 				 
-			field = field.replace(/MAXDATE/i,   "'2030/01/01'");		
 			
 			if (zx.mysql57) {
 				//simple fb to mysql types

@@ -773,14 +773,7 @@ exports.sqltype = function (zx,fb,mysql) {
 	return fb;
 }
 
-
-exports.sql_make_compatable = function (zx,qrystr) {	
-/* Take common sql syntax used by many engines and convert it to the current engine
-*/
-var name;
-var instr='';
-
-//simple convertions
+exports.sql_make_compatable_final_pass = function (zx,qrystr) {	//only on final pass fixups
 	if (zx.mysql57) {
 		
 			qrystr = qrystr.replace(/then\s+end\s+if\s*;/gi, "then set @stuffed=1; end if;");	 //null conditional blocks not allowed - add stuffing
@@ -788,10 +781,20 @@ var instr='';
 			qrystr = qrystr.replace(/else\s+end\s+if\s*;/gi, "else set @stuffed=1; end if;");	 //null conditional blocks not allowed - add stuffing
 			qrystr = qrystr.replace(/begin\s+end\s*;/gi, "");	 //removed blank blocks - later also do for fb - //todo-fb
      		qrystr = qrystr.replace(/--:/g, "-- :"); //fb to mysql
-	    	qrystr = qrystr.replace(/cast\s*\(\s*'now'\s+as\s+timestamp\s*\)/gi, " NOW() ");	//fb to mysql				
-
- 
-			
+	    	qrystr = qrystr.replace(/cast\s*\(\s*'now'\s+as\s+timestamp\s*\)/gi, " NOW() ");	//fb to mysql						
+	}
+	
+	return qrystr;
+}
+exports.sql_make_compatable = function (zx,qrystr) {	
+/* Take common sql syntax used by many engines and convert it to the current engine
+*/
+var params;
+var instr='';
+//process.exit(2);
+//simple convertions
+	if (zx.mysql57) {
+		qrystr = exports.sql_make_compatable_final_pass(zx,qrystr);
 	}
 
 
@@ -799,14 +802,37 @@ var instr='';
 	while (instr!=qrystr) {
 		instr=qrystr;
 		
-		if (name=qrystr.match(/(\w+)\s+containing\s+'([^']*)'/i)) {
+		if (params=qrystr.match(/(\w+)\s+containing\s+'([^']*)'/i)) {
 			if (zx.mysql57) {
-				var inj = "INSTR(" + name[1] + ",'" + name[2] + "') ";
-				qrystr=qrystr.replace(name[0],inj);
+				var inj = "INSTR(" + params[1] + ",'" + params[2] + "') ";
+				qrystr=qrystr.replace(params[0],inj);
 			}
-				//console.log('sql_make_compatable ',inj, name,'\r\n',	qrystr);
+				
 		}	
 		
+		// First 5 skip 10 
+		
+		if (params=qrystr.match(/first\s+(\S+)\s+skip\s+(\S+)\s/i)) {
+			if (zx.mysql57) {				
+				var inj = "LIMIT " + params[2] + " , " + params[1] + " ";
+				qrystr=qrystr.replace(params[0],"") + inj;				
+			}
+			if (zx.mssql) {				
+				var inj = "OFFSET " + params[2] + "  ROWS FETCH NEXT " + params[1] + " ROWS ONLY";
+				qrystr=qrystr.replace(params[0],"") + inj;				
+			}
+			
+				
+		}	else  if (params=qrystr.match(/\sfirst\s+([0-9]+)/i)) {
+			if (zx.mysql57) {				
+				var inj = "LIMIT " + params[1] ;
+				qrystr=qrystr.replace(params[0], " ") + inj;				
+			}
+			if (zx.mssql) {				
+				var inj = "TOP " + params[1] + " ";
+				qrystr=qrystr.replace(params[0],inj);				
+			}			
+		}	
 		
 		
 		
@@ -842,12 +868,16 @@ exports.sql_make_compatable_TestX = function (desc,qrystr,fbstr,mystr) {
 exports.sql_make_compatable_test = function () {
 	var errors=0;
 	console.log('sql_make_compatable unit_test');	
-	//errors+=exports.sql_make_compatable_TestX("containing","and key_list containing 'admin,')) ) ");
+	
 	errors+=exports.sql_make_compatable_TestX("containing",
 			"and key_list containing 'admin,' or key_list containing 'all')) )",
 			"and key_list containing 'admin,' or key_list containing 'all')) )",
 			"and INSTR(key_list,'admin,')  or INSTR(key_list,'all') )) )");
 	
+	errors+=exports.sql_make_compatable_TestX("rows",
+			"Select First 5 skip 10 NAME,STATUS,REF From GALLERY where blob_id is null ",
+			"Select First 5 skip 10 NAME,STATUS,REF From GALLERY where blob_id is null ",
+			"Select NAME,STATUS,REF From GALLERY where blob_id is null LIMIT 10 , 5 ");
 	
 	
 	

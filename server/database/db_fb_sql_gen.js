@@ -254,7 +254,7 @@ exports.eval_cond = function (zx, line_obj, conditionals) {
 			entry.post = '';
 		if (entry.pre === undefined)
 			entry.pre = '';
-		emit(zx, conditionals, "if (cond<>0) then if (" + entry.pre + expr + entry.post + " ) then "+zx.config.db.sql_set_prefix +"cond=0;", "");
+		emit(zx, conditionals, zx.dbu.sql_make_compatable(zx,"if (cond<>0) then if (" + entry.pre + expr + entry.post + " ) then "+zx.config.db.sql_set_prefix +"cond=0;"), "");
 	    if (zx.conf.db.dialect=="mysql57") emit(zx, zx.line_obj, "    end if; end if;");
 	});
 	return conditionals;
@@ -525,7 +525,7 @@ exports.DeclareVar = function (zx, line_obj, varx) {
 	if (varx.expr !== undefined) {
 		var expr = varx.expr; //exports.makeexpression(zx,line_obj,varx);
 		//console.log('DeclareVar: ',varx,"\n",expr,"\n\n");
-		emit(zx, line_obj, zx.config.db.sql_set_prefix + exports.emit_var_def(varx.key) + "=" + expr + ";", ""); //for now
+		emit(zx, line_obj, zx.dbu.sql_make_compatable(zx, zx.config.db.sql_set_prefix + exports.emit_var_def(varx.key) + "=" + expr + ";", "") ); //for now
 	}
 
 	return line_obj;

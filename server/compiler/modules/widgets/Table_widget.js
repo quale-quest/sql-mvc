@@ -431,6 +431,9 @@ var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx,
 		//console.log('autoinsert_internal :',tcx.query);
 		}
 		
+		if (zx.fb25) {
+			//tcx.query += " ROWS 1 ";
+		}		
 		if (zx.mysql57) {
 			tcx.query += " Limit 1 ";
 		}
@@ -463,10 +466,10 @@ var formulatemodel = exports.formulatemodel = function (zx, cx, o) {
 	formulatemodel_quale(zx, cx, tcx, o);
 
 	cx.fields = tcx.fields;
-	cx.query = tcx.query;
+	cx.query = zx.dbu.sql_make_compatable(zx,tcx.query);
 
 	//zx.dbg.emit_comment(zx,"cx.query:"+cx.query);
-	//console.log("cx.query:"+cx.query);
+	//console.log("\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\ncx.query:"+cx.query);
 
 	//map widget fields to real fields
 	try {
