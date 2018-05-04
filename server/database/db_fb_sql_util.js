@@ -431,17 +431,17 @@ exports.getPageIndexNumber = function (zx, name) {
 }
 
 
-exports.create_script_async = function (zx, real, spi, name, mtHash, script, code, callback) {
+exports.create_script_async = function (zx, real, spi, spiname, mtHash, script, code, callback) {
 //
 
-	//console.log('.write_script_async - ' +spi,'>',name,'<',zx.sql.testhead, '>',script);
-	var pname = "ZZ$"+zx.ShortHash(name);
-    var drops = "\nDROP PROCEDURE IF EXISTS "+pname+" " ;		
-	
+	//console.log('.write_script_async - ' +spi,'>',name,'<',zx.sql.testhead, '>',script);	
+    var drops = "\nDROP PROCEDURE IF EXISTS "+spiname+" " ;		
+    //console.log('create_script_async a:>>>\r\n',drops,"<<<\r\n\r\n\r\n\r\n" );	
 	connection.db.query(drops, [],
 		function (err, result) {
 			//console.log('droped real SP :',pname,err,result );
-			var compoundscript = zx.sql.testhead +script + zx.sql.testfoot;;
+			var compoundscript = zx.sql.testhead +script + zx.sql.testfoot;
+			//console.log('create_script_async b:> >>>\r\n',compoundscript ,"<<< <\r\n\r\n\r\n\r\n" );	
 			connection.db.query(compoundscript, 
 			   [ ],
 				function (err, result) {
@@ -467,16 +467,19 @@ exports.create_script_async = function (zx, real, spi, name, mtHash, script, cod
 
 exports.write_script_async = function (zx, real, spi, name, mtHash, script, code, callback) {
 	name = name.replace(/\\/g, '/'); //windows
-	//console.log('.write_script_async - ' +spi,'>',name,'<',script);
-	script = script.replace('Z$$integer', 'Z$$' + spi);
-    var FN_HASH = 'ZZ$' + zx.ShortHash(name); //spi; //zx.ShortHash(name);
+	var FN_HASH = 'ZZ$' + zx.ShortHash(name); //spi; //zx.ShortHash(name);
+	var spiname =  'Z$$' + spi;
+	//console.log('.write_script_async - ' +spiname,'>',name,'<'	);
+	//console.log('<',script);
+	script = script.replace('Z$$integer', FN_HASH);
+    
     if (zx.conf.db.dialect=="fb25") {
 	var querys="UPDATE OR INSERT INTO Z$SP (PK,TSTAMP,FILE_NAME,SCRIPT,CODE,MT_HASH)VALUES (?,'now',?,?,?,?) MATCHING (PK) ";
 	connection.db.query(querys, [spi, name, script, JSON.stringify(code),mtHash],	
 		function (err, result) {
 		if (err) console.log('.write_script_async err- ' ,err, result);
 		if (real) {
-			name = 'Z$$' + spi;
+			//name = 'Z$$' + spi;
 			//console.log('create real SP : ', script);
 			connection.db.query(script, [],
 				function (err, result) {
@@ -499,7 +502,6 @@ exports.write_script_async = function (zx, real, spi, name, mtHash, script, code
 			function (err, result) {
 
 			if (real) {
-				//name = 'Z$$' + spi;
 				//console.log('create real SP : ', script);
 				connection.db.query(script, [],
 					function (err, result) {
@@ -508,7 +510,7 @@ exports.write_script_async = function (zx, real, spi, name, mtHash, script, code
 					//console.log('dbresult: write' );
 					//console.log('write_script_async done : ');
 					
-					exports.create_script_async(zx, real, spi, name, mtHash, script, code, 
+					exports.create_script_async(zx, real, spi, FN_HASH, mtHash, script, code, 
 							function (err, result) {
 									callback(null, err);
 							}	

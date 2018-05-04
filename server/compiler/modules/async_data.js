@@ -19,16 +19,18 @@ exports.check_Async_Binary_Fields = function (zx, fld, line_object) {
 
 		if (fld.f.Async !== undefined) { //,Async:{BlobField:"PICTUR",BlobType:"PICT_MIME",NameField:"PICT_NAME",DescField:"PICT_DESC",ThumbNail:"PICT_TN",ThumbType:"PICT_TN_MIME",MimeTypeValid:"image"}
 			//console.log('check_Async_Binary_Fields fn - ', fld);
-			var filename = require.resolve("./async_data.sql");
+			var filename = require.resolve("./async_data_"+zx.conf.db.dialect+".sql");
+			
 			//console.log('check_Async_Binary_Fields fn - ' + filename);
 			var sql = fs.readFileSync(filename, 'utf8');
 			//console.log('check_Async_Binary_Fields fn - ' + sql);
-
+			sql = "-- From file : " +filename + "\r\n" + sql + " -- eof\r\n";
 			var lcx = deepcopy(fld.f.Async);
 			lcx.table = fld.f.to;
 			lcx.pkf = fld.f.pkname;
 			lcx.sp_number = 1;
-			var sql = zx.hogan_ext.compile_render(zx, lcx , sql);
+			var sqlh = zx.hogan_ext.compile_render(zx, lcx , sql);
+			sql = "-- hoganed : \r\n" + sqlh + " -- eoh\r\n";
 
 			//console.log('check_Async_Binary_Fields fn - ' + sql);
 
@@ -39,9 +41,16 @@ exports.check_Async_Binary_Fields = function (zx, fld, line_object) {
 
 				//console.log('check_Async_Binary_Fields fn B - ' + zx.sql.sub_proc_index);
                 //console.log('check_Async_Binary_Fields fn lcx - ' ,lcx);
-                //console.log('check_Async_Binary_Fields fn code - ' ,sql);
+                //console.log('check_Async_Binary_Fields fn code - \r\nvvvvvvvvvv\r\n' ,sql,"^^^^^^^^^^^^^^");
+				//throw new Error("check_Async_Binary_Fields");
 
+				var save_testhead = zx.sql.testhead;
+				var save_testfoot = zx.sql.testfoot;
+				zx.sql.testhead ="";
+				zx.sql.testfoot ="";
 				baserecord_ref = zx.dbu.write_script(zx, true, indx, pn,'0', sql, fld.f.Async);
+				zx.sql.testhead = save_testhead;
+				zx.sql.testfoot = save_testfoot;
 				zx.sql.sub_proc_index++;
 			}
 

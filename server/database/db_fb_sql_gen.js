@@ -836,6 +836,7 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 		);
     
     queryx=zx.stripBrackets(queryx);
+	//queryx=zx.dbu.sql_make_compatable(zx,queryx);
 	//console.log('=================================\nqueryx:',query,queryx);
 	//var where = zx.expressions.AnonymousExpression(zx,line_obj,wheres,target_type,"action_where");
 
