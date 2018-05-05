@@ -15,6 +15,7 @@
     "busboy": "^0.2.9",
     "colors": "= 1.0.3",
     "commander": "^2.6.0",
+    "csvtojson": "^1.1.9",
     "deasync": "*",
     "deepcopy": "^0.3.3",
     "emoji": "^0.3.2",

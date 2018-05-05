@@ -784,6 +784,7 @@ exports.sql_make_compatable_final_pass = function (zx,qrystr) {	//only on final 
 			qrystr = qrystr.replace(/begin\s+end\s*;/gi, "");	 //removed blank blocks - later also do for fb - //todo-fb
      		qrystr = qrystr.replace(/--:/g, "-- :"); //fb to mysql
 	    	qrystr = qrystr.replace(/cast\s*\(\s*'now'\s+as\s+timestamp\s*\)/gi, " NOW() ");	//fb to mysql						
+			qrystr = qrystr.replace(/\slist\s*\(/gi, " GROUP_CONCAT( ");	//fb to mysql	
 	}
 	
 	return qrystr;
@@ -816,22 +817,22 @@ var instr='';
 		
 		if (params=qrystr.match(/first\s+(\S+)\s+skip\s+(\S+)\s/i)) {
 			if (zx.mysql57) {				
-				var inj = "LIMIT " + params[2] + " , " + params[1] + " ";
+				var inj = " LIMIT " + params[2] + " , " + params[1] + " ";
 				qrystr=qrystr.replace(params[0],"") + inj;				
 			}
 			if (zx.mssql) {				
-				var inj = "OFFSET " + params[2] + "  ROWS FETCH NEXT " + params[1] + " ROWS ONLY";
+				var inj = " OFFSET " + params[2] + "  ROWS FETCH NEXT " + params[1] + " ROWS ONLY";
 				qrystr=qrystr.replace(params[0],"") + inj;				
 			}
 			
 				
 		}	else  if (params=qrystr.match(/\sfirst\s+([0-9]+)/i)) {
 			if (zx.mysql57) {				
-				var inj = "LIMIT " + params[1] ;
+				var inj = " LIMIT " + params[1] ;
 				qrystr=qrystr.replace(params[0], " ") + inj;				
 			}
 			if (zx.mssql) {				
-				var inj = "TOP " + params[1] + " ";
+				var inj = " TOP " + params[1] + " ";
 				qrystr=qrystr.replace(params[0],inj);				
 			}			
 		}	
@@ -879,7 +880,12 @@ exports.sql_make_compatable_test = function () {
 	errors+=exports.sql_make_compatable_TestX("rows",
 			"Select First 5 skip 10 NAME,STATUS,REF From GALLERY where blob_id is null ",
 			"Select First 5 skip 10 NAME,STATUS,REF From GALLERY where blob_id is null ",
-			"Select NAME,STATUS,REF From GALLERY where blob_id is null LIMIT 10 , 5 ");
+			"Select NAME,STATUS,REF From GALLERY where blob_id is null  LIMIT 10 , 5 ");
+	
+	errors+=exports.sql_make_compatable_TestX("list",
+			"Select List(NAME) From GALLERY",
+			"Select List(NAME) From GALLERY",
+			"Select GROUP_CONCAT( NAME) From GALLERY");
 	
 	
 	

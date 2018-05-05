@@ -102,6 +102,7 @@ Ported from UpdateFDB.py
 var fs = require('fs');
 var deepcopy = require('deepcopy');
 var extend = require('node.extend');
+var deasync = require('deasync'); var deasync_const=5;
 
 exports.module_name = 'db_fb_updater.js';
 
@@ -686,6 +687,73 @@ var CREATE_TABLE = function (zx, qrystr) {
 	return "";
 };
 
+
+	
+exports.csvtojson = function (zx,csvStr) {
+    var  data=[],done=false;
+	
+	//console.log('csvtojson:',csvStr);
+	const csv=require('csvtojson')
+	csv({noheader:true})
+	.fromString(csvStr)
+	.on('csv',(csvRow)=>{ // this func will be called 3 times
+		//console.log('csvtojson row:',csvRow); // => [1,2,3] , [4,5,6]  , [7,8,9]
+		data = data.concat(csvRow);
+	})
+	.on('done',()=>{
+		//parsing finished
+		done=true;
+		//console.log('csvtojson done:',data);
+	})	
+	while (!done) {
+		deasync.sleep(deasync_const);
+	}
+	//console.log('csvtojson return:',data);
+    return data;
+}   
+
+
+	
+exports.insert_update_variation = function (zx, qrystr,insertmatchingfield)
+{
+	
+	if (zx.fb25) {
+		return "update or " + qrystr + " matching(" + insertmatchingfield + ") ";
+	}
+	if (zx.mysql57) {
+	//console.log('insert_update_variation in:',qrystr);
+	var ins = qrystr.match(/insert\s+into\s*(\S+)\s*\(([\S]*)\)\s*values\s*\(([\S\s]*)\)/i);
+	//console.log('insert_update_variation:',ins);
+	if (ins) {
+		var tablename = ins[1];
+		var fields = exports.csvtojson(zx,ins[2].replace('\n','') );
+		var values = exports.csvtojson(zx,ins[3].replace('\n','') );
+		var matchingfield = exports.csvtojson(zx,insertmatchingfield.replace('\n','') );
+		//console.log('insert_update_variation fields:',fields);
+		//console.log('insert_update_variation values:',values);
+		//console.log('insert_update_variation insertmatchingfield:',matchingfield);
+		
+		var deleterecord="";
+		matchingfield.forEach(function (field) {
+			if (deleterecord!='') deleterecord = deleterecord + " and ";
+			var i = fields.indexOf(field);	
+			if (i<0) throw new Error("insert_update_variation error "+ field + " not in list "+fields);
+			deleterecord = deleterecord + field + "=" + values[i];			
+		});
+		
+		deleterecord="delete from "+tablename+" where " + deleterecord ;
+		//console.log('insert_update_variation deleterecord:',deleterecord);
+		return deleterecord;
+	}
+
+	throw new Error("insert_update_variation invalid 'insert into' syntax "+qrystr);
+	
+	}
+	throw new Error("insert_update_variation For unknown database dialect");
+}
+				
+
+
 exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 
 	var inputs;
@@ -983,10 +1051,22 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			block.name = 'INSERTINTO_' + zx.ShortHash(qrystr);
 			block.order = 2200;
 			qrystr = qrystr.replace(/;\s+$/g, '');
-			if (insertmatchingfield !== '') {
-				qrystr = "update or " + qrystr + " matching(" + insertmatchingfield + ") ";
-				block.qrystr = qrystr;				
-				insertmatchingblock.records.push(block);
+			if (insertmatchingfield !== '') {				
+				if (zx.fb25) {
+					qrystr = "update or " + qrystr + " matching(" + insertmatchingfield + ") ";
+					block.qrystr = qrystr;				
+					insertmatchingblock.records.push(block);					
+				}	
+				if (zx.mysql57) {	
+					block.qrystr = qrystr;				
+				
+					var Drop_record = deepcopy(block);
+					Drop_record.method = "Drop_record";
+					Drop_record.order = 2100;
+					Drop_record.qrystr = exports.insert_update_variation(zx, qrystr,insertmatchingfield);
+					Drop_record.Hash = zx.ShortHash(qrystr);
+					blocks.push(Drop_record);					
+				}
 			}
 
 		} else if (qrystr.match(/UPDATE\s/i)) {
