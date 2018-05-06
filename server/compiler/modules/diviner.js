@@ -56,6 +56,14 @@ exports.compile = function (zx, obj) {
 			if (line_obj.tag === undefined) {
 				console.warn('undefined Tag ', i);
 			} else {
+				if (line_obj.dialect_active === 0) {
+					if (zx.pass === 1) {
+						//console.warn('dialect_active==0 :',i,line_obj.tag ,line_obj.save );
+						console.log('WARN : dialect_active==0: ', line_obj.tag, 'in', line_obj.srcinfo.filename, ' at line ',line_obj.srcinfo.start_line);
+						//console.log('WARN :                  : ', line_obj.srcinfo);
+						
+					}
+				} else {
 				tag = line_obj.tag.toLowerCase();
 
                 //console.warn('iterate over item 130405:',i,line_obj.tag ,line_obj.save);
@@ -99,7 +107,7 @@ exports.compile = function (zx, obj) {
 				} //else
 
 				zx.eachplugin(zx, "done_item", line_obj);
-
+				}
 			} //if not x'ed
 		} //for lines
 		//console.log('entry.done_pass: ');

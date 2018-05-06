@@ -57,7 +57,8 @@ exports.tags=[
 {name:"unblock",man_page:"Alias for endquery."},
 {name:"endquery",man_page:"Every ifquery must have one endquery to signify the end of the conditional."},
 {name:"include",man_page:"Include a quicc file from the inheritance tree."},
-{name:"logout",man_page:"Logout the current session."}
+{name:"logout",man_page:"Logout the current session."},
+{name:"dialect",man_page:"Compiler directive for specifying code for specific SQL engines."}
 ];
  
  var debug=false;
@@ -306,6 +307,51 @@ exports.tag_endquery = exports.tag_unblock = function (zx, o) {
 	exports.explicid_unblock(zx, o, "");
 };
 
+exports.tag_dialect = function (zx, o) {
+}	
+exports.dialect_eval = function (zx, o) {
+	//if (active_pass!=zx.pass) return;
+	//console.log('tag_dialect Tag ',o);
+	//console.log('tag_dialect Tag ',o.array );
+	var dialect_version = zx.conf.db.dialect.match(/([A-z]+)([0-9]+)/i);
+	var dialect_num = parseInt(dialect_version[2]) || 0;
+	
+	zx.dialect_active = 1;
+	if (o.array) {
+		var included=0;
+		var excluded=0;		
+		if (o.array[0]!='all') {
+			zx.dialect_active = 0;			
+			o.array.forEach(function (cond) {
+				//console.log('tag_dialect forEach:',cond );
+				if (cond.substring(0,1)=="!") {
+					if (zx.conf.db.dialect.match(cond.substring(1))) zx.dialect_active = 0;
+				} else {
+					var gt=(cond.substring(0,1)==">");
+					var lt=(cond.substring(0,1)=="<");
+					if (gt||lt) {
+						cond = cond.substring(1);
+						var versions = cond.match(/([A-z]+)([0-9]+)/i);
+						//console.log('tag_dialect match ',cond,versions.length,versions );
+						if (versions.length>2) {
+							if (zx.conf.db.dialect.match(versions[1])) { //dialect name
+								var num = parseInt(versions[2]) || 0;
+								if ( (gt&&(num<dialect_num)) || (lt&&(num>dialect_num)) ) {
+								    zx.dialect_active = 1;	
+								}
+								//console.log('tag_dialect length ',zx.dialect_active,cond,'\r\n num,dialect:',num,dialect_num,'\r\ntesting version:', versions ,'\r\ndialect_version:',dialect_version);
+							}
+						}
+					} else {
+						if (zx.conf.db.dialect.match(cond)) zx.dialect_active = 1;
+					}
+				}	
+			});
+		}
+	}
+	//console.log('tag_dialect final:',zx.dialect_active );
+	//process.exit(2);
+};
 
 exports.tag_logout = function (zx, line_obj) {
     return zx.dbg.emit_log_out(zx, line_obj);
@@ -333,6 +379,7 @@ exports.start_pass = function (zx, line_objects) {
 	});
     debug=false;
     zx.fc.block_stack = [];
+	zx.dialect_active = 1;
 };
 
 exports.init = function (zx) {

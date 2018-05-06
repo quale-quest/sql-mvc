@@ -119,15 +119,14 @@ var ParseIntoStatements = function (zx, compound_statement, objtype) {
 	var statements = [];
     var compound_statement_debug=0;
 	if (!objtype) {
-		if (compound_statement.indexOf("xxxxdebug")>0) {
+		if (compound_statement.indexOf("ParseIntoStatements_debug")>0) {
                compound_statement_debug=1;
 			//console.log('ParseIntoStatements: ', compound_statement);
            
 		}
 	}
 	var split = compound_statement.split(zx.all_tags_rx);
-    if (compound_statement_debug)
-           console.log('\n\n\nParseIntoStatements R: ', split);
+    if (compound_statement_debug) console.log('\n\n\nParseIntoStatements R: ', split);
 	if (split.length > 0) {
 		if (split.length == 1) {
 			statements.push({
@@ -145,13 +144,11 @@ var ParseIntoStatements = function (zx, compound_statement, objtype) {
 					//command : split[i],
 					//input : split[i + 1]
 				});
-                if (compound_statement_debug)
-				 console.log('ParseIntoStatements Z: ',i, split[i] + split[i + 1]);//[0] ,' ...', split[1]);
+                if (compound_statement_debug) console.log('ParseIntoStatements Z: ',i, split[i] + split[i + 1]);//[0] ,' ...', split[1]);
 			}
 		}
 	}
-    if (compound_statement_debug)
-	    console.log('ParseIntoStatements Y: ',statements);
+    if (compound_statement_debug) console.log('ParseIntoStatements Y: ',statements);
 	return statements;
 }
 
@@ -260,7 +257,7 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 				eob = s.indexOf(zx.end_of_block); //in strict mode this should be #>
 				var compound_statement = s.substring(0, eob < 0 ? s.length : eob).trim();
                 var compound_statement_debug=0;
-		        if (compound_statement.indexOf("xxxxx")>0)   compound_statement_debug=1;
+		        if (compound_statement.indexOf("compound_statement_debug")>0)   compound_statement_debug=1;
 				var Statements = ParseIntoStatements(zx, compound_statement, objtype);
 				//console.log('ParseFileToObject a:', i, Statements.length);
 
@@ -271,8 +268,7 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 					var line_obj = {};
 					//var splits = Statement.match(/[:=]*\s*(\w+)\s*([\w\W]*)/);
 					var splits = Statement.match(/[:=]*\s*(\w+)\s*([\(\{\[])?([\w\W]*)/);
-                    //if (compound_statement_debug)
-					//    console.log('ParseFileToObject b:', is, Statements.length, splits);
+                    //if (compound_statement_debug) console.log('ParseFileToObject b:', is, Statements.length, splits);
 					if (splits) {
 						line_obj.tag = splits[1];
 						line_obj.json_parse = true;
@@ -289,9 +285,7 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
                         }
 
 					}
-                    //if (compound_statement_debug)
-					//    console.log('ParseFileToObject bb:', is, Statements.length, line_obj);
-                    
+                    if (compound_statement_debug) console.log('ParseFileToObject bb:', is, Statements.length, line_obj);
                     //if (line_obj.tag==='count')
                     //   console.log('\n\nParseFileToObject count:', is, Statements.length,Statements,"\n", splits);
 
@@ -307,29 +301,13 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 						line_obj.srcinfo.start_col = col;
 						line_obj.srcinfo.current_tag_index = 0;
 
-						/*
-						var tage = zx.delimof(Statement, [' ', '\n']);
-						if (Statement.substr(0, 1) !== ":") {
-						//console.log('bcb Statement :',zx.show_longstring(Statement));
-						//console.log('bcb a:',line_obj);
-						line_obj.tag = Statement.substring(0, tage).trim();
-						line_obj.body = Statement.substring(tage + 1);
-						//console.log('bcb b:',line_obj);
-						} else {
-						//console.log('json Statement :',zx.show_longstring(Statement));
-						//console.log('  next Statement :',is,zx.show_longstring(Statements[is+1].statement));
-						line_obj.tag = Statement.substring(1, tage).trim();
-						line_obj.body = Statement.substring(tage + 1); //.trim(); //trim has been removed so the line numbers from models preserve in debug output
-						}
-						 */
 						if ((objtype === undefined) || (objtype === line_obj.tag.toLowerCase())) {
 							blocks.push(line_obj);
 						}
 					}
 				}
-				//console.log('bcb b2:',line_obj);
-                //    if (compound_statement_debug)
-				//	    console.log('ParseFileToObject bc:', blocks);                
+
+                //if (compound_statement_debug) console.log('ParseFileToObject bc:', blocks);                
                 if ((Statements.length>1)&&(objtype === undefined))
                 {
                 var eob_line_obj = {};
@@ -344,8 +322,7 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 				starts[i] = "<#" + compound_statement + zx.end_of_block;
 				starts[i + 1] = s.substring(eob + zx.end_of_block.length);
 				itemCrCount = zx.counts(compound_statement, "\n");
-                   // if (compound_statement_debug)
-				//	    console.log('ParseFileToObject bc:', blocks);                
+                //if (compound_statement_debug) console.log('ParseFileToObject bc:', blocks);                
 			} else if (starts[i] === "<{") //json format - not used yet
 			{
 				//stop on >
@@ -451,6 +428,7 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 	//get the object, find an include file and repeat the find
 
 	zx.inputfilecount = 0;
+	zx.dialect_active = 1;
 
 	//zx.file_stack.push({filename:filename});
 
@@ -460,7 +438,8 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 	//console.warn('main  file ', filename, JSON.stringify(obj, null, 4).length);
 	console.warn('=======================================================================================================================================Done Making simple objects, now parsing paramaters');
 	for (var i = 0; i < obj.length; i++) {
-		//console.warn('page-Tag ', i, obj.length, obj[i].tag);
+		//console.warn('page-Tag ', zx.dialect_active, i, obj.length, obj[i].tag);
+		obj[i].dialect_active = zx.dialect_active ;
 		if (obj[i].tag === undefined)
 			console.warn('page-undefined Tag ', i, obj[i]);
 
@@ -507,7 +486,12 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 			zx.error.caught_exception(zx, e, " RecurseParseFileToObject mark-172032 ");
 			throw new Error("local known error 117017");
 		}
-
+		if (obj[i].tag.toLowerCase() === 'dialect') {
+				//console.log('Dialect object:', obj[i]);
+				zx.flow_control.dialect_eval(zx, obj[i]);
+		}
+		if (obj[i].dialect_active)
+		{
 		if (obj[i].tag.toLowerCase() === 'table') {
 			if (obj[i].q) {
 				//console.log('quale table tag: ',obj[i].q.Fields );
@@ -653,6 +637,7 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 				}
 
 			}
+		}
 		}
 	}
 	//console.warn('final main  file ',filename, JSON.stringify(obj, null, 4).length );
