@@ -15,36 +15,29 @@
 
 ## TODO             -----------------------------------------------------------TODO
 
-* recombine dark ui
-* recombine app changes
+* separate sql drivers into separate files?
+* create mysql db from blank
 
-* TRIGGER Z$SP_BI we increment by 1000 as we have sub procedures that are indexed relative to this index*/
-* extras_model.quicc   one standard file only
-* todo Z$TimeStamp_RANGE for mysql in extras_model.quic
-* UDF functions
-
-* UPDATE OR INSERT INTO MAIL matching compatablilty
 * make "Insert if not exiting" for   INSERT INTO user_table_name (user_landing_page,user_display_field,user_name_field,user_password_field) values ('Home/Guest','Guest','user_guest_name','AnyPassword');
 
 * Move FB to a new package or combine in main package?
 * FACE BOOK Procedures in facebook_model.quicc
 * FACE BOOK LOGIN
 
-* separate sql drivers into separate files ?
-* get config for db engines from alternate file - main config should be kept simple
-
-* remove driver dependant sql from GUI - or atleast use driver directive
 
 * Apps with multiple DB drivers?
-
-* triggers must be deleted to be updated?
+* check all triggers must be deleted to be updated?
 * switch pk between auto incement and uuid
 * wtf search for : (fn.indexOf('SaleForm') - why such specific code?		
-
-
 * use build_variable_passing instead of the page params for passing paramaters cuch as ?cond_proc?
 * combine insertref table with dictionary table
 * use of backtic for ` field/table names - and " for firebird
+
+* Facebook login testing
+* UDF functions?
+* TRIGGER Z$SP_BI we increment by 1000 as we have sub procedures that are indexed relative to this index*/
+* todo Z$TimeStamp_RANGE for mysql in extras_model.quic
+
 
 ## SQL Translations -----------------------------------------------------------SQL Translations
 * fb "matching" translate to mysql
@@ -59,6 +52,7 @@
 
 ## Later            -----------------------------------------------------------Later
 * postgresql driver
+MSsql driver
 
 ## Defer            -----------------------------------------------------------Defer
 
@@ -72,3 +66,9 @@
 * dialect Directive 
 * dialect for alternate database specific code in one quicc source file.
 * Move database_default_config from config.json
+* recombine dark ui
+* recombine app changes
+* extras_model.quicc   one standard file only
+* UPDATE OR INSERT INTO MAIL matching compatablilty
+* get config for db engines from alternate file - main config should be kept simple
+* remove driver dependant sql from GUI - or atleast use driver directive

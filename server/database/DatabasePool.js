@@ -287,30 +287,36 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 			var dbref = db_req.mysql.createConnection({
 			  host: rambase.host,
 			  user: rambase.user,
-			  password: rambase.password,
-			  database : rambase.database
+			  password: rambase.password
 			});
 			
-			dbref.connect(function(err) {
-			  if (err) throw err;
-			  else {
-			    console.log("MySQL Connected!");//,rambase);
-				rambase.db = dbref;
-				rambase.connectionID = connectionID;
-                rambase.ready = true;
-				rambase.last_connect_stamp = Date.now();
-				exports.connections[connectionID] = rambase;
-                deasync.sleep(15); //on windows this is needed to prevent the compiler form hanging
-				rambase.db.query("select version()", [],	function (err, result, fields) {
-					console.log("MySQL info :",result);//, fields);
-					if (callback !== undefined)
-						callback(null, "Connected", exports.connections[connectionID]);			  			  					
-					});
-
-			  }
+						
+						
+			dbref.query('CREATE DATABASE IF NOT EXISTS '+rambase.database, function (err) {
+				if (err) {
+					console.log("CREATE DATABASE IF NOT EXISTS: ",rambase.database,' err:',err);
+					throw err;
+				}
+				dbref.query('USE '+rambase.database, function (err) {
+					if (err) throw err;
+						
+					console.log("MySQL Connected!");//,rambase);
+					rambase.db = dbref;
+					rambase.connectionID = connectionID;
+					rambase.ready = true;
+					rambase.last_connect_stamp = Date.now();
+					exports.connections[connectionID] = rambase;
+					
+					deasync.sleep(15); //on windows this is needed to prevent the compiler form hanging
+					rambase.db.query("select version()", [],	function (err, result, fields) {
+						console.log("MySQL info :",result);//, fields);
+						if (callback !== undefined)
+							callback(null, "Connected", exports.connections[connectionID]);			  			  					
+						});
+			
+						
+				});
 			});			
-			
-			
 			
 		}
 		else 

@@ -55,6 +55,8 @@
 				"dialect": "mysql57",
 				"dialect_options": "fb25,mysql57",
 				"packages":["sql-mvc-ui-dark"],
+				
+				"database_filename": "demo_db_2",
 						
 				
 				"schema_mode": "master",

@@ -354,19 +354,19 @@ var singleton = function (zx, field, qrys) {//could use the one from sql_utils
 };
 var checkTable = function (zx, name) {
 	if (zx.mysql57)
-        return singleton(zx, "count(*)", "select count(*) from information_schema.tables where table_schema = 'demo_db_2' AND table_name = '" + name.toUpperCase() + "' ;");
+        return singleton(zx, "count(*)", "select count(*) from information_schema.tables where table_schema = '"+zx.conf.db.database_filename+"' AND table_name = '" + name.toUpperCase() + "' ;");
 	if (zx.fb25)
         return singleton(zx, "count", "select count(*) from rdb$relations where rdb$relation_name ='" + name.toUpperCase() + "' ;");
 };
 var checkView = function (zx, name) {
 	if (zx.mysql57)
-        return singleton(zx, "count(*)", "select count(*) from information_schema.tables where table_schema = 'demo_db_2' AND table_name = '" + name.toUpperCase() + "' AND TABLE_TYPE='VIEW' ;");
+        return singleton(zx, "count(*)", "select count(*) from information_schema.tables where table_schema = '"+zx.conf.db.database_filename+"' AND table_name = '" + name.toUpperCase() + "' AND TABLE_TYPE='VIEW' ;");
 	if (zx.fb25)
 	    return singleton(zx, "count(*)", "select count(*) from rdb$relations where rdb$relation_name ='" + name + "' AND (rdb$view_blr IS NOT NULL);");
 };
 var checkGenerator = function (zx, name) {
 	if (zx.mysql57)
-        return singleton(zx, "count(*)", "select count(*) from information_schema.tables where table_schema = 'demo_db_2' AND table_name = 'Z$GEN_" + name.toUpperCase() + "' AND TABLE_TYPE='BASE VIEW' ;");
+        return singleton(zx, "count(*)", "select count(*) from information_schema.tables where table_schema = '"+zx.conf.db.database_filename+"' AND table_name = 'Z$GEN_" + name.toUpperCase() + "' AND TABLE_TYPE='BASE VIEW' ;");
 	if (zx.fb25)
 	    return singleton(zx, "count(*)", "SELECT count(*) FROM RDB$GENERATORS  where RDB$GENERATOR_NAME='" + name + "' ;");
 };

@@ -209,6 +209,10 @@ Include a quicc file from the inheritance tree.
 
 Logout the current session.
 
+##dialect
+
+Compiler directive for specifying code for specific SQL engines.
+
 ##inject_point
 
 undefined

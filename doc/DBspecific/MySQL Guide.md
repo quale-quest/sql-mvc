@@ -36,19 +36,34 @@ The base will contain at least one example of db specific code .
 		
 		sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf [mysqld]
 		  add->  sql_mode = "NO_ZERO_DATE"
-		  sudo service mysql restart
+		  
+		sudo nano /etc/mysql/my.cnf   Comment out following lines:
+			#bind-address           = 127.0.0.1
+			#skip-networking
 		
-		CREATE DATABASE demo_db_2;
-		INSERT INTO mysql.user (User,Host,authentication_string,ssl_cipher,x509_issuer,x509_subject)
-		FLUSH PRIVILEGES;
-		SELECT User, Host, authentication_string FROM mysql.user;
-		GRANT ALL PRIVILEGES ON demodb.* to demouser@localhost;
---		GRANT ALL ON mysql.* TO 'demouser'@'192.168.177.1' IDENTIFIED BY '%u#098Tl3' WITH GRANT OPTION;
-		GRANT ALL ON mysql.* TO 'root'@'192.168.177.1' IDENTIFIED BY 'zxpabx' WITH GRANT OPTION;
-		GRANT ALL ON demo_db_2.* TO 'root'@'192.168.177.1' IDENTIFIED BY 'zxpabx' WITH GRANT OPTION;
+		sudo service mysql restart
+
+## make accessible from heidisql on windows host		
+		mysql -u root -p
+		GRANT ALL ON demo_db_3.* to  root@192.168.177.1  IDENTIFIED BY 'password';     
+		FLUSH PRIVILEGES;     
+		use demo_db_3
+		exit		
+
+		
+		
+		? CREATE DATABASE demo_db_2;
+		? INSERT INTO mysql.user (User,Host,authentication_string,ssl_cipher,x509_issuer,x509_subject)
+		? FLUSH PRIVILEGES;
+		? SELECT User, Host, authentication_string FROM mysql.user;
+		? GRANT ALL PRIVILEGES ON demodb.* to demouser@localhost;
+--		? GRANT ALL ON mysql.* TO 'demouser'@'192.168.177.1' IDENTIFIED BY '%u#098Tl3' WITH GRANT OPTION;
+		? GRANT ALL ON mysql.* TO 'root'@'192.168.177.1' IDENTIFIED BY 'password' WITH GRANT OPTION;
+		? GRANT ALL ON demo_db_2.* TO 'root'@'192.168.177.1' IDENTIFIED BY 'password' WITH GRANT OPTION;
 		
 
-
+		
+		
 	 
 ## Quick tips for sql	 
 
