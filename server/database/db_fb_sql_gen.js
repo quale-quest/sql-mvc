@@ -1318,7 +1318,7 @@ exports.build_variable_passing = function (zx, fld_obj, v,key, comment) {
 		statement = "UPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),('" + v + "')) matching (REF);";
 	
     if (zx.conf.db.dialect=="mysql57")
-		statement = "INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),(" + v.params + "))ON DUPLICATE KEY UPDATE VALU="+v.params + ";";
+		statement = "INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),('" + v + "'))ON DUPLICATE KEY UPDATE VALU='"+v + "';";
 	
 	return statement;
     

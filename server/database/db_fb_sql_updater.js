@@ -447,7 +447,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 
 	
 	var tableexists = checkTable(zx, Table);
-	//console.log("CREATE_TABLE:",Table,tableexists,"qrystr:",qrystr," barestr:",barestr);
+	//console.log("tableexists:",tableexists,Table);//,"qrystr:",qrystr," barestr:",barestr);
 	
 	var fields = splitNoParen(barestr, ',');
 	var FieldNumber = 0;
@@ -484,7 +484,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 			var PRIMARY_KEY=(newfield != field);
 			field=newfield;
 			
-			field = field.replace(/MAXDATE/i,   "'2030/01/01'");		
+			field = field.replace(/MAXDATE/i, zx.config.db.sql_MAXDATE );		
 			
 			
 			var default_value='';
@@ -722,7 +722,7 @@ exports.insert_update_variation = function (zx, qrystr,insertmatchingfield)
 	}
 	if (zx.mysql57) {
 	//console.log('insert_update_variation in:',qrystr);
-	var ins = qrystr.match(/insert\s+into\s*(\S+)\s*\(([\S]*)\)\s*values\s*\(([\S\s]*)\)/i);
+	var ins = qrystr.match(/insert\s+into\s*([\S$]+)\s*\(([\S\s]*)\)\s*values\s*\(([\S\s]*)\)/i);
 	//console.log('insert_update_variation:',ins);
 	if (ins) {
 		var tablename = ins[1];

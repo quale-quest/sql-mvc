@@ -11,6 +11,7 @@ var util = require('util');
 var os = require('os');
 var extend = require('node.extend');
 var deasync = require('deasync');
+var deepcopy = require('deepcopy');
 
 var winston = require('winston');
 //winston.add(winston.transports.File, { filename: 'gm.log' });
@@ -151,6 +152,67 @@ exports.load_config = function (root_folder, Application) {
 
 	return conf;
 }
+var database_default_config = {
+    "fb25": {
+        "server": "127.0.0.1",
+        "database_filename": "demo_db_3b",
+		"database_folder": "/var/lib/firebird/2.5/data/",
+		"database_extension": ".fdb",
+        "username": "using the value from authfile, make authfile blank to use this value.",
+        "password": "using the value from authfile, make authfile blank to use this value.",
+        "authfile": "/etc/firebird/2.5/SYSDBA.password",
+
+		"useUDF": "no",
+	    "var_subst": "/***/",
+		"var_actaul": ":",
+		"var_global_get": "",
+		"var_global_set": "",
+		
+        "sql_set_prefix": "",		
+		"sql_concat_set": "res=",
+		"sql_concat_prefix": "",
+		"sql_concat_res": "res=res||",
+		
+		"sql_concat_seperator": "||",
+		"sql_concat_postfix": "",
+		"sql_end_postfix": "",		
+		"sql_endif_postfix": "",		
+		"sql_First1": "first 1",
+		"sql_Limit1": "",		
+		
+		"sql_MAXDATE": "'2030/01/01'"
+    },		   
+    "mysql57": {        
+        "server": "127.0.0.1",
+
+        "database_filename": "demo_db_2",
+		"database_folder": "",
+		"database_extension": "",		
+        "username": "root",
+        "password": "zxpabx",
+        "authfile": "",
+
+		"useUDF": "no",
+	    "var_subst": "/***/",
+		"var_actaul": "",
+		"var_global_get": "@",
+		"var_global_set" : "set @",
+				
+		"sql_set_prefix": "set ",		
+		"sql_concat_set": "res=",
+		"sql_concat_prefix": "concat(",
+		"sql_concat_res": "res=concat(res,",
+			
+		"sql_concat_seperator": ",",
+		"sql_concat_postfix": ")",
+		"sql_end_postfix": ";",			
+		"sql_endif_postfix": "end if;",			
+		"sql_First1": " ",		
+		"sql_Limit1": " limit 1 ",		
+		
+		"sql_MAXDATE": "'2030/01/01'"		
+    }
+}
 
 exports.check_run_mode = function (config) {
 
@@ -178,7 +240,17 @@ exports.check_run_mode = function (config) {
 	config.run = extend(config.run,config.run_settings[config.run_mode]);
     config.db = extend(config.db, config.run.db); //second one has the priority
 	//console.log("check_run_mode c: ", config);	process.exit(2);
-    
+	
+	
+	var conf = deepcopy(config.db);
+	config.db = deepcopy(database_default_config[config.db.dialect]);
+	config.db = extend(config.db, config[config.db.dialect]); //second one has the priority
+	config.db = extend(config.db, conf); 
+	
+	//console.log("check_run_mode dialect: ", config.db.dialect);	
+	console.log("check_run_mode dialect: ", config.db);	
+	//process.exit(2);
+	
 	return config;
 }
 
@@ -201,7 +273,7 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 		rambase.conf = conf;
 		rambase.host = conf.db.server;
 		//console.log('db connections json 165225 :', JSON.stringify(rambase, null, 4));
-		rambase.database = conf.db.database;
+		rambase.database = conf.db.database_folder + conf.db.database_filename + conf.db.database_extension;
 
 
 		//console.log("\n\n============================: ",JSON.stringify(rambase.conf.db.dialect, null, 4) );
@@ -222,15 +294,19 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 			dbref.connect(function(err) {
 			  if (err) throw err;
 			  else {
-			    console.log("MySQL Connected!");
+			    console.log("MySQL Connected!");//,rambase);
 				rambase.db = dbref;
 				rambase.connectionID = connectionID;
                 rambase.ready = true;
 				rambase.last_connect_stamp = Date.now();
 				exports.connections[connectionID] = rambase;
                 deasync.sleep(15); //on windows this is needed to prevent the compiler form hanging
-				if (callback !== undefined)
-					callback(null, "Connected", exports.connections[connectionID]);			  			  
+				rambase.db.query("select version()", [],	function (err, result, fields) {
+					console.log("MySQL info :",result);//, fields);
+					if (callback !== undefined)
+						callback(null, "Connected", exports.connections[connectionID]);			  			  					
+					});
+
 			  }
 			});			
 			
@@ -258,7 +334,7 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 			rambase.user = conf.db.username;
 			rambase.password = conf.db.password;
 		}
-		//console.log('db connections json 165226 :', JSON.stringify(rambase, null, 4));
+		//console.log('db connections json 165226 :', JSON.stringify(rambase, null, 4));		
 		rambase.user_table = conf.db.user_table;
 		rambase.pk = conf.pk;
 		//console.log('db connections json 165227 :', JSON.stringify(rambase, null, 4));
