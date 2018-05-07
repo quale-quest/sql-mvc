@@ -30,7 +30,7 @@ CREATE_EXTEND facebook TABLE user_table_name                         --:{name:fa
 
   OWNER FK,
   ACTIVATION_DATE TIMESTAMP DEFAULT 'now',
-  EXPIRY_DATE TIMESTAMP DEFAULT '2100/01/01',
+  EXPIRY_DATE TIMESTAMP DEFAULT MAXDATE,
   FLAGS VARCHAR(20),
   SKILL_LIST VARCHAR(250),
   FORCE_CHANGE_ON TIMESTAMP,
@@ -46,7 +46,7 @@ CREATE_EXTEND facebook TABLE user_table_name                         --:{name:fa
 
 
 <#model
-CREATE TABLE visit                       --:{as:"Table"} 
+CREATE TABLE VISIT                       --:{as:"Table"} 
 (
   ID  VARCHAR(40),					     --:{as:pk}
   Session_ID FK,                         --:{as:"fk"}
@@ -58,17 +58,17 @@ CREATE TABLE visit                       --:{as:"Table"}
   actions		integer default 0, 		 --:{as:"text"}
   status		FK						 --:{as:"fk"}
 );
-CREATE INDEX IDX_visit1 ON visit (id);
-CREATE INDEX IDX_visit2 ON visit (Session_ID);
-CREATE INDEX IDX_visit3 ON visit (visitor_user_ID);
-CREATE INDEX IDX_visit4 ON visit (invite_id);
-CREATE INDEX IDX_visit5 ON visit (site_ID);
+CREATE INDEX IDX_visit1 ON VISIT (id);
+CREATE INDEX IDX_visit2 ON VISIT (Session_ID);
+CREATE INDEX IDX_visit3 ON VISIT (visitor_user_ID);
+CREATE INDEX IDX_visit4 ON VISIT (invite_id);
+CREATE INDEX IDX_visit5 ON VISIT (site_ID);
 
 #>
 
 
 <#model
-CREATE TABLE invite                     --:{as:"Table"} 
+CREATE TABLE INVITE                     --:{as:"Table"} 
 (
   ID  VARCHAR(40),	  				     --:{as:pk}
   issuer_user_ID FK,                     --:{as:"fk"}
@@ -77,19 +77,22 @@ CREATE TABLE invite                     --:{as:"Table"}
   Short_Message VARCHAR(100),			 --:{as:text,size:100,title:"Message"} 
   
   issued_time TIMESTAMP DEFAULT 'now',	 --:{as:"text",title:"invited"} 
-  expiery_time TIMESTAMP DEFAULT '2099/01/01',	 --:{as:"text",title:"expire"} 
+  expiery_time TIMESTAMP DEFAULT MAXDATE,	 --:{as:"text",title:"expire"} 
   status		FK							--:{as:"fk"}
 );
 
-CREATE INDEX IDX_invite1 ON invite (id);
-CREATE INDEX IDX_invite2 ON invite (issuer_user_ID);
-CREATE INDEX IDX_invite3 ON invite (site_ID);
+CREATE INDEX IDX_invite1 ON INVITE (id);
+CREATE INDEX IDX_invite2 ON INVITE (issuer_user_ID);
+CREATE INDEX IDX_invite3 ON INVITE (site_ID);
 
 #>
 
 
 
 <#model
+
+dialect(fb)
+
 
 SET TERM ^ ;
 CREATE PROCEDURE FACEBOOK_CHECK (
@@ -155,7 +158,7 @@ BEGIN
 END^
 SET TERM ; ^
 
-
+dialect()
 
 #>
 

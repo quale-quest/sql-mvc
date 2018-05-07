@@ -1,22 +1,11 @@
 
 <#:model()
 
---:{regex:"regex:/create\\s+table/i",rl_context:"regex:/create\\s+table\\s+([\\w_$]+)/i"}
---:{regex:"regex:/varchar/i",Default_length:"20",length:"regex:/(\\d+)/",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} --comment
---:{regex:"regex:/integer/i",Default_length:"10",                        name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} 
---:{regex:"regex:/timestamp/i",Default_length:"20",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} 
---:{regex:"regex:/float/i",Default_length:"10",name:"regex:([\\w_$]+)/",Type:"Text",Action:"View"} 
 
-
---:{class:"pk",Action:View,Type:Hide,PrimaryKey:true,fb_trigger:true}
---:{class:"existing_pk",Action:View,Type:Hide,PrimaryKey:true,fb_trigger:false}
---:{class:"fk",Action:Link,Type:Link}
-
---:{class:ticked,Type:Pick,List:Ticked}  
---:{class:gender,Type:Pick,List:Gender}  
---:{class:yesno,Type:Pick,List:YesNo}  
 
 /******************** DOMAINS *********************/
+
+ 
 /****************** GENERATORS ********************/
 CREATE TABLE Z$GEN_PK_SEQ
 (
@@ -29,7 +18,7 @@ CREATE TABLE Z$CONTEXT_SEQ(
  x int
 ); 
 
-
+/*
 SET TERM ^ ;
 CREATE FUNCTION Z$GEN_CONTEXT_SEQ () 
 RETURNS decimal
@@ -42,156 +31,18 @@ BEGIN
    RETURN dist;
 END^
 SET TERM ; ^
+*/
 
-/******************** TABLES **********************/
-CREATE TABLE Z$SP
-(
-  PK INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY ,
-  TSTAMP TIMESTAMP,
-  FILE_NAME VARCHAR(250),
-  CODE VARCHAR(8000),
-  SCRIPT MEDIUMTEXT,
-  REMOVE_STAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FN_HASH VARCHAR(32),
-  MT_HASH VARCHAR(32) 
-  
-);
-CREATE INDEX IDX_Z$SP1 ON Z$SP (PK);
-CREATE INDEX IDX_Z$SP2 ON Z$SP (FILE_NAME);
+/******************** TRIGGERS ********************/
 
-
+/*
 SET TERM ^ ;
 CREATE TRIGGER `Z$SP_before_insert`
 BEFORE INSERT ON Z$SP FOR EACH ROW 
 BEGIN
 END;;
 SET TERM ; ^
-
-
-
-
-CREATE TABLE Z$CONTEXT
-(
-  PK INTEGER,
-  TSTAMP TIMESTAMP,
-  OPERATOR_REF VARCHAR(32),
-  SESSION_REF VARCHAR(32),
-  CURRENT_PAGE INTEGER,
-  LINKED_FROM_CID INTEGER,
-  LINKED_FROM_INDX INTEGER,
-  ID VARCHAR(32)
-);
-CREATE INDEX IDX_Z$CONTEXT1 ON Z$CONTEXT (PK);
-
-CREATE TABLE Z$DICTIONARY
-(
-  REF VARCHAR(20),
-  COY VARCHAR(20),
-  NAME VARCHAR(40),
-  CONTEXT VARCHAR(20),
-  INDX INTEGER,
-  VALU VARCHAR(40),
-  EXTRA VARCHAR(40),
-  BIN MEDIUMTEXT
-);
-CREATE INDEX IDX_Z$DICTIONARY$1 ON Z$DICTIONARY (REF);
-CREATE INDEX IDX_Z$DICTIONARY$2 ON Z$DICTIONARY (CONTEXT,INDX);
-
-CREATE TABLE Z$INSERTREF
-(
-  NON_MATCH VARCHAR(20),
-  INSERT_REF VARCHAR(20)
-);
-
-CREATE TABLE Z$PK_CACHE
-(
-  MASTER INTEGER,
-  INDX INTEGER,
-  FIELD_NAME VARCHAR(40),
-  VALU VARCHAR(1000),
-  BASERECORD INTEGER,
-  TARGET VARCHAR(100),
-  QUERY VARCHAR(100),
-  BODY VARCHAR(1000),
-  PAGE_PARAMS VARCHAR(1000),
-  PK_FIELD_NAME VARCHAR(40),
-  NEW_VALUE VARCHAR(1000),
-  OLD_VALUE VARCHAR(1000),
-  NEW_VALUE_SET INTEGER,
-  TARGET_VALUES VARCHAR(256),
-  TARGET_FIELDS VARCHAR(100)
-);
-CREATE INDEX IDX_Z$PK_CACHE1 ON Z$PK_CACHE (MASTER,INDX);
-CREATE INDEX IDX_Z$PK_CACHE2 ON Z$PK_CACHE (MASTER,NEW_VALUE_SET); 
-
-
-CREATE TABLE Z$VARIABLES
-(
-  REF VARCHAR(80)  NOT NULL UNIQUE,
-  VALU VARCHAR(256),
-  STAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  EXPIRE TIMESTAMP
-);
-
-
-CREATE TABLE SOMEX                         --:{as:"Table"} 
-(
-  REF  INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,   --:{as:"pk"}
-  NAME VARCHAR(40),			                         --:{as:"text",title:"Full Name"}  
-  PASSS VARCHAR(40)			                         --:{as:"text",title:"Name"}  
-);
-CREATE INDEX IDX_SOMEX1 ON SOMEX (NAME);
-
-
-
-CREATE INDEX IDX_ZVARIABLES1 ON Z$VARIABLES (REF);
-
-
-  CREATE TABLE user_table_name                         --:{as:"Table"} 
-(
-  user_pk_field INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY ,   --:{as:"pk"}
-  NAME VARCHAR(40),			                         --:{as:"text",title:"Full Name"}  
-  First_NAME VARCHAR(40),	                         --:{as:"text",title:"First Name"}  
-  Last_NAME VARCHAR(40),	                         --:{as:"text",title:"Last Name"}  
-  Gender VARCHAR(40),                            	 --:{as:"text",title:"Gender"}  
-  
-  
-  photo 	     VARCHAR(100),						 --:{as:image}
-  photo_filename VARCHAR(100),	    				 --:{as:image_filename}  
-  
-  user_name_field VARCHAR(40),                       --:{as:"text",title:"Login Name"}  
-  user_password_field VARCHAR(40),			  		 --:{as:"text",title:"Password"}  
-  FB_LINK VARCHAR(320) DEFAULT '',					 --:{as:"text",title:"Facebook timeline"}  
-  FB_updated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,			 --:{as:"text",title:"FB_UPDATED"} 
-  INVITED_BY VARCHAR(32),							 --:{as:"text",title:"Invited by"}  
-  SITE_ID    VARCHAR(32),									 --:{as:"text",title:"Currently visiting"}  
-  
-  
-  Country    VARCHAR(32),									 --:{as:"text",title:"Currently visiting"}  
-  
-  timezone	 VARCHAR(20),							 --:{as:"text"}  
-  user_landing_page VARCHAR(80) DEFAULT 'Home/Guest',     --:{as:"text"}  
-  user_keys_field VARCHAR(250),						 --:{as:"text",title:"Key list"}  
-  LANGUAGE VARCHAR(32),										 --:{as:"text",title:"Language"}  
-  GP_INPUT VARCHAR(250),  						  	 --:{Type:"Hide"}
-
-  OWNER VARCHAR(32),
-  ACTIVATION_DATE TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  EXPIRY_DATE TIMESTAMP DEFAULT '2030-01-01',
-  FLAGS VARCHAR(20),
-  SKILL_LIST VARCHAR(250),
-  FORCE_CHANGE_ON TIMESTAMP,
-  TEAM VARCHAR(32),
-  IMAGE VARCHAR(32),
-  MOBILE_NUMBER VARCHAR(40),						--:{as:"text",title:"Password"}  
-  EMAIL VARCHAR(40),									--:{as:"text",title:"Password"}  
-  IM VARCHAR(200)									--:{as:"text",title:"Password"}  
-  
-);
-CREATE INDEX IDX_ME1 ON user_table_name (user_pk_field);
-CREATE INDEX IDX_ME4 ON user_table_name (user_name_field);
-
-/******************** TRIGGERS ********************/
+*/
 
 
 /******************* PROCEDURES ******************/
@@ -570,24 +421,6 @@ RETURN(DO_SHOW);
 END^
 SET TERM ; ^
 
-
-
-/******************* RECORDS ******************/
-
-/*
-
-INSERT MATCHING NON_MATCH;
-INSERT INTO Z$INSERTREF (NON_MATCH, INSERT_REF) VALUES ('NON_MATCH_1', '1');
-INSERT INTO Z$INSERTREF (NON_MATCH, INSERT_REF) VALUES ('NON_MATCH_2', '2');
-INSERT INTO Z$INSERTREF (NON_MATCH, INSERT_REF) VALUES ('NON_MATCH_3', '3');
-
-
-INSERT MATCHING user_name_field;
-INSERT INTO user_table_name (user_landing_page,user_display_field,user_name_field,user_password_field) values ('Home/Guest','Guest','user_guest_name','AnyPassword');
-INSERT INTO user_table_name (user_landing_page,user_display_field,user_name_field,user_password_field) values ('Home/SysAdmin','sysadmin','sysadmin','changethis');
-*/
-
--- INSERT INTO Z$USER (LANDING_PAGE,name,login_name,passwd) values ('Home/Guest','Guest','Guest','AnyPassword');
 
 
 #>

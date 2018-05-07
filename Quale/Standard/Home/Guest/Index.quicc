@@ -1,11 +1,17 @@
 
+
 <#script()
+dialect(fb)
+
+
 UPDATE OR INSERT INTO MAIL (FROM_USER, STAMP,SUBJECT)
 VALUES (
     session.id, 
     'now',
     'last contact'
 ) matching (FROM_USER,SUBJECT) ;
+
+dialect()
 
 INSERT INTO MAIL (FROM_USER, STAMP,SUBJECT)
 VALUES (
@@ -18,8 +24,18 @@ VALUES (
 
 <#view
 Container(style=Center)
+
+dialect(mysql57)
+
 notify(style=Heading) 
-<a href="https://github.com/quale-quest/sql-mvc">SQL-MVC</a> example implementation of <a href="http://todomvc.com">todomvc.com</a>
+<a href="https://github.com/quale-quest/sql-mvc">SQL-MVC</a> MYSQL example implementation of <a href="http://todomvc.com">todomvc.com</a>
+
+dialect(fb)
+
+notify(style=Heading) 
+<a href="https://github.com/quale-quest/sql-mvc">SQL-MVC</a> Firebird example implementation of <a href="http://todomvc.com">todomvc.com</a>
+
+dialect()
 
 
 ifquery (not key.admin)

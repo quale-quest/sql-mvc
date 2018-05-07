@@ -25,20 +25,21 @@ list{name=Ticked,values={
 	"":"ifblank:"
 	}}
 
-#>
-
-
-<#model
-/********************* UDFS ***********************/
-
+CREATE DOMAIN TEXT40
+ AS VARCHAR(40)
+ DEFAULT '';
  
- 
- 
-/******************* PROCEDURES ******************/
+ CREATE DOMAIN TEXT80
+ AS VARCHAR(80)
+ DEFAULT '';
 
+CREATE DOMAIN T_STATUS
+ AS VARCHAR(20)
+ DEFAULT '';
+ CREATE DOMAIN TEXT320
+ AS VARCHAR(320)
+ DEFAULT '';
 
-
-/*
 INSERT MATCHING NAME,CONTEXT;
 INSERT INTO Z$DICTIONARY (NAME,CONTEXT,INDX,VALU,EXTRA,BIN) values ('ifblank:Yes','YesNo',0,NULL,NULL,NULL);
 INSERT INTO Z$DICTIONARY (NAME,CONTEXT,INDX,VALU,EXTRA,BIN) values ('No','YesNo',0,'0','No',NULL);
@@ -56,7 +57,7 @@ INSERT INTO Z$DICTIONARY (NAME,CONTEXT,INDX,VALU,EXTRA,BIN) values ('Wednesday',
 INSERT INTO Z$DICTIONARY (NAME,CONTEXT,INDX,VALU,EXTRA,BIN) values ('Thursday','Days',4,'4',NULL,NULL);
 INSERT INTO Z$DICTIONARY (NAME,CONTEXT,INDX,VALU,EXTRA,BIN) values ('Friday','Days',5,'5',NULL,NULL);
 
-*/
+
 
 #>
 

@@ -1,33 +1,5 @@
 
 
-<#
-list{
-    "name": "YesNo",
-    "values": {
-        "0": "No",
-        "1": "Yes",
-        "": "ifblank:Yes"
-    }
-}
-
-
-list{
-    "name": "Gender",
-    "values": {
-        "0": "Male",
-        "1": "Female",
-        "": "ifblank:Male"
-    }
-}
-
-list{name=Ticked,values={
-	"1":"",
-	"":"ifblank:"
-	}}
-
-#>
-
-
 <#model
 /********************* UDFS ***********************/
 DECLARE EXTERNAL FUNCTION ADDDAY
@@ -48,24 +20,7 @@ RETURNS TIMESTAMP
 ENTRY_POINT 'addMonth'
 MODULE_NAME 'fbudf';
 
-CREATE DOMAIN TEXT40
- AS VARCHAR(40)
- DEFAULT '';
- 
 
- 
- CREATE DOMAIN TEXT80
- AS VARCHAR(80)
- DEFAULT '';
- 
-
-CREATE DOMAIN T_STATUS
- AS VARCHAR(20)
- DEFAULT '';
- CREATE DOMAIN TEXT320
- AS VARCHAR(320)
- DEFAULT '';
- 
  
  
 /******************* PROCEDURES ******************/
@@ -122,28 +77,6 @@ BEGIN
 
 END^
 SET TERM ; ^
-
-
-
-
-INSERT MATCHING NAME,CONTEXT;
-INSERT INTO Z$DICTIONARY (NAME,CONTEXT,INDX,VALU,EXTRA,BIN) values ('ifblank:Yes','YesNo',0,NULL,NULL,NULL);
-INSERT INTO Z$DICTIONARY (NAME,CONTEXT,INDX,VALU,EXTRA,BIN) values ('No','YesNo',0,'0','No',NULL);
-INSERT INTO Z$DICTIONARY (NAME,CONTEXT,INDX,VALU,EXTRA,BIN) values ('Yes','YesNo',1,'1','Yes',NULL);
-
-INSERT INTO Z$DICTIONARY (NAME,CONTEXT,INDX,VALU,EXTRA,BIN) values ('ifblank:No','NoYes',0,NULL,NULL,NULL);
-INSERT INTO Z$DICTIONARY (NAME,CONTEXT,INDX,VALU,EXTRA,BIN) values ('No','NoYes',0,'0','No',NULL);
-INSERT INTO Z$DICTIONARY (NAME,CONTEXT,INDX,VALU,EXTRA,BIN) values ('Yes','NoYes',1,'1','Yes',NULL);
-
-INSERT INTO Z$DICTIONARY (NAME,CONTEXT,INDX,VALU,EXTRA,BIN) values ('Saturday','Days',-1,'-1',NULL,NULL);
-INSERT INTO Z$DICTIONARY (NAME,CONTEXT,INDX,VALU,EXTRA,BIN) values ('Sunday','Days',0,'0',NULL,NULL);
-INSERT INTO Z$DICTIONARY (NAME,CONTEXT,INDX,VALU,EXTRA,BIN) values ('Monday','Days',1,'1',NULL,NULL);
-INSERT INTO Z$DICTIONARY (NAME,CONTEXT,INDX,VALU,EXTRA,BIN) values ('Tuesday','Days',2,'2',NULL,NULL);
-INSERT INTO Z$DICTIONARY (NAME,CONTEXT,INDX,VALU,EXTRA,BIN) values ('Wednesday','Days',3,'3',NULL,NULL);
-INSERT INTO Z$DICTIONARY (NAME,CONTEXT,INDX,VALU,EXTRA,BIN) values ('Thursday','Days',4,'4',NULL,NULL);
-INSERT INTO Z$DICTIONARY (NAME,CONTEXT,INDX,VALU,EXTRA,BIN) values ('Friday','Days',5,'5',NULL,NULL);
-
-
 
 #>
 

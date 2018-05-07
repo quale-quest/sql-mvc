@@ -1,12 +1,12 @@
 
 <#controller(todo.clear.button)
 button()
---{title:"Clear Completed",if:"(select count(ref) from todo_mvc where owner=session.id and status='1')!=0" }
-sql update todo_mvc set status='3' where owner=session.id and (status='1');
+--{title:"Clear Completed",if:"(select count(ref) from TODO_MVC where owner=session.id and status='1')!=0" }
+sql update TODO_MVC set status='3' where owner=session.id and (status='1');
 #>
 
 <#controller(todo.items) 
-($select count(*) from todo_mvc where owner=session.id and (status='' or status is null) $)
+($select count(*) from TODO_MVC where owner=session.id and (status='' or status is null) $)
 #>
 
 <#controller(todo.itemcountsub)
