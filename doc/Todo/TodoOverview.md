@@ -1,11 +1,11 @@
 # Todo Overview,
 
 ## Ongoing
-* mysql documentation
+* documentation
 
 ## WIP 
 
-* mysql driver
+* 90% done - mysql driver
 
 
 ## Undocumented features ------------------------------------------------------Undocumented features
@@ -16,7 +16,6 @@
 ## TODO             -----------------------------------------------------------TODO
 
 * separate sql drivers into separate files?
-* create mysql db from blank
 
 * make "Insert if not exiting" for   INSERT INTO user_table_name (user_landing_page,user_display_field,user_name_field,user_password_field) values ('Home/Guest','Guest','user_guest_name','AnyPassword');
 
@@ -24,11 +23,9 @@
 * FACE BOOK Procedures in facebook_model.quicc
 * FACE BOOK LOGIN
 
-
 * Apps with multiple DB drivers?
 * check all triggers must be deleted to be updated?
 * switch pk between auto incement and uuid
-* wtf search for : (fn.indexOf('SaleForm') - why such specific code?		
 * use build_variable_passing instead of the page params for passing paramaters cuch as ?cond_proc?
 * combine insertref table with dictionary table
 * use of backtic for ` field/table names - and " for firebird
@@ -72,3 +69,5 @@ MSsql driver
 * UPDATE OR INSERT INTO MAIL matching compatablilty
 * get config for db engines from alternate file - main config should be kept simple
 * remove driver dependant sql from GUI - or atleast use driver directive
+* create mysql db from blank
+* wtf search for : (fn.indexOf('SaleForm') - why such specific code? -removed		

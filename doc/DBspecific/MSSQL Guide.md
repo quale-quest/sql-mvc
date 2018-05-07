@@ -17,24 +17,38 @@ say something
 
 ## Setup server
 		
+		https://docs.microsoft.com/en-us/sql/linux/sql-server-linux-setup?view=sql-server-linux-2017
+		https://www.microsoft.com/en-us/sql-server/developer-get-started/node/ubuntu/
 		
-		https://support.rackspace.com/how-to/installing-mysql-server-on-ubuntu/
-		https://www.techrepublic.com/article/how-to-set-up-mysql-for-remote-access-on-ubuntu-server-16-04/
+		apt-get install  curl
+		apt install software-properties-common
 		
-		sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf [mysqld]
-		  add->  sql_mode = "NO_ZERO_DATE"
-		  sudo service mysql restart
+		sudo curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+		sudo add-apt-repository "$(curl https://packages.microsoft.com/config/ubuntu/16.04/mssql-server-2017.list)"
+		sudo apt-get update
+		sudo apt-get install mssql-server
 		
-		CREATE DATABASE demo_db_2;
-		INSERT INTO mysql.user (User,Host,authentication_string,ssl_cipher,x509_issuer,x509_subject)
-		FLUSH PRIVILEGES;
-		SELECT User, Host, authentication_string FROM mysql.user;
-		GRANT ALL PRIVILEGES ON demodb.* to demouser@localhost;
---		GRANT ALL ON mysql.* TO 'demouser'@'192.168.177.1' IDENTIFIED BY '%u#098Tl3' WITH GRANT OPTION;
-		GRANT ALL ON mysql.* TO 'root'@'192.168.177.1' IDENTIFIED BY 'zxpabx' WITH GRANT OPTION;
-		GRANT ALL ON demo_db_2.* TO 'root'@'192.168.177.1' IDENTIFIED BY 'zxpabx' WITH GRANT OPTION;
 		
-
+		sudo /opt/mssql/bin/mssql-conf setup
+		--Qua1epassword!
+		node -v
+		
+## setup SQLCMD
+		curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+		curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list | sudo tee /etc/apt/sources.list.d/mssql-tools.list
+		sudo apt-get update
+		sudo ACCEPT_EULA=Y apt-get install mssql-tools
+		sudo apt-get install unixodbc-dev
+		echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bash_profile
+		echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
+		source ~/.bashrc
+		
+		
+		
+		sqlcmd -S localhost -U SA -Q 'select @@VERSION'
+			
+		
+		
 
 	 
 ## Quick tips for sql	 
@@ -45,9 +59,6 @@ Let's see the list of the current processes, one of them is locking your table(s
 
 
 ## debuggin procedures
-* https://dev.mysql.com/doc/refman/5.7/en/stored-routines.html  - check comments			 
-
-
 
 
 
@@ -55,7 +66,7 @@ Let's see the list of the current processes, one of them is locking your table(s
 
 ## TODO
 
-* mysql documentation
-* fake_domains
+
+* domains 
 * simple translations
 
