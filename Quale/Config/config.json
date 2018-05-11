@@ -53,7 +53,7 @@
 	       },
     "db":	{
 				"dialect": "mysql57",
-				"dialect_options": "fb25,mysql57",
+				"dialect_options": "fb25,mysql57,mssql12,pgsql90,odsql11",
 				"packages":["sql-mvc-ui-dark"],
 				
 				"database_filename": "demo_db_2",

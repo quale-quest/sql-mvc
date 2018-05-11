@@ -344,6 +344,12 @@ var singleton = function (zx, field, qrys) {//could use the one from sql_utils
 	//console.log("singleton res z:" ,result[0].['count(*)']);
 	
 	//if (result[0].RowDataPacket[field] !== undefined) {	}
+	
+	if (zx.mssql12) {
+		//console.log("singleton mssql12:",result[0] ,result,qrys);
+		return result[0];
+	}
+	
 	if (result[0][field] !== undefined) {
 		//console.log("singleton:" ,result[0][field].low_)
 		if (result[0][field].low_ === undefined)
@@ -353,6 +359,9 @@ var singleton = function (zx, field, qrys) {//could use the one from sql_utils
 		return '';
 };
 var checkTable = function (zx, name) {
+	
+    if (zx.mssql12)
+        return singleton(zx, "count(*)", "select count(*) from information_schema.tables where TABLE_CATALOG = '"+zx.conf.db.database_filename+"' AND TABLE_SCHEMA = '" +zx.conf.db.database_schema+"' AND TABLE_NAME = '" + name.toUpperCase() + "' ;");
 	if (zx.mysql57)
         return singleton(zx, "count(*)", "select count(*) from information_schema.tables where table_schema = '"+zx.conf.db.database_filename+"' AND table_name = '" + name.toUpperCase() + "' ;");
 	if (zx.fb25)
@@ -365,6 +374,9 @@ var checkView = function (zx, name) {
 	    return singleton(zx, "count(*)", "select count(*) from rdb$relations where rdb$relation_name ='" + name + "' AND (rdb$view_blr IS NOT NULL);");
 };
 var checkGenerator = function (zx, name) {
+	//CREATE SEQUENCE IF NOT EXISTS myschema.myseq;  Postgres 9.5+
+	if (zx.mssql12)
+        return singleton(zx, "count(*)", "SELECT count(*) FROM sys.sequences WHERE name = '" + name.toUpperCase() + "';");
 	if (zx.mysql57)
         return singleton(zx, "count(*)", "select count(*) from information_schema.tables where table_schema = '"+zx.conf.db.database_filename+"' AND table_name = 'Z$GEN_" + name.toUpperCase() + "' AND TABLE_TYPE='BASE VIEW' ;");
 	if (zx.fb25)
@@ -498,8 +510,15 @@ var CREATE_TABLE = function (zx, qrystr) {
 					//console.log('Table fields FFDx:', field, default_value);					
 				}
 				
-				 
-			
+			if (zx.mssql12) {
+				field = field.replace(/BLOB\s*SUB_TYPE\s*1/i,   " VARCHAR(MAX)");
+				field = field.replace(/BLOB/i,                  " VARBINARY(MAX)");
+				field = field.replace(/TIMESTAMP/i,   			"datetime");					
+				if (default_value) {
+					default_value = default_value.replace(/'now'/i, "CURRENT_TIMESTAMP");
+					default_set=1;
+					}				
+			} else {
 			if (zx.mysql57) {
 				//simple fb to mysql types
 				field = field.replace(/BLOB\s*SUB_TYPE\s*1/i,   "MEDIUMTEXT");
@@ -515,7 +534,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 				field = field.replace(/MEDIUMTEXT/i, "BLOB SUB_TYPE 1");					
 				field = field.replace(/LONGTEXT/i,   "BLOB SUB_TYPE 1");	
 				}
-			
+			}
 			//console.log('--> ',field );	
 			if (defs=field.match(/([`\w$]+)\s+([()\w$]+)/i)) {				
 				// replace with fake domains				
@@ -586,8 +605,8 @@ var CREATE_TABLE = function (zx, qrystr) {
 		if ((field !== ")" && field !== ";")) {
 			field = field.replace(/MAXDATE/i,   "'2030/01/01'");		
 			//console.log('Table fields ---:', Table,'>',field,'<');
-			FieldNumber = FieldNumber + 1;
-			cx.expect = (zx.mysql57)?/ER_DUP_FIELDNAME/:/335544351/;
+			FieldNumber = FieldNumber + 1;			
+			cx.expect = zx.dbu.sqltype(zx,/335544351/,/ER_DUP_FIELDNAME/,/is specified more than once/);
 			exec_qry(cx, "ALTER TABLE " + Table + " ADD " + field);
             if (cx.zx.config.db.schema_alter_fields === "yes") { 
 			
@@ -629,15 +648,22 @@ var CREATE_TABLE = function (zx, qrystr) {
 
 				var FFD = field.match(/(\S+)\s+(\S+)\s+(default)?\s?(not\s+null)?\s?(.*)/i);
 				//console.log('Table fields FFD:', Table,'>',field,'<', FFD);
-				if (FFD) {
+				if (FFD) { //with default set
 					{
 					var FieldName = FFD[1].trim(),
 					FieldType = FFD[2].trim(),
 					Default = FFD[5].trim();
 					if (FFD[4])
 						console.log('WARN: Cannot update "NOT NULL" property for :', Table + '.' + FieldName);
-                    //cx.expect = (zx.conf.db.dialect=="mysql57")?/ER_DUP_FIELDNAME/:/335544351/; 
-					cx.expect = zx.dbu.sqltype(zx,/335544351/,/ER_DUP_FIELDNAME/);
+					
+						if (zx.mssql12) {
+							//TODO
+							console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX mssql12 ignoring :', Default,":");
+						} else {					
+					
+					
+                    	
+					cx.expect = zx.dbu.sqltype(zx,/335544351/,/ER_DUP_FIELDNAME/,/is specified more than once/);
 					if (zx.fb25)    exec_qry(cx, "ALTER TABLE " + Table + " alter " + FieldName + " TYPE " + FieldType); 
 					if (zx.mysql57) exec_qry(cx, "ALTER TABLE " + Table + " MODIFY " + FieldName + "  " + FieldType);
 					//console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Default:', Default,":");
@@ -652,23 +678,34 @@ var CREATE_TABLE = function (zx, qrystr) {
 						//caused an error in carlton update ->    exec_qry("update "+Table +" set " + FieldName + "="+Default+" where " +FieldName + " is null ")
 					} else {
                         //console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Table fields FFD        :', Table,' . ',FieldName);// FFD);
+
 						cx.expect = /335544351/;
 						if (zx.fb25)    exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " DROP DEFAULT ");
 						if (zx.mysql57) exec_qry(cx,  "ALTER TABLE " + Table + "   alter column  " + FieldName + " DROP DEFAULT ");
+						
                         
+					}
 					}
 				}                                            
 
-				}else { //no default so drop it
+				}else { //no default so drop any default that may exist
 						
 						var FFD = field.match(/(\S+)\s+(\S+)/i);
 						if (FFD) {							
 							var FieldName = FFD[1];
 							//console.log('\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  Field default not found :', field,FFD);
 							//should be dropping
+							if (zx.mssql12) {
+								//TODO
+							} else {
 							cx.expect = /335544351/;
 							if (zx.fb25)    exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " DROP DEFAULT ");
 							if (zx.mysql57) exec_qry(cx,  "ALTER TABLE " + Table + "   alter column  " + FieldName + " DROP DEFAULT ");
+							}
+							}
+							else {
+								console.log('\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  Unknown syntax for update table fields :', field,FFD);
+								process.exit(2);
 							}
 						
 				}
@@ -712,43 +749,62 @@ exports.csvtojson = function (zx,csvStr) {
     return data;
 }   
 
+	
+exports.parse_insert_update = function (zx, qrystr,insertmatchingfield)
+{ //will always return an object
+	var result ={};
+	var ins = qrystr.match(/insert\s+into\s*([\S$]+)\s*\(([\S\s]*)\)\s*values\s*\(([\S\s]*)\)/i);
+	//console.log('insert_update_variation:',ins);
+	if (ins) {
+		result.tablename = ins[1];
+		result.fields = exports.csvtojson(zx,ins[2].replace('\n','') );
+		result.values = exports.csvtojson(zx,ins[3].replace('\n','') );
+		result.matchingfield = exports.csvtojson(zx,insertmatchingfield.replace('\n','') );
+		return result;
+	}
+	throw new Error("insert_update_variation invalid 'insert into' syntax "+qrystr);
+	//return null;
+}
 
 	
 exports.insert_update_variation = function (zx, qrystr,insertmatchingfield)
 {
+	if (zx.mssql12) {
+		var ins = exports.parse_insert_update(zx, qrystr,insertmatchingfield);
+		var deleterecord="";
+		ins.matchingfield.forEach(function (field) {
+			if (deleterecord!='') deleterecord = deleterecord + " and ";
+			var i = ins.fields.indexOf(field);	
+			if (i<0) throw new Error("insert_update_variation error "+ field + " not in list "+ins.fields);
+			deleterecord = deleterecord + field + "=" + ins.values[i];			
+		});
+		
+		deleterecord="delete from "+ins.tablename+" where " + deleterecord ;
+		console.log('insert_update_variation deleterecord mssql12:',deleterecord);
+		return deleterecord;
+	}
+	
 	
 	if (zx.fb25) {
 		return "update or " + qrystr + " matching(" + insertmatchingfield + ") ";
 	}
 	if (zx.mysql57) {
-	//console.log('insert_update_variation in:',qrystr);
-	var ins = qrystr.match(/insert\s+into\s*([\S$]+)\s*\(([\S\s]*)\)\s*values\s*\(([\S\s]*)\)/i);
-	//console.log('insert_update_variation:',ins);
-	if (ins) {
-		var tablename = ins[1];
-		var fields = exports.csvtojson(zx,ins[2].replace('\n','') );
-		var values = exports.csvtojson(zx,ins[3].replace('\n','') );
-		var matchingfield = exports.csvtojson(zx,insertmatchingfield.replace('\n','') );
-		//console.log('insert_update_variation fields:',fields);
-		//console.log('insert_update_variation values:',values);
-		//console.log('insert_update_variation insertmatchingfield:',matchingfield);
+		//console.log('insert_update_variation in:',qrystr);
+		var ins = exports.parse_insert_update(zx, qrystr,insertmatchingfield);	
 		
 		var deleterecord="";
-		matchingfield.forEach(function (field) {
+		ins.matchingfield.forEach(function (field) {
 			if (deleterecord!='') deleterecord = deleterecord + " and ";
-			var i = fields.indexOf(field);	
-			if (i<0) throw new Error("insert_update_variation error "+ field + " not in list "+fields);
-			deleterecord = deleterecord + field + "=" + values[i];			
+			var i = ins.fields.indexOf(field);	
+			if (i<0) throw new Error("insert_update_variation error "+ field + " not in list "+ins.fields);
+			deleterecord = deleterecord + field + "=" + ins.values[i];			
 		});
 		
-		deleterecord="delete from "+tablename+" where " + deleterecord ;
+		deleterecord="delete from "+ins.tablename+" where " + deleterecord ;
 		//console.log('insert_update_variation deleterecord:',deleterecord);
 		return deleterecord;
 	}
-
-	throw new Error("insert_update_variation invalid 'insert into' syntax "+qrystr);
 	
-	}
 	throw new Error("insert_update_variation For unknown database dialect");
 }
 				
@@ -826,7 +882,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			block.expect = /335544351/;
 			block.order = 300;
 
-			if (zx.mysql57) {
+			if (zx.mysql57||zx.mssql12) {
 				var default_val="''";
 				var default_set=0;
 				var cdinfo;
@@ -869,40 +925,60 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			block.expect = /335544351/;
 			var mg = qrystr.match(/CREATE\s+GENERATOR\s+([\w\$]+)/i);
             //console.log("checkGenerator  ",mg, 'as ',qrystr);
+			if (zx.mssql12) {
+				qrystr = "";
+			} else {
 			if (mg && checkGenerator(zx, mg[1]))
                 {
                 //console.log(" checkGenerator:  exits");
 				qrystr = "";
                 }
 			// else execute as is
+			}
 			block.order = 500;
 		} else if (name=qrystr.match(/SET\s+GENERATOR\s+([\w$]+)/i)) {
 			block.name = 'SETGENERATOR_' + name[1];
 			var mgg = qrystr.match(/SET\s+GENERATOR\s+([\w\$]+)/i);
 			//console.log("getGenerator  ",mgg, 'as ',qrystr);
 			if (mgg) {
-                if (checkGenerator(zx, mgg[1]))
-                {
+				if (checkGenerator(zx, mgg[1]))
+				{
 				var gv = getGenerator(zx, mgg[1], 0);
 				//console.log("GENERATOR value :",gv," ");
-                //console.log(" checkGenerator:  exits");
+				//console.log(" checkGenerator:  exits");
 				if (gv > 0) {
 					qrystr = "";
 					//console.log("GENERATOR", mgg[1], "already set");
+				}else{
+					
+					
+					if (zx.mssql12) {
+						qrystr = "CREATE SEQUENCE "+mgg[1]+" AS INT START WITH 0 INCREMENT BY 1;";
+						
+					} else {
+						
+					}						
+					
 				}
-                }
-                else
-                qrystr = "";
-                
-			}
+				
+				}
+				else
+				qrystr = "";
+				}
+		
 			block.order = 600;
 		} else if (name=qrystr.match(/CREATE\s+SEQUENCE\s+([\w$]+)/i)) {
+			if (zx.mssql12) {
+				qrystr = "";
+			} else {
+			
 			block.name = 'SEQUENCE_' + name[1];
 			block.expect = /335544351/;
 			var mc = qrystr.match(/CREATE\s+SEQUENCE\s([\w\$]+)/i);
 			if (mc && checkGenerator(zx, mc[1]))
 				qrystr = "";
 			// else execute as is
+			}
 			block.order = 500;
 		} else if (name=qrystr.match(/ALTER\s+SEQUENCE\s/i)) {
 			block.name = 'ALTERSEQUENCE_' + name[1];
@@ -932,7 +1008,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			block.order = 800;
 		} else if (name=qrystr.match(/CREATE\s+INDEX\s+([\w$]+)/)) {
 			block.name = 'INDEX_' + name[1];
-			block.expect = (zx.mysql57)?/ER_DUP_KEYNAME/:/335544351/;  
+			block.expect = zx.dbu.sqltype(zx,/335544351/,/ER_DUP_KEYNAME/,/failed because an index/);
 			block.order = 900;
 			//console.log("show CREATE INDEX:", qrystr);
 		} else if (name=qrystr.match(/CREATE\s+VIEW\s+([\w$]+)/i)) {
@@ -1052,12 +1128,8 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			block.order = 2200;
 			qrystr = qrystr.replace(/;\s+$/g, '');
 			if (insertmatchingfield !== '') {				
-				if (zx.fb25) {
-					qrystr = "update or " + qrystr + " matching(" + insertmatchingfield + ") ";
-					block.qrystr = qrystr;				
-					insertmatchingblock.records.push(block);					
-				}	
-				if (zx.mysql57) {	
+	
+				if (zx.mysql57||zx.mssql12) {	
 					block.qrystr = qrystr;				
 				
 					var Drop_record = deepcopy(block);
@@ -1066,7 +1138,13 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 					Drop_record.qrystr = exports.insert_update_variation(zx, qrystr,insertmatchingfield);
 					Drop_record.Hash = zx.ShortHash(qrystr);
 					blocks.push(Drop_record);					
-				}
+				} else {
+				if (zx.fb25) {
+					qrystr = "update or " + qrystr + " matching(" + insertmatchingfield + ") ";
+					block.qrystr = qrystr;				
+					insertmatchingblock.records.push(block);					
+				}}	
+			
 			}
 
 		} else if (qrystr.match(/UPDATE\s/i)) {

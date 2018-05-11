@@ -6,6 +6,7 @@
 ## WIP 
 
 * 90% done - mysql driver
+* mssql driver
 
 
 ## Undocumented features ------------------------------------------------------Undocumented features
@@ -23,17 +24,21 @@
 * FACE BOOK Procedures in facebook_model.quicc
 * FACE BOOK LOGIN
 
-* Apps with multiple DB drivers?
+* combine insertref table with dictionary table
+
 * check all triggers must be deleted to be updated?
 * switch pk between auto incement and uuid
 * use build_variable_passing instead of the page params for passing paramaters cuch as ?cond_proc?
-* combine insertref table with dictionary table
+
 * use of backtic for ` field/table names - and " for firebird
 
 * Facebook login testing
 * UDF functions?
 * TRIGGER Z$SP_BI we increment by 1000 as we have sub procedures that are indexed relative to this index*/
 * todo Z$TimeStamp_RANGE for mysql in extras_model.quic
+
+## DEFER            -----------------------------------------------------------DEFER
+* Apps with multiple DB drivers?
 
 
 ## SQL Translations -----------------------------------------------------------SQL Translations

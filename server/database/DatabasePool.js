@@ -211,7 +211,41 @@ var database_default_config = {
 		"sql_Limit1": " limit 1 ",		
 		
 		"sql_MAXDATE": "'2030/01/01'"		
+    },
+    "mssql12": {        
+        "server": "127.0.0.1",
+
+        "database_filename": "demo_db_2",
+		"database_folder": "",
+		"database_extension": "",		
+		
+		"database_schema": "sqlmvc",
+		
+        "username": "sqlmvc",
+        "password": "Qua1epassword",
+        "authfile": "",
+
+		"useUDF": "no",
+	    "var_subst": "/***/",
+		"var_actaul": "",
+		"var_global_get": "@",
+		"var_global_set" : "set @",
+				
+		"sql_set_prefix": "set ",		
+		"sql_concat_set": "res=",
+		"sql_concat_prefix": "concat(",
+		"sql_concat_res": "res=concat(res,",
+			
+		"sql_concat_seperator": ",",
+		"sql_concat_postfix": ")",
+		"sql_end_postfix": ";",			
+		"sql_endif_postfix": "end if;",			
+		"sql_First1": " ",		
+		"sql_Limit1": " limit 1 ",		
+		
+		"sql_MAXDATE": "'2030/01/01'"		
     }
+	
 }
 
 exports.check_run_mode = function (config) {
@@ -239,7 +273,7 @@ exports.check_run_mode = function (config) {
 	//console.log("check_run_mode d: ", config.run_mode);	process.exit(2);        
 	config.run = extend(config.run,config.run_settings[config.run_mode]);
     config.db = extend(config.db, config.run.db); //second one has the priority
-	//console.log("check_run_mode c: ", config);	process.exit(2);
+	//console.log("check_run_mode c: ", config.db);	process.exit(2);
 	
 	
 	var conf = deepcopy(config.db);
@@ -248,7 +282,7 @@ exports.check_run_mode = function (config) {
 	config.db = extend(config.db, conf); 
 	
 	//console.log("check_run_mode dialect: ", config.db.dialect);	
-	console.log("check_run_mode dialect: ", config.db);	
+	//console.log("check_run_mode dialect: ", config.db);	
 	//process.exit(2);
 	
 	return config;
@@ -277,7 +311,81 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 
 
 		//console.log("\n\n============================: ",JSON.stringify(rambase.conf.db.dialect, null, 4) );
-		 
+		if (rambase.conf.db.dialect=="mssql12")  {
+			db_req.mssql = require('tedious');
+						
+			//var Connection = require('tedious').Connection;
+			//var Request = require('tedious').Request;
+			//var TYPES = require('tedious').TYPES;
+			
+			rambase.user = conf.db.username;
+			rambase.password = conf.db.password;		
+			rambase.user_table = conf.db.user_table;
+			rambase.pk = conf.pk;	
+
+			var config = {
+			  userName: rambase.user, 
+			  password: rambase.password,
+			  server: 'localhost',
+			  options: {
+				  database: rambase.database
+			  }
+			}
+			
+			
+			
+			rambase.db = new db_req.mssql.Connection(config);
+			rambase.Request = db_req.mssql.Request;
+			// Attempt to connect and execute queries if connection goes through
+			rambase.db.on('connect', function(err) {
+			  if (err) {
+				console.log(err);
+			  } else {
+				console.log('MSSQL Connected!');
+				
+				var Req = new rambase.Request('SELECT @@VERSION;', function (err, rowCount, rows) {
+					if (err) throw err;
+
+					console.log("MSSQL info :",rowCount,rows);
+					
+					rambase.connectionID = connectionID;
+					rambase.ready = true;
+					rambase.last_connect_stamp = Date.now();
+					exports.connections[connectionID] = rambase;
+					
+					if (callback !== undefined)
+						callback(null, "Connected", exports.connections[connectionID]);			  			  					
+
+			
+						
+				});
+							
+				// Print the rows read
+				
+				var result = "";
+				Req.on('row', function(columns) {
+					columns.forEach(function(column) {
+						if (column.value === null) {
+							console.log('NULL');
+						} else {
+							result += 'col : ' + column.value + " ";
+						}
+					});
+					console.log('MSSQL row',result);
+					result = "";
+				});
+				
+
+				// Execute SQL statement
+				rambase.db.execSql(Req);				
+				
+			  }
+			});
+			
+			
+			 
+		} else {
+		
 		if (rambase.conf.db.dialect=="mysql57")  {
 			db_req.mysql = require('mysql');
 			rambase.user = conf.db.username;
@@ -297,10 +405,11 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 					console.log("CREATE DATABASE IF NOT EXISTS: ",rambase.database,' err:',err);
 					throw err;
 				}
+				console.log("MySQL Connected!");//,rambase);
 				dbref.query('USE '+rambase.database, function (err) {
 					if (err) throw err;
 						
-					console.log("MySQL Connected!");//,rambase);
+					
 					rambase.db = dbref;
 					rambase.connectionID = connectionID;
 					rambase.ready = true;
@@ -319,7 +428,7 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 			});			
 			
 		}
-		else 
+		if (rambase.conf.db.dialect=="fb25")  
 		{
 		db_req.fb = require("node-firebird");
 
@@ -392,6 +501,7 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 					callback(null, "Connected", exports.connections[connectionID]);
 			}
 		});
+	}
 	}
 	}
 	return;

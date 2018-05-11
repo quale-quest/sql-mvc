@@ -127,6 +127,85 @@ exports.databaseUtils = function (root_folder, connectionID, url, callback) {
 
 };
 
+
+
+	 
+var check_parse = function (zx, err, script, line_obj,expect,result,callback) {
+	
+	if (err) {
+		//parse the error
+		var script_err = JSON.stringify(err);
+		var	sql_log_obj=['dataset',qrystr,script_err];
+		zx.sql_log_file_obj.push(sql_log_obj);	
+		if (expect !== undefined && expect.test(script_err)) {
+			// Silently ignore the error
+			//	console.log('Acceptable error:', expect,qrystr);
+				
+		} else { // make a record of the error for debugging
+			console.log('script_err:', expect,script_err, err, ' in :------------------>\n', script);
+			script_err = parse_error(zx, err, line_obj);
+			zx.err = script_err;
+			zx.eachplugin(zx, "commit", 0);
+			fs.writeFileSync("exit2.sql","DELIMITER //\n" +qrystr +"//\nDELIMITER ;\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message);
+			throw new Error("update script error.", script_err + '/n' + script);
+			//todo - show operator some            kind of server error
+		}
+		
+		var	sql_log_obj=['exec_qry_cb_async ok',qrystr];
+		zx.sql_log_file_obj.push(sql_log_obj);
+        if (callback !== undefined)					
+		    callback(null, script_err);
+
+			
+	} else {
+			//console.log('dataset result:', result);
+			if (result === undefined)
+				result = [];
+			var	sql_log_obj=['dataset ok',querys];
+			cx.zx.sql_log_file_obj.push(sql_log_obj);						
+			callback(null, result);		
+	}
+}	 
+	 
+//
+exports.exec_query_async = function (zx, connection, name, script,line_obj,expect , callback) {
+	var qrystr = script;
+	if (zx.mssql12) {
+		// Attempt to connect and execute queries if connection goes through
+		//console.log('MSSQL exec_qry_cb_async :'+qrystr);
+		var result = [];
+		var Req = new connection.rambase.Request(qrystr, function (err, rowCount, rows) {
+			check_parse(zx, err, script, line_obj,expect,result,callback);
+		});
+
+		Req.on('row', function(columns) {
+			columns.forEach(function(column) {
+				if (column.value === null) {
+					console.log('NULL');
+				} else {							
+					result.push(column.value);
+				}
+			});
+			console.log('MSSQL row',result);
+		});
+		
+
+		// Execute SQL statement
+		connection.rambase.db.execSql(Req);	
+		
+	} else {
+		connection.db.query(qrystr, [],
+		function (err, result, fields) {
+			check_parse(zx, err, script, line_obj,expect,result,callback);
+		});
+	}
+};
+
+	 
+
+
+
+
 exports.getquery_info = function (zx, name, script, line_obj) {
     var  err,data,done=false;
     getquery_info_async (zx, name, script, line_obj, function (err,res){
@@ -216,7 +295,7 @@ if (zx.conf.db.dialect=="mysql57")
 		"declare pkf integer default 0;\n" +
 		"declare Z$SESSIONID varchar(40) default '';\n\n\n"+ script + "\n-- no need to - set term ;#\n";
 	
-	
+	console.log('break point'); 	process.exit(0);	
 	//console.log('validate_script_async : ',querys );
 	connection.db.query(querys, [],
 		function (err, result) {
@@ -266,6 +345,45 @@ exports.dataset = function (cx, name, script, line_obj, callback) {
 	//if (querys.substring(0,6).toLowerCase()!=="select")
 	//    fn=connection.db.execute;
 
+	if (cx.zx.mssql12) {
+			// Attempt to connect and execute queries if connection goes through
+
+				//console.log('MSSQL dataset :'+querys);
+				var result = [];
+				var Req = new connection.rambase.Request(querys, function (err, rowCount, rows) {
+					if (err) throw err;
+					//console.log('MSSQL dataset done :',rowCount,result, err);
+					if (callback !== undefined) {						
+						var	sql_log_obj=['dataset ok',result,querys];
+						cx.zx.sql_log_file_obj.push(sql_log_obj);
+						//console.log('MSSQL dataset callback :',result);						
+						callback(null, result);												
+					}
+						
+				});
+
+				
+				Req.on('row', function(columns) {
+					columns.forEach(function(column) {
+						if (column.value === null) {
+							//console.log('NULL');
+						} else {
+							result.push(column.value);
+						}
+					});
+					//console.log('MSSQL dataset row',result);
+					
+				});
+				
+
+				// Execute SQL statement
+				connection.rambase.db.execSql(Req);				
+				
+			  
+				
+	} else {
+
+
 	connection.db.query(querys, [],
 		function (err, result,fields) {
 		//console.log('exports.dataset: result ',err,result,fields );
@@ -288,7 +406,7 @@ exports.dataset = function (cx, name, script, line_obj, callback) {
 		}
 
 	});
-
+    }
 };
 
 exports.fetch_dataset = function (zx,name, qrys) {
@@ -361,15 +479,15 @@ exports.exec_qry_cb_async = function (cx, name, script, line_obj, callback) {
 			//console.log('exec_qry_cb_async error:', cx.expect,script_err);
 
 			if (cx.expect !== undefined && cx.expect.test(script_err)) {
-				{
+				
 				//	console.log('Acceptable error:', cx.expect,qrystr);
-				}	
+					
 			} else {
-				console.log('script_err:', cx.expect,script_err, err, ' in :------------------>\n', script);
+				console.log('script_err: \r\n\t expect:', cx.expect,'\r\n\t script err:',script_err,'\r\n\t err:', err, '\r\n:------------------>\r\n', script, '\r\n<-----------');
 				script_err = parse_error(cx.zx, err, line_obj);
 				cx.zx.err = script_err;
 				cx.zx.eachplugin(cx.zx, "commit", 0);
-				fs.writeFileSync("exit2.sql","DELIMITER //\n" +qrystr +"//\nDELIMITER ;\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message);
+				fs.writeFileSync("exit2.sql","DELIMITER //\r\n" +qrystr +"//\r\nDELIMITER ;\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message);
 				throw new Error("update script error.", script_err + '/n' + script);
 				//todo - show operator some            kind of server error
 			}
@@ -465,7 +583,7 @@ exports.create_script_async = function (zx, real, spi, spiname, mtHash, script, 
 
 
 
-exports.write_script_async = function (zx, real, spi, name, mtHash, script, code, callback) {
+exports.write_script_async = function (zx, real, spi, name, mtHash, script, code, callback) { //todo move to driver file
 	name = name.replace(/\\/g, '/'); //windows
 	var FN_HASH = 'ZZ$' + zx.ShortHash(name); //spi; //zx.ShortHash(name);
 	var spiname =  'Z$$' + spi;
@@ -473,6 +591,35 @@ exports.write_script_async = function (zx, real, spi, name, mtHash, script, code
 	//console.log('<',script);
 	script = script.replace('Z$$integer', FN_HASH);
     
+	
+
+    if (zx.mssql12) {
+		var call_script = "call "+FN_HASH+";";
+		connection.db.query("UPDATE Z$SP set FILE_NAME=? , SCRIPT= ? , CODE=?, MT_HASH = ?, FN_HASH=?  where PK=? ", [ name, call_script, JSON.stringify(code),mtHash,FN_HASH,spi],
+			function (err, result) {
+
+			if (real) {
+				console.log('create real SP : ', script);
+				connection.db.query(script, [],
+					function (err, result) {
+					console.log('dbresult: write',result );
+					//also write it to the table for convenience and access to code field
+					//console.log('dbresult: write' );
+					console.log('write_script_async done : ');
+					
+					exports.create_script_async(zx, real, spi, FN_HASH, mtHash, script, code, 
+							function (err, result) {
+									callback(null, err);
+							});
+					
+					
+				});
+			} else
+				callback(null, err);
+		});
+    }	
+	
+	
     if (zx.conf.db.dialect=="fb25") {
 	var querys="UPDATE OR INSERT INTO Z$SP (PK,TSTAMP,FILE_NAME,SCRIPT,CODE,MT_HASH)VALUES (?,'now',?,?,?,?) MATCHING (PK) ";
 	connection.db.query(querys, [spi, name, script, JSON.stringify(code),mtHash],	
@@ -496,32 +643,31 @@ exports.write_script_async = function (zx, real, spi, name, mtHash, script, code
 	});
     }
 
-    if (zx.conf.db.dialect=="mysql57") {
+    if (zx.mysql57) {
 		var call_script = "call "+FN_HASH+";";
 		connection.db.query("UPDATE Z$SP set FILE_NAME=? , SCRIPT= ? , CODE=?, MT_HASH = ?, FN_HASH=?  where PK=? ", [ name, call_script, JSON.stringify(code),mtHash,FN_HASH,spi],
 			function (err, result) {
 
 			if (real) {
-				//console.log('create real SP : ', script);
+				console.log('create real SP : ', script);
 				connection.db.query(script, [],
 					function (err, result) {
-					//console.log('dbresult: write',result );
+					console.log('dbresult: write',result );
 					//also write it to the table for convenience and access to code field
 					//console.log('dbresult: write' );
-					//console.log('write_script_async done : ');
+					console.log('write_script_async done : ');
 					
 					exports.create_script_async(zx, real, spi, FN_HASH, mtHash, script, code, 
 							function (err, result) {
 									callback(null, err);
-							}	
-							);
+							});
 					
 					
 				});
 			} else
 				callback(null, err);
 		});
-    }
+    }	
 
 };
 
@@ -769,7 +915,8 @@ exports.init = function (/*zx*/
 
 };
 
-exports.sqltype = function (zx,fb,mysql) {	
+exports.sqltype = function (zx,fb,mysql,mssql) {	
+    if (zx.conf.db.dialect=="mssql12") return mssql;
 	if (zx.conf.db.dialect=="fb25")    return fb;
 	if (zx.conf.db.dialect=="mysql57") return mysql;
 	return fb;

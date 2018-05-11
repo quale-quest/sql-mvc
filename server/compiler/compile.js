@@ -198,15 +198,18 @@ function getDirectories(srcpath,Filter) {
         
         zx.config = db.load_config(zx.root_folder, '');//always in Quale/Config
 		//console.log('zx.config :', zx.config);
-		zx.fb25=false;
+		zx.fb25=false; //just for making mssql
 		zx.fb30=false;
 		zx.mysql57=false;
-		zx.mssql=false; // MS Sql Server
+		zx.mssql12=false; // MS Sql Server
 		zx.pgsql=false; // Postgres
 		zx.odsql=false; // Oracle
 		
         if (zx.config.db.dialect=="fb25")    zx.fb25=true;
 		if (zx.config.db.dialect=="mysql57") zx.mysql57=true;
+		if (zx.config.db.dialect=="mssql12") zx.mssql12=true;
+		if (zx.config.db.dialect=="pgsql90") zx.pgsql90=true;
+		if (zx.config.db.dialect=="odsql11") zx.odsql11=true;
 		
 		
 
@@ -530,11 +533,14 @@ var seq_page = function (zx) {
 
            
     console.warn('\n\n\n=============================================================================Page ', zx.pages[zx.pgi].name);
+	//console.warn('Checking Z process.exit(2); ');process.exit(2);
     start_page_compiler(zx);
+	//console.warn('Checking A process.exit(2); ');process.exit(2);
     zx.eachplugin(zx, "start_page", zx.pages[zx.pgi]);
 	zx.eachplugin(zx, "init", zx.line_objects); //to be deprecated
         
-
+	//console.warn('Checking process.exit(2); ');process.exit(2);
+	
 	//var fn = zx.dbg.calcfilelocation(zx,zx.pages[zx.pgi])+zx.app_extn
 	try {
 		zx.file_stack = [];
@@ -558,9 +564,7 @@ var seq_page = function (zx) {
         while(!done) { 
           require('deasync').sleep(15);
         }
-      
-		 //.rambase;
-		//console.warn('database synced on config A',result);
+		
 		//console.warn('database synced on config ',JSON.stringify(zx.conf, null, 4) );
         
 
@@ -578,10 +582,12 @@ var seq_page = function (zx) {
 		zx.error.caught_exception(zx, e, " seq_page db/config start mark-114231 ");
 	}
 
-	if (fn.indexOf('SaleForm') >= 0) {
-		console.log('compiling SaleForm to linkfiles: ', fn, zx.pages[zx.pgi]);
-		{console.trace('process.exit(2) from SaleForm : '); process.exit(44);}
-	}
+      
+
+	//console.warn('Checking process.exit(2); ');process.exit(2);
+	
+
+
 	if (fn === "") {
 		console.warn('file not found ', zx.Current_rel_file, fn);
 		zx.error.log_nofile_warning(zx, "InputFileNameBlank:", "", 0);
@@ -736,9 +742,8 @@ var seq_page = function (zx) {
             var mtjs = '' +so + '';    
             fs.writeFileSync(fnhc,mtjs);    
 
-                   
+            console.log('Writing script to database - ' + zx.main_page_name, 'size:', script.length);       
 			zx.dbu.write_script(zx,true, zx.CurrentPageIndex ,zx.main_page_name,zx.mtHash, script,'');
-
 			console.log('Wrote script to database - ' + zx.main_page_name, 'size:', script.length);
 
 			var errtxt = zx.sql.testhead + script + zx.sql.testfoot + zx.mtscript;

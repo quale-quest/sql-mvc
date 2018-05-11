@@ -1258,11 +1258,21 @@ exports.emit_variable_setter = function (zx, line_obj, v, comment) {
     if (where)
     {
 	var statement;
+
+	if (zx.mssql12) {
+		statement = 
+			"UPDATE VALU="+v.params + " where REF=coalesce(" + where + ",'') \r\n" +
+			"IF @@ROWCOUNT=0 \r\n" +
+			"\tINSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),(" + v.params + "));";
+		//console.log('emit_variable_setter zx.mssql12 : ',zx.mssql12,statement);// process.exit(2);	
+		return;
+	} 
+	if (zx.fb25)  statement = "UPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),(" + v.params + ")) matching (REF);";
 	
-	if (zx.conf.db.dialect=="fb25")  statement = "UPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),(" + v.params + ")) matching (REF);";
-	
-	if (zx.conf.db.dialect=="mysql57")
+	if (zx.mysql57)
 		statement = "INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),(" + v.params + "))ON DUPLICATE KEY UPDATE VALU="+v.params + ";";
+
+
 	
 	emit(zx, line_obj, statement, comment);
     }
@@ -1340,6 +1350,20 @@ return zx.dbu.getPageIndexNumber(zx,name);
 
 var make_pk_seq = function (zx,NAME,FIELD) {
 var triggerscript;
+if (zx.mssql12) {
+	
+	triggerscript=
+	["SET TERM ^ ;",
+	"CREATE OR ALTER TRIGGER "+NAME+"_IIT ON "+NAME+" INSTEAD OF INSERT AS",
+	"BEGIN",
+    "  SET NOCOUNT ON;",
+    "  select * into #tmp from inserted;",
+    "  UPDATE #tmp SET "+FIELD+" = (NEXT VALUE FOR  testseq  ) where "+FIELD+" is null; ",   
+    "  insert into GALLERY select * from #tmp;",
+	"END^",
+	"SET TERM ; ^"].join('\n');	
+	
+} else {
 
 if (zx.fb25) {
 	triggerscript=
@@ -1371,7 +1395,7 @@ if (zx.mysql57) {
 }
 
 
-
+}
 
 return triggerscript;
 }

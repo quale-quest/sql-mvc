@@ -7,13 +7,12 @@ say something ...
 ## SQL variations
 say something
 
-* MS SQL before version 2012 - does not have a convenient Limit Skip function 
-* 2012 or later-  syntax OFFSET 10 ROWS FETCH NEXT 10 ROWS ONLY;
-
-
+* MS SQL before version 2012 - does not have a convenient Limit Skip function - 2012 or later-  syntax OFFSET 10 ROWS FETCH NEXT 10 ROWS ONLY;
+* Triggers are not per record - the trigger fires once per statement, and the pseudo table Inserted might contain multiple rows.
+	https://stackoverflow.com/questions/3580123/how-can-i-edit-values-of-an-insert-in-a-trigger-on-sql-server
 ## indexes
 
-	https://stackoverflow.com/questions/14383503/on-duplicate-key-update-same-as-insert	 
+
 
 ## Setup server
 		
@@ -30,7 +29,7 @@ say something
 		
 		
 		sudo /opt/mssql/bin/mssql-conf setup
-		--Qua1epassword!
+		-- Qua1epassword!
 		node -v
 		
 ## setup SQLCMD
@@ -45,28 +44,76 @@ say something
 		
 		
 		
-		sqlcmd -S localhost -U SA -Q 'select @@VERSION'
-			
+		sqlcmd -S localhost -U SA -P Qua1epassword! -Q 'select @@VERSION'
+		
+## setup database and user		
+		sqlcmd -S localhost -U SA -P Qua1epassword! -Q 'CREATE DATABASE demo_db_2' ;
+		sqlcmd -S localhost -U SA -P Qua1epassword! -d demo_db_2 -Q 'CREATE DATABASE demo_db_2' ;
+		
+		sqlcmd -S localhost -U SA -P Qua1epassword! -d demo_db_2 -Q "CREATE LOGIN sqlmvc WITH PASSWORD = 'Qua1epassword';"
+		sqlcmd -S localhost -U SA -P Qua1epassword! -d demo_db_2 -Q 'select name from master.sys.server_principals'
+		sqlcmd -S localhost -U SA -P Qua1epassword! -d demo_db_2 -Q 'CREATE USER sqlmvc FOR LOGIN sqlmvc;'
+		sqlcmd -S localhost -U SA -P Qua1epassword! -d demo_db_2 -Q 'GRANT ALTER To sqlmvc'
+		sqlcmd -S localhost -U SA -P Qua1epassword! -d demo_db_2 -Q 'GRANT CONTROL To sqlmvc;'
+		sqlcmd -S localhost -U SA -P Qua1epassword! -d demo_db_2 -Q 'create schema sqlmvc'
+		sqlcmd -S localhost -U SA -P Qua1epassword! -d demo_db_2 -Q 'ALTER USER sqlmvc WITH DEFAULT_SCHEMA = sqlmvc'
 		
 		
 
 	 
 ## Quick tips for sql	 
-
-Let's see the list of locked tables mysql> show open tables where in_use>0;
-Let's see the list of the current processes, one of them is locking your table(s) mysql> show processlist;
-4) Kill one of these processes mysql> kill <put_process_id_here>;
+* check triggers:   SELECT * FROM sys.sequences
 
 
-## debuggin procedures
+## debugging procedures
 
 
 
 
 
 ## TODO
+* create domain: in future use create type and create default - now usinf fake doamin
+* ALTER TABLE MAIL Alter REF DROP DEFAULT need a complex procedure to do this! // https://stackoverflow.com/questions/1364526/how-do-you-drop-a-default-value-from-a-column-in-a-table
+CREATE\s+SEQUENCE
 
 
-* domains 
-* simple translations
+
+## Notes
+
+DELIMITER //
+DROP TRIGGER IF EXISTS trgGallery //
+CREATE TRIGGER  trgGallery
+    ON GALLERY 
+    INSTEAD OF INSERT
+AS 
+BEGIN
+ 	 DECLARE @original_query VARCHAR(1024);
+    SET NOCOUNT ON;
+    
+ 
+    select * into #tmp from inserted;
+    UPDATE #tmp SET Ref = (NEXT VALUE FOR  testseq  ) where Ref is null;
+    -- insert into DEBUG(msg)  select * from #tmp;
+    insert into GALLERY select * from #tmp;
+    insert into DEBUG(msg) select name from inserted;
+    -- drop table #tmp;
+END //
+
+DELIMITER ;
+
+
+
+
+
+DELIMITER //
+insert into GALLERY(name) values ('pabc1234'); //
+select * from debug;//
+select * from GALLERY;//
+DELIMITER ;
+
+DELIMITER //
+delete  from debug//
+delete  from GALLERY//
+DELIMITER ;
+
 

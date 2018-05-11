@@ -331,11 +331,12 @@ var recurseMacroExpansion = function (zx, line_obj, varx, QryStr) {
 
 					if (zx.pass > 2) {
 						console.log('recurseMacroExpansion MISSSING VARIABLE !!!!!!!!!!!!!!!!!!!!!!!!!!! : {', r.content, '}'
-							//,line_obj,'\n'
-							,zx.variables.named
+							
+							,"\r\nExisting Variables:\r\n",zx.variables.named
+							,"\r\nLine------------------:\r\n",line_obj,'\n'
 						);
+						//when adding database drivers getting to this point means you have to look in the quicc files
 						
-						process.exit(2);
 						zx.err = {};
 						zx.err.classs = "MISSSING VARIABLE";
 						zx.err.message = zx.err.classs + " : " + r.content;
@@ -343,6 +344,7 @@ var recurseMacroExpansion = function (zx, line_obj, varx, QryStr) {
 						zx.err.source_col = line_obj.srcinfo.start_col;
 						zx.err.source_file = line_obj.srcinfo.filename;
 						zx.err.err = line_obj.srcinfo.source;
+						process.exit(2);
 					}
 
 					if (varx.target_type === 'paramitizedstatement')
