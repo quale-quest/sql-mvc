@@ -135,23 +135,23 @@ var check_parse = function (zx, err, script, line_obj,expect,result,callback) {
 	if (err) {
 		//parse the error
 		var script_err = JSON.stringify(err);
-		var	sql_log_obj=['dataset',qrystr,script_err];
+		var	sql_log_obj=['dataset',script,script_err];
 		zx.sql_log_file_obj.push(sql_log_obj);	
 		if (expect !== undefined && expect.test(script_err)) {
 			// Silently ignore the error
-			//	console.log('Acceptable error:', expect,qrystr);
+			//	console.log('Acceptable error:', expect,script);
 				
 		} else { // make a record of the error for debugging
 			console.log('script_err:', expect,script_err, err, ' in :------------------>\n', script);
 			script_err = parse_error(zx, err, line_obj);
 			zx.err = script_err;
 			zx.eachplugin(zx, "commit", 0);
-			fs.writeFileSync("exit2.sql","DELIMITER //\n" +qrystr +"//\nDELIMITER ;\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message);
+			fs.writeFileSync("exit2.sql","DELIMITER //\n" +script +"//\nDELIMITER ;\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message);
 			throw new Error("update script error.", script_err + '/n' + script);
 			//todo - show operator some            kind of server error
 		}
 		
-		var	sql_log_obj=['exec_qry_cb_async ok',qrystr];
+		var	sql_log_obj=['exec_qry_cb_async ok',script];
 		zx.sql_log_file_obj.push(sql_log_obj);
         if (callback !== undefined)					
 		    callback(null, script_err);
@@ -161,8 +161,9 @@ var check_parse = function (zx, err, script, line_obj,expect,result,callback) {
 			//console.log('dataset result:', result);
 			if (result === undefined)
 				result = [];
-			var	sql_log_obj=['dataset ok',querys];
-			cx.zx.sql_log_file_obj.push(sql_log_obj);						
+			var	sql_log_obj=['dataset ok',script];
+			zx.sql_log_file_obj.push(sql_log_obj);
+			result.ok=true;	
 			callback(null, result);		
 	}
 }	 
@@ -203,140 +204,50 @@ exports.exec_query_async = function (zx, connection, name, script,line_obj,expec
 
 	 
 
-
-
-
-exports.getquery_info = function (zx, name, script, line_obj) {
-    var  err,data,done=false;
-    getquery_info_async (zx, name, script, line_obj, function (err,res){
-        data = res;
-        done = true;
-        });
-    
+exports.fetch_query_result = function (zx, connection, name, script,line_obj,expect) {		
+	var result, done=false;
+    //console.trace("fetch_dataset:" ,qrys,zx.dbu);
+	exports.exec_query_async(zx, 
+		connection, 
+		name, 
+		script,
+		line_obj,
+		expect , 
+		function (err,res) {
+			result = res;
+			done = true;
+		});
+	
 	while (!done) {
 		deasync.sleep(deasync_const);
 	}
-    return data;
-}    
-    
-exports.getquery_info_async = function (zx, name, script, line_obj, return_callback) { //from  node_modules\node-firebird\test\test.js
-	//useful : http://www.alberton.info/firebird_sql_meta_info.html#.VFE8QmckQhU
-	var tr,
-	ret,
-	st;
-	function error(/*err*/
-	) {
-		if (tr)
-			tr.rollback();
-		if (st)
-			st.drop();
-		//console.log('=====error:',err);
-	}
-
-	script = script.replace(/operator.ref/gi, "?");
-	script = script.replace(new RegExp('operator.' + zx.conf.db.platform_user_table.user_pk_field, 'gi'), "?");
-	// console.log('prepareingStatement:',script );
-
-	connection.db.startTransaction(
-		function (err, transaction) {
-		if (err) {
-			error(err);
-			var source = {}; //filename,start_line,start_col,source};
-			parse_error(zx, err, source, line_obj);
-			console.log('Error starting transaction:', err);
-			return;
-		}
-		tr = transaction;
-		transaction.newStatement(script,
-			function (err, statement) {
-			if (err) {
-				error(err);
-				console.log('=====script_err:');
-				var script_err = parse_error(zx, err, line_obj, script);
-				script_err.query = script;
-				//console.log('=====script:',script);
-				//console.log('=====script:',zx.err);
-				ret = {
-					status : "err",
-					err : err
-				};
-				zx.error.write_getquery(zx, zx.err);
-				//throw new Error("getquery error.")
-				return_callback(null, ret);
-				//return
-			} else {
-				st = statement;
-				ret = {
-					status : "done",
-					output : statement.output,
-					input : statement.input
-				};
-				//console.log("statement output:",statement.output);
-				//console.log("statement input:",statement.input);
-				statement.drop();
-				return_callback(null, ret);
-			}
-		});
-	});
-
-};
-
-exports.validate_script_async = function (zx, name, script, callback) {
-
-var querys;
-
-if (zx.conf.db.dialect=="fb25")
-	querys = 'EXECUTE BLOCK RETURNS  (cid integer,info varchar(200),res blob SUB_TYPE 1)AS declare pki integer=0;declare pkf integer=0;declare z$sessionid varchar(40)=\'\';' + script;
-if (zx.conf.db.dialect=="mysql57")
-	querys =
-		"\n\n\nDELIMITER  $$\nDROP PROCEDURE IF EXISTS execute_test $$\n" +
-		"CREATE PROCEDURE execute_test (cid  integer,info varchar(200), res TEXT)\nBEGIN\n" +
-		"declare pki integer default 0;\n" +
-		"declare pkf integer default 0;\n" +
-		"declare Z$SESSIONID varchar(40) default '';\n\n\n"+ script + "\n-- no need to - set term ;#\n";
-	
-	console.log('break point'); 	process.exit(0);	
-	//console.log('validate_script_async : ',querys );
-	connection.db.query(querys, [],
-		function (err, result) {
-		//console.log('validation result: write',err,result );
-		if (!result || result.length === 0) {
-			//parse the error			
-			var script_err = parse_error(zx, err);
-			var	sql_log_obj=['validate_script_async',querys,script_err];
-			zx.sql_log_file_obj.push(sql_log_obj);
-			zx.err = script_err;
-			//todo - show operator some kind of server error
-            console.log('script_nok:',script_err );
-			callback(null, script_err);
-		} else {
-			//console.log('script_ok:'); //,result );
-			var	sql_log_obj=['validate_script_async ok',querys];
-			zx.sql_log_file_obj.push(sql_log_obj);				
-			callback(null, "ok");
-		}
-
-	});
-
-};
-
-exports.validate_script = function (zx, name, script) {
-    var result, done=false;
-	//console.log("================================\n validate_script input :" ,script);
-	
-    exports.validate_script_async(zx, name, script, 
-		function (err,res) {
-		result = res;
-		done = true;
-	});
-	
-	while (!done) {		
-		deasync.sleep(deasync_const);
-	}
-    //console.log("validate_script result:" ,result);
-	//console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" );
+    //console.log("fetch_dataset:" ,result);
 	return result;
 };
+
+
+
+
+
+exports.validate_script = function (zx, name, script) {
+	var querys;
+
+	if (zx.conf.db.dialect=="fb25")
+		querys = 'EXECUTE BLOCK RETURNS  (cid integer,info varchar(200),res blob SUB_TYPE 1)AS declare pki integer=0;declare pkf integer=0;declare z$sessionid varchar(40)=\'\';' + script;
+	if (zx.conf.db.dialect=="mysql57")
+		querys =
+			"\n\n\nDELIMITER  $$\nDROP PROCEDURE IF EXISTS execute_test $$\n" +
+			"CREATE PROCEDURE execute_test (cid  integer,info varchar(200), res TEXT)\nBEGIN\n" +
+			"declare pki integer default 0;\n" +
+			"declare pkf integer default 0;\n" +
+			"declare Z$SESSIONID varchar(40) default '';\n\n\n"+ script + "\n-- no need to - set term ;#\n";
+			
+	var result = exports.fetch_query_result(zx, connection, name, querys,0,undefined);
+	console.log("validate_script result:" ,result);
+	if (result.ok) return ("ok");
+	return result;
+}
+
 
 exports.dataset = function (cx, name, script, line_obj, callback) {
 	var querys = script;
