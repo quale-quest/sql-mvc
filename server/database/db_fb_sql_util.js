@@ -151,7 +151,7 @@ var check_parse = function (zx, err, script, line_obj,expect,result,callback) {
 			//todo - show operator some            kind of server error
 		}
 		
-		var	sql_log_obj=['exec_qry_cb_async ok',script];
+		var	sql_log_obj=['check_parse ok',script];
 		zx.sql_log_file_obj.push(sql_log_obj);
         if (callback !== undefined)					
 		    callback(null, script_err);
@@ -173,7 +173,7 @@ exports.exec_query_async = function (zx, connection, name, script,line_obj,expec
 	var qrystr = script;
 	if (zx.mssql12) {
 		// Attempt to connect and execute queries if connection goes through
-		//console.log('MSSQL exec_qry_cb_async :'+qrystr);
+		//console.log('MSSQL check_parse :'+qrystr);
 		var result = [];
 		var Req = new connection.rambase.Request(qrystr, function (err, rowCount, rows) {
 			check_parse(zx, err, script, line_obj,expect,result,callback);
@@ -247,97 +247,15 @@ exports.validate_script = function (zx, name, script) {
 	if (result.ok) return ("ok");
 	return result;
 }
-
-
-exports.dataset = function (cx, name, script, line_obj, callback) {
-	var querys = script;
-	//console.log('exports.dataset: ',querys);
-	//var fn=connection.db.query;
-	//if (querys.substring(0,6).toLowerCase()!=="select")
-	//    fn=connection.db.execute;
-
-	if (cx.zx.mssql12) {
-			// Attempt to connect and execute queries if connection goes through
-
-				//console.log('MSSQL dataset :'+querys);
-				var result = [];
-				var Req = new connection.rambase.Request(querys, function (err, rowCount, rows) {
-					if (err) throw err;
-					//console.log('MSSQL dataset done :',rowCount,result, err);
-					if (callback !== undefined) {						
-						var	sql_log_obj=['dataset ok',result,querys];
-						cx.zx.sql_log_file_obj.push(sql_log_obj);
-						//console.log('MSSQL dataset callback :',result);						
-						callback(null, result);												
-					}
-						
-				});
-
-				
-				Req.on('row', function(columns) {
-					columns.forEach(function(column) {
-						if (column.value === null) {
-							//console.log('NULL');
-						} else {
-							result.push(column.value);
-						}
-					});
-					//console.log('MSSQL dataset row',result);
-					
-				});
-				
-
-				// Execute SQL statement
-				connection.rambase.db.execSql(Req);				
-				
-			  
-				
-	} else {
-
-
-	connection.db.query(querys, [],
-		function (err, result,fields) {
-		//console.log('exports.dataset: result ',err,result,fields );
-		if (err) {
-			//parse the error
-			console.log('exports.dataset err: ');
-			var script_err = parse_error(cx.zx, err);
-			var	sql_log_obj=['dataset',querys,script_err];
-			cx.zx.sql_log_file_obj.push(sql_log_obj);			
-			cx.zx.err = script_err;
-			//todo - show operator some kind of server error
-			callback(null, script_err);
-		} else {
-			//console.log('dataset result:', result);
-			if (result === undefined)
-				result = [];
-			var	sql_log_obj=['dataset ok',querys];
-			cx.zx.sql_log_file_obj.push(sql_log_obj);						
-			callback(null, result);
-		}
-
-	});
-    }
-};
-
 exports.fetch_dataset = function (zx,name, qrys) {
-	var result, done=false;
-    //console.trace("fetch_dataset:" ,qrys,zx.dbu);
-	zx.dbu.dataset({zx : zx },
-        name, 
-        qrys,
-        0,
-		function (err,res) {
-		result = res;
-		done = true;
-	});
 	
-	while (!done) {
-		deasync.sleep(deasync_const);
-	}
-    //console.log("fetch_dataset:" ,result);
-	return result;
-};
+var result = exports.fetch_query_result(zx, connection, name, qrys,0,undefined);	
+return result;
+	
+}
+
+
+
 exports.singleton = function (zx, field, qrys,trace) {
 	if (trace) console.log('singleton q: ',qrys,' field:',field);
     
@@ -372,64 +290,11 @@ exports.getGenerator = function (zx, name, increment) {
 	return exports.singleton(zx, "gen_id", "SELECT GEN_ID( " + name + "," + increment + " ) FROM RDB$DATABASE;");
 };
 
-exports.exec_qry_cb_async = function (cx, name, script, line_obj, callback) {
-
-	var qrystr = script;
-	//console.log('exec_qry_cb_async :',qrystr );
-	connection.db.query(qrystr, [],
-		function (err, result, fields) {
-		//console.log('exec_qry_cb_async result: write',err,result, fields );
-		//if (verbosity>5)
-		//   console.log(" Executed without error, from line:", Lastddlcount,' lines:',DDLLen,'text:',qrystr);
-
-		if (err) {
-			//parse the error
-			var script_err = JSON.stringify(err);
-			var	sql_log_obj=['dataset',qrystr,script_err];
-			cx.zx.sql_log_file_obj.push(sql_log_obj);	
-			//console.log('exec_qry_cb_async error:', cx.expect,script_err);
-
-			if (cx.expect !== undefined && cx.expect.test(script_err)) {
-				
-				//	console.log('Acceptable error:', cx.expect,qrystr);
-					
-			} else {
-				console.log('script_err: \r\n\t expect:', cx.expect,'\r\n\t script err:',script_err,'\r\n\t err:', err, '\r\n:------------------>\r\n', script, '\r\n<-----------');
-				script_err = parse_error(cx.zx, err, line_obj);
-				cx.zx.err = script_err;
-				cx.zx.eachplugin(cx.zx, "commit", 0);
-				fs.writeFileSync("exit2.sql","DELIMITER //\r\n" +qrystr +"//\r\nDELIMITER ;\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message);
-				throw new Error("update script error.", script_err + '/n' + script);
-				//todo - show operator some            kind of server error
-			}
-			callback(null, script_err);
-		} else {
-			//console.log('exec_qry_cb result:', result,qrystr);
-			var	sql_log_obj=['exec_qry_cb_async ok',qrystr];
-			cx.zx.sql_log_file_obj.push(sql_log_obj);				
-			callback(null, result);
-		}
-
-	});
-
-};
-
 exports.exec_qry_cb = function (cx, name, script, line_obj) {
-	//onsole.log('.write_script - ' +spi,name,'script:',script);
-    var  err,result,done=false;
-	name = name.replace(/\\/g, '/'); //windows
-    
-    exports.exec_qry_cb_async (cx, name, script, line_obj, function (err,res){        
-        result=res;
-        done = true;        
-        });
-    
-    while (!done) {
-		deasync.sleep(deasync_const);
-	}
-    
-  return  result;
+	name = name.replace(/\\/g, '/'); //windows	
+   return exports.fetch_query_result(cx.zx, connection, name, script,line_obj,cx.expect);
 };
+ 
 exports.getUpdateOrInsert = function (zx, name) {
 	
 	var CurrentPageIndex = exports.singleton(zx, "pk", "select pk from Z$SP where FILE_NAME='" + name + "'");
