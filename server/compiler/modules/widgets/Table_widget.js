@@ -269,10 +269,9 @@ var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx,
 		
 		if (zx.fb25) {
 			//tcx.query += " ROWS 1 ";
-		}		
-		if (zx.mysql57) {
+		} else if (zx.mysql57) {
 			tcx.query += " Limit 1 ";
-		}
+		} else throw new Error("dialect code missing formulatemodel_quale");
 			
 
 	}

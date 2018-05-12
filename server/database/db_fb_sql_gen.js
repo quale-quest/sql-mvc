@@ -1039,7 +1039,7 @@ exports.start_pass = function (zx /*, line_objects*/
 	zx.sql.cidti = []; //each table will have id's starting from a range 100000000+  //limits 10 million records per table - 4 hundred tables on one page
 	zx.sql.cidti_factor = 10000000;
 
-    if (zx.conf.db.dialect=="fb25")  { 	
+    if (zx.fb25)  { 	
 		zx.sql.testhead =
 		"\n\n\nset term #;\n" +
 		"EXECUTE BLOCK RETURNS  (cid  integer,info varchar(200), res blob SUB_TYPE 1)AS \n" +
@@ -1049,7 +1049,7 @@ exports.start_pass = function (zx /*, line_objects*/
 		zx.sql.testfoot = "\n-- no need to - set term ;#\n";	
 	}
 		
-	if (zx.conf.db.dialect=="mysql57") {
+	if (zx.mysql57) {
 		var pname = "ZZ$"+zx.ShortHash(zx.main_page_name);
 		zx.sql.testhead =
 		//"\n\n\nDELIMITER $$\nDROP PROCEDURE IF EXISTS "+pname+" $$\n" +
@@ -1070,7 +1070,25 @@ exports.start_pass = function (zx /*, line_objects*/
 	    zx.sql.testfoot = "\nend\n";	
 	}
 		
+	if (zx.mssql12) {
+		var pname = "ZZ$"+zx.ShortHash(zx.main_page_name);
+		zx.sql.testhead =
+		//"\n\n\nDELIMITER $$\nDROP PROCEDURE IF EXISTS "+pname+" $$\n" +
+		"CREATE PROCEDURE "+pname+"(@cid  integer,@info varchar(200), @res TEXT) AS \r\nBEGIN\r\n" +
+		"declare @Z$SESSIONID VARCHAR(40);\n" +
+		"declare @pki INTEGER;\n"+
+		"declare @pkf INTEGER;\n"+
+		"declare @NEW_CID INTEGER;\n"+
+		"declare @SCRIPTNAMED VARCHAR(250);\n"+		
+		"";		
+		
 	
+	
+		//console.log('zx.sql.testhead : ',zx.sql.testhead);
+	    zx.sql.testfoot = "\nend\n";	
+	}
+		
+		
 
 	if (zx.sql.engine === 'flamerobin') { //flamerobin
 		emit(zx, 0, "set term #;", "");
@@ -1102,17 +1120,17 @@ exports.start_pass = function (zx /*, line_objects*/
 	for (var name in zx.sql.declare_above) {
 
 		var decl = zx.sql.declare_above[name];
-		//console.log('declare_above : ',name,decl);
+		console.log('declare_above : ',name,decl);
 		emitdeclare(zx, 0, exports.emit_var_def(decl.name),decl.db_type,"''");
 	}
 	for (var i = 0; i < zx.sql.max_f; i++) {
 		emitdeclare(zx, 0, "f" + i,"varchar(200)","''");
 	}
 
-	if (zx.conf.db.dialect=="fb25")  emit(zx, 0, "BEGIN", "");
+	if (zx.fb25)  emit(zx, 0, "BEGIN", "");
 	emit(zx, 0, "-- assign_params", "");
 
-	if (zx.conf.db.dialect=="mysql57") {
+	if (zx.mysql57) {
 		emit(zx, 0, "set Z$SESSIONID=@IN_SESSIONID;", "");
 		emit(zx, 0, "set pki=@IN_CID;", "");
 		emit(zx, 0, "set pkf=@IN_PKREF;", "");
@@ -1127,7 +1145,7 @@ exports.start_pass = function (zx /*, line_objects*/
 	emit(zx, 0, zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + "'[{``start``:``true``';", "");
 	emito(zx, "Object", "fullstash");
     
-    emitset( zx,0,"", "',``Session``:``'","Z$SESSIONID","'``'"     );
+    emitset( zx,0,"", "',``Session``:``'",zx.config.db.var_actaul+"Z$SESSIONID","'``'"     );
     
 	var v = {
 		table : 'passed',
@@ -1142,8 +1160,9 @@ exports.start_pass = function (zx /*, line_objects*/
 	emito(zx, "ContainerId", "GUIDofTheTemplate");
 	emits(zx, "``Data``:{``start``:``true``");
 
-	if (zx.conf.db.dialect=="fb25")    emit(zx, 0, "cid = gen_id( Z$CONTEXT_seq, 1 );");
-	if (zx.conf.db.dialect=="mysql57") emit(zx, 0, "set cid = (SELECT Z$GEN_CONTEXT_SEQ() );");
+	if (zx.fb25)    emit(zx, 0, "cid = gen_id( Z$CONTEXT_seq, 1 );");
+	if (zx.mysql57) emit(zx, 0, "set cid = (SELECT Z$GEN_CONTEXT_SEQ() );");
+	if (zx.mssql12) emit(zx, 0, "set @cid = (SELECT Z$GEN_CONTEXT_SEQ() );");
 
 	//emit(zx,0,'st=\'select operator_ref from Z$CONTEXT where pk = \'||pki;');
 	//emit(zx,0,'execute statement st into operator_ref;');

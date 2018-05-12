@@ -202,11 +202,12 @@ function dll_blocks_seperate_term(inputs, src_obj) { //splits the input into blo
 	var blocks = [];
 	var inputsx='';
 
-	if (zx.mysql57) {	
+	if (zx.fb25) { }
+	else if (zx.mysql57) {	
 		//replace mysql DELIMITER ;;    and DELIMITER ;  with firebird DELIMITERs
 		inputs = inputs.replace(/DELIMITER\s*;;/i, "SET TERM ^ ; ");
 		inputs = inputs.replace(/DELIMITER\s*;/i, "SET TERM ; ^ ");
-	}
+	} else throw new Error("dialect code missing");
 
 	while (inputs !== '') {
 		//console.log('dll_blocks_seperate_term :', inputs);
@@ -302,10 +303,11 @@ function dll_blocks_seperate_term(inputs, src_obj) { //splits the input into blo
 
 var exec_qry = function (cx, qrys) {
 	
-	if (zx.mysql57) {
+	if (zx.fb25) { }
+	else if (zx.mysql57) {
 		qrys = qrys.replace(/--:/g, "-- :");
 		qrys = qrys.replace(/cast\s*\(\s*'now'\s+as\s+timestamp\s*\)/gi, " NOW() "); //also check compile.js:687
-	}
+	} else throw new Error("dialect code missing");
 	
 
 	exports.write_log.push(qrys);
@@ -366,12 +368,15 @@ var checkTable = function (zx, name) {
         return singleton(zx, "count(*)", "select count(*) from information_schema.tables where table_schema = '"+zx.conf.db.database_filename+"' AND table_name = '" + name.toUpperCase() + "' ;");
 	if (zx.fb25)
         return singleton(zx, "count", "select count(*) from rdb$relations where rdb$relation_name ='" + name.toUpperCase() + "' ;");
+	throw new Error("dialect code missing");
 };
 var checkView = function (zx, name) {
+		
 	if (zx.mysql57)
         return singleton(zx, "count(*)", "select count(*) from information_schema.tables where table_schema = '"+zx.conf.db.database_filename+"' AND table_name = '" + name.toUpperCase() + "' AND TABLE_TYPE='VIEW' ;");
 	if (zx.fb25)
 	    return singleton(zx, "count(*)", "select count(*) from rdb$relations where rdb$relation_name ='" + name + "' AND (rdb$view_blr IS NOT NULL);");
+	throw new Error("dialect code missing");
 };
 var checkGenerator = function (zx, name) {
 	//CREATE SEQUENCE IF NOT EXISTS myschema.myseq;  Postgres 9.5+
@@ -381,6 +386,7 @@ var checkGenerator = function (zx, name) {
         return singleton(zx, "count(*)", "select count(*) from information_schema.tables where table_schema = '"+zx.conf.db.database_filename+"' AND table_name = 'Z$GEN_" + name.toUpperCase() + "' AND TABLE_TYPE='BASE VIEW' ;");
 	if (zx.fb25)
 	    return singleton(zx, "count(*)", "SELECT count(*) FROM RDB$GENERATORS  where RDB$GENERATOR_NAME='" + name + "' ;");
+	throw new Error("dialect code missing");
 };
 var getGenerator = function (zx, name, increment) {
 	return singleton(zx, "gen_id", "SELECT GEN_ID( " + name + "," + increment + " ) FROM RDB$DATABASE;");
@@ -510,7 +516,20 @@ var CREATE_TABLE = function (zx, qrystr) {
 					//console.log('Table fields FFDx:', field, default_value);					
 				}
 				
-			if (zx.mssql12) {
+			if (zx.fb25) {
+				//simple types
+				field = field.replace(/TINYTEXT/i,   "VARCHAR(256)");	
+				field = field.replace(/\sTEXT\s/i,   "BLOB SUB_TYPE 1");	
+				field = field.replace(/MEDIUMTEXT/i, "BLOB SUB_TYPE 1");					
+				field = field.replace(/LONGTEXT/i,   "BLOB SUB_TYPE 1");	
+			} else if (zx.mysql57) {
+				//simple fb to mysql types
+				field = field.replace(/BLOB\s*SUB_TYPE\s*1/i,   "MEDIUMTEXT");
+				if (default_value) {
+					default_value = default_value.replace(/'now'/i, "CURRENT_TIMESTAMP");
+					default_set=1;
+					}
+			} else if (zx.mssql12) {
 				field = field.replace(/BLOB\s*SUB_TYPE\s*1/i,   " VARCHAR(MAX)");
 				field = field.replace(/BLOB/i,                  " VARBINARY(MAX)");
 				field = field.replace(/TIMESTAMP/i,   			"datetime");					
@@ -518,23 +537,9 @@ var CREATE_TABLE = function (zx, qrystr) {
 					default_value = default_value.replace(/'now'/i, "CURRENT_TIMESTAMP");
 					default_set=1;
 					}				
-			} else {
-			if (zx.mysql57) {
-				//simple fb to mysql types
-				field = field.replace(/BLOB\s*SUB_TYPE\s*1/i,   "MEDIUMTEXT");
-				if (default_value) {
-					default_value = default_value.replace(/'now'/i, "CURRENT_TIMESTAMP");
-					default_set=1;
-					}
-				}
-			if (zx.fb25) {
-				//simple types
-				field = field.replace(/TINYTEXT/i,   "VARCHAR(256)");	
-				field = field.replace(/\sTEXT\s/i,   "BLOB SUB_TYPE 1");	
-				field = field.replace(/MEDIUMTEXT/i, "BLOB SUB_TYPE 1");					
-				field = field.replace(/LONGTEXT/i,   "BLOB SUB_TYPE 1");	
-				}
 			}
+			
+			
 			//console.log('--> ',field );	
 			if (defs=field.match(/([`\w$]+)\s+([()\w$]+)/i)) {				
 				// replace with fake domains				
@@ -584,15 +589,15 @@ var CREATE_TABLE = function (zx, qrystr) {
 		//console.log('**************************************************************AUTO_INCREMENT type check:', recodesql);
 			
 		var AUTO_INCREMENT=(recodesql != qrystr);		
-		if (zx.fb25){
+		if (zx.fb25) {
 				//if (fb30) //has syntax for auto creating				
 				if (AUTO_INCREMENT) qrystr=recodesql;
 				//add trigger code
 				qrystr = qrystr.replace(/MEDIUMTEXT/i, "BLOB SUB_TYPE 1");				
-			}		
-		if (zx.mysql57){
+		} else if (zx.mysql57){
 			    qrystr = qrystr.replace(/BLOB\s+SUB_TYPE\s+1/i, "MEDIUMTEXT");
-			}
+		} else throw new Error("dialect code missing");
+		
 		exec_qry(cx, qrystr);
 		return "";
 	} else {
@@ -664,8 +669,9 @@ var CREATE_TABLE = function (zx, qrystr) {
 					
                     	
 					cx.expect = zx.dbu.sqltype(zx,/335544351/,/ER_DUP_FIELDNAME/,/is specified more than once/);
-					if (zx.fb25)    exec_qry(cx, "ALTER TABLE " + Table + " alter " + FieldName + " TYPE " + FieldType); 
-					if (zx.mysql57) exec_qry(cx, "ALTER TABLE " + Table + " MODIFY " + FieldName + "  " + FieldType);
+					if (zx.fb25) { exec_qry(cx, "ALTER TABLE " + Table + " alter " + FieldName + " TYPE " + FieldType); 
+					} else if (zx.mysql57) { exec_qry(cx, "ALTER TABLE " + Table + " MODIFY " + FieldName + "  " + FieldType);
+					} else throw new Error("dialect code missing");
 					//console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Default:', Default,":");
 					if (Default !== "") {
                         //console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Table fields FFD Default:', Table,' . ',FieldName,Default);
@@ -1090,8 +1096,8 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			block.name = 'TRIGGER_' + name[1];
 			//var trigger_ = qrystr.match(/CREATE\s+TRIGGER\s(\S*)/i);			
 			//console.log("\n\n\n\n====================TRIGGER_function :",name[1]);
-			
-			if (zx.mysql57) {
+			if (zx.fb25) { qrystr = qrystr.replace(/CREATE\s+TRIGGER\s/i, "CREATE OR ALTER TRIGGER ");
+			} else if (zx.mysql57) {
 				//qrystr = "LOCK TABLES t1 WRITE; DROP TRIGGER test.ins_sum;" + qrystr +"UNLOCK TABLES;";
 				
 				var Drop_trigger = deepcopy(block);
@@ -1103,8 +1109,8 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 				blocks.push(Drop_trigger);
 				
 				//qrystr = "DELIMITER ;;\n " + qrystr  +"\nDELIMITER ;\n";
-		    }else{qrystr = qrystr.replace(/CREATE\s+TRIGGER\s/i, "CREATE OR ALTER TRIGGER ");
-			}
+		    } else throw new Error("dialect code missing");
+			
 			block.order = 1800;
 		} else if (name=qrystr.match(/CREATE\s+OR\s+ALTER\s+TRIGGER\s+([\w$]+)/i)) { //execute as is
 			block.name = 'TRIGGER_' + name[1];
@@ -1128,8 +1134,12 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			block.order = 2200;
 			qrystr = qrystr.replace(/;\s+$/g, '');
 			if (insertmatchingfield !== '') {				
-	
-				if (zx.mysql57||zx.mssql12) {	
+
+				if (zx.fb25) {
+					qrystr = "update or " + qrystr + " matching(" + insertmatchingfield + ") ";
+					block.qrystr = qrystr;				
+					insertmatchingblock.records.push(block);					
+				} else if (zx.mysql57||zx.mssql12) {	
 					block.qrystr = qrystr;				
 				
 					var Drop_record = deepcopy(block);
@@ -1138,12 +1148,8 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 					Drop_record.qrystr = exports.insert_update_variation(zx, qrystr,insertmatchingfield);
 					Drop_record.Hash = zx.ShortHash(qrystr);
 					blocks.push(Drop_record);					
-				} else {
-				if (zx.fb25) {
-					qrystr = "update or " + qrystr + " matching(" + insertmatchingfield + ") ";
-					block.qrystr = qrystr;				
-					insertmatchingblock.records.push(block);					
-				}}	
+				} else throw new Error("dialect code missing");
+	
 			
 			}
 

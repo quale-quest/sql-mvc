@@ -227,21 +227,21 @@ var database_default_config = {
 
 		"useUDF": "no",
 	    "var_subst": "/***/",
-		"var_actaul": "",
+		"var_actaul": "@",
 		"var_global_get": "@",
 		"var_global_set" : "set @",
 				
 		"sql_set_prefix": "set ",		
-		"sql_concat_set": "res=",
+		"sql_concat_set": "@res=",
 		"sql_concat_prefix": "concat(",
-		"sql_concat_res": "res=concat(res,",
+		"sql_concat_res": "@res=concat(@res,",
 			
 		"sql_concat_seperator": ",",
 		"sql_concat_postfix": ")",
 		"sql_end_postfix": ";",			
 		"sql_endif_postfix": "end if;",			
-		"sql_First1": " ",		
-		"sql_Limit1": " limit 1 ",		
+		"sql_First1": " top 1 ",		
+		"sql_Limit1": " ",		
 		
 		"sql_MAXDATE": "'2030/01/01'"		
     }

@@ -569,13 +569,13 @@ var seq_page = function (zx) {
         
 
         zx.CurrentPageIndex = 1; //default until pass 5
-           
+        //console.trace('set CurrentPageIndex ',zx.CurrentPageIndex );
         
 		var fn = fileutils.locatefile(zx, zx.pages[zx.pgi].name, zx.root_folder, "Compile " + zx.pages[zx.pgi].name, 120022);
 		//console.warn('file located : ',fn);
 
 		zx.model_files = get_model_files(zx, fn);
-		
+		//console.log('\r\n...........................................seq_page get_model_files:',zx.CurrentPageIndex,' : ',zx.pgi);		
 		//console.warn('zx.model_files :',zx.model_files);
 
 	} catch (e) {
@@ -742,7 +742,8 @@ var seq_page = function (zx) {
             var mtjs = '' +so + '';    
             fs.writeFileSync(fnhc,mtjs);    
 
-            console.log('Writing script to database - ' + zx.main_page_name, 'size:', script.length);       
+            //console.trace('Writing script to database - ' + zx.main_page_name, 'size:', script.length," spi:",zx.CurrentPageIndex);       
+			if (zx.CurrentPageIndex==undefined) throw new Error("zx.CurrentPageIndex==undefined");
 			zx.dbu.write_script(zx,true, zx.CurrentPageIndex ,zx.main_page_name,zx.mtHash, script,'');
 			console.log('Wrote script to database - ' + zx.main_page_name, 'size:', script.length);
 
@@ -777,6 +778,7 @@ var seq_pages = function (zx) {
 		while (zx.pgi < zx.pages.length) {
             var ok;
 			try {
+				//console.log('\r\n...........................................seq_pages CurrentPageIndex:',zx.CurrentPageIndex,' : ',zx.pgi);
 				ok = seq_page(zx);
 			} catch (e) {
 				zx.error.caught_exception(zx, e, " iterating pages mark-114230 ");

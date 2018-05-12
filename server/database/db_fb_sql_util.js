@@ -20,6 +20,7 @@ var deasync_const=5;
 
 var connection = {};
 var deepcopy = require('deepcopy');
+ var TYPES = require('tedious').TYPES;
 
 var parse_error = function (zx, err, source, script) {
 	//console.log('\n\n\n\n\n\n\nparse_error a :');
@@ -191,10 +192,23 @@ exports.exec_query_async = function (zx, connection, name, script,params,line_ob
 					result.push(column.value);
 				}
 			});
-			console.log('MSSQL row',result);
+			//console.log('MSSQL row',result);
 		});
 		
-
+		if (params) {
+			//console.log('MSSQL params',typeof params,params);
+			var p=1;
+			//for (var par in params) {
+			params.forEach(function (par) {
+				//console.log('MSSQL addParameter',p + " : ",typeof par,par);
+				if (par===undefined) {
+					throw new Error("MSSQL params undefined p:" + p , "");					
+				}
+				Req.addParameter('p'+p, TYPES.VarChar, par);
+				p++;
+			});
+		}
+		
 		// Execute SQL statement
 		connection.rambase.db.execSql(Req);	
 		
@@ -286,6 +300,11 @@ exports.singleton = function (zx, field, qrys,trace) {
 		console.log("singleton unknown record :", res);
 		return '';
 	}
+	if (zx.mssql12) {
+		if (res[0]) {
+			return res[0];
+		}
+	}
 	//console.log('singleton s: ',field);
 	if (res[0][field] !== undefined) {
 
@@ -314,37 +333,41 @@ exports.exec_qry_cb = function (cx, name, script, line_obj) {
  
 exports.getUpdateOrInsert = function (zx, name) {
 	
-	var CurrentPageIndex = exports.singleton(zx, "pk", "select pk from Z$SP where FILE_NAME='" + name + "'");
-	//console.log('getUpdateOrInsert a: ' +CurrentPageIndex);
-	if (CurrentPageIndex=="") {
-		//console.log('getUpdateOrInsert c: ' +name);
-		exports.singleton(zx, "", "INSERT INTO Z$SP (FILE_NAME)VALUES ('" + name + "') ");
-		CurrentPageIndex = exports.singleton(zx, "pk", "select pk from Z$SP where FILE_NAME='" + name + "'");
-	}
-	//console.log('getUpdateOrInsert z: ' +CurrentPageIndex);
-	return CurrentPageIndex;
+
 	
 }
 
 exports.getPageIndexNumber = function (zx, name) {
     if (zx.conf.db.dialect=="fb25") {
-	//console.log('getPageIndexNumber : A' ,name);
-	exports.singleton(zx, "", "UPDATE OR INSERT INTO Z$SP (FILE_NAME)VALUES ('" + name + "') MATCHING (FILE_NAME) ");
-	//console.log('getPageIndexNumber : B' );
-	var CurrentPageIndex = exports.singleton(zx, "pk", "select pk from Z$SP where FILE_NAME='" + name + "'");
+		//console.log('getPageIndexNumber : A' ,name);
+		exports.singleton(zx, "", "UPDATE OR INSERT INTO Z$SP (FILE_NAME)VALUES ('" + name + "') MATCHING (FILE_NAME) ");
+		//console.log('getPageIndexNumber : B' );
+		var CurrentPageIndex = exports.singleton(zx, "pk", "select pk from Z$SP where FILE_NAME='" + name + "'");
 
-	//console.log('getPageIndexNumber : ' +CurrentPageIndex);
-	return CurrentPageIndex;
+		//console.log('getPageIndexNumber : ' +CurrentPageIndex);
+		return CurrentPageIndex;
 	}
 
-    if (zx.conf.db.dialect=="mysql57")
-	    return exports.getUpdateOrInsert(zx, name);
+    if (zx.mysql57||zx.mssql12){
+	    var CurrentPageIndex = exports.singleton(zx, "pk", "select pk from Z$SP where FILE_NAME='" + name + "'");
+		console.log('getUpdateOrInsert a: ' +CurrentPageIndex);
+		if (CurrentPageIndex=="") {
+			//console.log('getUpdateOrInsert c: ' +name);
+			exports.singleton(zx, "", "INSERT INTO Z$SP (FILE_NAME)VALUES ('" + name + "') ");
+			CurrentPageIndex = exports.singleton(zx, "pk", "select pk from Z$SP where FILE_NAME='" + name + "'");
+		}
+		console.log('getUpdateOrInsert z: ' +CurrentPageIndex);
+		return CurrentPageIndex;
+	}	
 }
 
 
 
 
-exports.write_script_async = function (zx, real, spi, name, mtHash, script, code) { //todo move to driver file
+exports.write_script = function (zx, real, spi, name, mtHash, script, code) {
+	//console.log('.write_script - ' +spi,name,'script:',script);
+      
+//todo move to driver file
 	name = name.replace(/\\/g, '/'); //windows
 	var FN_HASH = 'ZZ$' + zx.ShortHash(name); //spi; //zx.ShortHash(name);
 	var spiname =  'Z$$' + spi;
@@ -355,7 +378,7 @@ exports.write_script_async = function (zx, real, spi, name, mtHash, script, code
 
 	
     if (zx.conf.db.dialect=="fb25") {
-		exports.fetch_query_result(zx, connection, "create_script_async UPDATE", 
+		exports.fetch_query_result(zx, connection, "create_script_async fb25 UPDATE", 
 			"UPDATE OR INSERT INTO Z$SP (PK,TSTAMP,FILE_NAME,SCRIPT,CODE,MT_HASH)VALUES (?,'now',?,?,?,?) MATCHING (PK) ",
 			[spi, name, script, JSON.stringify(code),mtHash],
 			0,undefined);
@@ -370,7 +393,7 @@ exports.write_script_async = function (zx, real, spi, name, mtHash, script, code
 		var call_script = "call "+FN_HASH+";";
 		var UPDATE_script = "UPDATE Z$SP set FILE_NAME=? , SCRIPT= ? , CODE=?, MT_HASH = ?, FN_HASH=?  where PK=? "; 
 		
-		exports.fetch_query_result(zx, connection, "create_script_async DROP", 
+		exports.fetch_query_result(zx, connection, "create_script_async mysql57 UPDATE", 
 			UPDATE_script,
 			[ name, call_script, JSON.stringify(code),mtHash,FN_HASH,spi],
 			0,undefined);
@@ -390,16 +413,35 @@ exports.write_script_async = function (zx, real, spi, name, mtHash, script, code
 			//console.log('create_script_async done :',FN_HASH );
 				
 		}
-    }	
+    }		                         
 
-};
 
-exports.write_script = function (zx, real, spi, name, mtHash, script, code) {
-	//console.log('.write_script - ' +spi,name,'script:',script);
-    var  err,done=false;
-	name = name.replace(/\\/g, '/'); //windows
-    
-	zx.dbu.write_script_async(zx, real, spi, name,mtHash, script, code);
+    if (zx.mssql12) {
+		var call_script = "call "+FN_HASH+";";
+		var UPDATE_script = "UPDATE Z$SP set FILE_NAME=@p1 , SCRIPT= @p2 , CODE=@p3 , MT_HASH = @p4 , FN_HASH=@p5  where PK=@p6 "; 
+		console.log('create real SP spi : ', spi);
+		exports.fetch_query_result(zx, connection, "create_script_async mssql12 UPDATE", 
+			UPDATE_script,
+			[ name, call_script, JSON.stringify(code),mtHash,FN_HASH,spi],
+			0,undefined);
+
+		if (real) {
+			//console.log('create real SP : ', script);
+						
+			//console.log('.write_script_async - ' +spi,'>',FN_HASH,'<',zx.sql.testhead, '>',script);	
+			var drops = "\nDROP PROCEDURE IF EXISTS "+FN_HASH+" " ;		
+			//console.log('create_script_async a:>>>\r\n',drops,"<<<\r\n\r\n\r\n\r\n" );	
+			exports.fetch_query_result(zx, connection, "create_script_async DROP", drops,[],0,undefined);
+			//console.log('droped real SP :',FN_HASH );
+			
+			var compoundscript = zx.sql.testhead +script + zx.sql.testfoot;
+			//console.log('create_script_async b:> >>>\r\n',FN_HASH ,"<<< <\r\n\r\n\r\n\r\n" );	
+			var result = exports.fetch_query_result(zx, connection, "Error in creating real SP :", compoundscript,[],0,undefined);
+			//console.log('create_script_async done :',FN_HASH );
+				
+		}
+    }		                         
+
     
 	if (spi !== null)
 		return spi;
@@ -637,9 +679,11 @@ exports.init = function (/*zx*/
 };
 
 exports.sqltype = function (zx,fb,mysql,mssql) {	
-    if (zx.conf.db.dialect=="mssql12") return mssql;
-	if (zx.conf.db.dialect=="fb25")    return fb;
-	if (zx.conf.db.dialect=="mysql57") return mysql;
+    if (zx.mssql12 ) return mssql;
+	if (zx.fb25)     return fb;
+	if (zx.mysql57 ) return mysql;
+	if (zx.pgsql90 )  throw new Error("dialect code missing");
+	if (zx.odsql11 )  throw new Error("dialect code missing");
 	return fb;
 }
 
