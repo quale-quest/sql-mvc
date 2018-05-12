@@ -202,8 +202,8 @@ function dll_blocks_seperate_term(inputs, src_obj) { //splits the input into blo
 	var blocks = [];
 	var inputsx='';
 
-	if (zx.fb25) { }
-	else if (zx.mysql57) {	
+	if (zx.fb25) { 
+	} else if (zx.mysql57) {	
 		//replace mysql DELIMITER ;;    and DELIMITER ;  with firebird DELIMITERs
 		inputs = inputs.replace(/DELIMITER\s*;;/i, "SET TERM ^ ; ");
 		inputs = inputs.replace(/DELIMITER\s*;/i, "SET TERM ; ^ ");
@@ -303,8 +303,8 @@ function dll_blocks_seperate_term(inputs, src_obj) { //splits the input into blo
 
 var exec_qry = function (cx, qrys) {
 	
-	if (zx.fb25) { }
-	else if (zx.mysql57) {
+	if (zx.fb25) { 
+	} else if (zx.mysql57) {
 		qrys = qrys.replace(/--:/g, "-- :");
 		qrys = qrys.replace(/cast\s*\(\s*'now'\s+as\s+timestamp\s*\)/gi, " NOW() "); //also check compile.js:687
 	} else throw new Error("dialect code missing");
@@ -537,7 +537,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 					default_value = default_value.replace(/'now'/i, "CURRENT_TIMESTAMP");
 					default_set=1;
 					}				
-			}
+			}  else throw new Error("dialect code missing");
 			
 			
 			//console.log('--> ',field );	
@@ -669,16 +669,23 @@ var CREATE_TABLE = function (zx, qrystr) {
 					
                     	
 					cx.expect = zx.dbu.sqltype(zx,/335544351/,/ER_DUP_FIELDNAME/,/is specified more than once/);
-					if (zx.fb25) { exec_qry(cx, "ALTER TABLE " + Table + " alter " + FieldName + " TYPE " + FieldType); 
-					} else if (zx.mysql57) { exec_qry(cx, "ALTER TABLE " + Table + " MODIFY " + FieldName + "  " + FieldType);
-					} else throw new Error("dialect code missing");
+					if (zx.fb25) { 
+						exec_qry(cx, "ALTER TABLE " + Table + " alter " + FieldName + " TYPE " + FieldType); 
+					} else if (zx.mysql57) { 
+						exec_qry(cx, "ALTER TABLE " + Table + " MODIFY " + FieldName + "  " + FieldType);
+					} else 
+						throw new Error("dialect code missing");
+					
 					//console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Default:', Default,":");
 					if (Default !== "") {
                         //console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Table fields FFD Default:', Table,' . ',FieldName,Default);
                         
                         cx.expect = /335544351/; 
-						if (zx.fb25)    exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " set DEFAULT " + Default);
-						if (zx.mysql57) exec_qry(cx, "ALTER TABLE " + Table + "   MODIFY column  " + FieldName + "  " + FieldType + " DEFAULT " + Default);
+						if (zx.fb25) {
+							exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " set DEFAULT " + Default);
+						} else if (zx.mysql57) {
+							exec_qry(cx, "ALTER TABLE " + Table + "   MODIFY column  " + FieldName + "  " + FieldType + " DEFAULT " + Default);
+						}  else throw new Error("dialect code missing"); 
                         //exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " set " + Default);
 						// updating the default before commit seems a problem ... this should be moved to phase 2
 						//caused an error in carlton update ->    exec_qry("update "+Table +" set " + FieldName + "="+Default+" where " +FieldName + " is null ")
@@ -686,9 +693,11 @@ var CREATE_TABLE = function (zx, qrystr) {
                         //console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Table fields FFD        :', Table,' . ',FieldName);// FFD);
 
 						cx.expect = /335544351/;
-						if (zx.fb25)    exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " DROP DEFAULT ");
-						if (zx.mysql57) exec_qry(cx,  "ALTER TABLE " + Table + "   alter column  " + FieldName + " DROP DEFAULT ");
-						
+						if (zx.fb25) {  
+							exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " DROP DEFAULT ");
+						} else if (zx.mysql57)  {
+							exec_qry(cx,  "ALTER TABLE " + Table + "   alter column  " + FieldName + " DROP DEFAULT ");
+						}  else throw new Error("dialect code missing"); 
                         
 					}
 					}
@@ -698,18 +707,18 @@ var CREATE_TABLE = function (zx, qrystr) {
 						
 						var FFD = field.match(/(\S+)\s+(\S+)/i);
 						if (FFD) {							
-							var FieldName = FFD[1];
-							//console.log('\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  Field default not found :', field,FFD);
-							//should be dropping
-							if (zx.mssql12) {
-								//TODO
+								var FieldName = FFD[1];
+								//console.log('\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  Field default not found :', field,FFD);
+								//should be dropping
+
+								cx.expect = /335544351/;
+								if (zx.fb25) {
+									exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " DROP DEFAULT ");
+								} else if (zx.mysql57) {
+									exec_qry(cx,  "ALTER TABLE " + Table + "   alter column  " + FieldName + " DROP DEFAULT ");
+								} else throw new Error("dialect code missing");
+								
 							} else {
-							cx.expect = /335544351/;
-							if (zx.fb25)    exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " DROP DEFAULT ");
-							if (zx.mysql57) exec_qry(cx,  "ALTER TABLE " + Table + "   alter column  " + FieldName + " DROP DEFAULT ");
-							}
-							}
-							else {
 								console.log('\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  Unknown syntax for update table fields :', field,FFD);
 								process.exit(2);
 							}
@@ -793,8 +802,7 @@ exports.insert_update_variation = function (zx, qrystr,insertmatchingfield)
 	
 	if (zx.fb25) {
 		return "update or " + qrystr + " matching(" + insertmatchingfield + ") ";
-	}
-	if (zx.mysql57) {
+	} else if (zx.mysql57) {
 		//console.log('insert_update_variation in:',qrystr);
 		var ins = exports.parse_insert_update(zx, qrystr,insertmatchingfield);	
 		
@@ -809,7 +817,7 @@ exports.insert_update_variation = function (zx, qrystr,insertmatchingfield)
 		deleterecord="delete from "+ins.tablename+" where " + deleterecord ;
 		//console.log('insert_update_variation deleterecord:',deleterecord);
 		return deleterecord;
-	}
+	} else throw new Error("dialect code missing");
 	
 	throw new Error("insert_update_variation For unknown database dialect");
 }
@@ -888,7 +896,8 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			block.expect = /335544351/;
 			block.order = 300;
 
-			if (zx.mysql57||zx.mssql12) {
+			if (zx.fb25) { 
+			} else if (zx.mysql57||zx.mssql12) {
 				var default_val="''";
 				var default_set=0;
 				var cdinfo;
@@ -919,7 +928,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 				//console.log("zx.fake_domains:  ",zx.sql.fake_domains);
 				block.method = "bypass";
 				//process.exit(2);
-				}
+				}  else throw new Error("dialect code missing");
 			
 			
 		} else if (name=qrystr.match(/DECLARE\s+EXTERNAL\s+FUNCTION\s+([\w$]+)/)) {
@@ -1047,8 +1056,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 				DECLARE_PROCEDURE.qrystr = qrystr;
 				DECLARE_PROCEDURE.Hash = zx.ShortHash(qrystr);
 				blocks.push(DECLARE_PROCEDURE);				
-			}
-			if (zx.mysql57) {
+			} else if (zx.mysql57) {
 				qrystr = "\r\n"+qrystr+"\r\n ;\r\n";
 				
 				DECLARE_PROCEDURE.method = "DROP_PROCEDURE";
@@ -1056,7 +1064,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 				DECLARE_PROCEDURE.qrystr = "DROP PROCEDURE IF EXISTS "+ name[1] +";";
 				DECLARE_PROCEDURE.Hash = zx.ShortHash(qrystr);
 				blocks.push(DECLARE_PROCEDURE);
-			}
+			} else throw new Error("dialect code missing");
 
 			block.order = 1500;
 		} else if (name=qrystr.match(/CREATE\s+(?:OR\s+ALTER\s+)?FUNCTION\s+([\w$]+)/i)) {
@@ -1072,8 +1080,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 				DECLARE_FUNCTION.qrystr = qrystr;
 				DECLARE_FUNCTION.Hash = zx.ShortHash(qrystr);
 				blocks.push(DECLARE_FUNCTION);				
-			}
-			if (zx.mysql57) {
+			} else if (zx.mysql57) {
 				qrystr = "\r\n"+qrystr+"\r\n ;\r\n";
 				
 				DECLARE_FUNCTION.method = "DROP_FUNCTION";
@@ -1081,7 +1088,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 				DECLARE_FUNCTION.qrystr = "DROP FUNCTION IF EXISTS "+ name[1] +";";
 				DECLARE_FUNCTION.Hash = zx.ShortHash(qrystr);
 				blocks.push(DECLARE_FUNCTION);
-			}
+			}  else throw new Error("dialect code missing");
 
 			block.order = 1500;
 			

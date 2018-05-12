@@ -679,9 +679,9 @@ exports.init = function (/*zx*/
 };
 
 exports.sqltype = function (zx,fb,mysql,mssql) {	
-    if (zx.mssql12 ) return mssql;
 	if (zx.fb25)     return fb;
-	if (zx.mysql57 ) return mysql;
+    if (zx. mysql57) return mysql;	
+	if (zx.mssql12 ) if (mssql) return mssql; else  throw new Error("dialect code missing abive 684");
 	if (zx.pgsql90 )  throw new Error("dialect code missing");
 	if (zx.odsql11 )  throw new Error("dialect code missing");
 	return fb;

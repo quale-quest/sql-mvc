@@ -52,7 +52,7 @@
 				"login_first":false
 	       },
     "db":	{
-				"dialect": "mysql57",
+				"dialect": "fb25",
 				"dialect_options": "fb25,mysql57,mssql12,pgsql90,odsql11",
 				"packages":["sql-mvc-ui-dark"],
 				

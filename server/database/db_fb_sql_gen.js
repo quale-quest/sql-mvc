@@ -272,7 +272,7 @@ exports.EmitConditionAndBegin = function (zx, line_obj, bid,comment) {
 	emit(zx, line_obj, "if (cond<>0) then ", "");
 	if (zx.conf.db.dialect=="fb25") emit(zx, line_obj, "begin",' '+ comment);
 	zx.sql.dent += 4;
-	zx.sql.blocktypes.push((zx.conf.db.dialect=="mysql57")?"if":"");
+	zx.sql.blocktypes.push(zx.dbu.sqltype(zx,"","if",""));
 
 	return line_obj;
 };
@@ -1047,9 +1047,7 @@ exports.start_pass = function (zx /*, line_objects*/
 		"declare pkf integer=12345678;\n" +
 		"declare Z$SESSIONID varchar(40)='12345678';\n\n\n";
 		zx.sql.testfoot = "\n-- no need to - set term ;#\n";	
-	}
-		
-	if (zx.mysql57) {
+	} else if (zx.mysql57) {
 		var pname = "ZZ$"+zx.ShortHash(zx.main_page_name);
 		zx.sql.testhead =
 		//"\n\n\nDELIMITER $$\nDROP PROCEDURE IF EXISTS "+pname+" $$\n" +
@@ -1063,14 +1061,9 @@ exports.start_pass = function (zx /*, line_objects*/
 		"declare RES TEXT;\n"+
 		"declare SCRIPTNAMED VARCHAR(250);\n"+		
 		"";		
-		
-	
-	
 		//console.log('zx.sql.testhead : ',zx.sql.testhead);
 	    zx.sql.testfoot = "\nend\n";	
-	}
-		
-	if (zx.mssql12) {
+	} else if (zx.mssql12) {
 		var pname = "ZZ$"+zx.ShortHash(zx.main_page_name);
 		zx.sql.testhead =
 		//"\n\n\nDELIMITER $$\nDROP PROCEDURE IF EXISTS "+pname+" $$\n" +
@@ -1081,12 +1074,10 @@ exports.start_pass = function (zx /*, line_objects*/
 		"declare @NEW_CID INTEGER;\n"+
 		"declare @SCRIPTNAMED VARCHAR(250);\n"+		
 		"";		
-		
-	
 	
 		//console.log('zx.sql.testhead : ',zx.sql.testhead);
 	    zx.sql.testfoot = "\nend\n";	
-	}
+	} else throw new Error("dialect code missing");
 		
 		
 
@@ -1190,15 +1181,16 @@ exports.done_pass = function (zx /*, line_objects*/
 		}	
 	
 	
-	if (zx.conf.db.dialect=="fb25")
+	if (zx.fb25)
 	    emit(zx, 0, "suspend;", "");
 	
 	if (zx.sql.engine === 'Z$RUN') {
-		if (zx.conf.db.dialect=="fb25") emit(zx, 0, "END", "");
-		if (zx.conf.db.dialect=="mysql57") {
+		if (zx.fb25) {
+			emit(zx, 0, "END", "");
+		} else if (zx.mysql57) {
 			//	emit(zx, 0, "end$$", "");
 			//	emit(zx, 0, "DELIMITER ;", "");
-		}
+		} else throw new Error("dialect code missing");
 	}
 
 
@@ -1278,19 +1270,19 @@ exports.emit_variable_setter = function (zx, line_obj, v, comment) {
     {
 	var statement;
 
-	if (zx.mssql12) {
+
+	if (zx.fb25) {
+		statement = "UPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),(" + v.params + ")) matching (REF);";
+	} else if (zx.mysql57) {
+		statement = "INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),(" + v.params + "))ON DUPLICATE KEY UPDATE VALU="+v.params + ";";
+	} else if (zx.mssql12) {
 		statement = 
 			"UPDATE VALU="+v.params + " where REF=coalesce(" + where + ",'') \r\n" +
 			"IF @@ROWCOUNT=0 \r\n" +
 			"\tINSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),(" + v.params + "));";
 		//console.log('emit_variable_setter zx.mssql12 : ',zx.mssql12,statement);// process.exit(2);	
 		return;
-	} 
-	if (zx.fb25)  statement = "UPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),(" + v.params + ")) matching (REF);";
-	
-	if (zx.mysql57)
-		statement = "INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),(" + v.params + "))ON DUPLICATE KEY UPDATE VALU="+v.params + ";";
-
+	} else throw new Error("dialect code missing");	 
 
 	
 	emit(zx, line_obj, statement, comment);
@@ -1320,8 +1312,11 @@ exports.emit_variable_getter = function (zx, line_obj, v , coalesce /*, comment*
         v.field = v.field.split('_')[1];
         var where = get_variable_table_expression(zx,v);
 		var oresult;
-		if (zx.fb25)    oresult = "((SELECT DO_SHOW FROM Z$ONCE ("+where+", 1, 100, 1))=1)";           
-		if (zx.mysql57) oresult = "(select (Z$ONCE("+where+",1,100,1) )=1)";
+		if (zx.fb25) {
+			oresult = "((SELECT DO_SHOW FROM Z$ONCE ("+where+", 1, 100, 1))=1)";           
+		} else if (zx.mysql57) { 
+			oresult = "(select (Z$ONCE("+where+",1,100,1) )=1)";
+		} else throw new Error("dialect code missing");
 		return oresult;
     }
     
@@ -1343,12 +1338,11 @@ exports.build_variable_passing = function (zx, fld_obj, v,key, comment) {
 	
 	var where = "'pass',"+vr(zx,"cid")+",'-',"+vr(zx,"tfid")+",'-" + key + "'";    
 	var statement ;
-	if (zx.conf.db.dialect=="fb25")  
+	if (zx.fb25)  {
 		statement = "UPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),('" + v + "')) matching (REF);";
-	
-    if (zx.conf.db.dialect=="mysql57")
+	} else if (zx.mysql57) {
 		statement = "INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),('" + v + "'))ON DUPLICATE KEY UPDATE VALU='"+v + "';";
-	
+	} else throw new Error("dialect code missing");
 	return statement;
     
 };
@@ -1369,20 +1363,7 @@ return zx.dbu.getPageIndexNumber(zx,name);
 
 var make_pk_seq = function (zx,NAME,FIELD) {
 var triggerscript;
-if (zx.mssql12) {
-	
-	triggerscript=
-	["SET TERM ^ ;",
-	"CREATE OR ALTER TRIGGER "+NAME+"_IIT ON "+NAME+" INSTEAD OF INSERT AS",
-	"BEGIN",
-    "  SET NOCOUNT ON;",
-    "  select * into #tmp from inserted;",
-    "  UPDATE #tmp SET "+FIELD+" = (NEXT VALUE FOR  testseq  ) where "+FIELD+" is null; ",   
-    "  insert into GALLERY select * from #tmp;",
-	"END^",
-	"SET TERM ; ^"].join('\n');	
-	
-} else {
+
 
 if (zx.fb25) {
 	triggerscript=
@@ -1395,9 +1376,7 @@ if (zx.fb25) {
 	"     select ref from Z$GEN_PK(1) into new."+FIELD+";",
 	"END^",
 	"SET TERM ; ^"].join('\n');
-}
-
-if (zx.mysql57) {
+} else if (zx.mysql57) {
 	//console.log('triggerscript : ',triggerscript);
 	//DROP TRIGGER test.ins_sum;
 	triggerscript=
@@ -1411,10 +1390,22 @@ if (zx.mysql57) {
 	"SET TERM ; ^"].join('\n');
 	//console.log('make_pk_seq: ',triggerscript);
 
-}
+} else if (zx.mssql12) {
+	
+	triggerscript=
+	["SET TERM ^ ;",
+	"CREATE OR ALTER TRIGGER "+NAME+"_IIT ON "+NAME+" INSTEAD OF INSERT AS",
+	"BEGIN",
+    "  SET NOCOUNT ON;",
+    "  select * into #tmp from inserted;",
+    "  UPDATE #tmp SET "+FIELD+" = (NEXT VALUE FOR  testseq  ) where "+FIELD+" is null; ",   
+    "  insert into GALLERY select * from #tmp;",
+	"END^",
+	"SET TERM ; ^"].join('\n');	
+	
+} else throw new Error("dialect code missing");
 
 
-}
 
 return triggerscript;
 }
