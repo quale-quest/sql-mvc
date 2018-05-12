@@ -716,7 +716,7 @@ var seq_page = function (zx) {
 
 		console.log('validate_script...........................................', zx.main_page_name, JSON.stringify(script, null, 4).length);		
 		var valid = "ok";
-		if (zx.fb25) valid = zx.dbu.validate_script(zx, zx.main_page_name, script);
+		if (zx.fb25) valid = zx.dbu.validate_script(zx, "validate_script :"+ zx.main_page_name, script);
 
 		//console.log('validate_script...........................................',valid);
 		//if (valid.result) {};
