@@ -207,6 +207,7 @@ function dll_blocks_seperate_term(inputs, src_obj) { //splits the input into blo
 		//replace mysql DELIMITER ;;    and DELIMITER ;  with firebird DELIMITERs
 		inputs = inputs.replace(/DELIMITER\s*;;/i, "SET TERM ^ ; ");
 		inputs = inputs.replace(/DELIMITER\s*;/i, "SET TERM ; ^ ");
+	} else if (zx.mssql12) {	
 	} else throw new Error("dialect code missing");
 
 	while (inputs !== '') {

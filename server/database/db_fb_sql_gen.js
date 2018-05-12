@@ -170,11 +170,13 @@ return zx.config.db.var_actaul+name;
 };
 
 var emitdeclare = function (zx, obj, name,type,val,comment) {
-	if (zx.conf.db.dialect=="fb25")
+	if (zx.fb25) {
 	    emit(zx, obj, "declare "+name+" "+type+"="+val+";", "",comment);
-    if (zx.conf.db.dialect=="mysql57")
+	} else if (zx.mysql57) {
 	    emit(zx, obj, "declare "+name+" "+type+" default "+val+";", "",comment);
-	
+	} else if (zx.mssql12) {
+	    emit(zx, obj, "declare "+zx.config.db.var_actaul+name+" "+type+" default "+val+";", "",comment);		
+	} else throw new Error("dialect code missing");
 };
 
 
@@ -254,8 +256,16 @@ exports.eval_cond = function (zx, line_obj, conditionals) {
 			entry.post = '';
 		if (entry.pre === undefined)
 			entry.pre = '';
-		emit(zx, conditionals, zx.dbu.sql_make_compatable(zx,"if (cond<>0) then if (" + entry.pre + expr + entry.post + " ) then "+zx.config.db.sql_set_prefix +"cond=0;"), "");
-	    if (zx.conf.db.dialect=="mysql57") emit(zx, zx.line_obj, "    end if; end if;");
+		emit(zx, conditionals, 
+			zx.dbu.sql_make_compatable(zx,"if (cond<>0) then "+
+			"if (" + entry.pre + expr + entry.post + " ) then "+
+			zx.config.db.sql_set_prefix +"cond=0;"), "");
+			
+		if (zx.fb25) { 
+		} else if (zx.mysql57) {
+			emit(zx, zx.line_obj, "    end if; end if;");
+		} else if (zx.mssql12) {	
+		} else throw new Error("dialect code missing");
 	});
 	return conditionals;
 };
@@ -265,7 +275,7 @@ exports.EmitConditionAndBegin = function (zx, line_obj, bid,comment) {
 	//this is conditional so we need to emit a value to fullstash also	
 	emitset( zx,0,"",  
 		"',``" + bid + "``:'",
-		((zx.mysql57)?"if":"iif")+
+		zx.dbu.sqltype(zx,"iif","if","IIF")+
 		"(cond<>0,'[``true``]','[]')",
 		"''"		
 		);
@@ -987,10 +997,9 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 	sql += recordseperator;
 	sql += zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + sqlconcat(zx,"", "res","coalesce(row,'\"row_element_is_null\"')","''" ) + ";";
 
-    if (zx.fb25) 
+    if (zx.fb25) { 
 	    emit(zx, 0, open + '\nfor ' + queryx + into + " do \n begin", "");
-
-    if (zx.mysql57) {
+	} else if (zx.mysql57) {
 		emit(zx, 0, open );
 		emit(zx, 0, "begin", "");	
 		emit(zx, 0, "    declare done int default false;", "");
@@ -1001,7 +1010,7 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 		emit(zx, 0, "    cur1Loop: loop", "");
 		emit(zx, 0, "        fetch cur1 "+into+";", "");
 		emit(zx, 0, "        if done = 1 then leave cur1Loop; end if;", "");
-	}
+	}  else throw new Error("dialect code missing");
 	
 	
 	emit(zx, 0, "" + SoftCodecs + "", "");
@@ -1014,13 +1023,11 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 	if (zx.fb25) {
 		emit(zx, 0, "\n end", "");	
 		emit(zx, 0, cend, "");
-	}
-
-    if (zx.mysql57) {
+	} else if (zx.mysql57) {
 		emit(zx, 0, "    end loop cur1Loop;", "");
 		emit(zx, 0, cend, "");
 		emit(zx, 0, "end;", "");
-	}
+	}  else throw new Error("dialect code missing");
 
 	return zx.sql.cidi;
 };
@@ -1151,9 +1158,13 @@ exports.start_pass = function (zx /*, line_objects*/
 	emito(zx, "ContainerId", "GUIDofTheTemplate");
 	emits(zx, "``Data``:{``start``:``true``");
 
-	if (zx.fb25)    emit(zx, 0, "cid = gen_id( Z$CONTEXT_seq, 1 );");
-	if (zx.mysql57) emit(zx, 0, "set cid = (SELECT Z$GEN_CONTEXT_SEQ() );");
-	if (zx.mssql12) emit(zx, 0, "set @cid = (SELECT Z$GEN_CONTEXT_SEQ() );");
+	if (zx.fb25) {
+		emit(zx, 0, "cid = gen_id( Z$CONTEXT_seq, 1 );");
+	} else if (zx.mysql57) {
+		emit(zx, 0, "set cid = (SELECT Z$GEN_CONTEXT_SEQ() );");
+	} else if (zx.mssql12) {
+		emit(zx, 0, "set @cid = (SELECT Z$GEN_CONTEXT_SEQ() );");
+	}  else throw new Error("dialect code missing");
 
 	//emit(zx,0,'st=\'select operator_ref from Z$CONTEXT where pk = \'||pki;');
 	//emit(zx,0,'execute statement st into operator_ref;');
@@ -1175,14 +1186,15 @@ exports.done_pass = function (zx /*, line_objects*/
 	  
 	emitset( zx,0, "","'}}]'");
 	//emit(zx, 0, "/*zx.sql.engine:"+ zx.sql.engine+"*/", "");
-		if (zx.conf.db.dialect=="mysql57") {
+	
+	if (zx.fb25) {
+	    emit(zx, 0, "suspend;", "");
+	} else if (zx.mysql57) {
 				emit(zx, 0, "set @res_ret=res;", "");
 				emit(zx, 0, "set @cid_ret=cid;", "");
-		}	
+	}  else throw new Error("dialect code missing");	
 	
 	
-	if (zx.fb25)
-	    emit(zx, 0, "suspend;", "");
 	
 	if (zx.sql.engine === 'Z$RUN') {
 		if (zx.fb25) {

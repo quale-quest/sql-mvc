@@ -261,17 +261,20 @@ exports.fetch_query_result = function (zx, connection, name, script,params,line_
 exports.validate_script = function (zx, name, script) {
 	var querys;
 
-	if (zx.conf.db.dialect=="fb25")
+	if (zx.fb25) {
 		querys = 'EXECUTE BLOCK RETURNS  (cid integer,info varchar(200),res blob SUB_TYPE 1)AS '+
 			     'declare pki integer=0;declare pkf integer=0;declare z$sessionid varchar(40)=\'\';' + script;
-	if (zx.conf.db.dialect=="mysql57")
+	} else if (zx.mysql57) {
 		querys =
 			"\r\n\r\n\r\nDELIMITER  $$\r\nDROP PROCEDURE IF EXISTS execute_test $$\r\n" +
 			"CREATE PROCEDURE execute_test (cid  integer,info varchar(200), res TEXT)\r\nBEGIN\r\n" +
 			"declare pki integer default 0;\r\n" +
 			"declare pkf integer default 0;\r\n" +
 			"declare Z$SESSIONID varchar(40) default '';\r\n\r\n\r\n"+ script + "\r\n-- no need to - set term ;#\r\n";
-			
+	} else if (zx.mssql) {
+		
+	} else throw new Error("dialect code missing");
+	
 	//console.log("validate_script go:######################################################\r\n\r\n\r\n" ,querys,"\r\n######################################################\r\n\r\n\r\n");		
 	var result = exports.fetch_query_result(zx, connection, name, querys,[],0,undefined);
 	//console.log("validate_script result:" ,result);
@@ -338,7 +341,7 @@ exports.getUpdateOrInsert = function (zx, name) {
 }
 
 exports.getPageIndexNumber = function (zx, name) {
-    if (zx.conf.db.dialect=="fb25") {
+    if (zx.fb25) {
 		//console.log('getPageIndexNumber : A' ,name);
 		exports.singleton(zx, "", "UPDATE OR INSERT INTO Z$SP (FILE_NAME)VALUES ('" + name + "') MATCHING (FILE_NAME) ");
 		//console.log('getPageIndexNumber : B' );
@@ -346,9 +349,7 @@ exports.getPageIndexNumber = function (zx, name) {
 
 		//console.log('getPageIndexNumber : ' +CurrentPageIndex);
 		return CurrentPageIndex;
-	}
-
-    if (zx.mysql57||zx.mssql12){
+	} else if (zx.mysql57||zx.mssql12){
 	    var CurrentPageIndex = exports.singleton(zx, "pk", "select pk from Z$SP where FILE_NAME='" + name + "'");
 		console.log('getUpdateOrInsert a: ' +CurrentPageIndex);
 		if (CurrentPageIndex=="") {
@@ -358,7 +359,7 @@ exports.getPageIndexNumber = function (zx, name) {
 		}
 		console.log('getUpdateOrInsert z: ' +CurrentPageIndex);
 		return CurrentPageIndex;
-	}	
+	} else throw new Error("dialect code missing");	
 }
 
 
@@ -386,10 +387,7 @@ exports.write_script = function (zx, real, spi, name, mtHash, script, code) {
 		if (real) {
 			//exports.fetch_query_result(zx, connection, "create_script_async  UPDATE real", script,	[],	0,undefined);			
 		} 
-	}
-    
-
-    if (zx.mysql57) {
+	} else if (zx.mysql57) {
 		var call_script = "call "+FN_HASH+";";
 		var UPDATE_script = "UPDATE Z$SP set FILE_NAME=? , SCRIPT= ? , CODE=?, MT_HASH = ?, FN_HASH=?  where PK=? "; 
 		
@@ -413,10 +411,7 @@ exports.write_script = function (zx, real, spi, name, mtHash, script, code) {
 			//console.log('create_script_async done :',FN_HASH );
 				
 		}
-    }		                         
-
-
-    if (zx.mssql12) {
+    } else if (zx.mssql12) {
 		var call_script = "call "+FN_HASH+";";
 		var UPDATE_script = "UPDATE Z$SP set FILE_NAME=@p1 , SCRIPT= @p2 , CODE=@p3 , MT_HASH = @p4 , FN_HASH=@p5  where PK=@p6 "; 
 		console.log('create real SP spi : ', spi);
@@ -440,7 +435,7 @@ exports.write_script = function (zx, real, spi, name, mtHash, script, code) {
 			//console.log('create_script_async done :',FN_HASH );
 				
 		}
-    }		                         
+    } else throw new Error("dialect code missing");		                         
 
     
 	if (spi !== null)
@@ -681,14 +676,16 @@ exports.init = function (/*zx*/
 exports.sqltype = function (zx,fb,mysql,mssql) {	
 	if (zx.fb25)     return fb;
     if (zx. mysql57) return mysql;	
-	if (zx.mssql12 ) if (mssql) return mssql; else  throw new Error("dialect code missing abive 684");
+	if (zx.mssql12 ) if (mssql) return mssql; else  throw new Error("dialect code missing above 679");
 	if (zx.pgsql90 )  throw new Error("dialect code missing");
 	if (zx.odsql11 )  throw new Error("dialect code missing");
 	return fb;
 }
 
 exports.sql_make_compatable_final_pass = function (zx,qrystr) {	//only on final pass fixups
-	if (zx.mysql57) {
+	
+	if (zx.fb25) { 
+	} else if (zx.mysql57) {
 		
 			qrystr = qrystr.replace(/then\s+end\s+if\s*;/gi, "then set @stuffed=1; end if;");	 //null conditional blocks not allowed - add stuffing
 			qrystr = qrystr.replace(/then\s+else\s+/gi, "then set @stuffed=1; else ");	 //null conditional blocks not allowed - add stuffing
@@ -697,7 +694,8 @@ exports.sql_make_compatable_final_pass = function (zx,qrystr) {	//only on final 
      		qrystr = qrystr.replace(/--:/g, "-- :"); //fb to mysql
 	    	qrystr = qrystr.replace(/cast\s*\(\s*'now'\s+as\s+timestamp\s*\)/gi, " NOW() ");	//fb to mysql						
 			qrystr = qrystr.replace(/\slist\s*\(/gi, " GROUP_CONCAT( ");	//fb to mysql	
-	}
+	} else if (zx.mssql12) {		
+	} else throw new Error("dialect code missing");
 	
 	return qrystr;
 }
@@ -708,9 +706,10 @@ var params;
 var instr='';
 //process.exit(2);
 //simple convertions
-	if (zx.mysql57) {
+	
+	if (zx.fb25||zx.mysql57||zx.mssql12) {
 		qrystr = exports.sql_make_compatable_final_pass(zx,qrystr);
-	}
+	} else throw new Error("dialect code missing");
 
 
 //more complex convertions
@@ -718,35 +717,39 @@ var instr='';
 		instr=qrystr;
 		
 		if (params=qrystr.match(/(\w+)\s+containing\s+'([^']*)'/i)) {
-			if (zx.mysql57) {
+			if (zx.fb25) { 
+			} else if (zx.mysql57) {
 				var inj = "INSTR(" + params[1] + ",'" + params[2] + "') ";
 				qrystr=qrystr.replace(params[0],inj);
-			}
+			} else if (zx.mssql12) {	
+				var inj = "(CHARINDEX(" + params[1] + ",'" + params[2] + "')>0) ";
+				qrystr=qrystr.replace(params[0],inj);
+			} else throw new Error("dialect code missing");
 				
 		}	
 		
 		// First 5 skip 10 
 		
 		if (params=qrystr.match(/first\s+(\S+)\s+skip\s+(\S+)\s/i)) {
-			if (zx.mysql57) {				
+			if (zx.fb25) { 
+			} else if (zx.mysql57) {				
 				var inj = " LIMIT " + params[2] + " , " + params[1] + " ";
 				qrystr=qrystr.replace(params[0],"") + inj;				
-			}
-			if (zx.mssql) {				
+			} else if (zx.mssql) {				
 				var inj = " OFFSET " + params[2] + "  ROWS FETCH NEXT " + params[1] + " ROWS ONLY";
 				qrystr=qrystr.replace(params[0],"") + inj;				
-			}
+			} else throw new Error("dialect code missing");
 			
 				
 		}	else  if (params=qrystr.match(/\sfirst\s+([0-9]+)/i)) {
-			if (zx.mysql57) {				
+			if (zx.fb25) { 
+			} else if (zx.mysql57) {
 				var inj = " LIMIT " + params[1] ;
 				qrystr=qrystr.replace(params[0], " ") + inj;				
-			}
-			if (zx.mssql) {				
+			} else if (zx.mssql) {				
 				var inj = " TOP " + params[1] + " ";
 				qrystr=qrystr.replace(params[0],inj);				
-			}			
+			} else throw new Error("dialect code missing");			
 		}	
 		
 		
