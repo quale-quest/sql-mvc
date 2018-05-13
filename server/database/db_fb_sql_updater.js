@@ -331,10 +331,11 @@ var dataset = function (zx, qrys) {//could use the one from sql_utils
 	//console.log("dataset:" ,result);
 	return result;
 };
-var singleton = function (zx, field, qrys) {//could use the one from sql_utils
+var singleton = function (zx, field, qrys,debug) {//could use the one from sql_utils
     //console.log("singleton qrys:" ,qrys);
-	var result = zx.dbu.fetch_dataset(zx, "updater singleton", qrys, 0);
+	var result = zx.dbu.fetch_dataset(zx, "singleton fetch_dataset :", qrys, 0);
     //console.log("singleton res:" ,typeof result, result);
+	if (debug) console.log("singleton :",result,qrys);
 	if (result[0] === undefined) {
 		console.log("singleton:", typeof result, result);
 	}
@@ -349,7 +350,7 @@ var singleton = function (zx, field, qrys) {//could use the one from sql_utils
 	//if (result[0].RowDataPacket[field] !== undefined) {	}
 	
 	if (zx.mssql12) {
-		//console.log("singleton mssql12:",result[0] ,result,qrys);
+		if (debug) console.log("singleton mssql12:",result[0] ,result,qrys);
 		return result[0];
 	}
 	
@@ -362,35 +363,41 @@ var singleton = function (zx, field, qrys) {//could use the one from sql_utils
 		return '';
 };
 var checkTable = function (zx, name) {
-	
-    if (zx.mssql12)
-        return singleton(zx, "count(*)", "select count(*) from information_schema.tables where TABLE_CATALOG = '"+zx.conf.db.database_filename+"' AND TABLE_SCHEMA = '" +zx.conf.db.database_schema+"' AND TABLE_NAME = '" + name.toUpperCase() + "' ;");
+	if (zx.fb25)
+        return singleton(zx, "count", "select count(*) from rdb$relations where rdb$relation_name ='" + name.toUpperCase() + "' ;");	
 	if (zx.mysql57)
         return singleton(zx, "count(*)", "select count(*) from information_schema.tables where table_schema = '"+zx.conf.db.database_filename+"' AND table_name = '" + name.toUpperCase() + "' ;");
-	if (zx.fb25)
-        return singleton(zx, "count", "select count(*) from rdb$relations where rdb$relation_name ='" + name.toUpperCase() + "' ;");
+    if (zx.mssql12)
+        return singleton(zx, "count(*)", "select count(*) from information_schema.tables where TABLE_CATALOG = '"+zx.conf.db.database_filename+"' AND TABLE_SCHEMA = '" +zx.conf.db.database_schema+"' AND TABLE_NAME = '" + name.toUpperCase() + "' ;");
+
 	throw new Error("dialect code missing");
 };
 var checkView = function (zx, name) {
-		
+	if (zx.fb25)
+	    return singleton(zx, "count(*)", "select count(*) from rdb$relations where rdb$relation_name ='" + name + "' AND (rdb$view_blr IS NOT NULL);");		
 	if (zx.mysql57)
         return singleton(zx, "count(*)", "select count(*) from information_schema.tables where table_schema = '"+zx.conf.db.database_filename+"' AND table_name = '" + name.toUpperCase() + "' AND TABLE_TYPE='VIEW' ;");
-	if (zx.fb25)
-	    return singleton(zx, "count(*)", "select count(*) from rdb$relations where rdb$relation_name ='" + name + "' AND (rdb$view_blr IS NOT NULL);");
 	throw new Error("dialect code missing");
 };
 var checkGenerator = function (zx, name) {
 	//CREATE SEQUENCE IF NOT EXISTS myschema.myseq;  Postgres 9.5+
-	if (zx.mssql12)
-        return singleton(zx, "count(*)", "SELECT count(*) FROM sys.sequences WHERE name = '" + name.toUpperCase() + "';");
+	if (zx.fb25)
+	    return singleton(zx, "count(*)", "SELECT count(*) FROM RDB$GENERATORS  where RDB$GENERATOR_NAME='" + name + "' ;");	
 	if (zx.mysql57)
         return singleton(zx, "count(*)", "select count(*) from information_schema.tables where table_schema = '"+zx.conf.db.database_filename+"' AND table_name = 'Z$GEN_" + name.toUpperCase() + "' AND TABLE_TYPE='BASE VIEW' ;");
-	if (zx.fb25)
-	    return singleton(zx, "count(*)", "SELECT count(*) FROM RDB$GENERATORS  where RDB$GENERATOR_NAME='" + name + "' ;");
+	if (zx.mssql12)
+        return singleton(zx, "count(*)", "SELECT count(*) FROM sys.sequences WHERE name = '" + name.toUpperCase() + "';",0);	
 	throw new Error("dialect code missing");
 };
 var getGenerator = function (zx, name, increment) {
-	return singleton(zx, "gen_id", "SELECT GEN_ID( " + name + "," + increment + " ) FROM RDB$DATABASE;");
+ 
+	if (zx.fb25) { 
+		return singleton(zx, "gen_id", "SELECT GEN_ID( " + name + "," + increment + " ) FROM RDB$DATABASE;");
+	} else if (zx.mysql57) { 
+		qrystr = "";
+	} else if (zx.mssql12) { 
+        return singleton(zx, "current_value", "SELECT current_value FROM sys.sequences WHERE name = '" + name.toUpperCase() + "';",0);	
+	} else throw new Error("dialect code missing");	
 };
 var dropTriggers = function (zx) {
 	var t = dataset(zx, "select rdb$trigger_name from rdb$triggers where (rdb$system_flag = 0 or rdb$system_flag is null)");
@@ -875,11 +882,16 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 		//name=qrystr.match(/CREATE\s+TRIGGER\s+(\'*\"*[\w$]+\'*\"*)/i);
 		//console.log('blocks.forEach trigger^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^:',name);
 		
+		//change the conditional creates to normal creates they will be converted back to idempotent procedures
+		qrystr = qrystr.replace(/^CREATE\sOR\sALTER\s+PROCEDURE\s/i, "CREATE PROCEDURE ");
 		qrystr = qrystr.replace(/^ALTER\s+PROCEDURE\s/i, "CREATE PROCEDURE ");
 		block.method = "exec";
 		block.qrystr = 'xxxxx';
 
-		if (qrystr.match(/SET\s+VERBOSITY\s/i)) {
+		if (qrystr.match(/QUICC\s+BREAK/i)) {
+			throw new Error("QUICC BREAK in source");
+		
+		} else if (qrystr.match(/SET\s+VERBOSITY\s/i)) {
 			var mv = qrystr.match(/SET\s+VERBOSITY\s+([\w\$]+)/i);
 			if (mv) {
 				verbosity = +mv[1];
@@ -937,51 +949,38 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			block.expect = /335544351/;
 			block.order = 400;
 		} else if (name=qrystr.match(/CREATE\s+GENERATOR\s+([\w$]+)/i)) {
+				        
 			block.name = 'GENERATOR_' + name[1];
 			block.expect = /335544351/;
-			var mg = qrystr.match(/CREATE\s+GENERATOR\s+([\w\$]+)/i);
-            //console.log("checkGenerator  ",mg, 'as ',qrystr);
-			if (zx.mssql12) {
-				qrystr = "";
-			} else {
-			if (mg && checkGenerator(zx, mg[1]))
-                {
-                //console.log(" checkGenerator:  exits");
-				qrystr = "";
-                }
-			// else execute as is
-			}
-			block.order = 500;
-		} else if (name=qrystr.match(/SET\s+GENERATOR\s+([\w$]+)/i)) {
-			block.name = 'SETGENERATOR_' + name[1];
-			var mgg = qrystr.match(/SET\s+GENERATOR\s+([\w\$]+)/i);
-			//console.log("getGenerator  ",mgg, 'as ',qrystr);
-			if (mgg) {
-				if (checkGenerator(zx, mgg[1]))
-				{
-				var gv = getGenerator(zx, mgg[1], 0);
-				//console.log("GENERATOR value :",gv," ");
-				//console.log(" checkGenerator:  exits");
-				if (gv > 0) {
+			if (zx.fb25) { 
+				if (mg && checkGenerator(zx, mg[1])) {
+					//console.log(" checkGenerator:  exits");
 					qrystr = "";
-					//console.log("GENERATOR", mgg[1], "already set");
-				}else{
-					
-					
-					if (zx.mssql12) {
-						qrystr = "CREATE SEQUENCE "+mgg[1]+" AS INT START WITH 0 INCREMENT BY 1;";
-						
-					} else {
-						
-					}						
-					
-				}
-				
-				}
-				else
+					}
+			} else if (zx.mysql57) { 
+				throw new Error("dialect code missing");
+			} else if (zx.mssql12) { 
 				qrystr = "";
-				}
-		
+			} else throw new Error("dialect code missing");
+			
+			block.order = 500;
+		} else if (name=qrystr.match(/SET\s+GENERATOR\s+([\w\$]+)\sTO\s([\w\$]+)/i)) {
+			block.name = 'SETGENERATOR_' + name[1];			
+			console.log("setGenerator  ",name, 'as ',qrystr);
+			var gv=0,cg=checkGenerator(zx, name[1]);
+			if (cg>0) gv = getGenerator(zx, name[1], 0);
+			
+ 			if (zx.fb25) { 
+			    // allow the set value though as is, only if it is still 0			  
+			    if (gv>0) qrystr = "";
+			} else if (zx.mysql57) { 
+				qrystr = "";
+				throw new Error("dialect code missing");
+			} else if (zx.mssql12) { 
+				if (gv>0) qrystr = "";
+				else qrystr = "CREATE SEQUENCE "+name[1]+" AS INT START WITH "+name[2]+" INCREMENT BY 1;";
+			} else throw new Error("dialect code missing");
+		    console.log("SET GENERATOR :now=",gv," do ",qrystr," ");
 			block.order = 600;
 		} else if (name=qrystr.match(/CREATE\s+SEQUENCE\s+([\w$]+)/i)) {
 			if (zx.mssql12) {
@@ -1183,7 +1182,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			
 
 			if (verbosity > 1) {
-				console.log(" Unexpected DDL, from line : ",
+				console.log("\r\n\r\n Unexpected DDL, from line : ",
 					block.src.LineNr, ' lines:', block.src.l + 1, 'file: ',block.src.src_obj.srcinfo.filename,
 					'\r\ntext:', qrystr, 
 					'\r\n after:',blocks[bi ? bi - 1 : 0].q);

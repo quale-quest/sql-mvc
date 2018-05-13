@@ -280,9 +280,9 @@ exports.EmitConditionAndBegin = function (zx, line_obj, bid,comment) {
 		"''"		
 		);
 	emit(zx, line_obj, "if (cond<>0) then ", "");
-	if (zx.conf.db.dialect=="fb25") emit(zx, line_obj, "begin",' '+ comment);
+	if (zx.fb25) emit(zx, line_obj, "begin",' '+ comment);
 	zx.sql.dent += 4;
-	zx.sql.blocktypes.push(zx.dbu.sqltype(zx,"","if",""));
+	zx.sql.blocktypes.push(zx.dbu.sqltype(zx," ","if"," "));
 
 	return line_obj;
 };
@@ -1118,7 +1118,7 @@ exports.start_pass = function (zx /*, line_objects*/
 	for (var name in zx.sql.declare_above) {
 
 		var decl = zx.sql.declare_above[name];
-		console.log('declare_above : ',name,decl);
+		//console.log('declare_above : ',name,decl);
 		emitdeclare(zx, 0, exports.emit_var_def(decl.name),decl.db_type,"''");
 	}
 	for (var i = 0; i < zx.sql.max_f; i++) {

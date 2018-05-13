@@ -59,7 +59,7 @@ exports.compile = function (zx, obj) {
 				if (line_obj.dialect_active === 0) {
 					if (zx.pass === 1) {
 						//console.warn('dialect_active==0 :',i,line_obj.tag ,line_obj.save );
-						console.log('WARN : dialect_active==0: ', line_obj.tag, 'in', line_obj.srcinfo.filename, ' at line ',line_obj.srcinfo.start_line);
+						//console.log('WARN : dialect_active==0: ', line_obj.tag, 'in', line_obj.srcinfo.filename, ' at line ',line_obj.srcinfo.start_line);
 						//console.log('WARN :                  : ', line_obj.srcinfo);
 						
 					}

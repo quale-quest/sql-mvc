@@ -71,10 +71,9 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
 
     if (rambase.conf.db.dialect=="fb25")  {
 		connect_and_produce_div_sub_fbsql(req,ss,rambase,message,recursive,public_parameters,update,cb);
-		}
-	if (rambase.conf.db.dialect=="mysql57")  {			
+	} else if (rambase.conf.db.dialect=="mysql57")  {			
 		connect_and_produce_div_sub_mysql(req,ss,rambase,message,recursive,public_parameters,update,cb);
-		}
+	} else throw new Error("dialect code missing");
 			
 }
 

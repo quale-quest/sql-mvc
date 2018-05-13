@@ -351,13 +351,13 @@ exports.getPageIndexNumber = function (zx, name) {
 		return CurrentPageIndex;
 	} else if (zx.mysql57||zx.mssql12){
 	    var CurrentPageIndex = exports.singleton(zx, "pk", "select pk from Z$SP where FILE_NAME='" + name + "'");
-		console.log('getUpdateOrInsert a: ' +CurrentPageIndex);
+		//console.log('getUpdateOrInsert a: ' +CurrentPageIndex);
 		if (CurrentPageIndex=="") {
 			//console.log('getUpdateOrInsert c: ' +name);
 			exports.singleton(zx, "", "INSERT INTO Z$SP (FILE_NAME)VALUES ('" + name + "') ");
 			CurrentPageIndex = exports.singleton(zx, "pk", "select pk from Z$SP where FILE_NAME='" + name + "'");
 		}
-		console.log('getUpdateOrInsert z: ' +CurrentPageIndex);
+		//console.log('getUpdateOrInsert z: ' +CurrentPageIndex);
 		return CurrentPageIndex;
 	} else throw new Error("dialect code missing");	
 }

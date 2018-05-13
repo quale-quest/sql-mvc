@@ -16,6 +16,8 @@
 
 ## TODO             -----------------------------------------------------------TODO
 
+
+* /CREATE\s+SEQUENCE\s+([\w$]+)/i)  - reconcile with getnerator - to reduce code
 * separate sql drivers into separate files?
 
 * make "Insert if not exiting" for   INSERT INTO user_table_name (user_landing_page,user_display_field,user_name_field,user_password_field) values ('Home/Guest','Guest','user_guest_name','AnyPassword');
