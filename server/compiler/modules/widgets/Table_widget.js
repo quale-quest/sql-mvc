@@ -252,27 +252,21 @@ var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx,
 			tcx.query = tcx.query.replace(tcx.implied_pk_name, 'INSERT_REF');
 
 		
-		if (zx.fb25) {
-		//only 1 record on a insert
-		var pat = /select\s+first\s+\d+/i;
-		//console.log('regex first test :',tcx.query.search(pat),tcx.query);
-		if (tcx.query.search(pat) >= 0) {
+		if (zx.fb25||zx.mssql12) {
+			//only 1 record on a insert
+			var pat = /select\s+first\s+\d+/i;
+			var keyword="select " + zx.dbu.sqltype(zx,"first "," ","top ") + cx.table.autoinsert_internal + " ";
+			if (tcx.query.search(pat) < 0) pat = /select\s/i;
+			tcx.query = tcx.query.replace(pat, keyword );
 
-			tcx.query = tcx.query.replace(pat, "select first " + cx.table.autoinsert_internal + " ");
-			//console.log('regex first match :');
-		} else {
-			tcx.query = tcx.query.replace(/select\s/i, "select first " + cx.table.autoinsert_internal + " ");
-		}
-
-		//console.log('autoinsert_internal :',tcx.query);
-		}
-		
-		if (zx.fb25) {
-			//tcx.query += " ROWS 1 ";
-		} else if (zx.mysql57) {
+			//console.log('autoinsert_internal :',tcx.query);
+		} else if (zx.mysql57) { 
 			tcx.query += " Limit 1 ";
-		} else throw new Error("dialect code missing formulatemodel_quale");
-			
+		//} else if (zx.mssql12) { 
+
+		} else throw new Error("dialect code missing");
+
+
 
 	}
 

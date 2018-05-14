@@ -308,6 +308,7 @@ var exec_qry = function (cx, qrys) {
 	} else if (zx.mysql57) {
 		qrys = qrys.replace(/--:/g, "-- :");
 		qrys = qrys.replace(/cast\s*\(\s*'now'\s+as\s+timestamp\s*\)/gi, " NOW() "); //also check compile.js:687
+	} else if (zx.mssql12) { 		
 	} else throw new Error("dialect code missing");
 	
 
@@ -455,6 +456,23 @@ var dropDependecies = function (zx) {
 	dropProcedures(zx);
 
 };
+
+var mssql_alter_table_drop_default = function (schema,table,field) {
+//https://www.oraylis.de/blog/how-to-delete-an-unnamed-default-constraint-in-an-sql-server-table	
+	var qry = 
+    "declare @cmd nvarchar(150) "+
+"\r\nselect @cmd = "+
+"\r\n   'ALTER TABLE ' + t2.name + '.' + t1.name + ' DROP CONSTRAINT ' + "+
+"\r\n    t4.name from [sys].[tables] t1 join [sys].[schemas] t2 on t1.schema_id = t2.schema_id "+
+"\r\n	join [sys].[all_columns] t3 on t1.object_id = t3.object_id "+
+"\r\n	join [sys].[default_constraints] t4 on t1.object_id = t4.parent_object_id and t3.column_id = t4.parent_column_id "+
+"\r\n	where t1.name = N'"+table+"'"+
+"\r\n	and t2.name = N'"+schema+"'"+
+"\r\n	and t3.name = N'"+field+"'"+
+"\r\nif @cmd is not null exec @cmd ";
+return qry;
+}	
+
 var CREATE_TABLE = function (zx, qrystr) {
 	var cx = {
 		zx : zx
@@ -730,6 +748,8 @@ var CREATE_TABLE = function (zx, qrystr) {
 									exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " DROP DEFAULT ");
 								} else if (zx.mysql57) {
 									exec_qry(cx,  "ALTER TABLE " + Table + "   alter column  " + FieldName + " DROP DEFAULT ");
+								} else if (zx.mssql12) { 
+								    exec_qry(cx, mssql_alter_table_drop_default(zx.conf.db.database_schema,Table,FieldName));
 								} else throw new Error("dialect code missing");
 								
 							} else {
@@ -966,6 +986,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 					}
 			} else if (zx.mysql57) { 
 			    var cg=checkGenerator(zx, gen_name);
+				//console.log("CREATE GENERATOR mysql57: ",cg,gen_name," ");
 				if (cg=='') cg=0;
 				if (cg>0) qrystr = "";
 				else qrystr = "CREATE TABLE "+gen_name+"(id INT AUTO_INCREMENT PRIMARY KEY, x int);";
@@ -995,7 +1016,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 				if (gv>0) qrystr = "";
 				else qrystr = "CREATE SEQUENCE "+gen_name+" AS INT START WITH "+name[2]+" INCREMENT BY 1;";
 			} else throw new Error("dialect code missing");
-		    //console.log("SET GENERATOR :now=",gv," do ",qrystr," ");
+		    console.log("SET GENERATOR :now=",gv," do ",qrystr," ");
 			block.order = 600;
 		} else if (name=qrystr.match(/CREATE\s+SEQUENCE\s+([\w$]+)/i)) {
 			if (zx.mssql12) {

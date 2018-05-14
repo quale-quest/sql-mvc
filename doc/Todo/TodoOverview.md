@@ -16,7 +16,7 @@
 
 ## TODO             -----------------------------------------------------------TODO
 
-
+* use of Fix mysql generator table 
 * /CREATE\s+SEQUENCE\s+([\w$]+)/i)  - reconcile with getnerator - to reduce code
 * separate sql drivers into separate files?
 

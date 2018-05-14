@@ -175,7 +175,7 @@ var emitdeclare = function (zx, obj, name,type,val,comment) {
 	} else if (zx.mysql57) {
 	    emit(zx, obj, "declare "+name+" "+type+" default "+val+";", "",comment);
 	} else if (zx.mssql12) {
-	    emit(zx, obj, "declare "+zx.config.db.var_actaul+name+" "+type+" default "+val+";", "",comment);		
+	    emit(zx, obj, "declare "+zx.config.db.var_actaul+name+" "+type+" = "+val+";", "",comment);		
 	} else throw new Error("dialect code missing");
 };
 
@@ -1009,7 +1009,19 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 		emit(zx, 0, "    open cur1;", "");
 		emit(zx, 0, "    cur1Loop: loop", "");
 		emit(zx, 0, "        fetch cur1 "+into+";", "");
-		emit(zx, 0, "        if done = 1 then leave cur1Loop; end if;", "");
+		emit(zx, 0, "        if done = 1 then leave cur1Loop; end if;", "");		
+	} else if (zx.mssql12) {
+		emit(zx, 0, open );
+		emit(zx, 0, "begin", "");	
+		//emit(zx, 0, "    declare done TINYINT default false;", "");
+		emit(zx, 0, "    declare cur1 cursor for "+queryx+";", "");	
+	    //emit(zx, 0, "    declare continue handler for not found set done=1;", "");		
+		//emit(zx, 0, "    set done = 0;", "");
+		emit(zx, 0, "    open cur1;", "");
+		emit(zx, 0, "    fetch next from cur1 "+into+";", "");
+		
+		emit(zx, 0, "    WHILE @@FETCH_STATUS = 0", "");
+		emit(zx, 0, "    BEGIN", "");
 	}  else throw new Error("dialect code missing");
 	
 	
@@ -1027,6 +1039,11 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 		emit(zx, 0, "    end loop cur1Loop;", "");
 		emit(zx, 0, cend, "");
 		emit(zx, 0, "end;", "");
+	} else if (zx.mssql12) {
+		emit(zx, 0, "    fetch next from cur1 "+into+";", "");
+		emit(zx, 0, "    end", "");
+		emit(zx, 0, "    CLOSE cur1", "");
+		emit(zx, 0, "    DEALLOCATE cur1", "");
 	}  else throw new Error("dialect code missing");
 
 	return zx.sql.cidi;
@@ -1074,7 +1091,9 @@ exports.start_pass = function (zx /*, line_objects*/
 		var pname = "ZZ$"+zx.ShortHash(zx.main_page_name);
 		zx.sql.testhead =
 		//"\n\n\nDELIMITER $$\nDROP PROCEDURE IF EXISTS "+pname+" $$\n" +
-		"CREATE PROCEDURE "+pname+"(@cid  integer,@info varchar(200), @res TEXT) AS \r\nBEGIN\r\n" +
+		"CREATE OR ALTER PROCEDURE "+pname+"(@cid  integer,@info varchar(200), @res TEXT) AS \r\nBEGIN\r\n" +
+		"SET NOCOUNT ON\n"+
+		"SET XACT_ABORT ON\n"+
 		"declare @Z$SESSIONID VARCHAR(40);\n" +
 		"declare @pki INTEGER;\n"+
 		"declare @pkf INTEGER;\n"+
@@ -1163,7 +1182,7 @@ exports.start_pass = function (zx /*, line_objects*/
 	} else if (zx.mysql57) {
 		emit(zx, 0, "set cid = (SELECT Z$GEN_CONTEXT_SEQ() );");
 	} else if (zx.mssql12) {
-		emit(zx, 0, "set @cid = (SELECT Z$GEN_CONTEXT_SEQ() );");
+		emit(zx, 0, "set @cid = NEXT VALUE FOR Z$CONTEXT_SEQ ;");
 	}  else throw new Error("dialect code missing");
 
 	//emit(zx,0,'st=\'select operator_ref from Z$CONTEXT where pk = \'||pki;');
@@ -1192,6 +1211,9 @@ exports.done_pass = function (zx /*, line_objects*/
 	} else if (zx.mysql57) {
 				emit(zx, 0, "set @res_ret=res;", "");
 				emit(zx, 0, "set @cid_ret=cid;", "");
+	} else if (zx.mssql12) { 				
+		//just return
+		emit(zx, 0, "/*db_fb_sql_gen.js done_pass*/", "");
 	}  else throw new Error("dialect code missing");	
 	
 	
@@ -1202,6 +1224,8 @@ exports.done_pass = function (zx /*, line_objects*/
 		} else if (zx.mysql57) {
 			//	emit(zx, 0, "end$$", "");
 			//	emit(zx, 0, "DELIMITER ;", "");
+		} else if (zx.mssql12) { 
+			emit(zx, 0, "/*db_fb_sql_gen.js Z$RUN*/", "");		
 		} else throw new Error("dialect code missing");
 	}
 
@@ -1328,6 +1352,9 @@ exports.emit_variable_getter = function (zx, line_obj, v , coalesce /*, comment*
 			oresult = "((SELECT DO_SHOW FROM Z$ONCE ("+where+", 1, 100, 1))=1)";           
 		} else if (zx.mysql57) { 
 			oresult = "(select (Z$ONCE("+where+",1,100,1) )=1)";
+		} else if (zx.mssql12) { //todo function Z$ONCE for mssql12
+		  //must be run with a procedure into a variable
+			oresult = "(1)/*db_fb_sql_gen.js once*/";
 		} else throw new Error("dialect code missing");
 		return oresult;
     }
