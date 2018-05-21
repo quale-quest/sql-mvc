@@ -37,6 +37,8 @@ thus we must optimise this case to simple text substitutions
  {name:"master"}
  ];
 
+var zx_script_debugscript =0;
+ 
 var script_into = function (zx, line_obj, r) {
 
 	var name;
@@ -59,12 +61,13 @@ var script_into = function (zx, line_obj, r) {
 	params = zx.removeword(params);
 	//console.log('tag_script xxxxxxxxx : ', params,' of ',recprefix);
 	//console.log('tag_script xxxxxxxxxzz : ',zx.variables);
+	var mssqlfieldnames = [];
 	var fieldnames = [];
 	var varnames = [];
 	for (name in zx.variables.required) {
 		                         //console.log('tag_script  fields for : ', recprefix,' of ',name);
 		if (recprefix === name.substring(0, recprefix.length)) {
-
+			var nameonly = name.substring(recprefix.length);
 			var varx = {
 				key : name.toLowerCase(),
 				isvariable : true
@@ -74,7 +77,8 @@ var script_into = function (zx, line_obj, r) {
 			var vname=zx.dbg.emit_var_ref(name,zx);
 			varnames.push(vname);
 			//zx.dbg.emit(zx, line_obj, "--p4.1 ='" +name +";"+ vname +";"+JSON.stringify(varnames)  + "'", "script_into");
-			fieldnames.push(name.substring(recprefix.length));
+			fieldnames.push(nameonly);
+			mssqlfieldnames.push(''+vname+'='+nameonly);
 			//zx.dbg.emit(zx, line_obj, "--p5 ='" + JSON.stringify(fieldnames) + "'", "script_into");
 			//- we should do a better way - not direct - split declare and define  functionszx.dbg.DeclareVar(zx,line_obj,varx);
 			zx.sql.declare_above[varx.key] = {
@@ -90,8 +94,9 @@ var script_into = function (zx, line_obj, r) {
 	if (fieldnames.length > 0) {
 		var field = fieldnames.join(',');
 		var vars = varnames.join(',');
+		var mssqlfields = mssqlfieldnames.join(',');
 		//console.log('tag_script  fields into : ', recprefix,' of ',field);
-		params = params.replace(/\*/, field);
+		
 		//zx.dbg.emit(zx, line_obj, "--p12 ='" + JSON.stringify(field) + "'", "script_into");
 		//zx.dbg.emit(zx, line_obj, "--p13 ='" + JSON.stringify(varnames) + "'", "script_into");
 		var complex = false;
@@ -129,16 +134,31 @@ var script_into = function (zx, line_obj, r) {
 			zx.dbg.emit(zx, line_obj, "-- p1 ='" + params + "'", "select into statement");
 			zx.dbg.emit(zx, line_obj, zx.config.db.sql_set_prefix + "st='" + params + "';", "select into statement");
 			zx.dbg.emit(zx, line_obj, "execute statement st into " + vars + ";", "select into statement");
+			throw new Error("local known error");
 		} else { //simple direct query
-			params = params + ' into ' + vars + ';';
+
+			if (zx.fb25) { 
+				params = params.replace(/\*/, field);
+				params = params + ' into ' + vars + ';';
+			} else if (zx.mysql57) { 
+				params = params.replace(/\*/, field);
+				params = params + ' into ' + vars + ';';
+			} else if (zx.mssql12) { 
+				params = params.replace(/\*/, mssqlfields);
+				//console.log('script_into mssql12 : ', params,"\r\n",vars);
+			} else throw new Error("dialect code missing");
+		
+			
 			//zx.dbg.emit(zx, line_obj, "-- p2 ='" + params + "'", "select into statement");
 			zx.dbg.emit(zx, line_obj, params, "select into");
 		}
-		//console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!! : {', r.content,'}',params, '\n',zx.variables.named);
-		//console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!! : {', r.content,'}', line_obj,'\n',zx.variables.named);
+		//console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!! : \r\n{', r.content,'}',params, '\n',zx.variables.named);
+		//console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!! : \r\n ', line_obj,'\n');
+		//console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!! : \r\n{', r.content,'}', line_obj,'\n',zx.variables.named);
+		//console.trace('!!!!!!!!!!!!!!!!!!!!!!!!!!! : \r\n', zx.sql.script);
 		//process.exit(2);
 	}
-	//console.log('tag_script ...rrrrrrrr : ', params);
+	//console.log('tag_script ...rrrrrrrr : ', params,"\r\n",zx.sql.script);
 	//process.exit(2);
 };
 
@@ -169,6 +189,15 @@ var script_as_is = function (zx, line_obj, r) {
 	zx.dbg.emit(zx, line_obj, r.tag.open + params + (r.tag.close === undefined ? "" : r.tag.close), 'script_as_is:' + r.tag.open);
 };
 
+
+var script_if_then = function (zx, line_obj, r) {
+	var params = zx.expressions.TextWithEmbededExpressions(zx, line_obj, r.content, "sql", "script_as_is");
+	var thn = r.tag.close;
+	if (zx.mssql12) thn="";
+	zx.dbg.emit(zx, line_obj, r.tag.open + params + thn, 'script_as_is:' + r.tag.open);
+};
+
+
 var script_declare = function (zx, line_obj, r) {
 	var params = r.content;
 	var name = zx.parseword(params).toLowerCase();
@@ -179,8 +208,9 @@ var script_declare = function (zx, line_obj, r) {
 	};
 };
 
-var script_sql = function (zx, line_obj, r) {
+var script_sql = function (zx, line_obj, r) {	
 	var params = zx.expressions.TextWithEmbededExpressions(zx, line_obj, r.content, "sql", "script_sql");
+	//zx.dbg.emit(zx, line_obj, ' /* script_sql ' + params + '; */', "script_sql");
 	zx.dbg.emit(zx, line_obj, '' + params + ';', "script_sql");
 };
 /*
@@ -225,8 +255,9 @@ var script_breakpoint = function (/*zx, line_obj, r*/
 	console.trace('process.exit(2) from script_breakpoint : '); process.exit(2); ///breakpoint in file
 };
 
-var script_debugscript = function (/*zx, line_obj, r*/
-) { //TODO
+var script_debugscript = function (zx, line_obj, r) { //TODO
+  console.log('script_debugscript : ', r);
+  zx_script_debugscript = +r.content;  
 };
 var script_assign = function (/*zx, line_obj, r*/
 ) { //TODO
@@ -334,7 +365,7 @@ var TagTypes =
 	}, {
 		"open" : "if ",
 		"close" : "then",
-		"callback" : script_as_is
+		"callback" : script_if_then
 	}, {
 		"open" : "else",
 		"xclose" : "",
@@ -400,6 +431,9 @@ exports.ExtractFirstScript = function (o, r, debugmsg) {
 
 	if (debugmsg !== undefined)
 		console.log('ExtractFirstScript found: ', debugmsg, firstp, ftag);
+	
+	if (zx_script_debugscript>5)
+		console.log('!!!!!!!!!!!!!!!!!!!!!!!', debugmsg, firstp, ftag);
 
 	if (firstp > 0) { //found const first
 	    //console.log('ExtractFirstScript the tagaaaa: ',ftag);

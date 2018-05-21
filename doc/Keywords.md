@@ -213,6 +213,10 @@ Logout the current session.
 
 Compiler directive for specifying code for specific SQL engines.
 
+##sqlcomment
+
+emit a comment into sql target.
+
 ##inject_point
 
 undefined

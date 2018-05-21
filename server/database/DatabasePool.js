@@ -173,7 +173,11 @@ var database_default_config = {
 		"sql_concat_prefix": "",
 		"sql_concat_res": "res=res||",
 		
+		"sql_preload_fieldname": "preload",			
+		"sql_concat_rowcontent": "rowcontent",
+		"sql_insertvar": "insertvar",
 		"sql_concat_seperator": "||",
+		"sql_ifthen": " then ",	
 		"sql_concat_postfix": "",
 		"sql_end_postfix": "",		
 		"sql_endif_postfix": "",		
@@ -203,9 +207,13 @@ var database_default_config = {
 		"sql_concat_prefix": "concat(",
 		"sql_concat_res": "res=concat(res,",
 			
+		"sql_preload_fieldname": "preload",	
+		"sql_concat_rowcontent": "rowcontent",	
+		"sql_insertvar": "insertvar",		
 		"sql_concat_seperator": ",",
 		"sql_concat_postfix": ")",
-		"sql_end_postfix": ";",			
+		"sql_end_postfix": ";",		
+		"sql_ifthen": " then ",		
 		"sql_endif_postfix": "end if;",			
 		"sql_First1": " ",		
 		"sql_Limit1": " limit 1 ",		
@@ -231,15 +239,19 @@ var database_default_config = {
 		"var_global_get": "@",
 		"var_global_set" : "set @",
 				
-		"sql_set_prefix": "set ",		
-		"sql_concat_set": "@res=",
+		"sql_set_prefix": "set @",		
+		"sql_concat_set": "res=",
 		"sql_concat_prefix": "concat(",
-		"sql_concat_res": "@res=concat(@res,",
-			
+		"sql_concat_res": "res=concat(@res,",
+		
+		"sql_preload_fieldname": "preload",			
+		"sql_concat_rowcontent": "rowcontent",
+		"sql_insertvar": "insertvar",
 		"sql_concat_seperator": ",",
 		"sql_concat_postfix": ")",
-		"sql_end_postfix": ";",			
-		"sql_endif_postfix": "end if;",			
+		"sql_end_postfix": ";",				
+		"sql_ifthen": "",//" \r\nBEGIN \r\n",			
+		"sql_endif_postfix": "", //"end",			
 		"sql_First1": " top 1 ",		
 		"sql_Limit1": " ",		
 		
@@ -339,7 +351,7 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 			// Attempt to connect and execute queries if connection goes through
 			rambase.db.on('connect', function(err) {
 			  if (err) {
-				console.log(err);
+				console.log('MSSQL Failed to Connect! ',err);
 			  } else {
 				console.log('MSSQL Connected!');
 				
@@ -474,7 +486,7 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 			function (err, dbref) {
 			if (err) {
 
-				console.log(err.message);
+				console.log('databasePooled ',err.message);
                 if (err.message.match(/user name and password are not defined/)) {
                     console.log('Check the databse config and passwords :', JSON.stringify(rambase.connection_string,null,4));
                     process.exit(2);
@@ -517,7 +529,7 @@ exports.connect_if_needed = function (connection, callback) {
             console.log('connect_if_needed connected 080005 :');    
 			if (err) {
                 console.log('connect_if_needed connected error 080006 :');    
-				console.log(err.message);
+				console.log('connect_if_needed', err.message);
                 winston.error('Error connect_if_needed connected 080006 ',err.message);
 				if (callback !== undefined)
 					callback(err, "Error");
@@ -551,7 +563,7 @@ exports.locateRambase = function (connectionID,cb) {//dont think this is being u
 	db.databasePooled(root_folder, req.session.myStartID,Application, function (err , msg, Rambase
 		) {
 		if (err) {
-			console.log(err.message);
+			console.log('locateRambase ',err.message);
 		} else {
             cb(Rambase);
         }});                  
@@ -570,7 +582,7 @@ exports.locateRambaseReq = function (req,cb) {
 	exports.databasePooled(req.session.root_folder, req.session.myStartID, req.session.Application, function (err , msg, Rambase
 		) {
 		if (err) {
-			console.log(err.message);
+			console.log('locateRambaseReq',err.message);
 		} else {
             cb(Rambase);
         }});                  

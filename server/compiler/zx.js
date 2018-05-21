@@ -777,7 +777,101 @@ var updateFileSync = exports.updateFileSync = function (file_name,text) {
 }    
    
    
-   
+//http://stackoverflow.com/questions/25058134/javascript-split-a-string-by-comma-except-inside-parentheses
+var splitNoParen = exports.splitNoParen = function (s, delim) { //Lafras enhanced to do quotes
+	//console.log("splitNoParen :", s);
+	var left = 0,
+	right = 0,
+	A = [],
+	Q = 0,
+	M = s.match(/([^()']+)|([()'])/g);
+	if (!M)
+		return A;
+	var
+	L = M.length,
+	next,
+	str = '',
+    dbg=0;
+	//var del_regx = new RegExp("([^" + (delim) + "]+)", 'g'); //anything except the delimiter
+	if (dbg) console.log("splitNoParen:", L, M);
+	for (var i = 0; i < L; i++) {    
+		next = M[i];       
+        //console.log("             xx:",str, ' n:', next, left, right);
+		if (next === "'" && Q === 0) {
+			++left;
+			Q = 1;
+		} 
+        if (next === '(')
+			++left;
+
+		if ((left !== right)&&(i !== (L-1))) {
+			str = str + next;
+			if (dbg) console.log("accumulate :", str, left, right,' m:');
+            }
+        
+        if ((left === right)||(i === (L-1))) {
+			//var add=next.match(del_regx);
+			var add = next.split(delim);
+			if (dbg) console.log("Appending :", str,next, add);
+            str+=add.shift();
+            if (dbg) console.log(".....ding :", str, add);
+            if (A.length===0) A.push('');
+            A[A.length-1]+=str;
+			A = A.concat(add);
+            str='';
+		}
+        
+        
+        if (next === ')')
+			++right;
+        if (next === "'" && Q === 1) {
+			++right;
+			Q = 0;
+		}         
+        
+	}
+	return A;
+}   
+
+var GetClosingBracket = exports.GetClosingBracket = function (s,frm) { 
+	var c,
+	    Quoted=0,
+		Bracketed=0,
+		L = s.length;
+		
+    for (var i = frm; i < L; i++) {  
+		c = s.charAt(i);
+		//console.log("GetClosingBracket i:",i, " c:",c," Q:",Quoted," B:",Bracketed);
+		if (Quoted) {
+			if (c=="'") Quoted--;
+		} else {
+			if (c=="'") Quoted++;
+			if (c=='(') {Bracketed++; }			
+			if (c==')') {
+				Bracketed--; 
+				if (Bracketed==0) return i;	
+				}
+			}
+		}		
+	return L;			
+}
+	
+
+exports.unit_test_s = function (zx) {
+
+
+console.log(JSON.stringify(zx.GetClosingBracket("(abc,'123)'default);999"), null, 4));
+//console.log(JSON.stringify(zx.GetClosingBracket('123;456;789;(abc;(123;456;789) default;) 999', ';'), null, 4));
+//console.log(JSON.stringify(zx.GetClosingBracket('(123;456;789;(abc;123;456;789")" default;) 999);888;777', ';'), null, 4));
+console.trace('process.exit(2) from test in updater : ');process.exit(2);//test
+}
+
+//var inputs = fs.readFileSync('test.txt', 'utf8');
+//console.log(JSON.stringify(splitNoParen(inputs, ';'), null, 4));
+//console.log(inline_comment_suppress('abc --def\nghi\nklm\n---none of this\nend')); 
+//exports.unit_test_s(exports);
+//process.exit(2);
+
 
 /*//var fields={a:"a",b:"b",c:"c"};
 var fields=["a","b","c"];

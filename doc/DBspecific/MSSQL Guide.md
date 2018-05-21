@@ -10,6 +10,13 @@ say something
 * MS SQL before version 2012 - does not have a convenient Limit Skip function - 2012 or later-  syntax OFFSET 10 ROWS FETCH NEXT 10 ROWS ONLY;
 * Triggers are not per record - the trigger fires once per statement, and the pseudo table Inserted might contain multiple rows.
 	https://stackoverflow.com/questions/3580123/how-can-i-edit-values-of-an-insert-in-a-trigger-on-sql-server
+
+* upsert a big problem
+	http://michaeljswart.com/2017/07/sql-server-upsert-patterns-and-antipatterns/	
+	
+
+
+	
 ## indexes
 
 

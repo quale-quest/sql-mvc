@@ -120,6 +120,101 @@ function indent_str(zx,str) {
 	return str.replace(regex, " ".repeat(zx.sql.dent));	
 }
 
+exports.push_sql_stack_unwind_location = function (zx,Typ) {
+	var Record = {Location:zx.sql.script.length,Type:Typ,Depth:zx.fc.block_stack_unwind.length+1};
+	zx.fc.block_stack_unwind.push(Record) ;	
+	//zx.dbg.emitAppendComment(zx,'push_stack ' +JSON.stringify(Record));	
+}
+
+exports.push_sql_stack = function (zx,Record) {	
+	zx.fc.block_stack_unwind.push(Record) ;	
+	//zx.dbg.emitAppendComment(zx,'push_stack ' +JSON.stringify(Record));	
+}
+
+exports.pop_sql_stack_unwind_location = function (zx) {
+	var Record = zx.fc.block_stack_unwind.pop() ;	
+	//zx.dbg.emitAppendComment(zx,'pop_stack '+JSON.stringify(Record));
+    exports.LengthOf_sql_stack_unwind_location(zx);//peek 	
+	return Record;
+}
+
+exports.peek_sql_stack_unwind_location = function (zx,show) {
+	if (zx.fc.block_stack_unwind.length<1) exports.push_sql_stack_unwind_location(zx,'empty');
+	var Record = zx.fc.block_stack_unwind.pop() ;
+	zx.fc.block_stack_unwind.push(Record);
+	if (show) zx.dbg.emitAppendComment(zx,'peek_stack '+JSON.stringify(Record));	
+	return Record;
+}
+
+
+exports.LengthOf_sql_stack_unwind_location = function (zx) {	
+	var Record = exports.peek_sql_stack_unwind_location(zx);
+	return zx.sql.script.length - Record.Location;
+}
+
+exports.TypeOf_sql_stack_unwind_location = function (zx) {
+	var Record = exports.peek_sql_stack_unwind_location(zx);
+	return Record.Type;		
+}
+
+exports.inject_into_script = function (zx,Location,txt) {	
+	//console.log('inject_into_script ',zx.sql.script);
+	//zx.sql.script.splice( Location, 0,txt); 	
+	zx.sql.script[Location-1] = zx.sql.script[Location-1] + "\r\n" + txt;
+	//console.log('\r\n\r\n\r\n\r\n\r\n\r\n\r\n-------inject_into_script after ',zx.sql.script);
+}
+
+exports.unwind_sql_stack_unwind_location = function (zx,Record,rmtxt) {	
+    var remove_or_comment_out = Record.RemoveType;
+	var keeplines = Record.keeplines||0;
+	var remove = 0;//(zx.conf.db.empty_block_mode=="remove");
+	var comment = 1;//(zx.conf.db.empty_block_mode=="comment");
+	var fill = (zx.conf.db.empty_block_mode=="fill");
+	var i;
+	//console.log('unwind_sql_stack_unwind_location ',rmtxt,Record);
+	//remove_or_comment_out=1;
+	
+	if (remove_or_comment_out==3) {
+		var inj = zx.config.db.sql_set_prefix + "emptycond = "+zx.config.db.var_actaul+"emptycond +1 ; /* "+rmtxt.substring(4,20)+" */ ";
+		exports.inject_into_script(zx,Record.InjectPoint,inj);	
+		return 0;	
+	}
+	
+	if (remove_or_comment_out==2) {
+		for(i=Record.Location;i<zx.sql.script.length-keeplines;i++) {
+			zx.sql.script[i] = rmtxt+'  '+zx.sql.script[i];
+		}	
+		return 0;	
+	}
+	
+	if (remove_or_comment_out==0) {
+		for(i=Record.Location;i<zx.sql.script.length-keeplines;i++) {
+			zx.sql.script[i] = ' /* '+rmtxt.substring(4,20)+' */ '+zx.sql.script[i];
+		}	
+		return 0;	
+	}
+	
+	if (remove) {
+		zx.sql.script.length = Record.Location;
+	    //zx.dbg.emit_comment(zx,"unblock stack begin : "+JSON.stringify(Record));		
+	} else {
+		if (comment) {
+			for(i=Record.Location;i<zx.sql.script.length-keeplines;i++) {
+				zx.sql.script[i] = ' '+rmtxt+' '+zx.sql.script[i];
+			}
+			//var inj = zx.config.db.sql_set_prefix + "emptycond = "+zx.config.db.var_actaul+"emptycond +1 ;"
+			//console.log('inject_into_script ',Record.InjectPoint );
+			//exports.inject_into_script(zx,Record.InjectPoint,inj);				
+			
+		} else { //fill
+			var inj = zx.config.db.sql_set_prefix + "emptycond = "+zx.config.db.var_actaul+"emptycond +1 ;"
+			exports.inject_into_script(zx,Record.InjectPoint,inj);			    
+			}			
+		
+	}	
+	
+}
+
 
 var emit = function (zx, line_obj, statement , comment
 ) {
@@ -153,6 +248,11 @@ var emit = function (zx, line_obj, statement , comment
 	}
 };
 
+var emitAppendComment = function (zx,comment) {
+	var lastline = zx.sql.script.pop();
+	lastline = lastline + " -- " + comment;
+	zx.sql.script.push(lastline);	
+}
 
 var sqlconcat = function (zx,comment) {
 	
@@ -204,6 +304,7 @@ exports.emit = emit;
 exports.emito = emito;
 exports.emits = emits;
 exports.emit_mt_obj = emit_mt_obj;
+exports.emitAppendComment = emitAppendComment;
 
 var fb_escapetoString = function (str) { //should make the content safe and prevent SQL incjection
 	str = str.replace(/\'/g, "''");
@@ -222,8 +323,24 @@ exports.var_actaul = ""; //will later be loaded with  zx.config.db.var_actaul
 var make_concats = function (zx, line_obj, str) { //should make the parameters concatenate as strings, as script to be executed
 	//make ref=:operator_ref  to ref='||:operator_ref||'
 	//except : is escaped as /***/
-	str = zx.escape_scriptstring(zx, str, 5, /\/\*\*\*\//, "", "'''||replace(/***/", ",'''','''''')||'''");
-	return "'" + str + "'";
+//todo concat	
+	var wildcards = str.match(/\/\*\*\*\//);
+	if (!wildcards) return "'" + str + "'";
+	
+    if (zx.fb25) {
+		str = zx.escape_scriptstring(zx, str, 5, /\/\*\*\*\//, "", "'''||replace(/***/", ",'''','''''')||'''");		
+		return "'" + str + "'";
+	} else {	
+		var inj  = 	"'''"+zx.config.db.sql_concat_seperator+"replace(/***/";  
+		var ends = 	",'''','''''')"+zx.config.db.sql_concat_seperator+"''''"+zx.config.db.sql_concat_postfix;  
+		
+		str = zx.escape_scriptstring(zx, str, 5              ,  /\/\*\*\*\//, ""    , inj    ,ends);
+		                          //(zx, val, open_key_length,  open,         close , before, aft
+		
+        str = zx.config.db.sql_concat_prefix + "'" + str ;
+								  
+	}
+	return "" + str + "";
 };
 
 exports.emit_var_ref = function (name) {
@@ -257,31 +374,39 @@ exports.eval_cond = function (zx, line_obj, conditionals) {
 		if (entry.pre === undefined)
 			entry.pre = '';
 		emit(zx, conditionals, 
-			zx.dbu.sql_make_compatable(zx,"if (cond<>0) then "+
-			"if (" + entry.pre + expr + entry.post + " ) then "+
+			zx.dbu.sql_make_compatable(zx,"if ("+zx.config.db.var_actaul+"cond<>0) "+zx.config.db.sql_ifthen+" /*no stack*/"+
+			"if (" + entry.pre + expr + entry.post + " ) "+zx.config.db.sql_ifthen+" "+
 			zx.config.db.sql_set_prefix +"cond=0;"), "");
 			
 		if (zx.fb25) { 
 		} else if (zx.mysql57) {
 			emit(zx, zx.line_obj, "    end if; end if;");
-		} else if (zx.mssql12) {	
+		} else if (zx.mssql12) {
+			emit(zx, zx.line_obj, "    /* xx end if; end if;xx */ ");
+		
 		} else throw new Error("dialect code missing");
 	});
 	return conditionals;
 };
 
 exports.EmitConditionAndBegin = function (zx, line_obj, bid,comment) {
-
+	
 	//this is conditional so we need to emit a value to fullstash also	
 	emitset( zx,0,"",  
 		"',``" + bid + "``:'",
 		zx.dbu.sqltype(zx,"iif","if","IIF")+
-		"(cond<>0,'[``true``]','[]')",
+		"("+zx.config.db.var_actaul+"cond<>0,'[``true``]','[]')",
 		"''"		
 		);
-	emit(zx, line_obj, "if (cond<>0) then ", "");
-	if (zx.fb25) emit(zx, line_obj, "begin",' '+ comment);
-	zx.sql.dent += 4;
+	zx.dbg.emitAppendComment(zx,"/* EmitConditionAndBegin "+  zx.sql.script.length +" stack:"+ zx.fc.block_stack_unwind.length +"*/");	
+	exports.push_sql_stack_unwind_location(zx,"ifbegin");
+	
+	emit(zx, line_obj, "if ("+zx.config.db.var_actaul+"cond<>0) "+zx.config.db.sql_ifthen+" /*expl*/ ", "");	
+	if (zx.fb25||zx.mssql12) emit(zx, line_obj, "begin",' '+ comment);
+	else zx.dbg.emitAppendComment(zx,"/* implicit begin */");
+	
+	zx.sql.dent += 4;	
+	
 	zx.sql.blocktypes.push(zx.dbu.sqltype(zx," ","if"," "));
 
 	return line_obj;
@@ -289,7 +414,9 @@ exports.EmitConditionAndBegin = function (zx, line_obj, bid,comment) {
 
 exports.EmitUnconditionalBegin = function (zx, line_obj) {
 	//compiles sql   if there is no goto this wont begin a real block
-	emit(zx, line_obj, "begin", line_obj.Block); //unconditional always on
+	exports.push_sql_stack_unwind_location(zx,"begin");
+	emit(zx, line_obj, "begin ", line_obj.Block); //unconditional always on
+	//emit(zx, line_obj, "begin /* "+JSON.stringify(line_obj)+" */", line_obj.Block); //unconditional always on
 	zx.sql.dent += 4;
 	zx.sql.blocktypes.push("");
 	return line_obj;
@@ -297,19 +424,79 @@ exports.EmitUnconditionalBegin = function (zx, line_obj) {
 
 exports.elseblock = function (zx, line_obj) {
 	//compiles sql
-	zx.sql.dent -= 4;
-	if (zx.conf.db.dialect=="fb25") emit(zx, line_obj, "end  ", "");
-	zx.sql.dent -= 4;
-	emit(zx, line_obj, "else  ", "");
+	zx.sql.dent -= 4;	
+	
+	
+	//var Record = exports.pop_sql_stack_unwind_location(zx);
+	if (zx.fb25||zx.mssql12) emit(zx, line_obj, "end  ", " -- end implicit");	
+	
+    var Record = exports.pop_sql_stack_unwind_location(zx);		
+	Record.Lines = zx.sql.script.length - Record.Location;
+	exports.push_sql_stack(zx,Record);	
+
+	//zx.sql.dent -= 4;
+	//exports.pop_sql_stack_unwind_location(zx);
+	
+	exports.push_sql_stack_unwind_location(zx,"elsebegin");
+	emit(zx, line_obj, "else /*elseblock "+  zx.sql.script.length +" stack:"+ zx.fc.block_stack_unwind.length +"*/ ", "");
+	//zx.sql.dent += 4;
+		
+	if (zx.fb25||zx.mssql12) emit(zx, line_obj, "begin", "");
 	zx.sql.dent += 4;
-	if (zx.conf.db.dialect=="fb25") emit(zx, line_obj, "begin", "");
-	zx.sql.dent += 4;
+	
 	return line_obj;
 };
 
 exports.unblock = function (zx, line_obj,comment) {
+	var thenkeeplines=zx.dbu.sqltype(zx,0,1,0);
+	var thenemptylevel      =zx.dbu.sqltype(zx,1,1,3);
+	var thenemptyinsertpoint=zx.dbu.sqltype(zx,1,1,2);
+	var ifbeginemptylevel=zx.dbu.sqltype(zx,3,2,3);
 	zx.sql.dent -= 4;
-	emit(zx, line_obj, "end  "+zx.sql.blocktypes.pop()+zx.config.db.sql_end_postfix,comment);
+	
+	emit(zx, line_obj, "end  "+zx.sql.blocktypes.pop()+zx.config.db.sql_end_postfix,comment);    
+	
+	var Record = exports.pop_sql_stack_unwind_location(zx);		
+	Record.Lines = zx.sql.script.length - Record.Location;
+	exports.push_sql_stack(zx,Record);	
+	
+	
+    Record = exports.pop_sql_stack_unwind_location(zx);	
+	//zx.dbg.emit_comment(zx,"unblock stack 1: "+JSON.stringify(Record));	
+	if (Record.Type=="begin") { //one level only
+		Record.InjectPoint = Record.Location + 1;
+		Record.RemoveType = (Record.Lines<=3)?2:0;
+		zx.dbg.unwind_sql_stack_unwind_location(zx,Record,' -- |');
+		//zx.dbg.emit_comment(zx,"unblock stack begin : "+JSON.stringify(Record));	
+		// console.log('unblock stack begin : ',line_obj);
+	} else if (Record.Type=="ifbegin") { //one level only 
+	    Record.InjectPoint = Record.Location + (Record.Lines<=2)?0:2;
+		Record.RemoveType = (Record.Lines<=ifbeginemptylevel)?1:0;
+		zx.dbg.unwind_sql_stack_unwind_location(zx,Record,' -- ?');
+		zx.dbg.emit_comment(zx,"unblock stack ifbegin: "+JSON.stringify(Record));		
+	} else if (Record.Type=="elsebegin") { //one level only 
+		Record.InjectPoint = Record.Location + 2;
+		Record.RemoveType = (Record.Lines<=3)?1:0;
+		
+		Record.keeplines  = thenkeeplines;
+		
+		zx.dbg.unwind_sql_stack_unwind_location(zx,Record,' -- ^');
+		zx.dbg.emit_comment(zx,"unblock stack elsebegin: "+JSON.stringify(Record));			
+		Record = exports.pop_sql_stack_unwind_location(zx);	
+		
+		if (+Record.Lines<=thenemptylevel) {			
+			Record.InjectPoint = Record.Location + thenemptyinsertpoint;
+			Record.RemoveType = 3;
+			//Record.RemoveType = (Record.Lines<=3)?1:0;
+			zx.dbg.unwind_sql_stack_unwind_location(zx,Record,' -- ?');	
+			zx.dbg.emit_comment(zx,"unblock stack elsebegin x:"+thenemptylevel+JSON.stringify(Record));									
+		}else zx.dbg.emit_comment(zx,"unblock stack elsebegin z:"+JSON.stringify(Record));	
+		//if (zx.conf.db.empty_block_mode=="remove") {}
+	} else {
+		zx.dbg.emit_comment(zx,"unblock stack za: "+(Record.Type=="ifbegin")+" rec:"+JSON.stringify(Record));						
+		Record = exports.pop_sql_stack_unwind_location(zx);	
+		zx.dbg.emit_comment(zx,"unblock stack zb: "+(Record.Type=="ifbegin")+" rec:"+JSON.stringify(Record));						
+	}
 
 	return line_obj;
 };
@@ -502,8 +689,8 @@ exports.makeexpression = function (zx, line_obj, varx) {
 
 exports.F_F2J = function (zx, line_obj, str) {
     if (zx.config.db.useUDF === "yes") return "Z$F_F2J(" + str + ")";
-	else return "\n      "+zx.config.db.sql_concat_prefix + "'\"'"+
-		zx.config.db.sql_concat_seperator+"REPLACE(REPLACE(coalesce(" + str + ",''),'\"','\\\"'),'\\n','CRLF')"+
+	else return " "+zx.config.db.sql_concat_prefix + "'\"'"+
+		zx.config.db.sql_concat_seperator+"REPLACE(REPLACE(Coalesce(" + str + ",''),'\"','\\\"'),'\\n','CRLF')"+
 		zx.config.db.sql_concat_seperator+"'\"'"+
 		zx.config.db.sql_concat_postfix; 	
 }
@@ -517,7 +704,7 @@ exports.F_F2SQL = function (zx, line_obj, str) {
 
 
 exports.EmitVariable = function (zx, line_obj, bid) {       
-	emitset( zx,line_obj, "", "',``" + bid + "``:'",exports.F_F2J(zx, line_obj, bid) );
+	emitset( zx,line_obj, "", "',``" + bid + "``:'",exports.F_F2J(zx, line_obj, zx.config.db.var_actaul+ bid) );
 	return line_obj;
 };
 
@@ -567,7 +754,7 @@ exports.link_from = function (zx, line_obj) {
 	//now the where expresion is still going to be within text, so we must convert it
 	//console.log('=================================\n link_from b:',wheres,where);
 	var wherex = make_concats(zx, line_obj, where);
-	//console.log('=================================\n link_from c:',where,wherex);
+	//console.log('=================================\n link_from c:'," wheresx:",wheresx," where:",where," wherex:",wherex);
 	//var where = zx.expressions.AnonymousExpression(zx,line_obj,wheres,target_type,"action_where");
 	zx.sql.cidi += 1;
 
@@ -602,7 +789,7 @@ exports.link_from = function (zx, line_obj) {
 	if (line_obj.pass)
 	    links+= "\n--pass singleton link  TODO "+JSON.stringify(line_obj);// + fld_obj.pass.Divout;//:cid,:tfid,
 	
-	links += "\nINSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,TARGET,QUERY, PAGE_PARAMS)" +
+	links += "INSERT INTO Z$PK_CACHE(MASTER, INDX, FIELD_NAME, VALU,TARGET,QUERY, PAGE_PARAMS)" +
 		"VALUES ("+vr(zx,"cid") + "," + zx.sql.cidi + ",'click'," + fb_AsString(from) + ", " + 
         fb_AsString(zx.Current_main_page_name.replace(/\\/g, "/")) + "," + (wherex /*+" "+ zx.gets(line_obj.nonkeyd)..check above TODO note*/
 		) + "," +
@@ -669,7 +856,7 @@ exports.link_from_table = function (zx,cx, fld_obj) {
 		//TODO  this string limitation of 999 should through an compiler error if the sum of all the master fields could be longer than 999
 
 		fld_obj.PAGE_PARAMS.forEach(function (fld, i) {
-			PAGE_PARAMS += zx.config.db.sql_concat_seperator + "F" + i + "=coalesce("+ zx.config.db.var_actaul+"F" + fld + ",''),';\n'||";
+			PAGE_PARAMS += zx.config.db.sql_concat_seperator + "F" + i + "=coalesce("+ zx.config.db.var_actaul+"F" + fld + ",''),';\n'||db_fb_sql_gen.js ";
 		});
 		PAGE_PARAMS = "\n    substring((''" + 
 		    zx.config.db.sql_concat_prefix + PAGE_PARAMS + zx.config.db.sql_concat_postfix + 
@@ -709,12 +896,12 @@ if (fld_obj.cf[0].pointer===undefined)
 	if (fld_obj.cf[0].pass)
 	    links+= exports.build_variable_pass_all(zx,fld_obj,fld_obj.cf[0].pass,'lft123737')
 			
-		links += "\nINSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS)" +
+		links += "INSERT INTO Z$PK_CACHE(MASTER, INDX, FIELD_NAME, VALU,Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS)" +
 		"VALUES ("+zx.config.db.var_actaul+"cid,"+zx.config.db.var_actaul+"tfid,'tfid','" + from +
         "','" + pkname +
 		"', '" + zx.Current_main_page_name.replace(/\\/g, "/") + "', "+        
          zx.config.db.var_actaul+"F" + fld_obj.cf[0].pointer         
-        + " ," + PAGE_PARAMS + ");"+zx.config.db.sql_set_prefix+"tfid=tfid+1;";
+        + " ," + PAGE_PARAMS + ");"+zx.config.db.sql_set_prefix+"tfid="+zx.config.db.var_actaul+"tfid+1;";
 	//console.log('link_from_table links: ',links,fld_obj.cf[0] );
 	fld_obj.postback = links;
 	fld_obj.tfidOffset = zx.tfidOffset;
@@ -816,14 +1003,14 @@ exports.edit_from_table = function (zx, cx, fld_obj) {
 	    links+= exports.build_variable_pass_all(zx,fld_obj,fld_obj.cf[0].pass,'lft123737')
 	   
 
-	links += "\nINSERT INTO Z$PK_CACHE ("+
+	links += " INSERT INTO Z$PK_CACHE("+
 			  "MASTER, INDX, FIELD_NAME, VALU,"+
 			  "Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS,"+
 			  "TARGET_FIELDS,TARGET_VALUES,baserecord)" +
 			  
 			  "VALUES ("+zx.config.db.var_actaul+"cid,"+zx.config.db.var_actaul+"tfid,'updateonpk','" + /*valu*/	from + "',"+
 		      "'" + pkname + "', '" + fld_obj.name + "', "+zx.config.db.var_actaul+"F" + fld_obj.cf[0].pointer + " ,'" + Soft_decode + "' ,"+
-			  "'" + TARGET_FIELDS + "'," + TARGET_VALUES + ","+baserecord_ref+");"+zx.config.db.sql_set_prefix+"tfid=tfid+1;";				
+			  "'" + TARGET_FIELDS + "'," + TARGET_VALUES + ","+baserecord_ref+");"+zx.config.db.sql_set_prefix+"tfid="+zx.config.db.var_actaul+"tfid+1;";				
 				
 		
 	
@@ -886,54 +1073,52 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 
 	if (QueryType === "Table") {
 		open = zx.config.db.sql_set_prefix +"tfid=" + zx.sql.cidi * zx.sql.cidti_factor + ";\n"+
-		       zx.config.db.sql_set_prefix +"first=' '"+";\r"+
+		       zx.config.db.sql_set_prefix + zx.config.db.sql_preload_fieldname + "=' '"+";\r"+
 		       zx.config.db.sql_set_prefix + zx.config.db.sql_concat_res+"', ``" + cx.tid_name + "``:['"+zx.config.db.sql_concat_postfix+";\n";
 
-		sql =  zx.config.db.sql_set_prefix +"row="+
-			    zx.config.db.sql_concat_prefix+
-			     "first"+ zx.config.db.sql_concat_seperator +"'[``'"+zx.config.db.sql_concat_seperator +
-				 zx.config.db.var_actaul+"tfid"+ zx.config.db.sql_concat_seperator +"'``";
+		sql =  zx.config.db.sql_set_prefix + zx.config.db.sql_concat_rowcontent + "="+
+			    zx.config.db.sql_concat_prefix+ zx.config.db.var_actaul+ zx.config.db.sql_preload_fieldname + zx.config.db.sql_concat_seperator +"'[``'"+zx.config.db.sql_concat_seperator +
+				zx.config.db.var_actaul+"tfid"+ zx.config.db.sql_concat_seperator +"'``";
 			   
 		firstseperator = ',';
 		secondseperator = ",";
 		moreseperators = ',';
 		aclose = "]'"+zx.config.db.sql_concat_postfix+";";
-		recordseperator = "\n    "+  zx.config.db.sql_set_prefix +"first=', ';";
-		cend = zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + sqlconcat(zx,"", "res", "']'" ) + ";";
+		recordseperator = "\n    "+  zx.config.db.sql_set_prefix +zx.config.db.sql_preload_fieldname +"=', ';";
+		cend = zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + sqlconcat(zx,"", zx.config.db.var_actaul+"res", "']'" ) + ";";
 	}
 	if (QueryType === "List") {
 		open = zx.config.db.sql_set_prefix +"tfid=" + zx.sql.cidi * zx.sql.cidti_factor + ";"+
-		  zx.config.db.sql_set_prefix + "first=' '; "+zx.config.db.sql_set_prefix + zx.config.db.sql_concat_res+"', ``" + cx.tid_name + "``:['"+zx.config.db.sql_concat_postfix+";\n";
+		  zx.config.db.sql_set_prefix + zx.config.db.sql_preload_fieldname + "=' '; "+zx.config.db.sql_set_prefix + zx.config.db.sql_concat_res+"', ``" + cx.tid_name + "``:['"+zx.config.db.sql_concat_postfix+";\n";
 
-		sql =  zx.config.db.sql_set_prefix +"row="+
-			    zx.config.db.sql_concat_prefix+
-			     "first"+ zx.config.db.sql_concat_seperator +"'[``'"+zx.config.db.sql_concat_seperator +
-				 zx.config.db.var_actaul+"tfid"+ zx.config.db.sql_concat_seperator +"'``";
+		sql =  zx.config.db.sql_set_prefix +zx.config.db.sql_concat_rowcontent +"="+
+			    zx.config.db.sql_concat_prefix+ zx.config.db.var_actaul+ zx.config.db.sql_preload_fieldname + zx.config.db.sql_concat_seperator +"'[``'"+zx.config.db.sql_concat_seperator +
+				zx.config.db.var_actaul+"tfid"+ zx.config.db.sql_concat_seperator +"'``";
 
 		firstseperator = '';
 		secondseperator = ",";
 		moreseperators = ',';
 		aclose = "]'"+zx.config.db.sql_concat_postfix+";";
-		recordseperator = "\n    "+  zx.config.db.sql_set_prefix + "first=', ';";
-		cend = zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + sqlconcat(zx,"", "res", "']'" ) + ";";
+		recordseperator = "\n    "+  zx.config.db.sql_set_prefix + zx.config.db.sql_preload_fieldname + "=', ';";
+		cend = zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + sqlconcat(zx,"", zx.config.db.var_actaul+"res", "']'" ) + ";";
 	}
 	if (QueryType === "Dict") {		
 		open = zx.config.db.sql_set_prefix +"tfid=" + zx.sql.cidi * zx.sql.cidti_factor + ";\n"+
-		   zx.config.db.sql_set_prefix + "first=' '; "+zx.config.db.sql_set_prefix + zx.config.db.sql_concat_res+"',  ``" + cx.tid_name + "``:{'"+sql_concat_postfix+";";
-		sql = "\n    "+ zx.config.db.sql_set_prefix +"row=first "+ zx.config.db.sql_concat_seperator +" '";
+		                zx.config.db.sql_set_prefix + zx.config.db.sql_preload_fieldname + "=' '; "+zx.config.db.sql_set_prefix + zx.config.db.sql_concat_res+"',  ``" + cx.tid_name + "``:{'"+sql_concat_postfix+";";
+		sql = "\n    "+ zx.config.db.sql_set_prefix + zx.config.db.sql_concat_rowcontent   + "="+zx.config.db.sql_set_prefix + zx.config.db.var_actaul + zx.config.db.sql_preload_fieldname +" "+ zx.config.db.sql_concat_seperator +" '";
 		if (fields.length < 3) { //name:value
 			firstseperator = '';
 			secondseperator = ":";
 			moreseperators = ',';
 			aclose = "'"+zx.config.db.sql_concat_postfix+";";
-			recordseperator = "\n    "+  zx.config.db.sql_set_prefix +"first=', ';";
+			recordseperator = "\n    "+  zx.config.db.sql_set_prefix + zx.config.db.sql_preload_fieldname + "=', ';";
 		    cend = zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + sqlconcat(zx,"", "res", "'}'" ) + ";";
 		} else { //name:[value,value]
 			firstseperator = '';
 			secondseperator = ":[";
 			moreseperators = ',';
 			aclose = "']"+zx.config.db.sql_concat_postfix+";";
-			recordseperator = "\n    "+  zx.config.db.sql_set_prefix +"first=', ';";
+			recordseperator = "\n    "+  zx.config.db.sql_set_prefix +zx.config.db.sql_preload_fieldname +"=', ';";
 		    cend = zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + sqlconcat(zx,"", "res", "'}'" ) + ";";
 		}
 	}
@@ -953,10 +1138,13 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 		else
 			comma = moreseperators;
 
+	
+		var substrformat = zx.dbu.sqltype(zx," FROM 1 FOR 254"," FROM 1 FOR 254"," ,1,254");
+		
 		if (widget.method === 'hide')
 			sql += comma + "``hide``";
 		else
-            sql += comma + "'"+zx.config.db.sql_concat_seperator+exports.F_F2J(zx, line_obj,"SUBSTRING("+zx.config.db.var_actaul+"f" + i + " FROM 1 FOR 254)")
+            sql += comma + "'"+zx.config.db.sql_concat_seperator+exports.F_F2J(zx, line_obj,"SUBSTRING("+zx.config.db.var_actaul+"f" + i + substrformat +")")
 		                 +  zx.config.db.sql_concat_seperator + "'";
 
 		if (widget.postback !== undefined) {
@@ -995,13 +1183,14 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 
 	sql += aclose;
 	sql += recordseperator;
-	sql += zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + sqlconcat(zx,"", "res","coalesce(row,'\"row_element_is_null\"')","''" ) + ";";
+	sql += zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + sqlconcat(zx,"", zx.config.db.var_actaul + "res",
+	  "coalesce("+ zx.config.db.var_actaul + zx.config.db.sql_concat_rowcontent +",'\"row_element_is_null\"')","''" ) + ";";
 
     if (zx.fb25) { 
 	    emit(zx, 0, open + '\nfor ' + queryx + into + " do \n begin", "");
 	} else if (zx.mysql57) {
 		emit(zx, 0, open );
-		emit(zx, 0, "begin", "");	
+		emit(zx, 0, "  begin", "");	
 		emit(zx, 0, "    declare done int default false;", "");
 		emit(zx, 0, "    declare cur1 cursor for "+queryx+";", "");	
 	    emit(zx, 0, "    declare continue handler for not found set done=1;", "");		
@@ -1012,7 +1201,7 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 		emit(zx, 0, "        if done = 1 then leave cur1Loop; end if;", "");		
 	} else if (zx.mssql12) {
 		emit(zx, 0, open );
-		emit(zx, 0, "begin", "");	
+		emit(zx, 0, "  begin", "");	
 		//emit(zx, 0, "    declare done TINYINT default false;", "");
 		emit(zx, 0, "    declare cur1 cursor for "+queryx+";", "");	
 	    //emit(zx, 0, "    declare continue handler for not found set done=1;", "");		
@@ -1033,17 +1222,21 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 		emit(zx, 0, postbacks, "");
 
 	if (zx.fb25) {
-		emit(zx, 0, "\n end", "");	
+		emit(zx, 0, "  end", "");	
 		emit(zx, 0, cend, "");
 	} else if (zx.mysql57) {
 		emit(zx, 0, "    end loop cur1Loop;", "");
 		emit(zx, 0, cend, "");
-		emit(zx, 0, "end;", "");
+		emit(zx, 0, "  end;", "");
 	} else if (zx.mssql12) {
 		emit(zx, 0, "    fetch next from cur1 "+into+";", "");
-		emit(zx, 0, "    end", "");
+		emit(zx, 0, "    end /*loop*/", "");
 		emit(zx, 0, "    CLOSE cur1", "");
 		emit(zx, 0, "    DEALLOCATE cur1", "");
+		emit(zx, 0, "  end /*block*/", "");
+		emit(zx, 0, cend, "");
+		
+		
 	}  else throw new Error("dialect code missing");
 
 	return zx.sql.cidi;
@@ -1056,8 +1249,10 @@ exports.start_pass = function (zx /*, line_objects*/
 
 	zx.sql.dent = 4;
 	zx.sql.blocktypes = [];
+	
 	zx.sql.script = [];
 	zx.sql.filelinemap = [];
+	zx.fc.block_stack_unwind=[];
 
 	zx.sql.cidi = 0;
 	zx.sql.cidti = []; //each table will have id's starting from a range 100000000+  //limits 10 million records per table - 4 hundred tables on one page
@@ -1118,11 +1313,14 @@ exports.start_pass = function (zx /*, line_objects*/
 	}
 	
 	emitdeclare(zx, 0,"cond","integer","0");
+	emitdeclare(zx, 0,"emptycond","integer","0");
 	emitdeclare(zx, 0, "st","varchar(1000)","''");
-	emitdeclare(zx, 0, "row","varchar(1000)","''");
-	emitdeclare(zx, 0, "first","varchar(10)","''");
+	emitdeclare(zx, 0, zx.config.db.sql_concat_rowcontent  ,"varchar(1000)","''");
+	emitdeclare(zx, 0, zx.config.db.sql_preload_fieldname,"varchar(10)","''");
+	emitdeclare(zx, 0, zx.config.db.sql_insertvar,"varchar(100)","''");
+	
 	emitdeclare(zx, 0, "tfid","integer","0");
-	if (zx.fb25) {
+	if (zx.fb25||zx.mssql12) {
 			emitdeclare(zx, 0, "run_procedure","varchar(254)","''","Passed as page parameter"); //wip
 			emitdeclare(zx, 0, "run_procedure_pk","varchar(254)","''");
 			emitdeclare(zx, 0, "run_procedure_param","varchar(254)","''");
@@ -1201,7 +1399,7 @@ exports.done_pass = function (zx /*, line_objects*/
 	
 	emit(zx, 0, "if ( exists(select " + zx.config.db.sql_First1+" valu from Z$VARIABLES where Z$VARIABLES.REF=" + 
 		sqlconcat(zx,"","'pass'", zx.config.db.var_actaul+"pki","'-'",zx.config.db.var_actaul+"pkf","'-DivoutName'")
-		+zx.config.db.sql_Limit1+ ")) then "+zx.config.db.sql_set_prefix+""+/*zx.config.db.var_actaul+*/ "cid=0;"+zx.config.db.sql_endif_postfix, "");
+		+zx.config.db.sql_Limit1+ ")) "+zx.config.db.sql_ifthen+" "+zx.config.db.sql_set_prefix+ "cid=0;"+zx.config.db.sql_endif_postfix, "");
 	  
 	emitset( zx,0, "","'}}]'");
 	//emit(zx, 0, "/*zx.sql.engine:"+ zx.sql.engine+"*/", "");
@@ -1354,7 +1552,7 @@ exports.emit_variable_getter = function (zx, line_obj, v , coalesce /*, comment*
 			oresult = "(select (Z$ONCE("+where+",1,100,1) )=1)";
 		} else if (zx.mssql12) { //todo function Z$ONCE for mssql12
 		  //must be run with a procedure into a variable
-			oresult = "(1)/*db_fb_sql_gen.js once*/";
+			oresult = "(1=1)/*db_fb_sql_gen.js once*/";
 		} else throw new Error("dialect code missing");
 		return oresult;
     }
@@ -1380,7 +1578,14 @@ exports.build_variable_passing = function (zx, fld_obj, v,key, comment) {
 	if (zx.fb25)  {
 		statement = "UPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),('" + v + "')) matching (REF);";
 	} else if (zx.mysql57) {
-		statement = "INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),('" + v + "'))ON DUPLICATE KEY UPDATE VALU='"+v + "';";
+		statement = "INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),('" + v + "'))"+
+		"ON DUPLICATE KEY UPDATE VALU='"+v + "';";
+	} else if (zx.mssql12) {	// upsert
+//EXEC Z$VARIABLES_UPSERT  @REF='aa'  , @VALU='1'	
+
+
+		statement = "SET @"+zx.config.db.sql_insertvar+"=concat(" + where + ",'');\r\n";	
+		statement += "EXECUTE Z$VARIABLES_UPSERT @REF=@" + zx.config.db.sql_insertvar + " , @VALU='" + v + "' ;\r\n";	
 	} else throw new Error("dialect code missing");
 	return statement;
     
@@ -1490,6 +1695,7 @@ exports.init = function (zx) {
 	zx.sql = {}; //sql data
 	zx.sql.dent = 4;
 	zx.sql.blocktypes = [];
+	
 	zx.sql.declare_above = [];
 	zx.sql.args = [];
 	zx.sql.script = [];

@@ -58,7 +58,9 @@ exports.tags=[
 {name:"endquery",man_page:"Every ifquery must have one endquery to signify the end of the conditional."},
 {name:"include",man_page:"Include a quicc file from the inheritance tree."},
 {name:"logout",man_page:"Logout the current session."},
-{name:"dialect",man_page:"Compiler directive for specifying code for specific SQL engines."}
+{name:"dialect",man_page:"Compiler directive for specifying code for specific SQL engines."},
+{name:"sqlcomment",man_page:"emit a comment into sql target."}
+
 ];
  
  var debug=false;
@@ -219,6 +221,14 @@ exports.beginblock = function (zx, line_obj) {
 	return line_obj;
 };
 
+exports.tag_sqlcomment = function (zx, o) {
+	console.log('+++++++++++++++++++++++++++++++++++++++++');
+	console.log(o.nonkeyd.trim());
+	
+	zx.dbg.emit_comment(zx,'+++++++++++++++++++++++++++++++++++++++++');	
+    zx.dbg.emit_comment(zx,o.nonkeyd.trim());	
+}
+
 exports.tag_ifquery = exports.tag_ifblock = function (zx, o) {
 	//unnamed blocks, and named blocks
 	// no real code most the work is done by the common conditional tags
@@ -253,6 +263,9 @@ exports.elseblock = function (zx, line_obj) {
     var local_immediate_block_id = zx.fc.immediate_block_id;
     if (local_immediate_block_id===undefined)
         local_immediate_block_id = zx.fc.block_stack[zx.fc.block_stack.length-1];  
+	
+	//zx.dbg.emitAppendComment(zx,"elseblock : "+zx.dbg.LengthOf_sql_stack_unwind_location(zx)+ " typ:" + zx.dbg.TypeOf_sql_stack_unwind_location(zx));
+	
 	zx.mt.lines.push("{{/" + local_immediate_block_id  + "}}");
 	zx.dbg.elseblock(zx, line_obj);
 	zx.mt.lines.push("{{^" + local_immediate_block_id  + "}}");
@@ -262,7 +275,7 @@ exports.elseblock = function (zx, line_obj) {
 exports.implicid_unblock = function (zx, line_obj) {
     
 	if (zx.fc.immediate_block_id  !== undefined) { //immediate blocks can only last 1 instruction
-        zx.dbg.emit_comment(zx,"implicid_unblock : "+zx.fc.immediate_block_id+" : " + line_obj.tag);
+        //zx.dbg.emitAppendComment(zx,"implicid_unblock : "+zx.fc.immediate_block_id+" : " + line_obj.tag);
 		zx.dbg.unblock(zx, line_obj,"imp "+line_obj.tag,"");
 
 		zx.mt.lines.push("{{/" + zx.fc.immediate_block_id  + "}}");
@@ -275,9 +288,10 @@ exports.implicid_unblock = function (zx, line_obj) {
 
 
 exports.explicid_unblock = function (zx, line_obj,mysqlendif) {
-    //zx.dbg.emit_comment(zx,"explicid_unblock : "+zx.fc.block_stack.length+" : " + line_obj.tag);
+    //zx.dbg.emitAppendComment(zx,"explicid_unblock : "+zx.fc.block_stack.length+" : " + line_obj.tag);
     //console.log('explicid_unblock: block_stack  ', line_obj.Label, zx.fc.block_stack);
 	if (!exports.implicid_unblock(zx, line_obj)) {
+		//zx.dbg.emitAppendComment(zx,"explicid_unblock a: "+zx.dbg.LengthOf_sql_stack_unwind_location(zx)+ zx.dbg.TypeOf_sql_stack_unwind_location(zx));
 		var local_immediate_block_id  = line_obj.Label;
         if (line_obj.Label===undefined){
             local_immediate_block_id = zx.fc.block_stack.pop();
@@ -291,6 +305,8 @@ exports.explicid_unblock = function (zx, line_obj,mysqlendif) {
 			zx.mt.lines.push("{{/" + local_immediate_block_id  + "}}");
 		}
 
+	} else {
+		zx.dbg.emitAppendComment(zx,"explicid_unblock b: "+zx.dbg.LengthOf_sql_stack_unwind_location(zx)+ zx.dbg.TypeOf_sql_stack_unwind_location(zx));
 	}
 	return line_obj;
 };
@@ -378,6 +394,7 @@ exports.start_pass = function (zx, line_objects) {
 		line_obj.and_if = [];
 	});
     debug=false;
+	zx.fc.block_stack_unwind = [];
     zx.fc.block_stack = [];
 	zx.dialect_active = 1;
 };

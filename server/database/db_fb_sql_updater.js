@@ -109,61 +109,7 @@ exports.module_name = 'db_fb_updater.js';
 var countLines = function (str) {
 	return (str.match(/\n/g) || []).length;
 };
-//http://stackoverflow.com/questions/25058134/javascript-split-a-string-by-comma-except-inside-parentheses
-function splitNoParen(s, delim) { //Lafras enhanced to do quotes
-	//console.log("splitNoParen :", s);
-	var left = 0,
-	right = 0,
-	A = [],
-	Q = 0,
-	M = s.match(/([^()']+)|([()'])/g);
-	if (!M)
-		return A;
-	var
-	L = M.length,
-	next,
-	str = '',
-    dbg=0;
-	//var del_regx = new RegExp("([^" + (delim) + "]+)", 'g'); //anything except the delimiter
-	if (dbg) console.log("splitNoParen:", L, M);
-	for (var i = 0; i < L; i++) {    
-		next = M[i];       
-        //console.log("             xx:",str, ' n:', next, left, right);
-		if (next === "'" && Q === 0) {
-			++left;
-			Q = 1;
-		} 
-        if (next === '(')
-			++left;
 
-		if ((left !== right)&&(i !== (L-1))) {
-			str = str + next;
-			if (dbg) console.log("accumulate :", str, left, right,' m:');
-            }
-        
-        if ((left === right)||(i === (L-1))) {
-			//var add=next.match(del_regx);
-			var add = next.split(delim);
-			if (dbg) console.log("Appending :", str,next, add);
-            str+=add.shift();
-            if (dbg) console.log(".....ding :", str, add);
-            if (A.length===0) A.push('');
-            A[A.length-1]+=str;
-			A = A.concat(add);
-            str='';
-		}
-        
-        
-        if (next === ')')
-			++right;
-        if (next === "'" && Q === 1) {
-			++right;
-			Q = 0;
-		}         
-        
-	}
-	return A;
-}
 
 function block_comment_suppress(inputs) {
 	//replaces / * * / style comments with spaces (keeps line an col numbering consistent compared to the source)
@@ -249,7 +195,7 @@ function dll_blocks_seperate_term(inputs, src_obj) { //splits the input into blo
 		var o = 0;//countLines(n[1]);
 
 		if (open_term == ';') { //split into ;
-			var statements = splitNoParen(t, ";") || [];
+			var statements = zx.splitNoParen(t, ";") || [];
 			//console.log('statements   :', open_term,statements.length,n[2].substring(0,30));
 			//console.log('statements   :', open_term,statements.length,t);
             //console.log('statements []  :', open_term,statements);
@@ -499,7 +445,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 	var tableexists = checkTable(zx, Table);
 	//console.log("tableexists:",tableexists,Table);//,"qrystr:",qrystr," barestr:",barestr);
 	
-	var fields = splitNoParen(barestr, ',');
+	var fields = zx.splitNoParen(barestr, ',');
 	var FieldNumber = 0;
 	var newfield,defs;
 	
@@ -557,13 +503,14 @@ var CREATE_TABLE = function (zx, qrystr) {
 			} else if (zx.mysql57) {
 				//simple fb to mysql types
 				field = field.replace(/BLOB\s*SUB_TYPE\s*1/i,   "MEDIUMTEXT");
+			    // blob is blob field = field.replace(/BLOB\s/i,                " VARBINARY(MAX)");
 				if (default_value) {
 					default_value = default_value.replace(/'now'/i, "CURRENT_TIMESTAMP");
 					default_set=1;
 					}
 			} else if (zx.mssql12) {
 				field = field.replace(/BLOB\s*SUB_TYPE\s*1/i,   " VARCHAR(MAX)");
-				field = field.replace(/BLOB/i,                  " VARBINARY(MAX)");
+				field = field.replace(/BLOB\s/i,                  " VARBINARY(MAX)");
 				field = field.replace(/TIMESTAMP/i,   			"datetime");					
 				if (default_value) {
 					default_value = default_value.replace(/'now'/i, "CURRENT_TIMESTAMP");
@@ -636,7 +583,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 
 	
 
-	fields = splitNoParen(barestr, ',');
+	fields = zx.splitNoParen(barestr, ',');
 	fields.forEach(function (field) {
 		field = field.trim();
 		if ((field !== ")" && field !== ";")) {
@@ -695,7 +642,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 					
 						if (zx.mssql12) {
 							//TODO
-							console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX mssql12 ignoring :', Default,":");
+							console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX mssql12 ignoring default attr :', Default,":");
 						} else {					
 					
 					
@@ -829,7 +776,7 @@ exports.insert_update_variation = function (zx, qrystr,insertmatchingfield)
 		});
 		
 		deleterecord="delete from "+ins.tablename+" where " + deleterecord ;
-		console.log('insert_update_variation deleterecord mssql12:',deleterecord);
+		//console.log('insert_update_variation deleterecord mssql12:',deleterecord);
 		return deleterecord;
 	}
 	
@@ -995,7 +942,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			} else if (zx.mssql12) { 
 				qrystr = "";
 			} else throw new Error("dialect code missing");
-			console.log("CREATE GENERATOR : ",qrystr," ");
+			//console.log("CREATE GENERATOR : ",qrystr," ");
 			block.order = 500;
 		} else if (name=qrystr.match(/SET\s+GENERATOR\s+([\w\$]+)\sTO\s([\w\$]+)/i)) {
 			block.name = 'SETGENERATOR_' + name[1];			
@@ -1016,7 +963,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 				if (gv>0) qrystr = "";
 				else qrystr = "CREATE SEQUENCE "+gen_name+" AS INT START WITH "+name[2]+" INCREMENT BY 1;";
 			} else throw new Error("dialect code missing");
-		    console.log("SET GENERATOR :now=",gv," do ",qrystr," ");
+		    //console.log("SET GENERATOR :now=",gv," do ",qrystr," ");
 			block.order = 600;
 		} else if (name=qrystr.match(/CREATE\s+SEQUENCE\s+([\w$]+)/i)) {
 			if (zx.mssql12) {
@@ -1545,15 +1492,3 @@ exports.unit_test = function (zx) {
 
 };
 
-exports.unit_test_s = function (zx) {
-
-
-console.log(JSON.stringify(splitNoParen('123;456;789;(abc;(123;456;789);default;);999', ';'), null, 4));
-console.log(JSON.stringify(splitNoParen('123;456;789;(abc;(123;456;789) default;) 999', ';'), null, 4));
-console.trace('process.exit(2) from test in updater : ');process.exit(2);//test
-}
-
-//var inputs = fs.readFileSync('test.txt', 'utf8');
-//console.log(JSON.stringify(splitNoParen(inputs, ';'), null, 4));
-//console.log(inline_comment_suppress('abc --def\nghi\nklm\n---none of this\nend')); 
-//process.exit(2);

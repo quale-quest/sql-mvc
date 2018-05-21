@@ -16,6 +16,7 @@ var db = require("../../server/database/DatabasePool");
 var fs = require('fs');
 //var Sync = require('sync');
 var deasync = require('deasync');
+
 var deasync_const=5; 
 
 var connection = {};
@@ -108,7 +109,7 @@ exports.databaseUtils = function (root_folder, connectionID, url, callback) {
 
 				console.log("error connecting on ", err);
 
-				console.log(err.message);
+				console.log("error connecting msg ",err.message);
 				if (callback !== undefined)
 					callback(err, "Error");
 			} else {
@@ -306,8 +307,8 @@ exports.singleton = function (zx, field, qrys,trace) {
 		return '';
 	//console.log('singleton 7: ',res);
 	if (res[0] === undefined) {
-		console.log('singleton rq: ', qrys);
-		console.log("singleton unknown record :", res);
+		//console.log('singleton rq: ', qrys);
+		//console.log("singleton unknown record :", res);
 		return '';
 	}
 	if (zx.mssql12) {
@@ -683,9 +684,11 @@ exports.init = function (/*zx*/
 exports.sqltype = function (zx,fb,mysql,mssql) {	
 	if (zx.fb25)     return fb;
     if (zx. mysql57) return mysql;	
-	if (zx.mssql12 ) if (mssql) return mssql; else  throw new Error("dialect code missing above 679");
+	if (zx.mssql12 ) if (mssql!=undefined) return mssql; else  throw new Error("dialect code missing above line 686 ");
 	if (zx.pgsql90 )  throw new Error("dialect code missing");
 	if (zx.odsql11 )  throw new Error("dialect code missing");
+
+	throw new Error("dialect code missing");
 	return fb;
 }
 
@@ -700,12 +703,17 @@ exports.sql_make_compatable_final_pass = function (zx,qrystr) {	//only on final 
 			qrystr = qrystr.replace(/begin\s+end\s*;/gi, "");	 //removed blank blocks - later also do for fb - //todo-fb
      		qrystr = qrystr.replace(/--:/g, "-- :"); //fb to mysql
 	    	qrystr = qrystr.replace(/cast\s*\(\s*'now'\s+as\s+timestamp\s*\)/gi, " NOW() ");	//fb to mysql						
-			qrystr = qrystr.replace(/\slist\s*\(/gi, " GROUP_CONCAT( ");	//fb to mysql	
-	} else if (zx.mssql12) {		
+			//qrystr = qrystr.replace(/\slist\s*\(/gi, " GROUP_CONCAT( ");	//fb to mysql	
+	} else if (zx.mssql12) {	
+
+			//qrystr = qrystr.replace(/\slist\s*\(/gi, " STRING_AGG( ");	//fb to mssql	
 	} else throw new Error("dialect code missing");
 	
 	return qrystr;
 }
+
+
+//const zxxx = require('../compiler/zx.js');
 exports.sql_make_compatable = function (zx,qrystr) {	
 /* Take common sql syntax used by many engines and convert it to the current engine
 */
@@ -731,6 +739,7 @@ var instr='';
 			} else if (zx.mssql12) {	
 				var inj = "(CHARINDEX(" + params[1] + ",'" + params[2] + "')>0) ";
 				qrystr=qrystr.replace(params[0],inj);
+				
 			} else throw new Error("dialect code missing");
 				
 		}	
@@ -742,7 +751,7 @@ var instr='';
 			} else if (zx.mysql57) {				
 				var inj = " LIMIT " + params[2] + " , " + params[1] + " ";
 				qrystr=qrystr.replace(params[0],"") + inj;				
-			} else if (zx.mssql) {				
+			} else if (zx.mssql12) {				
 				var inj = " OFFSET " + params[2] + "  ROWS FETCH NEXT " + params[1] + " ROWS ONLY";
 				qrystr=qrystr.replace(params[0],"") + inj;				
 			} else throw new Error("dialect code missing");
@@ -753,14 +762,38 @@ var instr='';
 			} else if (zx.mysql57) {
 				var inj = " LIMIT " + params[1] ;
 				qrystr=qrystr.replace(params[0], " ") + inj;				
-			} else if (zx.mssql) {				
+			} else if (zx.mssql12) {				
 				var inj = " TOP " + params[1] + " ";
 				qrystr=qrystr.replace(params[0],inj);				
 			} else throw new Error("dialect code missing");			
 		}	
 		
 		
+		if (params=qrystr.match(/substring\s*\((\S+)\s+from\s+(\S+)\s+for\s+(\S+)\s*\)/i)) {
+			if (zx.fb25) { 
+			} else if (zx.mysql57) {				
+			} else if (zx.mssql12) {		
+				//params=qrystr.match(/substring\s+\((\S+)\s+from\s+(\S+)\s+for\s+(\S+)/i)			
+				params=qrystr.match(/substring\s*\((\S+)\s+from\s+(\S+)\s+for\s+(\S+)\s*\)/i);
+				var inj = "substring(" + params[1] + "," + params[2] + "," +  params[3] + ")" ;
+			    console.log('substring(name from 1 for 8): ',params,inj);
+				qrystr=qrystr.replace(params[0], inj) ;				
+			} else throw new Error("dialect code missing");
+		}		
 		
+		if (params=qrystr.match(/list\s*\(/i)) {
+			if (zx.fb25) { 
+			} else if (zx.mysql57) {
+			    qrystr = qrystr.replace(/\slist\s*\(/gi, " GROUP_CONCAT( ");	//fb to mysql	
+			} else if (zx.mssql12) {		
+				var l = params[0].length+params.index-1;
+				var p = zx.GetClosingBracket(qrystr,l);
+				//console.log('list GROUP_CONCAT a : ',qrystr ,params , " sl:>",qrystr.slice(l, p)+"<");
+				qrystr = qrystr.slice(0, p) + ",','  " + qrystr.slice(p);
+			    //console.log('list GROUP_CONCAT: ',l,' qry',qrystr);
+				qrystr=qrystr.replace(params[0], 'STRING_AGG(  ') ;							
+			} else throw new Error("dialect code missing");
+		}		
 	}
 	return qrystr;
 }
@@ -781,12 +814,14 @@ exports.sql_make_compatable_TestOne = function (zx,desc,qrystr,resultstr) {
 	}
 }	
 
-exports.sql_make_compatable_TestX = function (desc,qrystr,fbstr,mystr) {
-	var zxfb = {conf:{db:{dialect:"fb25"   }},fb25:1,mysql57:0};
-	var zxmy = {conf:{db:{dialect:"mysql57"}},fb25:0,mysql57:1};
+exports.sql_make_compatable_TestX = function (desc,qrystr,fbstr,mystr,msstr) {
+	var zxfb = {conf:{db:{dialect:"fb25"   }},fb25:1,mysql57:0,mssql12:0};
+	var zxmy = {conf:{db:{dialect:"mysql57"}},fb25:0,mysql57:1,mssql12:0};
+	var zxms = {conf:{db:{dialect:"mssql12"}},fb25:0,mysql57:0,mssql12:1};
 	var errors=0;
 	errors+=exports.sql_make_compatable_TestOne(zxfb,desc,qrystr,fbstr);
 	errors+=exports.sql_make_compatable_TestOne(zxmy,desc,qrystr,mystr);
+	errors+=exports.sql_make_compatable_TestOne(zxms,desc,qrystr,msstr);
 	return errors;	
 }	
 
@@ -797,18 +832,46 @@ exports.sql_make_compatable_test = function () {
 	errors+=exports.sql_make_compatable_TestX("containing",
 			"and key_list containing 'admin,' or key_list containing 'all')) )",
 			"and key_list containing 'admin,' or key_list containing 'all')) )",
-			"and INSTR(key_list,'admin,')  or INSTR(key_list,'all') )) )");
+			"and INSTR(key_list,'admin,')  or INSTR(key_list,'all') )) )",
+			"and (CHARINDEX(key_list,'admin,')>0)  or (CHARINDEX(key_list,'all')>0) )) )");
 	
 	errors+=exports.sql_make_compatable_TestX("rows",
 			"Select First 5 skip 10 NAME,STATUS,REF From GALLERY where blob_id is null ",
 			"Select First 5 skip 10 NAME,STATUS,REF From GALLERY where blob_id is null ",
-			"Select NAME,STATUS,REF From GALLERY where blob_id is null  LIMIT 10 , 5 ");
+			"Select NAME,STATUS,REF From GALLERY where blob_id is null  LIMIT 10 , 5 ",
+			"Select NAME,STATUS,REF From GALLERY where blob_id is null  OFFSET 10  ROWS FETCH NEXT 5 ROWS ONLY");
+	
+	/*errors+=exports.sql_make_compatable_TestX("list",
+			"Select List(NAME) From GALLERY",
+			"Select List(NAME) From GALLERY",
+			"Select GROUP_CONCAT( NAME) From GALLERY",
+			"Select STRING_AGG( NAME) From GALLERY");
+*/
 	
 	errors+=exports.sql_make_compatable_TestX("list",
-			"Select List(NAME) From GALLERY",
-			"Select List(NAME) From GALLERY",
-			"Select GROUP_CONCAT( NAME) From GALLERY");
-	
+			"Select List( xxx(name,')',1,8)) From GALLERY",
+			"Select List( xxx(name,')',1,8)) From GALLERY",
+			"Select GROUP_CONCAT(  xxx(name,')',1,8)) From GALLERY",
+			"Select STRING_AGG(   xxx(name,')',1,8),','  ) From GALLERY"   );
+
+			
+	errors+=exports.sql_make_compatable_TestX("list",
+			"Count(*,','  ), List(  substring(name,1,8))",
+			"Count(*,','  ), List(  substring(name,1,8))",
+			"Count(*,','  ), GROUP_CONCAT(   substring(name,1,8))",
+			"Count(*,','  ), STRING_AGG(    substring(name,1,8),','  )"   );
+
+			
+ 
+
+
+
+			
+	errors+=exports.sql_make_compatable_TestX("substring",
+			"substring(name from 1 for 8)",
+			"substring(name from 1 for 8)",
+			"substring(name from 1 for 8)",
+			"substring(name,1,8)");
 	
 	
 	
@@ -821,7 +884,7 @@ exports.sql_make_compatable_test = function () {
 }	
 
 
-exports.sql_make_compatable_test();
+//exports.sql_make_compatable_test();
 
 
 
