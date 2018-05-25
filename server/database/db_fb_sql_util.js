@@ -420,7 +420,7 @@ exports.write_script = function (zx, real, spi, name, mtHash, script, code) {
 				
 		}
     } else if (zx.mssql12) {
-		var call_script = "call "+FN_HASH+";";
+		var call_script = "EXECUTE "+FN_HASH+" ";
 		var UPDATE_script = "UPDATE Z$SP set FILE_NAME=@p1 , SCRIPT= @p2 , CODE=@p3 , MT_HASH = @p4 , FN_HASH=@p5  where PK=@p6 "; 
 		console.log('create real SP spi : ', spi);
 		exports.fetch_query_result(zx, connection, "create_script_async mssql12 UPDATE", 
@@ -705,7 +705,8 @@ exports.sql_make_compatable_final_pass = function (zx,qrystr) {	//only on final 
 	    	qrystr = qrystr.replace(/cast\s*\(\s*'now'\s+as\s+timestamp\s*\)/gi, " NOW() ");	//fb to mysql						
 			//qrystr = qrystr.replace(/\slist\s*\(/gi, " GROUP_CONCAT( ");	//fb to mysql	
 	} else if (zx.mssql12) {	
-
+			qrystr = qrystr.replace(/cast\s*\(\s*'now'\s+as\s+timestamp\s*\)/gi, " CURRENT_TIMESTAMP ");	//fb to mssql
+			qrystr = qrystr.replace(/'now'/gi, " CURRENT_TIMESTAMP ");	//fb to mssql
 			//qrystr = qrystr.replace(/\slist\s*\(/gi, " STRING_AGG( ");	//fb to mssql	
 	} else throw new Error("dialect code missing");
 	
@@ -776,7 +777,7 @@ var instr='';
 				//params=qrystr.match(/substring\s+\((\S+)\s+from\s+(\S+)\s+for\s+(\S+)/i)			
 				params=qrystr.match(/substring\s*\((\S+)\s+from\s+(\S+)\s+for\s+(\S+)\s*\)/i);
 				var inj = "substring(" + params[1] + "," + params[2] + "," +  params[3] + ")" ;
-			    console.log('substring(name from 1 for 8): ',params,inj);
+			    //console.log('substring(name from 1 for 8): ',params,inj);
 				qrystr=qrystr.replace(params[0], inj) ;				
 			} else throw new Error("dialect code missing");
 		}		

@@ -10,14 +10,26 @@ https://www.eversql.com/most-popular-databases-in-2017-according-to-stackoverflo
 	5 Oracle     13%  //Oracle users my simply not use stack overflow so it could be top which would match db-engines
 	
 	https://db-engines.com/en/ranking/relational+dbms
-	1 Oracle		1290
-	2 MySQL			1223
-	3 SQL Server	1085
-	4 PostGre		 400
-	6 SQLite		 115
-	17 Firebird		  18
-	69 NuoDB		0.81
+	1 Oracle		1290			C	6	(QUALE ORDER)	
+	2 MySQL			1223			F	2
+	3 SQL Server	1085			C	3
+	4 PostGre		 400			F	4
+	5 IBM DB2		 185
+	6 SQLite		 115			F   99 - with Android ENGINE
+	8 Teradata		  75
+	10 SAP Adaptive Server(ASE) 61
+	14 Informix		  25
+	17 Firebird		  18			F	1
+	69 NuoDB		0.81			C	5
 	
+https://www.ispirer.com/ - commercial migration tools
+	Oracle	
+	SQL Server
+	Teradata
+	SAP Sybase ASE
+	IBM DB2 LUW
+	Informix
+	Progress - seems depricated 
 	
 	
 	

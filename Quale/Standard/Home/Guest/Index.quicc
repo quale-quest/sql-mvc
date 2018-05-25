@@ -1,6 +1,9 @@
 
 
 <#script()
+
+sqlcomment Index.quicc;
+
 dialect(fb)
 
 
@@ -25,15 +28,22 @@ VALUES (
 <#view
 Container(style=Center)
 
-dialect(mysql57)
-
-notify(style=Heading) 
-<a href="https://github.com/quale-quest/sql-mvc">SQL-MVC</a> MYSQL example implementation of <a href="http://todomvc.com">todomvc.com</a>
 
 dialect(fb)
 
 notify(style=Heading) 
 <a href="https://github.com/quale-quest/sql-mvc">SQL-MVC</a> Firebird example implementation of <a href="http://todomvc.com">todomvc.com</a>
+
+
+dialect(mysql57)
+
+notify(style=Heading) 
+<a href="https://github.com/quale-quest/sql-mvc">SQL-MVC</a> MYSQL example implementation of <a href="http://todomvc.com">todomvc.com</a>
+
+dialect(mssql)
+
+notify(style=Heading) 
+<a href="https://github.com/quale-quest/sql-mvc">SQL-MVC</a> MSSQL example implementation of <a href="http://todomvc.com">todomvc.com</a>
 
 dialect()
 

@@ -15,6 +15,15 @@ say something
 	http://michaeljswart.com/2017/07/sql-server-upsert-patterns-and-antipatterns/	
 	
 
+* SELECT * FROM sys.sequences
+
+* Triggers
+SELECT sysobjects.name AS trigger_name,OBJECT_NAME(parent_obj) AS table_name,OBJECT_DEFINITION(id) AS trigger_definition FROM sysobjects WHERE sysobjects.type = 'TR' 
+
+
+delete from Z$PK_CACHE
+delete from sqlmvc."Z$CONTEXT"
+delete from sqlmvc.TODO_MVC
 
 	
 ## indexes
@@ -53,7 +62,7 @@ say something
 		
 		sqlcmd -S localhost -U SA -P Qua1epassword! -Q 'select @@VERSION'
 		
-## setup database and user		
+## setup database and user  - MUST set default user schema		
 		sqlcmd -S localhost -U SA -P Qua1epassword! -Q 'CREATE DATABASE demo_db_2' ;
 		sqlcmd -S localhost -U SA -P Qua1epassword! -d demo_db_2 -Q 'CREATE DATABASE demo_db_2' ;
 		
@@ -84,6 +93,8 @@ say something
 CREATE\s+SEQUENCE
 
 
+*Concurrency: As only one request at a time may be executed on a connection, another request should not be initiated until this callback is called. http://code.playvue.com/c9/node_modules/tedious/site/api-connection.html#function_beginTransaction
+* var ConnectionPool = require('tedious-connection-pool');
 
 ## Notes
 

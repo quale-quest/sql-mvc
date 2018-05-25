@@ -167,9 +167,9 @@ exports.inject_into_script = function (zx,Location,txt) {
 exports.unwind_sql_stack_unwind_location = function (zx,Record,rmtxt) {	
     var remove_or_comment_out = Record.RemoveType;
 	var keeplines = Record.keeplines||0;
-	var remove = 0;//(zx.conf.db.empty_block_mode=="remove");
-	var comment = 1;//(zx.conf.db.empty_block_mode=="comment");
-	var fill = (zx.conf.db.empty_block_mode=="fill");
+	var remove = 0;
+	var comment = 1;
+	
 	var i;
 	//console.log('unwind_sql_stack_unwind_location ',rmtxt,Record);
 	//remove_or_comment_out=1;
@@ -491,7 +491,7 @@ exports.unblock = function (zx, line_obj,comment) {
 			zx.dbg.unwind_sql_stack_unwind_location(zx,Record,' -- ?');	
 			zx.dbg.emit_comment(zx,"unblock stack elsebegin x:"+thenemptylevel+JSON.stringify(Record));									
 		}else zx.dbg.emit_comment(zx,"unblock stack elsebegin z:"+JSON.stringify(Record));	
-		//if (zx.conf.db.empty_block_mode=="remove") {}
+		
 	} else {
 		zx.dbg.emit_comment(zx,"unblock stack za: "+(Record.Type=="ifbegin")+" rec:"+JSON.stringify(Record));						
 		Record = exports.pop_sql_stack_unwind_location(zx);	
@@ -1286,12 +1286,21 @@ exports.start_pass = function (zx /*, line_objects*/
 		var pname = "ZZ$"+zx.ShortHash(zx.main_page_name);
 		zx.sql.testhead =
 		//"\n\n\nDELIMITER $$\nDROP PROCEDURE IF EXISTS "+pname+" $$\n" +
-		"CREATE OR ALTER PROCEDURE "+pname+"(@cid  integer,@info varchar(200), @res TEXT) AS \r\nBEGIN\r\n" +
+		"CREATE OR ALTER PROCEDURE "+pname+"(\n"+
+        "  @Z$SESSIONID VARCHAR(40),\n" +		
+		"  @pki INTEGER,\n"+
+		"  @pkf INTEGER,\n"+		
+
+		"  \n"+
+		"  @cid  integer OUT,\n"+
+		"  @info varchar(200) OUT,\n"+
+		"  @res VARCHAR(MAX) OUT\n"+
+
+		") AS \r\nBEGIN\r\n" +
 		"SET NOCOUNT ON\n"+
 		"SET XACT_ABORT ON\n"+
-		"declare @Z$SESSIONID VARCHAR(40);\n" +
-		"declare @pki INTEGER;\n"+
-		"declare @pkf INTEGER;\n"+
+		
+		
 		"declare @NEW_CID INTEGER;\n"+
 		"declare @SCRIPTNAMED VARCHAR(250);\n"+		
 		"";		
@@ -1642,8 +1651,8 @@ if (zx.fb25) {
 	"BEGIN",
     "  SET NOCOUNT ON;",
     "  select * into #tmp from inserted;",
-    "  UPDATE #tmp SET "+FIELD+" = (NEXT VALUE FOR  testseq  ) where "+FIELD+" is null; ",   
-    "  insert into GALLERY select * from #tmp;",
+    "  UPDATE #tmp SET "+FIELD+" = (NEXT VALUE FOR  Z$PK_GEN ) where "+FIELD+" is null; ",   
+    "  insert into "+NAME+" select * from #tmp;",
 	"END^",
 	"SET TERM ; ^"].join('\n');	
 	

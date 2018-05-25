@@ -575,6 +575,8 @@ var CREATE_TABLE = function (zx, qrystr) {
 				qrystr = qrystr.replace(/MEDIUMTEXT/i, "BLOB SUB_TYPE 1");				
 		} else if (zx.mysql57){
 			    qrystr = qrystr.replace(/BLOB\s+SUB_TYPE\s+1/i, "MEDIUMTEXT");
+		} else if (zx.mssql12) {
+			    qrystr = qrystr.replace(/BLOB\s+SUB_TYPE\s+1/i, "VARCHAR(MAX)");
 		} else throw new Error("dialect code missing");
 		
 		exec_qry(cx, qrystr);
@@ -1047,6 +1049,14 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 				DECLARE_PROCEDURE.qrystr = "DROP PROCEDURE IF EXISTS "+ name[1] +";";
 				DECLARE_PROCEDURE.Hash = zx.ShortHash(qrystr);
 				blocks.push(DECLARE_PROCEDURE);
+			} else if (zx.mssql12) {
+				qrystr = "\r\n"+qrystr+"\r\n ;\r\n";
+				
+				DECLARE_PROCEDURE.method = "DROP_PROCEDURE";
+				DECLARE_PROCEDURE.order = 1499;
+				DECLARE_PROCEDURE.qrystr = "DROP PROCEDURE IF EXISTS "+ name[1] +";";
+				DECLARE_PROCEDURE.Hash = zx.ShortHash(qrystr);
+				blocks.push(DECLARE_PROCEDURE);				
 			} else throw new Error("dialect code missing");
 
 			block.order = 1500;
