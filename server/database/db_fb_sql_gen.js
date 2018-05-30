@@ -279,6 +279,16 @@ var emitdeclare = function (zx, obj, name,type,val,comment) {
 	} else throw new Error("dialect code missing");
 };
 
+var emitassign = function (zx, obj, name,val,comment) {
+	if (zx.fb25) {
+	    return name+"="+val+";";
+	} else if (zx.mysql57) {
+	    return "set " +zx.config.db.var_actaul+name+"  = "+val+";";
+	} else if (zx.mssql12) {
+	    return "set " +zx.config.db.var_actaul+name+"  = "+val+";";		
+	} else throw new Error("dialect code missing");
+};
+
 
 var emitset = function (zx,line_obj, comment ) { //followed by a number of strings to be concatenated 
 	var res = zx.config.db.sql_set_prefix + zx.config.db.sql_concat_res;
@@ -740,6 +750,26 @@ exports.adapt_filename = function (fn) {
 	return fn;
 };
 
+
+const run_procedure_from = function (zx, obj) {
+	var name =zx.gets(obj.execute);
+	//if (name=='') return '';
+	var param=zx.gets(obj.param);
+	var pk   =zx.gets(obj.pointer);
+				
+    //var links = "set @param_array='';";		
+    var links = emitassign(zx, obj, 'param_array',"''");
+
+	
+	links += exports.build_variable_passing(zx, "run_procedure_name", "'"+name+"'");	
+    if (param!='') 	
+	  links += exports.build_variable_passing(zx, "run_procedure_param", "'"+param+"'");	
+    if (pk!='') 	
+	  links += exports.build_variable_passing(zx, "run_procedure_pk", "'"+exports.F_F2SQL(zx, obj, zx.config.db.var_actaul+"F" + pk )+"'");		
+		
+	return links; 
+}	
+
 exports.link_from = function (zx, line_obj) {
 	// optimal back-end storage of likns are important -
 	//  currently we use basic tables -- this will be optimised - to in memory or redis type tables.
@@ -769,36 +799,18 @@ exports.link_from = function (zx, line_obj) {
 	if (from === undefined)
 		from = '';
 	
-	var PAGE_PARAMS = '';
-    //console.log('run_procedure_a: ',line_obj );
-	zx.Inject_procedures.check_inline_link_procedure(zx, line_obj,'link_from');
-    //console.log('run_procedure_: ' );
-	var proc = zx.gets(line_obj.execute);
-    //console.log('run_procedure_as table: ',proc );
-	if ((proc !== undefined) && (proc !== "")) {
-		PAGE_PARAMS = PAGE_PARAMS +  zx.conf.db.var_global_set + "run_procedure=''" + proc + "'';";
-		//maybe master_ref?? PAGE_PARAMS=PAGE_PARAMS+"run_procedure_pk='||Z$F_F2SQL(:F"+fld_obj.cf[0].pointer+")||';'";
-		var param = zx.gets(line_obj.param);
-		if ((param !== undefined) && (param !== ""))
-			PAGE_PARAMS = PAGE_PARAMS + zx.conf.db.var_global_set + "run_procedure_param=''" + param + "'';";
+	var PAGE_PARAMS = run_procedure_from(zx, line_obj);
 
-		//console.log('run_procedure_param: ',PAGE_PARAMS );
-	}
-    
-	var links = '';
-	if (line_obj.pass)
-	    links+= "\n--pass singleton link  TODO "+JSON.stringify(line_obj);// + fld_obj.pass.Divout;//:cid,:tfid,
-	
-	links += "INSERT INTO Z$PK_CACHE(MASTER, INDX, FIELD_NAME, VALU,TARGET,QUERY, PAGE_PARAMS)" +
+	//if (line_obj.pass) // a way to pass extra parameters - not implemented - future should be done by variables
+	//    links+= "\n--pass singleton link  TODO "+JSON.stringify(line_obj);// + fld_obj.pass.Divout;//:cid,:tfid,
+	//PAGE_PARAMS = PAGE_PARAMS + exports.build_variable_pass_all(zx,line_obj,line_obj.cf[0].pass,'lft123737X');
+	emit(zx, line_obj, PAGE_PARAMS);
+	var links = "INSERT INTO Z$PK_CACHE(MASTER, INDX, FIELD_NAME, VALU,TARGET,QUERY, PAGE_PARAMS)" +
 		"VALUES ("+vr(zx,"cid") + "," + zx.sql.cidi + ",'click'," + fb_AsString(from) + ", " + 
-        fb_AsString(zx.Current_main_page_name.replace(/\\/g, "/")) + "," + (wherex /*+" "+ zx.gets(line_obj.nonkeyd)..check above TODO note*/
-		) + "," +
-		"'" + PAGE_PARAMS + "');  ";		
-	//console.log('=================================\n',
-	//        'link_from: ',wheresx,"\n",
-	//        where,"\n",links,line_obj.nonkeyd,line_obj,line_obj.where,"\n","\n");
-
-
+        fb_AsString(zx.Current_main_page_name.replace(/\\/g, "/")) + ", " + 
+		wherex + ", " +           /*+" "+ zx.gets(line_obj.nonkeyd)..check above TODO note*/		
+		zx.config.db.var_actaul+"param_array "   /*PAGE_PARAMS  */ + " "+		
+		");  ";		
 	emit(zx, line_obj, links);
 	return zx.sql.cidi;
 };
@@ -850,6 +862,8 @@ exports.link_from_table = function (zx,cx, fld_obj) {
 	
 	//pass many fields as master parameters to the sub form useful when aggregating across many fields
 	// TODO - have a way of reading this fields from the sub form - they are not accessible from the master at the moment.
+	// TODO -The following code(ServerProcess.js:850) with PAGE_PARAMS is no longer effective since MSSQL and the new way of handeling RUN Procedure ... this may affect linking to sub pages/records from a table	
+	// TODO this should be chaned to use be passed as special Z$variable "Parent"
 	var PAGE_PARAMS = "''";
 	if (fld_obj.PAGE_PARAMS !== undefined) {
 		//produces   substring(:coalesce(F1,'')||'\n'||coalesce(:F2,'') from 1 for 999)
@@ -875,33 +889,22 @@ if (fld_obj.cf[0].pointer===undefined)
     throw zx.error.known_error;
 }
 
-    var pkname = check_pointer(zx,cx,fld_obj);
-    
-	var proc = zx.gets(fld_obj.cf[0].execute);
-    //console.log('run_procedure_as : ',proc );
-	if ((proc !== undefined) && (proc !== "")) {		
-		PAGE_PARAMS = PAGE_PARAMS + zx.config.db.sql_concat_seperator + "'"+zx.conf.db.var_global_set+"run_procedure=''" + proc + "'';";
-		PAGE_PARAMS = PAGE_PARAMS + zx.conf.db.var_global_set+"run_procedure_pk='"+zx.config.db.sql_concat_seperator +exports.F_F2SQL(zx, zx.line_obj, zx.config.db.var_actaul+"F" + fld_obj.cf[0].pointer )+zx.config.db.sql_concat_seperator + "';";
-
-		var param = zx.gets(fld_obj.cf[0].param);
-		if ((param !== undefined) && (param !== ""))
-			PAGE_PARAMS = PAGE_PARAMS +  zx.conf.db.var_global_set + "run_procedure_param=''" + param + "'';";
-		PAGE_PARAMS = PAGE_PARAMS += "'";
-		//console.log('run_procedure_param: ',PAGE_PARAMS );
-	}
-
-	//this will happen in the table loop and inserts the value of the pointer field, it
-    
-	var links = '';
-	if (fld_obj.cf[0].pass)
-	    links+= exports.build_variable_pass_all(zx,fld_obj,fld_obj.cf[0].pass,'lft123737')
+    var pkname = check_pointer(zx,cx,fld_obj);	
+	
+	var PAGE_PARAMS = run_procedure_from(zx, fld_obj.cf[0]);
+	PAGE_PARAMS = PAGE_PARAMS + exports.build_variable_pass_all(zx,fld_obj,fld_obj.cf[0].pass,'lft123737x')	
+                
 			
-		links += "INSERT INTO Z$PK_CACHE(MASTER, INDX, FIELD_NAME, VALU,Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS)" +
-		"VALUES ("+zx.config.db.var_actaul+"cid,"+zx.config.db.var_actaul+"tfid,'tfid','" + from +
-        "','" + pkname +
-		"', '" + zx.Current_main_page_name.replace(/\\/g, "/") + "', "+        
-         zx.config.db.var_actaul+"F" + fld_obj.cf[0].pointer         
-        + " ," + PAGE_PARAMS + ");"+zx.config.db.sql_set_prefix+"tfid="+zx.config.db.var_actaul+"tfid+1;";
+	var links = PAGE_PARAMS + "\r\n INSERT INTO Z$PK_CACHE(MASTER, INDX, FIELD_NAME, VALU,Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS)" +
+		"VALUES ("+
+			zx.config.db.var_actaul+"cid,"+zx.config.db.var_actaul+"tfid,'tfid','" + from + "','" + 
+			pkname + "', '" + 
+			zx.Current_main_page_name.replace(/\\/g, "/") + "', "+ 
+			zx.config.db.var_actaul+"F" + fld_obj.cf[0].pointer + " , " + 			
+			zx.config.db.var_actaul+"param_array "   /*PAGE_PARAMS  */ + " "+			
+			");"+zx.config.db.sql_set_prefix+"tfid="+zx.config.db.var_actaul+"tfid+1;";
+		
+		
 	//console.log('link_from_table links: ',links,fld_obj.cf[0] );
 	fld_obj.postback = links;
 	fld_obj.tfidOffset = zx.tfidOffset;
@@ -913,19 +916,7 @@ exports.edit_from_table = function (zx, cx, fld_obj) {
 	//pass many fields as master parameters to the sub form useful when aggregating across many fields
 	// TODO - have a way of reading this fields from the sub form - they are not accessible from the master at the moment.
 
-
 	//master fields is not realy used in the update at the moment, but it could be in future....
-	/*
-	var PAGE_PARAMS="''";
-	if (fld_obj.PAGE_PARAMS!==undefined)
-{
-	//produces   substring(:coalesce(F1,'')||'\n'||coalesce(:F2,'') from 1 for 999)
-	fld_obj.PAGE_PARAMS.forEach(function(fld,i) {
-	PAGE_PARAMS += "coalesce(:F"+fld+",'')||'\n'||"
-	});
-	PAGE_PARAMS = "\n    substring(("+PAGE_PARAMS+"'') from 1 for 999)";
-	}
-	 */
 	var from = fld_obj.cf[0].from;
 	if (from === undefined)
 		from = fld_obj.cf[0].to;
@@ -997,16 +988,16 @@ exports.edit_from_table = function (zx, cx, fld_obj) {
         TARGET_VALUES += zx.config.db.sql_concat_postfix;		
 	}
  
-	var links = '';
 	
-	if (fld_obj.cf[0].pass)
-	    links+= exports.build_variable_pass_all(zx,fld_obj,fld_obj.cf[0].pass,'lft123737')
-	   
+	//TODO PAGE_PARAMS is currently used for Soft_decode code - should be changed so we can also use run procedure and pass paramaters
+	//var PAGE_PARAMS = run_procedure_from(zx, fld_obj.cf[0]);
+	//PAGE_PARAMS = PAGE_PARAMS + exports.build_variable_pass_all(zx,fld_obj,fld_obj.cf[0].pass,'lft123737y')	;
+   	                
 
-	links += " INSERT INTO Z$PK_CACHE("+
+	var links = " INSERT INTO Z$PK_CACHE("+
 			  "MASTER, INDX, FIELD_NAME, VALU,"+
-			  "Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS,"+
-			  "TARGET_FIELDS,TARGET_VALUES,baserecord)" +
+			  "Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS,"+ // PAGE_PARAMS used as Soft_decode
+			  "TARGET_FIELDS,TARGET_VALUES,baserecord)" + 
 			  
 			  "VALUES ("+zx.config.db.var_actaul+"cid,"+zx.config.db.var_actaul+"tfid,'updateonpk','" + /*valu*/	from + "',"+
 		      "'" + pkname + "', '" + fld_obj.name + "', "+zx.config.db.var_actaul+"F" + fld_obj.cf[0].pointer + " ,'" + Soft_decode + "' ,"+
@@ -1329,10 +1320,13 @@ exports.start_pass = function (zx /*, line_objects*/
 	emitdeclare(zx, 0, zx.config.db.sql_insertvar,"varchar(100)","''");
 	
 	emitdeclare(zx, 0, "tfid","integer","0");
-	if (zx.fb25||zx.mssql12) {
-			emitdeclare(zx, 0, "run_procedure","varchar(254)","''","Passed as page parameter"); //wip
-			emitdeclare(zx, 0, "run_procedure_pk","varchar(254)","''");
-			emitdeclare(zx, 0, "run_procedure_param","varchar(254)","''");
+	if (zx.fb25||zx.mysql57||zx.mssql12) {
+			//emitdeclare(zx, 0, "run_procedure","varchar(254)","''","Passed as page parameter"); //wip
+			//emitdeclare(zx, 0, "run_procedure_pk","varchar(254)","''");
+			//emitdeclare(zx, 0, "run_procedure_param","varchar(254)","''");
+			emitdeclare(zx, 0, "param_array","varchar(8000)","''");
+			emitdeclare(zx, 0, "param_name","varchar(8000)","''");
+			emitdeclare(zx, 0, "param_value","varchar(8000)","''");
 		}
 	emitdeclare(zx, 0, "page_name_hash","varchar(40)","'" + zx.ShortHash(zx.main_page_name) + "'");	
 	
@@ -1580,31 +1574,40 @@ exports.emit_variable_getter = function (zx, line_obj, v , coalesce /*, comment*
 };
 
 
-exports.build_variable_passing = function (zx, fld_obj, v,key, comment) {
-	
-	var where = "'pass',"+vr(zx,"cid")+",'-',"+vr(zx,"tfid")+",'-" + key + "'";    
+exports.build_variable_passing = function (zx, key, v,comment) {
+	//var where = "'pass',"+vr(zx,"cid")+",'-',"+vr(zx,"tfid")+",'-" + key + "'";    
+	var where = sqlconcat(zx,"'pass'",vr(zx,"cid"),"'-'",vr(zx,"tfid"),"'-'", "'" + key + "'");    	
 	var statement ;
+	
+	if (v=="''") v="";
+	if (!v.match(/[@\(:]/)) v = "'" + v + "'";
+	zx.dbg.emit_comment(zx,"build_variable_passing  n: "+where);		
+	zx.dbg.emit_comment(zx,"build_variable_passing  v: "+v);	
+	
 	if (zx.fb25)  {
-		statement = "UPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),('" + v + "')) matching (REF);";
+		//statement = "UPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),(" + v + ")) matching (REF);";
+		statement = "\r\n   param_array=:param_array||'UPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce('''||" + where + "||''',''''),('''||" + v + "||''') matching (REF);';";
 	} else if (zx.mysql57) {
-		statement = "INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),('" + v + "'))"+
-		"ON DUPLICATE KEY UPDATE VALU='"+v + "';";
-	} else if (zx.mssql12) {	// upsert
-//EXEC Z$VARIABLES_UPSERT  @REF='aa'  , @VALU='1'	
-
-
-		statement = "SET @"+zx.config.db.sql_insertvar+"=concat(" + where + ",'');\r\n";	
-		statement += "EXECUTE Z$VARIABLES_UPSERT @REF=@" + zx.config.db.sql_insertvar + " , @VALU='" + v + "' ;\r\n";	
+		//statement = "INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),('" + v + "'))"+"ON DUPLICATE KEY UPDATE VALU='"+v + "';";
+		statement  = "\r\n   set param_name =Concat('SET @"+zx.config.db.sql_insertvar+"=concat('''," + where + ",''','''');'); ";	
+		statement += "\r\n   set param_value=concat('SET @"+zx.config.db.sql_insertvar+"_val=concat('''," + v + ",''','''');'); ";	
+		statement += "\r\n   set param_array=concat(param_array,param_name,param_value,'EXECUTE Z$VARIABLES_UPSERT(" + zx.config.db.sql_insertvar + " , "+zx.config.db.sql_insertvar+"_val) ;'); ";			
+	} else if (zx.mssql12) {	
+		statement  = "\r\n   set @param_name =Concat('SET @"+zx.config.db.sql_insertvar+"=concat('''," + where + ",''','''');'); ";	
+		statement += "\r\n   set @param_value=concat('SET @"+zx.config.db.sql_insertvar+"_val=concat('''," + v + ",''','''');'); ";	
+		statement += "\r\n   set @param_array=concat(@param_array,@param_name,@param_value,'EXECUTE Z$VARIABLES_UPSERT @REF=@" + zx.config.db.sql_insertvar + " , @VALU=@"+zx.config.db.sql_insertvar+"_val ;'); ";	
 	} else throw new Error("dialect code missing");
 	return statement;
-    
 };
 
 exports.build_variable_pass_all = function (zx, fld_obj, pass, comment) {
     var links = '';	
 	zx.forFields(pass, function (v,key) {
-		links += exports.build_variable_passing(zx, fld_obj, v,key, comment);		
+		links += exports.build_variable_passing(zx, key, v, comment);		
 		});
+	if (links != '')	{
+		links = emitassign(zx, fld_obj, 'param_array',"''");
+	}
     return links;		
 };
 

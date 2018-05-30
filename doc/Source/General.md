@@ -4,6 +4,10 @@
 
 ...
 
+## Passing paramaters to the new page
+
+by class:  example  --:{class:fordetaildiv,Action:Link,Type:Link,pass:{DivoutName:detaildiv},pointer:0}
+
 	 
 ## How does run_procedure work?
 

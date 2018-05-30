@@ -210,6 +210,7 @@ exports.gets = function (val,sep) {
         return val.trim();
     else
         return JSON.stringify(val);
+	return "";
 };
 
 exports.getA = function (val) {
@@ -634,13 +635,14 @@ exports.sizeof = function (object) {
 
 var forFields = exports.forFields = function (object,callback) {
 //returns true and stops if a match is found - acts like arr.some
+	if ((object==undefined)||(object==null)) return false;
 
     if (Array.isArray(object))         
         return object.some(callback);
         
     for (var key in object) {
         if (object.hasOwnProperty(key)) {
-            if (callback( object[key],key,object)===true) return;
+            if (callback( object[key],key,object)===true) return true;
         }
     }                    
     return false;

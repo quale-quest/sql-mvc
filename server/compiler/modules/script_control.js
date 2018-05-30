@@ -104,6 +104,7 @@ var script_into = function (zx, line_obj, r) {
 			params = params.replace(/#defaultmastertable#/g, zx.conf.db.platform_user_table.user_table_name);
 		}
 		if (params.indexOf('::') > 0) {
+			console.log('script_into   params : ',params);
 			params = params.replace(/::/g, zx.config.db.var_actaul);
 			complex = true;
 		}
@@ -124,17 +125,25 @@ var script_into = function (zx, line_obj, r) {
 		if (b4 !== params) {
 			//process.exit(2);
 			complex = true;
+			console.log('TextWithEmbededExpressions tag_script complex   : ',b4);
 		}
 
 		if (complex) {
 			// inject  '''||  and  ||'''  around variables starting :   as in '''||:pki||''');
 			// provide for unqoted syntax with :-
+			console.log('TextWithEmbededExpressions tag_script b4   : >'+b4+'<');
+			console.log('TextWithEmbededExpressions tag_script vars : ',vars);
+			console.log('TextWithEmbededExpressions tag_script names: ',fieldnames);
+			console.log('TextWithEmbededExpressions tag_script      : >'+params+'<');
+			
 			params = zx.escape_scriptstring(zx, params, 1, /:[^\-]/g, "", "'''||:", "||'''");
 			params = zx.escape_scriptstring(zx, params, 2, /:-/g, "", "'||:", "||'");
+			params = params.replace(/\*/, field);
 			zx.dbg.emit(zx, line_obj, "-- p1 ='" + params + "'", "select into statement");
 			zx.dbg.emit(zx, line_obj, zx.config.db.sql_set_prefix + "st='" + params + "';", "select into statement");
 			zx.dbg.emit(zx, line_obj, "execute statement st into " + vars + ";", "select into statement");
-			throw new Error("local known error");
+			//if (zx.pass!==1) 
+			//   throw new Error("todo redo complex master table dereferencing ");
 		} else { //simple direct query
 
 			if (zx.fb25) { 

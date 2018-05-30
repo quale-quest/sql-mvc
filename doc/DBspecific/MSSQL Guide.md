@@ -22,9 +22,13 @@ SELECT sysobjects.name AS trigger_name,OBJECT_NAME(parent_obj) AS table_name,OBJ
 
 
 delete from Z$PK_CACHE
+delete from Z$VARIABLES
 delete from sqlmvc."Z$CONTEXT"
 delete from sqlmvc.TODO_MVC
-
+select * from Z$PK_CACHE
+select * from Z$VARIABLES
+select * from Z$CONTEXT
+select * from TODO_MVC
 	
 ## indexes
 

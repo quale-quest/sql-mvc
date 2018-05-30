@@ -1,5 +1,12 @@
 
 <#view
+
+notify(style=Heading) 
+<a href="https://github.com/quale-quest/sql-mvc">SQL-MVC</a> Per session <a href="http://todomvc.com">todomvc.com</a>
+
+
+dialect(fb)
+
 master(TODO_MVC)
 
 
@@ -13,4 +20,5 @@ table(pagination:20)
 	From TODO_MVC 
     where (owner=master.owner)
 
+dialect()
 #>
