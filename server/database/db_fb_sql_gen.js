@@ -1351,8 +1351,9 @@ exports.start_pass = function (zx /*, line_objects*/
 
 	if (zx.mysql57) {
 		emit(zx, 0, "set Z$SESSIONID=@IN_SESSIONID;", "");
-		emit(zx, 0, "set pki=@IN_CID;", "");
-		emit(zx, 0, "set pkf=@IN_PKREF;", "");
+		emit(zx, 0, "set pki=@IN_PRIOR_CONTEXT_ID;", "");
+		emit(zx, 0, "set pkf=@IN_PRIOR_ITEM_ID;", "");
+		emit(zx, 0, "set cid=@IN_NEW_CONTEXT_ID;", "");
 		}
 
 	
@@ -1405,7 +1406,7 @@ exports.done_pass = function (zx /*, line_objects*/
 	    emit(zx, 0, "suspend;", "");
 	} else if (zx.mysql57) {
 				emit(zx, 0, "set @res_ret=res;", "");
-				emit(zx, 0, "set @cid_ret=cid;", "");
+				emit(zx, 0, "set @info_ret=info;", "");
 	} else if (zx.mssql12) { 				
 		//just return
 		emit(zx, 0, "/*db_fb_sql_gen.js done_pass*/", "");
@@ -1591,9 +1592,9 @@ exports.build_variable_passing = function (zx, key, v,target_field_id,comment) {
 		statement = "\r\n   param_array=:param_array||'UPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce('''||" + where + "||''',''''),('''||" + v + "||''')) matching (REF);';";
 	} else if (zx.mysql57) {
 		//statement = "INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),('" + v + "'))"+"ON DUPLICATE KEY UPDATE VALU='"+v + "';";
-		statement  = "\r\n   set param_name =Concat('SET @"+zx.config.db.sql_insertvar+"=concat('''," + where + ",''','''');'); ";	
-		statement += "\r\n   set param_value=concat('SET @"+zx.config.db.sql_insertvar+"_val=concat('''," + v + ",''','''');'); ";	
-		statement += "\r\n   set param_array=concat(param_array,param_name,param_value,'EXECUTE Z$VARIABLES_UPSERT(" + zx.config.db.sql_insertvar + " , "+zx.config.db.sql_insertvar+"_val) ;'); ";			
+		statement  = "\r\n   set param_name =Concat('SET @"+zx.config.db.sql_insertvar+"=concat('''," + where + ",''','''');\\r\\n'); ";	
+		statement += "\r\n   set param_value=concat('SET @"+zx.config.db.sql_insertvar+"_val=concat('''," + v + ",''','''');\\r\\n'); ";	
+		statement += "\r\n   set param_array=concat(param_array,param_name,param_value,'call Z$VARIABLES_UPSERT(@" + zx.config.db.sql_insertvar + " , @"+zx.config.db.sql_insertvar+"_val) ;\\r\\n'); ";			
 	} else if (zx.mssql12) {	
 		statement  = "\r\n   set @param_name =Concat('SET @"+zx.config.db.sql_insertvar+"=concat('''," + where + ",''','''');'); ";	
 		statement += "\r\n   set @param_value=concat('SET @"+zx.config.db.sql_insertvar+"_val=concat('''," + v + ",''','''');'); ";	

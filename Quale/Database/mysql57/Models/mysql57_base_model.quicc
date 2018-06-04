@@ -63,6 +63,58 @@ SET TERM ; ^
 
 /******************* PROCEDURES ******************/
 
+
+
+SET TERM ^ ;
+CREATE PROCEDURE Z$CLEAR_CONTEXTS (IN MODE Integer)
+BEGIN
+    delete from Z$PK_CACHE;
+    delete from Z$VARIABLES;
+    delete from Z$CONTEXT;
+    delete from TODO_MVC;
+END^
+SET TERM ; ^
+
+
+
+SET TERM ^ ;
+CREATE PROCEDURE Z$VARIABLES_UPSERT (IN REF varchar(80),IN VALU varchar(256) ) 
+BEGIN
+    INSERT INTO Z$VARIABLES (VALU, REF,EXPIRE) 
+	VALUES (VALU,REF,DATE_ADD(now() , INTERVAL 1 HOUR))
+	ON DUPLICATE KEY UPDATE VALU=VALU;
+
+END; ^
+SET TERM ; ^
+
+
+SET TERM ^ ;
+CREATE  PROCEDURE Z$EXECUTE_STRINGS(
+IN split_string VARCHAR(8000)
+)
+BEGIN
+	DECLARE my_delimiter CHAR(1);
+	DECLARE ins_query varchar(8000);
+	DECLARE p INT;
+
+	SET my_delimiter='\r';
+	set p=1;
+	while p<10000 do
+	  set p= POSITION(my_delimiter IN split_string); 
+	  if (p<=0) THEN set p=10000;  END IF;
+	  set ins_query = SUBSTRING(split_string ,1, p);
+	  set split_string = SUBSTRING(split_string ,p+1,10000);
+	  
+	  set @ins_query=ins_query;
+	  PREPARE ins_query from @ins_query;
+	  EXECUTE ins_query;
+			
+	END while;
+END  ^
+SET TERM ; ^
+
+
+
 /*Mysql RUN_SUB
 
 test code:
@@ -84,17 +136,15 @@ call Z$RUN_SUB ('SESSION1', 0,0,  'u05Guestp11AnyPasswordx00end',@v1,@v2,@v3,@v4
 SET TERM ^ ;
 
 CREATE PROCEDURE Z$RUN_SUB(
-
     IN SESSION Varchar(40),
-    IN CID Integer,
-    IN PKREF Integer,
+    IN PRIOR_CONTEXT_ID Integer,
+    IN PRIOR_ITEM_ID Integer,
     IN UPDATES TEXT ,
 
     OUT INFO Varchar(1000),
     OUT CURRENTPAGE Varchar(100),
-    OUT page_params_in Varchar(1000),
-    OUT CIDRETURN Integer,
-    OUT PKREFRETURN Integer )
+    OUT page_params Varchar(1000),
+    OUT NEW_CONTEXT_ID Integer)
 
 
 proc_label: BEGIN
@@ -124,10 +174,9 @@ proc_label: BEGIN
 	DECLARE  fieldname  varchar(1000);
 
 	set currentpage='';
-	set @page_params_in='';
-	set CIDRETURN=CID;
-	
-	
+	set page_params='';
+
+	/*post updates - and check for username passwds*/   
 	set bp=1;    
     set c=0;
     while (c<1000) do 
@@ -145,8 +194,6 @@ proc_label: BEGIN
         END IF;
           
 		set bt=LOWER(bt);
-		
-		
 		CASE bt
 			WHEN 'u' THEN set usern=val ;       
 			WHEN 'p' THEN set passw=val ;  
@@ -263,100 +310,84 @@ proc_label: BEGIN
 	  
 	  
 	  
-	 -- select  usern, passw,PKRef;
+	 -- select  usern, passw,PRIOR_ITEM_ID;
     /*part of post updates is creating a new session if login info is supplied*/
     if (usern='') THEN    
-			if (PKRef=-1) then -- save without refreshing
+			if (PRIOR_ITEM_ID=-1) then -- save without refreshing
 				  set info='saved';
 				  LEAVE proc_label;
-				end if;			
-		
-			if (PKRef<>0) then -- load in updated page and page parameters
-					SELECT a.target,COALESCE(a.PAGE_PARAMS,'') into currentpage,@page_params_in FROM Z$PK_CACHE a WHERE a.MASTER = CID AND a.INDX = PKRef  limit 1;              					
-					if (currentpage='') then set PKRef=0;
-					end if;	
-				end if;	
-		
-		    -- refresh page
-			if (PKRef=0) then
-				    SELECT r.LINKED_FROM_CID, r.LINKED_FROM_INDX into CID,PKRef FROM Z$CONTEXT r where r.pk=CID and r.id=SESSION limit 1;
-					SELECT a.target,concat(COALESCE(a.PAGE_PARAMS,''),@page_params_in) into currentpage,@page_params_in 
-					    FROM Z$PK_CACHE a WHERE a.MASTER = CID AND a.INDX = PKRef  limit 1;              				    
 				end if;
 				
-	
-				
-            /*get the new page, and context info */                
-           SELECT r.OPERATOR_REF, r.ID into o_ref,o_session FROM Z$CONTEXT r where r.pk=CID and r.id=SESSION limit 1 ;                        
-           SELECT landing_page into LANDING_PAGE_R FROM Z$USER WHERE id = o_ref  limit 1 ;
-            
+			/*get the old page, and context info, to refresh page */
+			SELECT r.OPERATOR_REF, r.PAGE into o_ref,val FROM Z$CONTEXT r where r.pk=PRIOR_CONTEXT_ID and r.SESSION_REF=SESSION limit 1 ;                        
+			if (currentpage='') then set currentpage = val; end if;	 
+			
+			if (PRIOR_ITEM_ID<>0) then -- load in updated page and page parameters
+					SELECT a.target,concat(COALESCE(a.PAGE_PARAMS,''),page_params) into val,page_params FROM Z$PK_CACHE a 
+					WHERE a.MASTER = PRIOR_CONTEXT_ID AND a.INDX = PRIOR_ITEM_ID  limit 1;              					
+					if (val<>'') then set currentpage = val;
+					end if;	
+				end if;	           
         END IF;
     
-    if (usern<>'') THEN        
-        set o_ref=NULL;
-        /*allow them to login even if expired,  the dashboard gives information that they have expired...*/
-        select id,landing_page into o_ref,LANDING_PAGE_R from Z$USER where login_name=usern and passwd=passw limit 1 ;
-        /*if null then select the nobody user */
+    if (usern<>'') THEN   
+		/*allow them to login even if expired,  the dashboard gives information that they have expired...*/
+		/*if null then select the guest user */
+		/*user_guest_name , unknown_user */
+        
+        select user_pk_field,user_landing_page into o_ref,LANDING_PAGE_R from user_table_name where user_name_field=usern and user_password_field=passw limit 1 ;
+        
         if (o_ref is NULL) then 
-            select id,landing_page into o_ref,LANDING_PAGE_R from Z$USER where login_name='Guest' limit 1;
+            select user_pk_field,user_landing_page into o_ref,LANDING_PAGE_R from user_table_name where user_name_field='user_guest_name' limit 1;
          end if;	
-         -- info=COALESCE(:o_ref,'NULL')||'&'||COALESCE(:LANDING_PAGE_R,'NULL')||'&'||COALESCE(:passw,'NULL')||'&';  suspend;
+         
 		IF ( currentpage <> '') THEN set currentpage = concat('//',LANDING_PAGE_R,currentpage);
         ELSE set currentpage = concat('//',LANDING_PAGE_R,'/Index');
 		END IF;  
 		 
-        set current_page_pk=NULL;
+		set PRIOR_CONTEXT_ID = 0;
+		set PRIOR_ITEM_ID	 =0;
 
-		INSERT INTO Z$GEN_PK_SEQ (x) VALUES (0);
-		SET pk = (SELECT LAST_INSERT_ID());
+	END IF; 
 		
-        INSERT INTO Z$CONTEXT (PK, TSTAMP, OPERATOR_REF, ID) VALUES (pk,CURRENT_TIMESTAMP, o_ref, SESSION );
+	INSERT INTO Z$GEN_PK_SEQ (x) VALUES (0);
+	SET NEW_CONTEXT_ID = (SELECT LAST_INSERT_ID());
+		
+    INSERT INTO Z$CONTEXT (PK,            TSTAMP,            OPERATOR_REF, ID,      SESSION_REF,  PAGE,        LINKED_FROM_CID,  LINKED_FROM_INDX) 
+	               VALUES (NEW_CONTEXT_ID,CURRENT_TIMESTAMP, o_ref,        SESSION, SESSION,      currentpage, PRIOR_CONTEXT_ID, PRIOR_ITEM_ID   );
          
-        -- this record is so we can save and reload the first page                    
-        INSERT INTO Z$PK_CACHE (MASTER, INDX, FIELD_NAME, VALU,TARGET,QUERY, PAGE_PARAMS)
-            VALUES (pk,0,'click','Z$USER', currentpage , concat('id=''', replace(o_ref,'''','''''') , ''''),'' );  
-                             
-        set CID = pk;           
-          
-        END IF;           
         
-	  set PKREFRETURN=PKREF;
-      set CIDRETURN=CID;
-	
-      -- select INFO,currentpage,page_params_in,CIDRETURN,PKREFRETURN;
-	  
-	  
+    -- select INFO,PRIOR_CONTEXT_ID,PRIOR_ITEM_ID,currentpage,page_params,NEW_CONTEXT_ID;
+
 END^
 SET TERM ; ^
 
 
 
 SET TERM ^ ;
-CREATE PROCEDURE Z$RUN_SUP (
-    Z$SESSIONID VARCHAR(40),
-    CID INTEGER,
-    PKREF INTEGER,
+CREATE PROCEDURE Z$RUN (
+    SESSIONID VARCHAR(40),
+    PRIOR_CONTEXT_ID INTEGER,
+    PRIOR_ITEM_ID INTEGER,
+	PUBLIC_PARAMETERS VARCHAR(1000),
     UPDATES TEXT
     )
+	-- select NEW_CONTEXT_ID,info,res,ScriptNamed;
 proc_label:  BEGIN
-
+	DECLARE NEW_CONTEXT_ID INTEGER;
+	DECLARE info VARCHAR(1000);
+	DECLARE res TEXT;
+	DECLARE ScriptNamed VARCHAR(250) ;
+	
 	DECLARE o_ref    varchar(40);
 	DECLARE currentpage varchar(100) default '';
 	DECLARE current_page_pk  integer;
 	DECLARE exec_script    TEXT;
 	DECLARE page_params  varchar(1000) default '';  -- retrieved from the database injected into  script at --assign_params 
-	DECLARE NEW_CID INTEGER;
-	DECLARE info VARCHAR(1000);
-	DECLARE res TEXT;
-	DECLARE ScriptNamed VARCHAR(250) ;
-	
-	set @IN_SESSIONID=Z$SESSIONID;
-	set @page_params_in='';
-	set @run_procedure='';
 
-
-    call Z$RUN_SUB (Z$SESSIONID,CID,PKREF,UPDATES,   info,ScriptNamed,page_params,@IN_CID,@IN_PKREF);
-    -- select 'a',Z$SESSIONID,CID,PKREF,UPDATES,   info,ScriptNamed,page_params,@IN_CID,@IN_PKREF;
+    call Z$RUN_SUB (SESSIONID,PRIOR_CONTEXT_ID,PRIOR_ITEM_ID,UPDATES,   
+					info,ScriptNamed,page_params,NEW_CONTEXT_ID);
+					
 	if (info='saved') then -- saved without refreshing				 
 				  set res= '' ;  
 				  set ScriptNamed= '' ;  				   					
@@ -366,7 +397,6 @@ proc_label:  BEGIN
     /*execute the page or SP*/  
 
     -- further match language and coy custom files  
-	-- SELECT 'sc',ScriptNamed,pk,script FROM Z$SP  where file_name=ScriptNamed limit 1  ;
     SELECT pk,script into current_page_pk,exec_script FROM Z$SP  where file_name=ScriptNamed limit 1  ;
     if (exec_script is null) then /*back home or direct to an 404 error page ..?*/         
         SELECT pk,script into current_page_pk,exec_script FROM Z$SP where 
@@ -380,28 +410,21 @@ proc_label:  BEGIN
     if (exec_script is null) then
            set info=concat('No script named : ',COALESCE(ScriptNamed,'')); 
         ELSE            
-			set @script_exec = replace(exec_script,'-- assign_params',COALESCE(page_params,''));
-			-- extract variables from page_params
+			-- set @script_exec = replace(exec_script,'-- assign_params',COALESCE(page_params,''));
+			set @script_exec = concat(COALESCE(page_params,'') , exec_script);			
+			-- select @script_exec; set @script_exec =  exec_script;	
 			
-			
+			set @IN_SESSIONID=SESSIONID;
+			set @IN_NEW_CONTEXT_ID=NEW_CONTEXT_ID;
+			set @IN_PRIOR_CONTEXT_ID=PRIOR_CONTEXT_ID;
+			set @IN_PRIOR_ITEM_ID=PRIOR_ITEM_ID;
 
-			if (@page_params_in<>'') then						
-					PREPARE stmt1x FROM @page_params_in;      
-					EXECUTE stmt1x;       
-					DEALLOCATE PREPARE stmt1x; 
-					-- select 'params ',@page_params_in,@run_procedure;
-			end if; 			
-			
-			
-			PREPARE stmt1 FROM @script_exec;      
-			EXECUTE stmt1; 
-			set NEW_CID = @cid_ret;
+			call Z$EXECUTE_STRINGS(@script_exec);
+			set info    = @info_ret;	       
 			set res     = @res_ret;	       
-			DEALLOCATE PREPARE stmt1; 
-			-- select 'vv',@cid_ret,@res_ret;
         end if;   
 
-	select NEW_CID,info,res,ScriptNamed;
+	select NEW_CONTEXT_ID,info,res,ScriptNamed;
 
 END^
 SET TERM ; ^

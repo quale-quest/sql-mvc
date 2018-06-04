@@ -83,8 +83,8 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
 }
 
 function connect_and_produce_div_sub_fbsql(req,ss,rambase,message,recursive,public_parameters,update,cb)  {
-	console.log('\n\n SELECT NEW_CONTEXT_ID,info,RES,ScriptNamed FROM Z$RUN (\'' + message.session + '\',\'' + message.typ + '\',' + 
-	  message.cid + ',' + message.pkf + ',\'' + message.valu + '\',\'' + public_parameters + '\',\'' + update + 
+	console.log('\n\n SELECT NEW_CONTEXT_ID,info,RES,ScriptNamed FROM Z$RUN (\'' + message.session + '\',' + 
+	  message.cid + ',' + message.pkf + ',\'' + public_parameters + '\',\'' + update + 
 	  '\')');
 	console.log('\n\n SELECT * FROM Z$RUN_SUB (\'' + message.session + '\',' + 
 	  message.cid + ',' + message.pkf + ',\'' + update + 
@@ -103,8 +103,8 @@ function connect_and_produce_div_sub_fbsql(req,ss,rambase,message,recursive,publ
 			return;
 		}
 
-		transaction.query('SELECT NEW_CONTEXT_ID,info,RES,scriptnamed FROM Z$RUN (?,?,?,?,?,?,?)',
-			[message.session, message.typ, message.cid, message.pkf, message.valu, public_parameters, update],
+		transaction.query('SELECT NEW_CONTEXT_ID,info,RES,scriptnamed FROM Z$RUN (?,?,?,?,?)',
+			[message.session, message.cid, message.pkf, public_parameters, update],
 			function (err, result) {
 
             console.log('dbresult raw:', result);
@@ -207,15 +207,8 @@ function connect_and_produce_div_sub_fbsql(req,ss,rambase,message,recursive,publ
 function connect_and_produce_div_sub_mysql(req,ss,rambase,message,recursive,public_parameters,update,cb)  {
 	
 	console.log("connect_and_produce_div_sub_mysql:");
-	//console.log('\n\nxx SELECT NEW_CID,info,RES,ScriptNamed FROM Z$RUN (\'' + message.session + '\',\'' + message.typ + '\',' + 
-	//  message.cid + ',' + message.pkf + ',\'' + message.valu + '\',\'' + public_parameters + // '\',\'' + update + 
-	//  '\')\n\n');
-	//var query_str = 'SELECT NEW_CID,info,RES,scriptnamed FROM Z$RUN (?,?,?,?,?,?,?)';
-	//var query_par = [message.session, message.typ, message.cid, message.pkf, message.valu, public_parameters, update];
-
-
-	console.log('\n\nCALL Z$RUN_SUP(\'' + message.session + '\',' + message.cid + ',' + message.pkf + ',\'' + update + '\')\n\n');
-	var query_str = 'CALL Z$RUN_SUP(?,?,?,?)';
+	console.log('\n\nCALL Z$RUN(\'' + message.session + '\',' + message.cid + ',' + message.pkf + ',\'\',\'' + update + '\')\n\n');
+	var query_str = 'CALL Z$RUN(?,?,?,?,?)';
 	//query_par = [message.session, message.cid, message.pkf, update];			
 		
 
@@ -233,12 +226,9 @@ function connect_and_produce_div_sub_mysql(req,ss,rambase,message,recursive,publ
 		console.log('rambase.db.queryx:');
 		console.log('rambase.db.query:', query_str);
 		rambase.db.query(query_str,
-			[message.session, message.cid, message.pkf, update],
+			[message.session, message.cid, message.pkf,'', update],
 			function (err, result_x,fields) {
 			console.log('dbresult raw:', result_x[0][0]);//.res);
-			//console.log('result :', result[0][0].res);//.res);
-			
-			
 			var result = [{}];
 			result[0].NEW_CID = result_x[0][0].NEW_CID;
 			result[0].info = result_x[0][0].info;
@@ -352,7 +342,7 @@ function connect_and_produce_div_sub_mssql(req,ss,rambase,message,recursive,publ
 		try {		
 			var result = [];
 			console.log(' rambase.db.Request ...:');		
-			var request = new rambase.Request('Z$RUN_SUP', function(err, rowCount) {
+			var request = new rambase.Request('Z$RUN', function(err, rowCount) {
 		
 				console.log('rambase.Request err:',err);
 				
@@ -435,7 +425,7 @@ function connect_and_produce_div_sub_mssql(req,ss,rambase,message,recursive,publ
 			console.log('declare @IN_CID Integer;');
 			console.log('declare @IN_PKREF Integer;	');		
 			
-			console.log('EXEC Z$RUN_SUP \''+message.session+'\', '+message.cid+','+message.pkf+',  \''+update+'\',@lCIDRETURN output,  @lINFO output, @res output, @lCURRENTPAGE output');
+			console.log('EXEC Z$RUN \''+message.session+'\', '+message.cid+','+message.pkf+',  \''+update+'\',@lCIDRETURN output,  @lINFO output, @res output, @lCURRENTPAGE output');
 			console.log('-- EXEC Z$RUN_SUB \''+message.session+'\', '+message.cid+','+message.pkf+',  \''+update+'\',@lINFO output,  @ScriptNamed output, @page_params output, @IN_CID output, @IN_PKREF output');
 			console.log('select  @lCIDRETURN as lCIDRETURN,  @lINFO as  lINFO, @res as res, @lCURRENTPAGE as lCURRENTPAGE');
 			console.log('select  @lINFO as lINFO,  @ScriptNamed as ScriptNamed, @page_params as page_params, @IN_CID as IN_CID, @IN_PKREF as IN_PKREF');

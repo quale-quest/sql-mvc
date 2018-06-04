@@ -277,7 +277,8 @@ BEGIN
 			if (currentpage='') then currentpage=val;
 			if (PRIOR_ITEM_ID<>0) then
 			    begin
-					SELECT first 1 a.target,COALESCE(a.PAGE_PARAMS,'')||:page_params FROM Z$PK_CACHE a WHERE a.MASTER = :PRIOR_CONTEXT_ID AND a.INDX = :PRIOR_ITEM_ID into :val,:page_params;              
+					SELECT first 1 a.target,COALESCE(a.PAGE_PARAMS,'')||:page_params FROM Z$PK_CACHE a 
+					WHERE a.MASTER = :PRIOR_CONTEXT_ID AND a.INDX = :PRIOR_ITEM_ID into :val,:page_params;              
 					if (val<>'') then currentpage=val;
 				end	
         END
@@ -327,10 +328,8 @@ SELECT NEW_CONTEXT_ID,SCRIPTNAMED FROM Z$RUN ('SESSION1','', 999,999, '','',  'u
 */
 CREATE OR ALTER PROCEDURE Z$RUN (
     SESSIONID VARCHAR(40),
-    ACT VARCHAR(40),
     PRIOR_CONTEXT_ID INTEGER,
     PRIOR_ITEM_ID INTEGER,
-    VALU VARCHAR(1000),
     PUBLIC_PARAMETERS VARCHAR(1000),
     UPDATES BLOB SUB_TYPE 1 )
 RETURNS (
@@ -350,7 +349,8 @@ DECLARE VARIABLE page_params  varchar(1000)='';  -- retrieved from the database 
 BEGIN
 
 
-	SELECT first 1 INFO,currentpage,page_params,NEW_CONTEXT_ID FROM Z$RUN_SUB(:SESSIONID, :PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID, :UPDATES) p into :INFO,:SCRIPTNAMED,:page_params,:NEW_CONTEXT_ID  ;
+	SELECT first 1 INFO,currentpage,page_params,NEW_CONTEXT_ID FROM Z$RUN_SUB(:SESSIONID, :PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID, :UPDATES) p 
+			into :INFO,:SCRIPTNAMED,:page_params,:NEW_CONTEXT_ID  ;
 	if (info='saved') then --saved without refreshing
 			    begin				 
 				  res= '' ;  
@@ -367,7 +367,6 @@ BEGIN
          ||'declare z$sessionid varchar(40)='''||:SESSIONID||''''
          ||';'; 
     
-	
     --further match language and coy custom files  
     SELECT first 1 pk,:Openstr||q.SCRIPT FROM Z$SP q where file_name=:SCRIPTNAMED into :current_page_pk,:script ;
     if (script is null) then /*back home or direct to an 404 error page ..?*/   
@@ -378,14 +377,6 @@ BEGIN
     if (script is null) then /*global 404 error page */
         SELECT first 1 pk,:Openstr||q.SCRIPT FROM Z$SP q where file_name='//Default/404' into :current_page_pk,:script ;                        
       
-      
-    /*both inline script and SP will be launched with the same method, to pass the parameters.
-       for SP it will just be a small stub of script.
-       
-       we cannot do "execute procedure :pName ..." --would be nice...and faster
-       it may be better to launch the execute procedure from a bunch of if statements..?
-      */      
-
     if (script is null) then
         begin 
            info='No script named : '||COALESCE(:SCRIPTNAMED,'');  suspend;
