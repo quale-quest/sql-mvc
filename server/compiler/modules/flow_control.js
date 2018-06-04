@@ -84,9 +84,8 @@ exports.is_conditional = function (zx, o) {
 		o.and_if = [];
 
 	if (o.when !== undefined) { //make the database query and add it to if exists list
-		append_conditional(o.and_if, zx.getA(o.when),
-			'not '+zx.conf.db.var_global_get+'run_procedure=\'',
-			'\'');
+		var varname=zx.dbg.build_variable_dereferenceing_name(zx, 'run_procedure_name');
+		append_conditional(o.and_if, zx.getA(o.when),"not exists (select 1 from Z$VARIABLES where REF="+ varname +" and valu='","')");	
 	}
 
     var keyqry =   

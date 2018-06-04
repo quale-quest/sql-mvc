@@ -20,7 +20,7 @@ exports.compile = function (zx, obj) {
 	zx.pass_max = 5;
 	for (zx.pass = 1; zx.pass <= zx.pass_max; zx.pass += 1) {
 
-		//console.warn('=======================================================================Pass', zx.pass);//,zx.CurrentPageIndex,' : ',zx.pgi);
+		console.warn('=======================================================================Pass', zx.pass);//,zx.CurrentPageIndex,' : ',zx.pgi);
 
 		zx.eachplugin(zx, "start_pass", zx.line_objects);
 		//console.warn('iterate over items :',0 );

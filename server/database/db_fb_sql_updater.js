@@ -948,24 +948,26 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			block.order = 500;
 		} else if (name=qrystr.match(/SET\s+GENERATOR\s+([\w\$]+)\sTO\s([\w\$]+)/i)) {
 			block.name = 'SETGENERATOR_' + name[1];			
-			//console.log("setGenerator  ",name, 'as ',qrystr);
+			
 			var gen_name =   name[1];
 			if (zx.mysql57) gen_name +=	"_GENERATOR";
-			
-			var gv=0,cg=checkGenerator(zx, gen_name);
-			if (cg>0) gv = getGenerator(zx, gen_name, 0);
-			
- 			if (zx.fb25) { 
-			    // allow the set value though as is, only if it is still 0			  
-			    if (gv>0) qrystr = "";
-			} else if (zx.mysql57) { 
-				qrystr = "ALTER TABLE "+gen_name+" AUTO_INCREMENT = "+name[2]+" ;";
-			//	throw new Error("dialect code missing");
-			} else if (zx.mssql12) { 
-				if (gv>0) qrystr = "";
-				else qrystr = "CREATE SEQUENCE "+gen_name+" AS INT START WITH "+name[2]+" INCREMENT BY 1;";
-			} else throw new Error("dialect code missing");
-		    //console.log("SET GENERATOR :now=",gv," do ",qrystr," ");
+			//console.log("setGenerator  ",name, 'as ',gen_name);
+			var gv=0,cg=checkGenerator(zx, gen_name)
+			if (cg>0) gv = getGenerator(zx, gen_name, 0);			
+			console.log("check setGenerator ",name[1],' exists :',cg ," is set to ",gv);
+			if (gv>0) { //ignore if already set
+				qrystr = "";
+				console.log("setGenerator ",name[1]," already set to ",gv);
+			}
+			else {
+				if (zx.fb25) { 
+					// allow the set value though as is		  
+				} else if (zx.mysql57) { 
+					qrystr = "ALTER TABLE "+gen_name+" AUTO_INCREMENT = "+name[2]+" ;";
+				} else if (zx.mssql12) { 
+					qrystr = "CREATE SEQUENCE "+gen_name+" AS INT START WITH "+name[2]+" INCREMENT BY 1;";
+				} else throw new Error("dialect code missing");
+			}		    
 			block.order = 600;
 		} else if (name=qrystr.match(/CREATE\s+SEQUENCE\s+([\w$]+)/i)) {
 			if (zx.mssql12) {

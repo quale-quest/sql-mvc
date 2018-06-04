@@ -769,6 +769,7 @@ var seq_page = function (zx) {
 		}
 	}
 
+	//console.warn('seq_page exit(2); ');process.exit(2);
 	return true;
 };
 

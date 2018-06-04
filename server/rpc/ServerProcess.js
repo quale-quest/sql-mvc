@@ -83,16 +83,17 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
 }
 
 function connect_and_produce_div_sub_fbsql(req,ss,rambase,message,recursive,public_parameters,update,cb)  {
-	console.log('\n\nxx SELECT NEW_CID,info,RES,ScriptNamed FROM Z$RUN (\'' + message.session + '\',\'' + message.typ + '\',' + 
+	console.log('\n\n SELECT NEW_CONTEXT_ID,info,RES,ScriptNamed FROM Z$RUN (\'' + message.session + '\',\'' + message.typ + '\',' + 
 	  message.cid + ',' + message.pkf + ',\'' + message.valu + '\',\'' + public_parameters + '\',\'' + update + 
-	  '\')\n\n');
-	//var query_str = 'SELECT NEW_CID,info,RES,scriptnamed FROM Z$RUN (?,?,?,?,?,?,?)';
-	//var query_par = [message.session, message.typ, message.cid, message.pkf, message.valu, public_parameters, update];
+	  '\')');
+	console.log('\n\n SELECT * FROM Z$RUN_SUB (\'' + message.session + '\',' + 
+	  message.cid + ',' + message.pkf + ',\'' + update + 
+	  '\')\n');	  
 
 	console.log('starting Transaction :');
 	rambase.db.startTransaction(//transaction(fb.ISOLATION_READ_COMMITED,
 		function (err, transaction) {
-			console.log('startTransaction fb:', err);
+			console.log('startTransaction fb err:', err);
 		if (err) {
 			error(err);
 			var source = {}; //filename,start_line,start_col,source};
@@ -102,7 +103,7 @@ function connect_and_produce_div_sub_fbsql(req,ss,rambase,message,recursive,publ
 			return;
 		}
 
-		transaction.query('SELECT NEW_CID,info,RES,scriptnamed FROM Z$RUN (?,?,?,?,?,?,?)',
+		transaction.query('SELECT NEW_CONTEXT_ID,info,RES,scriptnamed FROM Z$RUN (?,?,?,?,?,?,?)',
 			[message.session, message.typ, message.cid, message.pkf, message.valu, public_parameters, update],
 			function (err, result) {
 
@@ -157,8 +158,8 @@ function connect_and_produce_div_sub_fbsql(req,ss,rambase,message,recursive,publ
 
 							} else {
                                 console.log('db - ScriptNamed:', (result[0].scriptnamed||'').toString());
-                                console.log('db - NEW_CID    :', result[0].new_cid);
-                                var newdata = (result[0].res);//.replace(/\n/g, " ").replace(/\r/g, " ");
+                                console.log('db - NEW_CONTEXT_ID :', result[0].new_context_id);
+                                var newdata = (result[0].res);
 								console.log('db - JSON       :\n\n', newdata, '\n\n');
 								{ //debug
 									//var json = JSON.parse(result[0].res);
@@ -168,8 +169,8 @@ function connect_and_produce_div_sub_fbsql(req,ss,rambase,message,recursive,publ
 								}
 
 								//console.log('Index.htm.sql  ouput: ',result[0].res );
-                                if (result[0].new_cid!==0) 
-                                   rambase.current_cid    = result[0].new_cid;
+                                if (result[0].new_context_id!==0) 
+                                   rambase.current_cid    = result[0].new_context_id;
 							    console.log('db - NOW_CID    :', rambase.current_cid);
                                 rambase.current_script = (result[0].scriptnamed||'').toString();
                                 //todo filter developers on some key value - so only a small subset of users can to live editing of source
