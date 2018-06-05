@@ -756,7 +756,7 @@ const run_procedure_from = function (zx, obj,target_field_id, viaComment) {
 	zx.Inject_procedures.check_inline_link_procedure(zx, obj,viaComment);
 	
 	var name =zx.gets(obj.execute);
-	//if (name=='') return '';
+	if (name=='') return '';
 	var param=zx.gets(obj.param);
 	var pk   =zx.gets(obj.pointer);
 				
@@ -1280,11 +1280,11 @@ exports.start_pass = function (zx /*, line_objects*/
 		//"\n\n\nDELIMITER $$\nDROP PROCEDURE IF EXISTS "+pname+" $$\n" +
 		"CREATE OR ALTER PROCEDURE "+pname+"(\n"+
         "  @Z$SESSIONID VARCHAR(40),\n" +		
-		"  @pki INTEGER,\n"+
-		"  @pkf INTEGER,\n"+		
+		"  @pki INTEGER,\n"+	//prior cid
+		"  @pkf INTEGER,\n"+	
+		"  @cid INTEGER,\n"+	//new cid	
 
 		"  \n"+
-		"  @cid  integer OUT,\n"+
 		"  @info varchar(200) OUT,\n"+
 		"  @res VARCHAR(MAX) OUT\n"+
 
@@ -1378,7 +1378,7 @@ exports.start_pass = function (zx /*, line_objects*/
 	emito(zx, "Stash", zx.main_page_name.substring(2).replace(/[\/\\]/g, '-')); //windows
     emito(zx, "mtHash",  zx.mtHash); 
 	emito(zx, "ContainerId", "GUIDofTheTemplate");	
-	//emitset( zx,0,"", "',``pki_pkf``:``'",zx.config.db.var_actaul+"pki","'_'",zx.config.db.var_actaul+"pkf","'``'"     );
+	//emitset( zx,0,"", "',``pki_pkf_cid``:``'",zx.config.db.var_actaul+"pki","'_'",zx.config.db.var_actaul+"pkf","'_'",zx.config.db.var_actaul+"cid","'``'"     );
 	emits(zx, "``Data``:{``start``:``true``");
 
 	//emit(zx,0,'st=\'select operator_ref from Z$CONTEXT where pk = \'||pki;');
@@ -1509,11 +1509,10 @@ exports.emit_variable_setter = function (zx, line_obj, v, comment) {
 		statement = "INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),(" + v.params + "))ON DUPLICATE KEY UPDATE VALU="+v.params + ";";
 	} else if (zx.mssql12) {
 		statement = 
-			"UPDATE VALU="+v.params + " where REF=coalesce(" + where + ",'') \r\n" +
+			"UPDATE Z$VARIABLES set VALU="+v.params + " where REF=coalesce(" + where + ",'') \r\n" +
 			"IF @@ROWCOUNT=0 \r\n" +
 			"\tINSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),(" + v.params + "));";
-		//console.log('emit_variable_setter zx.mssql12 : ',zx.mssql12,statement);// process.exit(2);	
-		return;
+		//console.log('emit_variable_setter zx.mssql12 : \r\n',statement);// process.exit(2);			
 	} else throw new Error("dialect code missing");	 
 
 	

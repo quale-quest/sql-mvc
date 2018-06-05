@@ -142,7 +142,7 @@ DECLARE VARIABLE o_ref    varchar(40);
 
 DECLARE VARIABLE passw    varchar(20) ='';
 DECLARE VARIABLE usern    varchar(20) ='';
-DECLARE VARIABLE user_landing_page varchar(100) ;
+DECLARE VARIABLE landing_page varchar(100) ;
 DECLARE VARIABLE table_name varchar(100);
 DECLARE VARIABLE target_field_name  varchar(100);
 DECLARE VARIABLE target_fields     varchar(100);
@@ -289,13 +289,13 @@ BEGIN
 			/*if null then select the guest user */
 			/* user_guest_name , unknown_user */
 			
-			select first 1 user_pk_field,user_landing_page from user_table_name where user_name_field=:usern and user_password_field=:passw into :o_ref,:user_landing_page;			
+			select first 1 user_pk_field,user_landing_page from user_table_name where user_name_field=:usern and user_password_field=:passw into :o_ref,:landing_page;			
           
             if (o_ref is NULL) then 
-                select first 1 user_pk_field,user_landing_page from user_table_name where user_name_field='user_guest_name' into :o_ref,:user_landing_page;
+                select first 1 user_pk_field,user_landing_page from user_table_name where user_name_field='user_guest_name' into :o_ref,:landing_page;
 				
-			IF ( currentpage <> '') THEN currentpage = '//'||user_landing_page||currentpage;
-			ELSE currentpage = '//'||user_landing_page||'/Index';
+			IF ( currentpage <> '') THEN currentpage = '//'||landing_page||currentpage;
+			ELSE currentpage = '//'||landing_page||'/Index';
 			PRIOR_CONTEXT_ID = 0;
 			PRIOR_ITEM_ID	 =0;			 
           

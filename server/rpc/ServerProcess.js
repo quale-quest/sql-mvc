@@ -332,13 +332,6 @@ function connect_and_produce_div_sub_mssql(req,ss,rambase,message,recursive,publ
 			return;
 		}
 		
-		
-		
-		
-	
-			
-			
-			
 		try {		
 			var result = [];
 			console.log(' rambase.db.Request ...:');		
@@ -401,11 +394,12 @@ function connect_and_produce_div_sub_mssql(req,ss,rambase,message,recursive,publ
 			  
 		
 			console.log('request.addParameter ...:');
-			request.addParameter('Z$SESSIONID', TYPES.VarChar, message.session);
-			request.addParameter('CID', TYPES.Int, message.cid);
-			request.addParameter('PKREF', TYPES.Int, message.pkf );  
+			request.addParameter('SESSIONID', TYPES.VarChar, message.session);
+			request.addParameter('PRIOR_CONTEXT_ID', TYPES.Int, message.cid);
+			request.addParameter('PRIOR_ITEM_ID', TYPES.Int, message.pkf );  
+			request.addParameter('PUBLIC_PARAMETERS', TYPES.VarChar,'' );  
 			request.addParameter('UPDATES', TYPES.VarChar, update);
-		    request.addOutputParameter('NEW_CID', TYPES.Int);
+		    request.addOutputParameter('NEW_CONTEXT_ID', TYPES.Int);
 			request.addOutputParameter('info', TYPES.VarChar);
 			request.addOutputParameter('res', TYPES.VarChar);
 			request.addOutputParameter('ScriptNamed', TYPES.VarChar);
@@ -425,7 +419,7 @@ function connect_and_produce_div_sub_mssql(req,ss,rambase,message,recursive,publ
 			console.log('declare @IN_CID Integer;');
 			console.log('declare @IN_PKREF Integer;	');		
 			
-			console.log('EXEC Z$RUN \''+message.session+'\', '+message.cid+','+message.pkf+',  \''+update+'\',@lCIDRETURN output,  @lINFO output, @res output, @lCURRENTPAGE output');
+			console.log('EXEC Z$RUN \''+message.session+'\', '+message.cid+','+message.pkf+',\'\', \''+update+'\',@lCIDRETURN output,  @lINFO output, @res output, @lCURRENTPAGE output');
 			console.log('-- EXEC Z$RUN_SUB \''+message.session+'\', '+message.cid+','+message.pkf+',  \''+update+'\',@lINFO output,  @ScriptNamed output, @page_params output, @IN_CID output, @IN_PKREF output');
 			console.log('select  @lCIDRETURN as lCIDRETURN,  @lINFO as  lINFO, @res as res, @lCURRENTPAGE as lCURRENTPAGE');
 			console.log('select  @lINFO as lINFO,  @ScriptNamed as ScriptNamed, @page_params as page_params, @IN_CID as IN_CID, @IN_PKREF as IN_PKREF');
