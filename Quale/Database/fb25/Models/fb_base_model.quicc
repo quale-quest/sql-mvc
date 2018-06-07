@@ -444,6 +444,26 @@ BEGIN
 END^
 SET TERM ; ^
 
+
+
+SET TERM ^ ;
+CREATE PROCEDURE Z$COUNT_TABLES
+RETURNS ( stm varchar(60), cnt integer )
+AS
+BEGIN
+	for select cast('select count(*) from "'||trim(r.RDB$RELATION_NAME)||'"' as varchar(60))
+	from RDB$RELATIONS r
+	where (r.RDB$SYSTEM_FLAG is null or r.RDB$SYSTEM_FLAG = 0) and r.RDB$VIEW_BLR is null
+	order by 1
+	into :stm
+	DO
+	BEGIN
+		execute statement :stm into :cnt;
+		suspend;
+	END
+END^
+SET TERM ; ^
+
 #>
 
 

@@ -91,6 +91,7 @@ function connect_and_produce_div_sub_fbsql(req,ss,rambase,message,recursive,publ
 	  '\')\n');	  
 
 	console.log('starting Transaction :');
+	try {// does not seem to catch silent failing queries
 	rambase.db.startTransaction(//transaction(fb.ISOLATION_READ_COMMITED,
 		function (err, transaction) {
 			console.log('startTransaction fb err:', err);
@@ -102,7 +103,7 @@ function connect_and_produce_div_sub_fbsql(req,ss,rambase,message,recursive,publ
 
 			return;
 		}
-
+		
 		transaction.query('SELECT NEW_CONTEXT_ID,info,RES,scriptnamed FROM Z$RUN (?,?,?,?,?)',
 			[message.session, message.cid, message.pkf, public_parameters, update],
 			function (err, result) {
@@ -161,6 +162,7 @@ function connect_and_produce_div_sub_fbsql(req,ss,rambase,message,recursive,publ
                                 console.log('db - NEW_CONTEXT_ID :', result[0].new_context_id);
                                 var newdata = (result[0].res);
 								console.log('db - JSON       :\n\n', newdata, '\n\n');
+								console.log('db - JSON LENGTH: ', newdata.length, '\n\n');
 								{ //debug
 									//var json = JSON.parse(result[0].res);
 									//console.log('db json :', JSON.stringify(json[0].Data,null,4));
@@ -198,8 +200,15 @@ function connect_and_produce_div_sub_fbsql(req,ss,rambase,message,recursive,publ
 				}); //tr com
 			}
 		}); //tr qry
+		
 
 	}); //tr	
+	
+		} catch (err) {          
+            console.error("fbsql transaction.query err: ",err);//process.exit(2);
+		}
+	
+	
 }	
 
 

@@ -156,7 +156,16 @@ var check_parse = function (zx, err, script, line_obj,expect,result,name,default
 			script_err = parse_error(zx, err, line_obj);
 			zx.err = script_err;
 			zx.eachplugin(zx, "commit", 0);
-			fs.writeFileSync("exit2.sql","DELIMITER //\n" +script +"//\nDELIMITER ;\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message+"\r\n"+name);
+			
+			if (zx.fb25) { 
+			    fs.writeFileSync("exit2.sql","SET TERM ^ ;\n" +script +"//\nSET TERM ; ^\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message+"\r\n"+name);
+			} else if (zx.mysql57) {				
+				fs.writeFileSync("exit2.sql","DELIMITER //\n" +script +"//\nDELIMITER ;\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message+"\r\n"+name);
+			} else if (zx.mssql12) {				
+				fs.writeFileSync("exit2.sql","DELIMITER //\n" +script +"//\nDELIMITER ;\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message+"\r\n"+name);
+			} else throw new Error("dialect code missing");
+				
+			
 			callback({thrw:true,name:name, script_err:script_err,script:script,err:err},[]);	
 			//throw new Error(name, script_err + '\r\n' + script);
 			//todo - show operator some            kind of server error
@@ -333,9 +342,9 @@ exports.singleton = function (zx, field, qrys,trace) {
 	}
 };
 
-exports.getGenerator = function (zx, name, increment) {
-	return exports.singleton(zx, "gen_id", "SELECT GEN_ID( " + name + "," + increment + " ) FROM RDB$DATABASE;");
-};
+//exports.getGenerator = function (zx, name, increment) {
+//	return exports.singleton(zx, "gen_id", "SELECT GEN_ID( " + name + "," + increment + " ) FROM RDB$DATABASE;");
+//};
 
 exports.exec_qry_cb = function (cx, name, script, line_obj) {
 	name = name.replace(/\\/g, '/'); //windows	

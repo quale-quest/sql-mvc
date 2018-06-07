@@ -279,7 +279,7 @@ var dataset = function (zx, qrys) {//could use the one from sql_utils
 	return result;
 };
 var singleton = function (zx, field, qrys,debug) {//could use the one from sql_utils
-    //console.log("singleton qrys:" ,qrys);
+    //console.log("singleton qrys:",debug ,qrys);
 	var result = zx.dbu.fetch_dataset(zx, "singleton fetch_dataset :", qrys, 0);
     //console.log("singleton res:" ,typeof result, result);
 	if (debug) 
@@ -332,24 +332,24 @@ var checkView = function (zx, name) {
 //	if (zx.mssql12)	
 	throw new Error("dialect code missing");
 };
-var checkGenerator = function (zx, name) {
+var checkGenerator = function (zx, name,debug) {
 	//CREATE SEQUENCE IF NOT EXISTS myschema.myseq;  Postgres 9.5+
 	if (zx.fb25)
-	    return singleton(zx, "count(*)", "SELECT count(*) FROM RDB$GENERATORS  where RDB$GENERATOR_NAME='" + name + "' ;");	
+	    return singleton(zx, "count", "SELECT count(*) FROM RDB$GENERATORS  where RDB$GENERATOR_NAME='" + name + "' ;",debug);	
 	if (zx.mysql57)
-        return singleton(zx, "count(*)", "select count(*) from information_schema.tables where table_schema = '"+zx.conf.db.database_filename+"' AND table_name = '" + name.toUpperCase() + "' AND TABLE_TYPE='BASE TABLE' ;",0);
+        return singleton(zx, "count(*)", "select count(*) from information_schema.tables where table_schema = '"+zx.conf.db.database_filename+"' AND table_name = '" + name.toUpperCase() + "' AND TABLE_TYPE='BASE TABLE' ;",debug);
 	if (zx.mssql12)
-        return singleton(zx, "count(*)", "SELECT count(*) FROM sys.sequences WHERE name = '" + name.toUpperCase() + "';",0);	
+        return singleton(zx, "count(*)", "SELECT count(*) FROM sys.sequences WHERE name = '" + name.toUpperCase() + "';",debug);	
 	throw new Error("dialect code missing");
 };
-var getGenerator = function (zx, name, increment) {
- 
+var getGenerator = function (zx, name, increment,debug) {
+ //console.log("getGenerator:", name,zx.fb25);
 	if (zx.fb25) { 
-		return singleton(zx, "gen_id", "SELECT GEN_ID( " + name + "," + increment + " ) FROM RDB$DATABASE;");
+		return singleton(zx, "gen_id", "SELECT GEN_ID( " + name + "," + increment + " ) FROM RDB$DATABASE;",debug);
 	} else if (zx.mysql57) { 
-		return singleton(zx, "AUTO_INCREMENT", "select AUTO_INCREMENT from information_schema.tables where table_schema = '"+zx.conf.db.database_filename+"' AND table_name = '" + name.toUpperCase() + "' AND TABLE_TYPE='BASE TABLE' ;",0);
+		return singleton(zx, "AUTO_INCREMENT", "select AUTO_INCREMENT from information_schema.tables where table_schema = '"+zx.conf.db.database_filename+"' AND table_name = '" + name.toUpperCase() + "' AND TABLE_TYPE='BASE TABLE' ;",debug);
 	} else if (zx.mssql12) { 
-        return singleton(zx, "current_value", "SELECT current_value FROM sys.sequences WHERE name = '" + name.toUpperCase() + "';",0);	
+        return singleton(zx, "current_value", "SELECT current_value FROM sys.sequences WHERE name = '" + name.toUpperCase() + "';",debug);	
 	} else throw new Error("dialect code missing");	
 };
 var dropTriggers = function (zx) {
@@ -934,7 +934,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 					qrystr = "";
 					}
 			} else if (zx.mysql57) { 
-			    var cg=checkGenerator(zx, gen_name);
+			    var cg=checkGenerator(zx, gen_name,0);
 				//console.log("CREATE GENERATOR mysql57: ",cg,gen_name," ");
 				if (cg=='') cg=0;
 				if (cg>0) qrystr = "";
@@ -952,16 +952,17 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			var gen_name =   name[1];
 			if (zx.mysql57) gen_name +=	"_GENERATOR";
 			//console.log("setGenerator  ",name, 'as ',gen_name);
-			var gv=0,cg=checkGenerator(zx, gen_name)
-			if (cg>0) gv = getGenerator(zx, gen_name, 0);			
+			var gv=0,cg=checkGenerator(zx, gen_name,0)
+			if (cg) gv = getGenerator(zx, gen_name, 0, 0);			
 			console.log("check setGenerator ",name[1],' exists :',cg ," is set to ",gv);
 			if (gv>0) { //ignore if already set
 				qrystr = "";
-				console.log("setGenerator ",name[1]," already set to ",gv);
+				//console.log("setGenerator ",name[1]," already set to ",gv);
 			}
 			else {
 				if (zx.fb25) { 
-					// allow the set value though as is		  
+					// allow the set value though as is	
+					//console.log("setGenerator as ",qrystr);					
 				} else if (zx.mysql57) { 
 					qrystr = "ALTER TABLE "+gen_name+" AUTO_INCREMENT = "+name[2]+" ;";
 				} else if (zx.mssql12) { 
@@ -987,7 +988,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			var msgg = qrystr.match(/ALTER\s+SEQUENCE\s+([\w\$]+)/i);
 			//console.log(" ALTER+SEQUENCE:  ",msgg, 'as ',qrystr);
 			if (msgg) {
-				var gsv = getGenerator(zx, msgg[1], 0);
+				var gsv = getGenerator(zx, msgg[1], 0, 0);
 				//console.log("SEQUENCE value :",gsv," ");
 				if (gsv > 0) {
 					qrystr = "";

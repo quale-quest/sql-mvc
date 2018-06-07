@@ -417,7 +417,7 @@ init_from_fullstash_internal = function (Target) {
             zxUploaderInit(); //todo make this conditional call only if it is inclueded
             zx_gallery_adaptive_touch_init();
             zx_SyntaxHighlighter_init();
-            
+            //alert("init_from_fullstash_internal");
 //            zx_cdv();
 
 }
@@ -428,7 +428,18 @@ var render_from_fullstash = function (cx,html) {
 			$(cx.obj.Target).html(html);
 
             init_from_fullstash_internal(cx.obj.Target);
-			
+			//alert("render_from_fullstash");
+			var simpleautotest=0;
+			if (simpleautotest) {
+				setTimeout(function () {
+					var event = new Event('change', {'bubbles': true,'cancelable': true});
+					var s= document.getElementById("edit-120000000-1");
+					//console.log("on setTimeout :",Date.now() );
+					s.value = Date.now();
+					s.dispatchEvent(event);
+					}
+				, 600)
+			}
 }
 
 
@@ -636,12 +647,13 @@ ss.event.on('BuildComplete', function (file,excludes) {
    if ((qq_session!==excludes)&&((qq_page_id===file)||(file==='all'))) {
        zxnav_reload();
    }
-  
+ // alert("BuildComplete");
  });
  
 ss.event.on('BuildNotify', function (div,message) {
    //console.log("BuildNotify result  :", div,message);
   $(div).html('<pre>'+Date()+' : '+message+'</pre>');
+  // alert("BuildNotify");
  });
  
 ss.event.on('debugresult', function (div,message,fn) {
