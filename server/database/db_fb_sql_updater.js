@@ -311,12 +311,17 @@ var singleton = function (zx, field, qrys,debug) {//could use the one from sql_u
 		if (result[0][field].low_ === undefined)
 			return result[0][field];
 		return result[0][field].low_ + (result[0][field].high_ * 65536 * 65536);
-	} else
+	} else {
+		console.log('singleton qq: ', qrys);
+		console.trace("singleton unknown field :", field, result);		
+		throw new Error("singleton unknown field B:"+ field); 
 		return '';
+	}
+		
 };
 var checkTable = function (zx, name) {
 	if (zx.fb25)
-        return singleton(zx, "count", "select count(*) from rdb$relations where rdb$relation_name ='" + name.toUpperCase() + "' ;");	
+        return singleton(zx, "COUNT", "select count(*) from rdb$relations where rdb$relation_name ='" + name.toUpperCase() + "' ;");	
 	if (zx.mysql57)
         return singleton(zx, "count(*)", "select count(*) from information_schema.tables where table_schema = '"+zx.conf.db.database_filename+"' AND table_name = '" + name.toUpperCase() + "' AND TABLE_TYPE='BASE TABLE' ;");
     if (zx.mssql12)
@@ -326,7 +331,7 @@ var checkTable = function (zx, name) {
 };
 var checkView = function (zx, name) {
 	if (zx.fb25)
-	    return singleton(zx, "count(*)", "select count(*) from rdb$relations where rdb$relation_name ='" + name + "' AND (rdb$view_blr IS NOT NULL);");		
+	    return singleton(zx, "COUNT", "select count(*) from rdb$relations where rdb$relation_name ='" + name + "' AND (rdb$view_blr IS NOT NULL);");		
 	if (zx.mysql57)
         return singleton(zx, "count(*)", "select count(*) from information_schema.tables where table_schema = '"+zx.conf.db.database_filename+"' AND table_name = '" + name.toUpperCase() + "' AND TABLE_TYPE='VIEW' ;");
 //	if (zx.mssql12)	
@@ -335,7 +340,7 @@ var checkView = function (zx, name) {
 var checkGenerator = function (zx, name,debug) {
 	//CREATE SEQUENCE IF NOT EXISTS myschema.myseq;  Postgres 9.5+
 	if (zx.fb25)
-	    return singleton(zx, "count", "SELECT count(*) FROM RDB$GENERATORS  where RDB$GENERATOR_NAME='" + name + "' ;",debug);	
+	    return singleton(zx, "COUNT", "SELECT count(*) FROM RDB$GENERATORS  where RDB$GENERATOR_NAME='" + name + "' ;",debug);	
 	if (zx.mysql57)
         return singleton(zx, "count(*)", "select count(*) from information_schema.tables where table_schema = '"+zx.conf.db.database_filename+"' AND table_name = '" + name.toUpperCase() + "' AND TABLE_TYPE='BASE TABLE' ;",debug);
 	if (zx.mssql12)
@@ -345,7 +350,7 @@ var checkGenerator = function (zx, name,debug) {
 var getGenerator = function (zx, name, increment,debug) {
  //console.log("getGenerator:", name,zx.fb25);
 	if (zx.fb25) { 
-		return singleton(zx, "gen_id", "SELECT GEN_ID( " + name + "," + increment + " ) FROM RDB$DATABASE;",debug);
+		return singleton(zx, "GEN_ID", "SELECT GEN_ID( " + name + "," + increment + " ) FROM RDB$DATABASE;",debug);
 	} else if (zx.mysql57) { 
 		return singleton(zx, "AUTO_INCREMENT", "select AUTO_INCREMENT from information_schema.tables where table_schema = '"+zx.conf.db.database_filename+"' AND table_name = '" + name.toUpperCase() + "' AND TABLE_TYPE='BASE TABLE' ;",debug);
 	} else if (zx.mssql12) { 
@@ -531,15 +536,30 @@ var CREATE_TABLE = function (zx, qrystr) {
 					}
 				}
 			}
-				
-			field = defs[1] + " " + defs[2]	+ (NOT_NULL?" NOT NULL":"") 
-					+ (Unique?" UNIQUE":"") 
-					+ (AUTO_INCREMENT?" AUTO_INCREMENT":"")  
-					+ (PRIMARY_KEY?(" PRIMARY KEY "):"")
-					+ (default_value?(" DEFAULT "+default_value):"")
-					;
-					
-					
+			
+			
+			if (zx.fb25) {					
+				field = defs[1] + " " + defs[2]	+ (NOT_NULL?" NOT NULL":"") 
+						+ (Unique?" UNIQUE":"") 
+						+ (default_value?(" DEFAULT "+default_value):"")
+						;
+			} else if (zx.mysql57){
+				throw new Error("todo update dialect code ");
+				field = defs[1] + " " + defs[2]	+ (NOT_NULL?" NOT NULL":"") 
+						+ (Unique?" UNIQUE":"") 
+						+ (AUTO_INCREMENT?" AUTO_INCREMENT":"")  
+						+ (PRIMARY_KEY?(" PRIMARY KEY "):"")
+						+ (default_value?(" DEFAULT "+default_value):"")
+						;				
+			} else if (zx.mssql12){	
+			    throw new Error("todo update dialect code ");
+				field = defs[1] + " " + defs[2]	+ (NOT_NULL?" NOT NULL":"") 
+						+ (Unique?" UNIQUE":"") 
+						+ (AUTO_INCREMENT?" AUTO_INCREMENT":"")  
+						+ (PRIMARY_KEY?(" PRIMARY KEY "):"")
+						+ (default_value?(" DEFAULT "+default_value):"")
+						;			
+			}  else throw new Error("dialect code missing");
 				
 			//block.name = 'TABLE_' + name[1];
 			barestr = barestr + ",\r\n    " +field + ""; 
@@ -592,7 +612,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 			field = field.replace(/MAXDATE/i,   "'2030/01/01'");		
 			//console.log('Table fields ---:', Table,'>',field,'<');
 			FieldNumber = FieldNumber + 1;			
-			cx.expect = zx.dbu.sqltype(zx,/335544351/,/ER_DUP_FIELDNAME/,/is specified more than once/);
+			cx.expect = zx.dbu.sqltype(zx,/unsuccessful metadata update/,/ER_DUP_FIELDNAME/,/is specified more than once/);
 			exec_qry(cx, "ALTER TABLE " + Table + " ADD " + field);
             if (cx.zx.config.db.schema_alter_fields === "yes") { 
 			
@@ -649,7 +669,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 					
 					
                     	
-					cx.expect = zx.dbu.sqltype(zx,/335544351/,/ER_DUP_FIELDNAME/,/is specified more than once/);
+					cx.expect = zx.dbu.sqltype(zx,/unsuccessful metadata update/,/ER_DUP_FIELDNAME/,/is specified more than once/);
 					if (zx.fb25) { 
 						exec_qry(cx, "ALTER TABLE " + Table + " alter " + FieldName + " TYPE " + FieldType); 
 					} else if (zx.mysql57) { 
@@ -661,7 +681,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 					if (Default !== "") {
                         //console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Table fields FFD Default:', Table,' . ',FieldName,Default);
                         
-                        cx.expect = /335544351/; 
+                        cx.expect = /unsuccessful metadata update/; 
 						if (zx.fb25) {
 							exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " set DEFAULT " + Default);
 						} else if (zx.mysql57) {
@@ -673,7 +693,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 					} else {
                         //console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Table fields FFD        :', Table,' . ',FieldName);// FFD);
 
-						cx.expect = /335544351/;
+						cx.expect = /unsuccessful metadata update/;
 						if (zx.fb25) {  
 							exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " DROP DEFAULT ");
 						} else if (zx.mysql57)  {
@@ -692,7 +712,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 								//console.log('\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  Field default not found :', field,FFD);
 								//should be dropping
 
-								cx.expect = /335544351/;
+								cx.expect = /unsuccessful metadata update/;
 								if (zx.fb25) {
 									exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " DROP DEFAULT ");
 								} else if (zx.mysql57) {
@@ -709,7 +729,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 				}
 			}
                     if (cx.zx.config.db.schema_reorder_fields === "yes") { 
-                        cx.expect = /335544351/; 
+                        cx.expect = /unsuccessful metadata update/; 
 						exec_qry(cx, "ALTER TABLE " + Table + " ALTER " + FieldName + " POSITION " + FieldNumber);						
                     }
 			
@@ -876,12 +896,12 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 		
 		} else if (name=qrystr.match(/CREATE\s+ROLE\s+([\w$]+)/)) {
 			block.name = 'ROLE_' + name[1];
-			block.expect = /335544351/;
+			block.expect = /unsuccessful metadata update/;
 			block.order = 200;
 			} else if (name=qrystr.match(/CREATE\s+DOMAIN\s+([\w$]+)/)) {
 			//console.log(" match DOMAIN:  ",name);	
 			block.name = 'DOMAIN_' + name[1];
-			block.expect = /335544351/;
+			block.expect = /unsuccessful metadata update/;
 			block.order = 300;
 
 			if (zx.fb25) { 
@@ -921,13 +941,13 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			
 		} else if (name=qrystr.match(/DECLARE\s+EXTERNAL\s+FUNCTION\s+([\w$]+)/)) {
 			block.name = 'FUNCTION_' + name[1];
-			block.expect = /335544351/;
+			block.expect = /unsuccessful metadata update/;
 			block.order = 400;
 		} else if (name=qrystr.match(/CREATE\s+GENERATOR\s+([\w$]+)/i)) {
 			var gen_name =   name[1];
 			if (zx.mysql57) gen_name +=	"_GENERATOR";				        
 			block.name = 'GENERATOR_' + gen_name;
-			block.expect = /335544351/;
+			block.expect = /unsuccessful metadata update/;
 			if (zx.fb25) { 
 				if (checkGenerator(zx, gen_name)) {
 					//console.log(" checkGenerator:  exits");
@@ -952,7 +972,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			var gen_name =   name[1];
 			if (zx.mysql57) gen_name +=	"_GENERATOR";
 			//console.log("setGenerator  ",name, 'as ',gen_name);
-			var gv=0,cg=checkGenerator(zx, gen_name,0)
+			var gv=0,cg=checkGenerator(zx, gen_name,1)
 			if (cg) gv = getGenerator(zx, gen_name, 0, 0);			
 			console.log("check setGenerator ",name[1],' exists :',cg ," is set to ",gv);
 			if (gv>0) { //ignore if already set
@@ -976,7 +996,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			} else {
 			
 			block.name = 'SEQUENCE_' + name[1];
-			block.expect = /335544351/;
+			block.expect = /unsuccessful metadata update/;
 			var mc = qrystr.match(/CREATE\s+SEQUENCE\s([\w\$]+)/i);
 			if (mc && checkGenerator(zx, mc[1]))
 				qrystr = "";
@@ -1011,7 +1031,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			block.order = 800;
 		} else if (name=qrystr.match(/CREATE\s+INDEX\s+([\w$]+)/)) {
 			block.name = 'INDEX_' + name[1];
-			block.expect = zx.dbu.sqltype(zx,/335544351/,/ER_DUP_KEYNAME/,/failed because an index/);
+			block.expect = zx.dbu.sqltype(zx,/unsuccessful metadata update/,/ER_DUP_KEYNAME/,/failed because an index/);
 			block.order = 900;
 			//console.log("show CREATE INDEX:", qrystr);
 		} else if (name=qrystr.match(/CREATE\s+VIEW\s+([\w$]+)/i)) {
@@ -1120,7 +1140,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			block.order = 1900;
 		} else if (qrystr.match(/GRANT\s/)) {
 			//block.name = 'DOMAIN_' + name[1];
-			block.expect = /335544351/;
+			block.expect = /unsuccessful metadata update/;
 			block.order = 2000;
 		} else if (qrystr.match(/INSERT\s+MATCHING\s/i)) {
 			//block.name = 'DOMAIN_' + name[1];

@@ -10,7 +10,6 @@ this provides data base utility functions to the compiler, at compile time.
  */
 
 //https://github.com/luciotato/waitfor-ES6   //npm install wait.for-es6
-//var fb = require("node-firebird");
 
 var db = require("../../server/database/DatabasePool");
 var fs = require('fs');
@@ -70,7 +69,7 @@ var parse_error = function (zx, err, source, script) {
 			var src = deepcopy(srcx);
 			if (src.source && src.source.length > 200)
 				src.source = zx.show_longstring(src.source);
-			console.log('script_err source:', src); //,source );
+			//console.log('script_err source:', src); //,source );
 
 			script_err.source_file = src.filename;
 			script_err.source_line = src.start_line + script_err.line;
@@ -81,7 +80,7 @@ var parse_error = function (zx, err, source, script) {
 			script_err.text = src.source;
 			if (script !== undefined)
 				script_err.context = script.substr(script_err.col - 10, 20);
-			console.log('script_err source err:', script_err);
+			//console.log('script_err source err:', script_err);
 			zx.error.log_syntax_warning(zx, 'script_err source err:', zx.err, zx.line_obj);
 		} else {
 			zx.error.log_syntax_warning(zx, 'script_err source err:', zx.err, zx.line_obj);
@@ -137,7 +136,7 @@ var check_parse = function (zx, err, script, line_obj,expect,result,name,default
 	if (err) {
 		//parse the error
 		//console.log('check_parse err :', err);
-		var script_err = JSON.stringify(err);
+		var script_err = err.message;
 		var	sql_log_obj=['dataset',script,script_err];
 		zx.sql_log_file_obj.push(sql_log_obj);	
 		if (expect !== undefined && expect.test(script_err)) {
@@ -158,7 +157,7 @@ var check_parse = function (zx, err, script, line_obj,expect,result,name,default
 			zx.eachplugin(zx, "commit", 0);
 			
 			if (zx.fb25) { 
-			    fs.writeFileSync("exit2.sql","SET TERM ^ ;\n" +script +"//\nSET TERM ; ^\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message+"\r\n"+name);
+			    fs.writeFileSync("exit2.sql","SET TERM ^ ;\n" +script +"^ \nSET TERM ; ^\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message+"\r\n"+name);
 			} else if (zx.mysql57) {				
 				fs.writeFileSync("exit2.sql","DELIMITER //\n" +script +"//\nDELIMITER ;\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message+"\r\n"+name);
 			} else if (zx.mssql12) {				
@@ -238,7 +237,7 @@ exports.exec_query_async = function (zx, connection, name, script,params,line_ob
 
 exports.fetch_query_result = function (zx, connection, name, script,params,line_obj,expect,defaultval) {		
 	var error,result, done=false;
-    //console.log("fetch_query_result:" ,script);
+    //console.log("fetch_query_result:" ,script,params);
 	exports.exec_query_async(zx, 
 		connection, 
 		name, 
@@ -316,8 +315,8 @@ exports.singleton = function (zx, field, qrys,trace) {
 		return '';
 	//console.log('singleton 7: ',res);
 	if (res[0] === undefined) {
-		//console.log('singleton rq: ', qrys);
-		//console.log("singleton unknown record :", res);
+		console.log('singleton rq: ', qrys);
+		console.log("singleton unknown record :", res);
 		return '';
 	}
 	if (zx.mssql12) {
@@ -337,7 +336,8 @@ exports.singleton = function (zx, field, qrys,trace) {
 		return res[0][field].low_ + (res[0][field].high_ * 65536 * 65536);
 	} else {
 		console.log('singleton qq: ', qrys);
-		console.log("singleton unknown field :", field, res);
+		console.trace("singleton unknown field :", field, res);
+		throw new Error("singleton unknown field :"+ field);
 		return '';
 	}
 };
@@ -362,7 +362,7 @@ exports.getPageIndexNumber = function (zx, name) {
 		//console.log('getPageIndexNumber : A' ,name);
 		exports.singleton(zx, "", "UPDATE OR INSERT INTO Z$SP (FILE_NAME)VALUES ('" + name + "') MATCHING (FILE_NAME) ");
 		//console.log('getPageIndexNumber : B' );
-		var CurrentPageIndex = exports.singleton(zx, "pk", "select pk from Z$SP where FILE_NAME='" + name + "'");
+		var CurrentPageIndex = exports.singleton(zx, "PK", "select PK from Z$SP where FILE_NAME='" + name + "'");
 
 		//console.log('getPageIndexNumber : ' +CurrentPageIndex);
 		return CurrentPageIndex;
@@ -404,6 +404,11 @@ exports.write_script = function (zx, real, spi, name, mtHash, script, code) {
 		if (real) {
 			//exports.fetch_query_result(zx, connection, "create_script_async  UPDATE real", script,	[],	0,undefined);			
 		} 
+		if (spi !== null)
+			return spi;
+		else
+			return exports.singleton(zx, "PK", "select PK from z$SP where FILE_NAME='" + name + "'");		
+		
 	} else if (zx.mysql57) {
 		var call_script = "call "+FN_HASH+";";
 		var UPDATE_script = "UPDATE Z$SP set FILE_NAME=? , SCRIPT= ? , CODE=?, MT_HASH = ?, FN_HASH=?  where PK=? "; 
@@ -428,6 +433,14 @@ exports.write_script = function (zx, real, spi, name, mtHash, script, code) {
 			//console.log('create_script_async done :',FN_HASH );
 				
 		}
+		
+		throw new Error("dialect code missing");	//following code is the fb version, it needs to be updated to mysql
+		if (spi !== null)
+			return spi;
+		else
+			return exports.singleton(zx, "PK", "select PK from z$SP where FILE_NAME='" + name + "'");		
+		
+		
     } else if (zx.mssql12) {
 		var call_script = "EXECUTE "+FN_HASH+" ";
 		var UPDATE_script = "UPDATE Z$SP set FILE_NAME=@p1 , SCRIPT= @p2 , CODE=@p3 , MT_HASH = @p4 , FN_HASH=@p5  where PK=@p6 "; 
@@ -450,15 +463,17 @@ exports.write_script = function (zx, real, spi, name, mtHash, script, code) {
 			//console.log('create_script_async b:> >>>\r\n',FN_HASH ,"<<< <\r\n\r\n\r\n\r\n" );	
 			exports.fetch_query_result(zx, connection, "Error in creating real SP :", compoundscript,[],0,undefined);
 			//console.log('create_script_async done :',FN_HASH );
-				
+			
+			throw new Error("dialect code missing");	//following code is the fb version, it needs to be updated to mysql
+			if (spi !== null)
+				return spi;
+			else
+				return exports.singleton(zx, "PK", "select PK from z$SP where FILE_NAME='" + name + "'");		
+			
 		}
     } else throw new Error("dialect code missing");		                         
 
     
-	if (spi !== null)
-		return spi;
-	else
-		return exports.singleton(zx, "pk", "select PK from z$SP where FILE_NAME='" + name + "'");
 };
 
 

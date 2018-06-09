@@ -442,7 +442,7 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 		}
 		if (rambase.conf.db.dialect=="fb25")  
 		{
-		db_req.fb = require("node-firebird");
+		db_req.fb = require("node-firebird-dev");
 
 
 		if (conf.db.authfile !== undefined && conf.db.authfile !== "") {
