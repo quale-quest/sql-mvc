@@ -71,11 +71,16 @@ var render_from_fullstash = function (cx,cont_content,cb) {
 }
 
 
-exports.render_inject = function (html_inp,html_inject) { 
+exports.render_inject = function (html_inp,html_inject,LoadedInstance) { 
+	//switch visible page
     html_inp=html_inp.replace(/id="PAGE_2" style="display: none;"/,'id="PAGE_2" x2style="display: none;"');
     html_inp=html_inp.replace(/en0_style/,'style');
-
-    var inits = '<script type="text/javascript" language="javascript">first_page_rendered=true;first_page_container="#maincontainer";</script>\n';
+	//console.log("render_inject :");
+    var inits =  '<script type="text/javascript" language="javascript">'
+				+'first_page_rendered=true;'
+				+'first_page_container="#maincontainer";'
+				+"LoadedInstance='"+LoadedInstance+"';"
+				+'</script>\n';
     
     var container_start = 'id="maincontainer">';
     var cont_content = container_start+ html_inject + inits;
@@ -92,12 +97,12 @@ exports.render_inject = function (html_inp,html_inject) {
 exports.render = function (qq_page_id,jsonstring,template_filename,cb) {    
     var mtHash=0;
     var cx={};
-      
-    var page_id = qq_page_id.substr(2).replace(/\//g,'-');
-    cx.obj = JSON.parse(jsonstring);
-    //console.log("cx.obj.mtHash :",cx.obj[0].mtHash);
-    //console.log("cx.obj[0].Session :",cx.obj[0].Session);
-    //console.log("cx.obj[0].Data :",cx.obj[0].Data);
+    try {  
+		var page_id = qq_page_id.substr(2).replace(/\//g,'-');
+		cx.obj = JSON.parse(jsonstring);
+		//console.log("cx.obj.mtHash :",cx.obj[0].mtHash);
+		//console.log("cx.obj[0].Session :",cx.obj[0].Session);
+		//console.log("cx.obj[0].Data :",cx.obj[0].Data);
             cx.obj[0].Data.Session =  cx.obj[0].Session;
             zx_client_side_plugins.fill_data(cx.obj[0].Data,sst);
             //console.log("cx.obj.mtHash :",cx.obj[0].Data);
@@ -128,7 +133,11 @@ exports.render = function (qq_page_id,jsonstring,template_filename,cb) {
                         //console.log("render_from_fullstash done :",fn);
                     }
             }
-    
+        } catch (e) {        
+            console.log('severside_render render threw:',e); 
+			console.log(jsonstring);
+            winston.error('severside_render render: threw',e);
+        }
     
 }
 

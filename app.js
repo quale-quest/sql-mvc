@@ -19,11 +19,9 @@ var ServerProcess = require("./server/rpc/ServerProcess");
 var severside_render = require("./server/lib/severside_render"); 
 
 var crypto = require('crypto');
-var crypto_prefix = crypto.randomBytes(16).toString('base64');
-var crypto_count=0;
-console.log("crypto_prefix :",crypto_prefix);
 
 var winston = require('winston');
+const url = require('url');
 //winston.add(winston.transports.File, { filename: 'clients.log' });
 
   winston.add(winston.transports.File, {
@@ -79,10 +77,13 @@ ss.http.route('/files?*', function (req, res) {
 });
 
 ss.http.route('/', function (req, res) {
-//console.log('parse/ ', req.headers.host);
+	console.log('\r\n\r\n\r\n\r\n=======================================================ss.http.route/ '+req.url);
+	var LoadedInstance = crypto.randomBytes(16).toString('base64');
+	console.log('LoadedInstance: ', LoadedInstance);
 
+	var queryData = url.parse(req.url, true).query;
+	console.log('queryData:', queryData);
 	// we can also serve url friendly pages from the application
-
 	//...rest of normal socket stream code ....
 
     var ip = req.headers['x-forwarded-for'] || 
@@ -92,20 +93,8 @@ ss.http.route('/', function (req, res) {
      
     winston.info('Connect from',ip); 
      
-	//console.log('===========================Initial contents of my session is ', req.session.myStartID);
-	console.log('===========================Inital contents of my session is ',ip,
-        req.session.myStartID,  req.headers.host, req.url);
-    var session_save = 0;
-	if (req.session.myStartID === undefined) {
-		//ss.session.options.secret = crypto.randomBytes(32).toString();
-		//req.session.myStartID = app_utils.timestamp();
-        req.session.myStartID = crypto_prefix + "." + crypto_count;
-        req.session.ip = ip;
-        crypto_count++;
-        //console.log('===========================Assigned new session ID ',req.session.myStartID);
-		session_save = 1;
-	}    
-    
+	//console.log('===========================Inital contents of my session is ',ip,  LoadedInstance,  req.headers.host, req.url);
+
 	/*
 	TODO locate the application that wants to be run
 	within that application we retrieve a config file
@@ -123,64 +112,57 @@ ss.http.route('/', function (req, res) {
     decoded = decoded.replace(/\?/g,'');
 
     console.log('serveClient decoded:',decoded);
-    var params = json_like.parse(decoded);    
+    var params = json_like.parse(decoded);  
+	params.user	= params.user|| '';
+	params.password	= params.password|| '';
+	
+	if (params.user=='') {
+		//if () //params.invite  // with an invite code create/use a temporary unique user that can be converted to a real login
+		//alt create/use a temporary unique user that can be converted to a real login
+		
+		//finally default use a guest user
+		params.user	= 'guest';
+		params.password	= 'gu35t';
+		}
+	
     console.log('serveClient params:',params);
     var Application = params.app || ''; 
-
-    //console.log('serveClient host:',host_name,' home_page:', home_page,params,' Application :',Application);
-    if (req.session.Application!=Application) {req.session.Application=Application; session_save = 1;}
-    if (req.session.root_folder!=root_folder) {req.session.root_folder=root_folder; session_save = 1;}
-    if (session_save) req.session.save();    
-    
-	db.databasePooled(root_folder, req.session.myStartID,Application, function (err , msg, rambase
-		) {
+ 
+	db.databasePooled(root_folder, LoadedInstance,Application, function (err , msg, rambase) {
 		if (err) {
 			console.log(err.message);
 		} else {
-        
-            rambase.params=params;
-            
-            if (params.invite) {
-                //generate the page - using guest login and an invite number
-                /* todo debug this code
-                
-                issue 2 passing invite number as the master.ref to the stored procedure
-                        
-                
-                serverprocess.produce_login(req, res, ss, rambase , '', 'guest','gu35t',
-                function (jsonstring){
-                    join the json string with the template from a file
-                    app_utils.serveBuffer(res, '',html,0,'index.html');                     
-                });
-                
-                */
-            } else if (params.user) {    
-            //this is a first page load ... server-side rendered                
-                ServerProcess.produce_login(req, res, ss,rambase, '', 'guest','gu35t',
-                function (scriptnamed,jsonstring){
-                    //console.time("severside_render");
+			try {
+			  console.log("db.databasePooled :",params,'============================');
+              rambase.params=params;
+		
+              if (params.user=='') {
+				//this is a first page load ... without rendering - will be rendered on the login from the user
+				console.log("first page load ... without server-side rendering");
+				//todo inject LoadedInstance
+				res.serveClient('main');
+			  }  else  {
+				//this is a first page load ... server-side rendered
+				console.log("first page load ... with server-side rendering");
+				ServerProcess.produce_login(req, res, ss,rambase, '', params.user,params.password,
+				function (scriptnamed,jsonstring){
+                    //console.log("severside_render",jsonstring);
                     severside_render.render(scriptnamed,jsonstring,"client/views/app.html",
                         function (html_inject){
-                             //console.log('produce_login rendered html 162246:',html_inject);
-                             //app_utils.serveBuffer(res, '',html,0,'index.html');  
-                             //console.timeEnd("severside_render");
-                             res.serveClient('main',
-                             function (html){
-                                 //console.log("render_from_fullstash returning :");
-                                 html = severside_render.render_inject(html,html_inject);
-                                 //console.log('produce_login rendered html 162247 XXXXXXXXXXXXXXXXXXX:',html);
-                                 //console.timeEnd("severside_render");
+							//console.log("severside_render html_inject");
+                            res.serveClient('main',
+                            function (html){
+                                 html = severside_render.render_inject(html,html_inject,LoadedInstance);
                                  return html;
-                             });
+                            });
                         });    
                    
                 });
-                
-                
-               // res.serveClient('main');
-            } else  {
-            res.serveClient('main');
-            } 
+			  }	
+			} catch (e) {
+				console.log('ss.http.route threw:',e); 
+				winston.error('ss.http.route threw:',e);
+			}			
 		}
 
 	});

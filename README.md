@@ -6,9 +6,7 @@ If like me, you find the way web app development is done today as tedious, and w
 in creating a true "application programming language" (or DSL of you prefer),
 as opposed to using a general purpose language (JavaScript) for writing applications.
  
-This is not a toy,it is under full-time active development, with the objective to match and beat any other technologies hands down.
- 
-In 1991 Oracle added a few extensions to SQL to create Procedural SQL, so now we have added a 
+In 1991 Oracle added a few extensions to SQL to create Procedural SQL, so now I have added a 
 few more extensions to SQL, to create QUery Application Language Extensions (QUALE) - it is that simple.
 
 **Recent change log: Divout popup, Automatic JIT compiler, Windows Installer and dev environment with syntax highlighting.**
@@ -94,6 +92,14 @@ use(todo.clear.button)
 * Git hub  [https://github.com/quale-quest/sql-mvc](https://github.com/quale-quest/sql-mvc)
 * SQL-MVC help and discussion mailing list : [sql-mvc-talk](https://groups.google.com/group/sql-mvc-talk)
 
+## Supported SQL engines
+
+* Firebird Version 2.5
+* MYSQL Version 5.7
+* MSSQL SQL SERVER 12
+* Soon - Postgres
+* Soon - Oracle
+* Soon - NuoDB
 
 ## How does SQL-MVC work?
 

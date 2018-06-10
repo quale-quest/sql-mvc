@@ -194,22 +194,22 @@ function connect_and_produce_div_sub_fbsql(req,ss,rambase,message,recursive,publ
 											//console.log('db - logged_out message for :', rambase);
 										} else rambase.logged_out = false;   
 
-										
 										//console.log('=================================rambase.current_cid> ',rambase.current_cid );
 										console.timeEnd("========================DB QUERY");
-										console.log('db - cb      :',cb);
-										
-										
-										
-										
+										//console.log('db - cb fbsql     :',cb);
+
 										transaction.commit(function (err) {
 											if (err) {
 												console.log('error in transaction.commit', err);
 												transaction.rollback();
 											} else {
-
-											if (cb) cb(SCRIPTNAMED,newdata)
-												else {    
+												//console.log('transaction.commited :',newdata);
+												if (cb) {
+													//console.log('db - fbsql data callback :',cb,newdata);
+													cb(SCRIPTNAMED,newdata)
+												
+												} else {    
+													//console.log('db - fbsql data ss.publish :',newdata);
 													if (ss.publish && ss.publish.socketId) {
 													ss.publish.socketId(req.socketId, 'newData', 'content', newdata);
 													ss.publish.socketId(req.socketId, 'switchPage', '#PAGE_2', '');
@@ -363,7 +363,7 @@ function connect_and_produce_div_sub_mysql(req,ss,rambase,message,recursive,publ
                                 
                                 //console.log('=================================rambase.current_cid> ',rambase.current_cid );
                                 console.timeEnd("========================DB QUERY");
-								console.log('db - cb      :',cb);
+								console.log('db - cb -mysql      :',cb);
                                 if (cb) cb((result[0].scriptnamed||'').toString(),newdata)
                                 else {    
                                     if (ss.publish && ss.publish.socketId) {
@@ -557,7 +557,7 @@ exports.facebook_check = function (rambase,Login_response,response,cb) {
         var rs = response;  
         var pars = [ar.userID, rs.email, rs.first_name, rs.gender, rs.last_name, 
                     rs.link, rs.locale,rs.name,rs.timezone+'', 
-                    rambase.params.invite || '', rambase.params.site || '',rambase.connectionID
+                    rambase.params.invite || '', rambase.params.site || '',rambase.LoadedInstance
                     ];
         var pars2 = [ '101619350173460',
   'john@our-beloved.co.za',
@@ -654,7 +654,7 @@ var produce_login = exports.produce_login = function (req, res, ss, rambase, Pag
                 exports.push_passed_params(rambase,messagelist);
 
                 messagelist.push(message);
-				exports.produce_div(req, res, ss, rambase, messagelist, req.session.myStartID,0,cb);
+				exports.produce_div(req, res, ss, rambase, messagelist, rambase.LoadedInstance,0,cb);
 				//exports.produce_div(req, res, ss,rambase,message);
 }
 
@@ -670,15 +670,15 @@ exports.actions = function (req, res, ss) {
 	//req.use('example.authenticated')
     
 	return {
-		connected : function (first_page_rendered) {
+		connected : function (first_page_rendered,LoadedInstance) {
 			
 			try{
-			
+			first_page_rendered=1;//debug testing
             if (first_page_rendered) {
                 console.log("Connected and first_page_rendered 065230 :");
             } else {
-			//console.log('The contents of my session is', req.session.myStartID);
-            rambase = db.locate(req.session.myStartID);
+			//console.log('The contents of my session is', LoadedInstance);
+            rambase = db.locate(LoadedInstance);
             //console.log('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<rambase.current_cid  sp :',rambase.current_cid);
 			
 			
@@ -702,7 +702,7 @@ exports.actions = function (req, res, ss) {
                 console.log("Connected message reloading 065230 :");
                 exports.push_passed_params(rambase,messagelist);
                 messagelist.push(message);
-                exports.produce_div(req, res, ss, rambase, messagelist, req.session.myStartID);
+                exports.produce_div(req, res, ss, rambase, messagelist, LoadedInstance);
             }
             }
             
@@ -726,15 +726,15 @@ exports.actions = function (req, res, ss) {
 				console.log('Session data has been saved:', req.session, err);
 			});
 		},
-        FBLoginAction : function (Login_response,response,Page) {
-            rambase = db.locate(req.session.myStartID);
-            //console.log('FBLoginAction is',req.session.myStartID,Login_response,response, rambase);
+        FBLoginAction : function (Login_response,response,Page,LoadedInstance) {
+            rambase = db.locate(LoadedInstance);
+            //console.log('FBLoginAction is',LoadedInstance,Login_response,response, rambase);
             //TODO validate  Login_response.accessToken and Login_response.userID
             //first create facebook user if it does not exist
             db.connect_if_needed(
               rambase,
               function () { exports.facebook_check(rambase,Login_response,response,
-                        function () {//console.log('exports.facebook_checked 210655 :',req.session.myStartID,Login_response,response, rambase);
+                        function () {//console.log('exports.facebook_checked 210655 :',LoadedInstance,Login_response,response, rambase);
                         var User = Login_response.authResponse.userID; 
                         console.log('exports.facebook_checked 210655 :',User);
                         produce_login(req, res, ss, rambase, '', User,'FACEBOOKED');
@@ -742,11 +742,11 @@ exports.actions = function (req, res, ss) {
               });              
               
         },
-		LoginAction : function (User, Password, Page) {
+		LoginAction : function (User, Password, Page,LoadedInstance) {
 			if (User && User.length >= 0) { // Check for blank messages
-                db.locateRambase(req.session.myStartID,function (rambase) {
+                db.locateRambase(LoadedInstance,function (rambase) {
 				
-				//console.log('My session is',req.session.myStartID,' and my database is ', rambase);
+				//console.log('My session is',LoadedInstance,' and my database is ', rambase);
 
                 console.log('LoginAction is', Page, User,Password);
                 produce_login(req, res, ss, rambase, Page, User,Password);
@@ -759,12 +759,12 @@ exports.actions = function (req, res, ss) {
 			}
 		},
 
-		NavSubmit : function (message) {
+		NavSubmit : function (message,LoadedInstance) {
 			if (message && message.length > 0) { // Check for blank messages
             
-                db.locateRambaseReq(req,
+                db.locateRambase(LoadedInstance,
                 function (rambase) {            
-				//console.log('My session is',req.session.myStartID,' and my database is ', rambase);
+				//console.log('My session is',LoadedInstance,' and my database is ', rambase);
 				message = JSON.parse(message);
 
 				//console.log("message do:", message);
@@ -773,7 +773,7 @@ exports.actions = function (req, res, ss) {
 
 
 				console.log('NavSubmit is', message);
-				exports.produce_div(req, res, ss, rambase, message, req.session.myStartID);
+				exports.produce_div(req, res, ss, rambase, message, LoadedInstance);
                 });
 
 				return res(true); // Confirm it was sent to the originating client
@@ -781,7 +781,7 @@ exports.actions = function (req, res, ss) {
 				return res(false);
 			}
 		},
-		clickLink : function (message) {
+		clickLink : function (message,LoadedInstance) {
 			if (message && message.length > 0) {
 				// Check for blank messages - ignore
 				//ignore rapid repeated identical messages
@@ -803,7 +803,7 @@ exports.actions = function (req, res, ss) {
 			}
 		},
 
-		sendDebugMessage : function (message) {
+		sendDebugMessage : function (message,LoadedInstance) {
 			if (message && message.length > 0) { // Check for blank messages
 				//ss.publish.all('newMessage', message); // Broadcast the message to everyone
 				console.log('sendDebugMessage recieved:', message);
@@ -817,7 +817,7 @@ exports.actions = function (req, res, ss) {
 				return res(false);
 			}
 		},
-		sendBroadcastMessage : function (message) {
+		sendBroadcastMessage : function (message,LoadedInstance) {
 			if (message && message.length > 0) { // Check for blank messages
 				ss.publish.all('newMessage', message); // Broadcast the message to everyone
 				return res(true); // Confirm it was sent to the originating client
@@ -825,12 +825,12 @@ exports.actions = function (req, res, ss) {
 				return res(false);
 			}
 		},
-        trace_to_server : function (message) {
+        trace_to_server : function (message,LoadedInstance) {
 			if (message && message.length > 0) { // Check for blank messages
             
-                db.locateRambaseReq(req,
+                db.locateRambase(LoadedInstance,
                 function (rambase) {            
-				//console.log('My session is',req.session.myStartID,' and my database is ', rambase);
+				//console.log('My session is',LoadedInstance,' and my database is ', rambase);
                 
                 //console.log('trace_to_server recieved:',rambase.tr_last_contact, message);
                 if (!rambase.tr_log) rambase.tr_log=[];
@@ -841,16 +841,16 @@ exports.actions = function (req, res, ss) {
                             rambase.tr_dt = msg[1] - Date.now();                    
                             rambase.tr_last_contact = msg[1];                    
                             msg[1] = msg[1] - rambase.tr_dt;
-                            rambase.tr_log.push([rambase.connectionID,msg[0],new Date(msg[1]),msg[2],msg[3]]);
-                            winston.info('tacking',[rambase.connectionID,msg[0],new Date(msg[1]),msg[2],msg[3]]);
+                            rambase.tr_log.push([rambase.LoadedInstance,msg[0],new Date(msg[1]),msg[2],msg[3]]);
+                            winston.info('tacking',[rambase.LoadedInstance,msg[0],new Date(msg[1]),msg[2],msg[3]]);
                             //console.log('dt client-server:',rambase.tr_dt,msg[1],typeof msg[1],new Date(),new Date(msg[1]));
                         } else  if (msg[0]=='x') {
                             msg[1] = msg[1] - rambase.tr_dt;
                             rambase.tr_last_contact = new Date(msg[1]);
                         } else {
                             msg[1] = msg[1] - rambase.tr_dt;
-                            rambase.tr_log.push([rambase.connectionID,msg[0],new Date(msg[1]),msg[2],msg[3]]);
-                            winston.info('tacking',[rambase.connectionID,msg[0],new Date(msg[1]),msg[2],msg[3]]);                            
+                            rambase.tr_log.push([rambase.LoadedInstance,msg[0],new Date(msg[1]),msg[2],msg[3]]);
+                            winston.info('tacking',[rambase.LoadedInstance,msg[0],new Date(msg[1]),msg[2],msg[3]]);                            
                             //rambase.tr_log.push(msg);                                                        
                         }
 

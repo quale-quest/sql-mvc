@@ -7,7 +7,7 @@ var zx_client_side_plugins = require('./zx_client_side_plugins.js');
 /*var without var goes into dom root*/ //zx_za_cdv = require('./za_cdv.js');   
 
    
-   
+var simpleautotest=0;    //set to 1 to automatically post records to demo todo site
 var zx_view_page='#PAGE_3';       
 var zx_prev_page='#PAGE_3';
 var qq_session,qq_cid;
@@ -429,7 +429,7 @@ var render_from_fullstash = function (cx,html) {
 
             init_from_fullstash_internal(cx.obj.Target);
 			//alert("render_from_fullstash");
-			var simpleautotest=0;
+			
 			if (simpleautotest) {
 				setTimeout(function () {
 					var event = new Event('change', {'bubbles': true,'cancelable': true});
@@ -602,8 +602,9 @@ ss.event.on('newData', function (div, message) {
 
 	cx.dynamicrequestqueue = []; //list of dynamic data to request or wait for from the server
 
+    if (simpleautotest)
+		console.log('client got newData',message);
 
-	//console.log('client got newData',message);
 	//$('#content').html(message);
 	var o = JSON.parse(message);
     replace_string_in_object(o,0);
@@ -768,7 +769,7 @@ $(".zxlink").click(function () {
 // sharing code between modules by exporting function
 exports.sendClick = function (text, cb) {
 
-	return ss.rpc('ServerProcess.NavSubmit', text, cb);
+	return ss.rpc('ServerProcess.NavSubmit', text,LoadedInstance, cb);
 
 };
 
@@ -804,7 +805,7 @@ if (0) {
 sendLogin = exports.sendLogin = function (LoginName, LoginInput, Page, cb) {
     
 	if (loginvalid(LoginName) && loginvalid(LoginInput)) {
-		return ss.rpc('ServerProcess.LoginAction', LoginName, LoginInput,Page, cb);
+		return ss.rpc('ServerProcess.LoginAction', LoginName, LoginInput,Page,LoadedInstance, cb);
 	} else {
 		return cb(false);
 	}
@@ -818,7 +819,7 @@ $(function () {
          
         init_from_fullstash_internal(first_page_container);
     }     
-   else ss.rpc('ServerProcess.connected',first_page_rendered);
+   else ss.rpc('ServerProcess.connected',first_page_rendered,LoadedInstance);
     
 });
 
@@ -850,7 +851,7 @@ $('#DebugRebuild').on('click', function () {return debug_button_fn({fn:'Rebuild'
 // sharing code between modules by exporting function
 exports.send = function (text, cb) {
 	if (valid(text)) {
-		return ss.rpc('ServerProcess.sendBroadcastMessage', text, cb);
+		return ss.rpc('ServerProcess.sendBroadcastMessage', text,LoadedInstance, cb);
 	} else {
 		return cb(false);
 	}
@@ -858,7 +859,7 @@ exports.send = function (text, cb) {
 
 exports.sendDebug = function (text, cb) {
 	if (valid(text)) {
-		return ss.rpc('ServerProcess.sendDebugMessage', text, cb);
+		return ss.rpc('ServerProcess.sendDebugMessage', text,LoadedInstance, cb);
 	} else {
 		return cb(false);
 	}

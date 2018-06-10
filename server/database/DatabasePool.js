@@ -57,8 +57,8 @@ var maintenance_timer = setInterval(function () {
 				if (c.last_connect_stamp < to) {
 					console.log('maintenance_timer...: Preparing to Detach :',key);
                     if (c.tr_log&&c.tr_log.length>0) {
-                        c.tr_log.push([c.connectionID,'x',c.tr_last_contact,'','']);
-                        winston.info('tacking',[c.connectionID,'x',c.tr_last_contact,'','']);
+                        c.tr_log.push([c.LoadedInstance,'x',c.tr_last_contact,'','']);
+                        winston.info('tacking',[c.LoadedInstance,'x',c.tr_last_contact,'','']);
                         c.tr_log_send = c.tr_log;
                         c.tr_log = [];
 					    console.log('maintenance_timer...: logging :',
@@ -301,17 +301,18 @@ exports.check_run_mode = function (config) {
 }
 
 
-exports.databasePooled = function (root_folder, connectionID, Application, callback) {
+exports.databasePooled = function (root_folder, LoadedInstance, Application, callback) {
 	//util.log('db connections json 164959 :'+util.inspect(exports.connections));
-	if (exports.connections[connectionID] !== undefined) {
-		//console.log("database connection cached from : ", connectionID);
+	if (exports.connections[LoadedInstance] !== undefined) {
+		//console.log("database connection cached from : ", LoadedInstance);
 		if (callback !== undefined)
-			callback(null, "Connected", exports.connections[connectionID]);
+			callback(null, "Connected", exports.connections[LoadedInstance]);
 	} else { //read the config from  a file in the application folder
-		//console.log("Application for " + connectionID + ' : ' + Application);
-		//console.log("database connection connect from : ", connectionID);
+		//console.log("Application for " + LoadedInstance + ' : ' + Application);
+		//console.log("database connection connect from : ", LoadedInstance);
 		var rambase = {};
-
+		rambase.root_folder = root_folder;
+		rambase.Application = Application;
 		var fileContents = "";
 		var conf = exports.load_config(root_folder, Application);
 
@@ -360,13 +361,13 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 
 					console.log("MSSQL info :",rowCount,rows);
 					
-					rambase.connectionID = connectionID;
+					rambase.LoadedInstance = LoadedInstance;
 					rambase.ready = true;
 					rambase.last_connect_stamp = Date.now();
-					exports.connections[connectionID] = rambase;
+					exports.connections[LoadedInstance] = rambase;
 					
 					if (callback !== undefined)
-						callback(null, "Connected", exports.connections[connectionID]);			  			  					
+						callback(null, "Connected", exports.connections[LoadedInstance]);			  			  					
 
 			
 						
@@ -423,16 +424,16 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 						
 					
 					rambase.db = dbref;
-					rambase.connectionID = connectionID;
+					rambase.LoadedInstance = LoadedInstance;
 					rambase.ready = true;
 					rambase.last_connect_stamp = Date.now();
-					exports.connections[connectionID] = rambase;
+					exports.connections[LoadedInstance] = rambase;
 					
 					deasync.sleep(15); //on windows this is needed to prevent the compiler form hanging
 					rambase.db.query("select version()", [],	function (err, result, fields) {
 						console.log("MySQL info :",result);//, fields);
 						if (callback !== undefined)
-							callback(null, "Connected", exports.connections[connectionID]);			  			  					
+							callback(null, "Connected", exports.connections[LoadedInstance]);			  			  					
 						});
 			
 						
@@ -500,17 +501,17 @@ exports.databasePooled = function (root_folder, connectionID, Application, callb
 				rambase.db = dbref;
 				//console.log('db connections json 165230 :', JSON.stringify(rambase,null,4));
 				//console.log('db connections json 164950 :', JSON.stringify(exports.connections, null, 4));
-				rambase.connectionID = connectionID;
+				rambase.LoadedInstance = LoadedInstance;
                 rambase.ready = true;
 				rambase.last_connect_stamp = Date.now();
-				exports.connections[connectionID] = rambase;
+				exports.connections[LoadedInstance] = rambase;
                 
 				//console.log('db connections json 165301 :', JSON.stringify(rambase,null,4));
 				// console.log('db connections json :', JSON.stringify(exports.connections,null,4));
-				//console.log("connection number 164955 " + Object.keys(exports.connections).length + " for " + connectionID + ' on ' + exports.connections[connectionID]);
+				//console.log("connection number 164955 " + Object.keys(exports.connections).length + " for " + LoadedInstance + ' on ' + exports.connections[LoadedInstance]);
                 deasync.sleep(15); //on windows this is needed to prevent the compiler form hanging
 				if (callback !== undefined)
-					callback(null, "Connected", exports.connections[connectionID]);
+					callback(null, "Connected", exports.connections[LoadedInstance]);
 			}
 		});
 	}
@@ -555,81 +556,54 @@ exports.connect_if_needed = function (connection, callback) {
 
 
 
-exports.locateRambase = function (connectionID,cb) {//dont think this is being used
-    if (exports.connections[connectionID])  {
-        cb(exports.connections[connectionID]);
+exports.locateRambase = function (LoadedInstance,cb) {//dont think this is being used
+    if (exports.connections[LoadedInstance])  {
+        cb(exports.connections[LoadedInstance]);
     } else {
-        
-	db.databasePooled(root_folder, req.session.myStartID,Application, function (err , msg, Rambase
-		) {
-		if (err) {
-			console.log('locateRambase ',err.message);
-		} else {
-            cb(Rambase);
-        }});                  
-    }
-    
-};
-
-exports.locateRambaseReq = function (req,cb) {
-    var connectionID=req.session.myStartID;
-    if (exports.connections[connectionID])  {
-        cb(exports.connections[connectionID]);
-    } else {
-      
-    console.log('locateRambase req.session 105555 :',req.session.myStartID,req.session.Application,req.session.root_folder);
-    
-	exports.databasePooled(req.session.root_folder, req.session.myStartID, req.session.Application, function (err , msg, Rambase
-		) {
-		if (err) {
-			console.log('locateRambaseReq',err.message);
-		} else {
-            cb(Rambase);
-        }});                  
+		console.log('locateRambase fails to find the instance ');		
     }
     
 };
 
 
-
-exports.locate = function (connectionID) {
-    return exports.connections[connectionID];
+exports.locate = function (LoadedInstance) {
+    return exports.connections[LoadedInstance];
 };
 
-exports.LocateDatabasePool = function (connectionID) {
-	if (exports.connections[connectionID] !== undefined) {
-		console.log("database connection cached from : ", connectionID);
-		return exports.connections[connectionID];
+exports.LocateDatabasePool = function (LoadedInstance) {
+	if (exports.connections[LoadedInstance] !== undefined) {
+		console.log("database connection cached from : ", LoadedInstance);
+		return exports.connections[LoadedInstance];
 	}
 	return null;
 
 }
 
-exports.detach = function (dbref, connectionID, force) {
+exports.detach = function (dbref, LoadedInstance, force) {
 	//actual detachment is managed by the pool
-	if ((connectionID === undefined) || (connectionID === null)) {
+	if ((LoadedInstance === undefined) || (LoadedInstance === null)) {
 		//console.log("compare start " + Object.keys(exports.connections).length);
 		//console.log('db connections json :', JSON.stringify(exports.connections,null,4));
-		connectionID = undefined;
+		LoadedInstance = undefined;
 		for (var key in exports.connections) {
 			if (exports.connections.hasOwnProperty(key)) {
 				var c = exports.connections[key];
-				//console.log("compare for " + c.connectionID, dbref.connectionID);
-				if (c.connectionID === dbref.connectionID) {
-					connectionID = c.connectionID;
-					//console.log("matched for " + c.connectionID + ' on ' + dbref.connectionID);
+				//console.log("compare for " + c.LoadedInstance, dbref.LoadedInstance);
+				if (c.LoadedInstance === dbref.LoadedInstance) {
+					LoadedInstance = c.LoadedInstance;
+					//console.log("matched for " + c.LoadedInstance + ' on ' + dbref.LoadedInstance);
 				}
 			}
 		}
 	}
-	//console.log("actual for " + connectionID + ' on ' + dbref);
-	if (connectionID !== undefined) {
-		exports.connections[connectionID].db.detach();
-		delete exports.connections[connectionID];
+	//console.log("actual for " + LoadedInstance + ' on ' + dbref);
+	if (LoadedInstance !== undefined) {
+		exports.connections[LoadedInstance].db.detach();
+		delete exports.connections[LoadedInstance];
 	}
 }
 
-exports.on_exit = function (dbref, connectionID, force) {
+exports.on_exit = function (dbref, LoadedInstance, force) {
 	for (var key in exports.connections) {
 		if (exports.connections.hasOwnProperty(key)) {
 			var c = exports.connections[key];
