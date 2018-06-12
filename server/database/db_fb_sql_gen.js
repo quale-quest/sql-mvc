@@ -1459,7 +1459,7 @@ var get_variable_table_expression = function (zx,v) {
 						
 		}
 		break;
-	case 'params': {
+	case 'params': { //passed in the url is available to the whole app
 			where = sqlconcat(zx,"", 
 					    "'params-'",
 			            vr(zx,"z$sessionid"),
@@ -1484,6 +1484,7 @@ var get_variable_table_expression = function (zx,v) {
 	case 'passed': {
 			where = sqlconcat(zx,"", 
 			            "'pass'",
+//						vr(zx,"z$sessionid"),"'-'", -- not needed, by the time an attacker gets here he will already know the z$sessionid
 						vr(zx,"pki"),
 						"'-'",
 						vr(zx,"pkf"),						

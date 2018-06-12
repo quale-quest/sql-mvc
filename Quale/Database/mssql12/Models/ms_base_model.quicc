@@ -420,7 +420,7 @@ CREATE Or alter PROCEDURE Z$RUN (
 			 @pkf=@PRIOR_ITEM_ID , 
 			  @INFO=@INFO output, 
 			  @res=@res output ;
-
+		-- TODO catch exception and output on info on MSSQL Z$RUN
 	END;
 END^
 SET TERM ; ^

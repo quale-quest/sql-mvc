@@ -388,7 +388,7 @@ BEGIN
           FOR EXECUTE STATEMENT script INTO :info,:res DO suspend;
           WHEN ANY DO
               BEGIN
-              info='exception';
+              info='exception,'||sqlcode;
               res= sqlcode ||'   SET TERM ^ ;'|| :script ;   
               suspend;              
               END   

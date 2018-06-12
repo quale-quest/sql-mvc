@@ -34,8 +34,9 @@ Container( style=Tab                                                            
 rem -------------------------------------------------------------------------------------------------------
 notify(style=Heading) Info
 
-print() you were here last at here.this_page_info
-script() set here.this_page_info=cast('now' as timestamp);
+rem here should not be used in guest user
+rem print() you were here last at here.this_page_info
+rem script() set here.this_page_info=cast('now' as timestamp);
 html() <br>
 
 print() ($select count(*) from MAIL where FROM_USER=session.id and SUBJECT='login log' $) actions from you 

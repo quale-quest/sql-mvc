@@ -32,7 +32,7 @@ const url = require('url');
     ]
   });
 
-winston.error('Reloaded');  
+winston.warn('App.js Loaded');  
 
 // Define a single-page client called 'main'
 ss.client.define('main', {
@@ -77,12 +77,12 @@ ss.http.route('/files?*', function (req, res) {
 });
 
 ss.http.route('/', function (req, res) {
-	console.log('\r\n\r\n\r\n\r\n=======================================================ss.http.route/ '+req.url);
+	console.log('\r\n\r\n\r\n\r\n=======================================================ss.http.route: '+req.url);
 	var LoadedInstance = crypto.randomBytes(16).toString('base64');
-	console.log('LoadedInstance: ', LoadedInstance);
+	//console.log('LoadedInstance: ', LoadedInstance);
 
 	var queryData = url.parse(req.url, true).query;
-	console.log('queryData:', queryData);
+	//console.log('queryData:', queryData);
 	// we can also serve url friendly pages from the application
 	//...rest of normal socket stream code ....
 
@@ -91,7 +91,7 @@ ss.http.route('/', function (req, res) {
          req.socket.remoteAddress ||
          req.connection.socket.remoteAddress;
      
-    winston.info('Connect from',ip); 
+	winston.verbose('Connect route/ ',{ip:ip , url:req.url , inst:LoadedInstance}); 
      
 	//console.log('===========================Inital contents of my session is ',ip,  LoadedInstance,  req.headers.host, req.url);
 
@@ -111,7 +111,7 @@ ss.http.route('/', function (req, res) {
     decoded = decoded.replace(/&/g,',');
     decoded = decoded.replace(/\?/g,'');
 
-    console.log('serveClient decoded:',decoded);
+    //console.log('serveClient decoded:',decoded);
     var params = json_like.parse(decoded);  
 	params.user	= params.user|| '';
 	params.password	= params.password|| '';
@@ -125,7 +125,7 @@ ss.http.route('/', function (req, res) {
 		params.password	= 'gu35t';
 		}
 	
-    console.log('serveClient params:',params);
+    //console.log('serveClient params:',params);
     var Application = params.app || ''; 
  
 	db.databasePooled(root_folder, LoadedInstance,Application, function (err , msg, rambase) {
@@ -133,17 +133,17 @@ ss.http.route('/', function (req, res) {
 			console.log(err.message);
 		} else {
 			try {
-			  console.log("db.databasePooled :",params,'============================');
+			  //console.log("db.databasePooled :",params,'============================');
               rambase.params=params;
 		
               if (params.user=='') {
 				//this is a first page load ... without rendering - will be rendered on the login from the user
-				console.log("first page load ... without server-side rendering");
+				//console.log("first page load ... without server-side rendering");
 				//todo inject LoadedInstance
 				res.serveClient('main');
 			  }  else  {
 				//this is a first page load ... server-side rendered
-				console.log("first page load ... with server-side rendering");
+				//console.log("first page load ... with server-side rendering");
 				ServerProcess.produce_login(req, res, ss,rambase, '', params.user,params.password,
 				function (scriptnamed,jsonstring){
                     //console.log("severside_render",jsonstring);
@@ -207,6 +207,10 @@ ss.client.set({
 // Start web server
 var server = http.Server(ss.http.middleware);
 var config = db.load_config('', '');
+
+//clear screen and scrollback
+console.log('\x1Bc'); 
+console.log('\x1B[3J');
 
 console.log('serveClient config.run.serve_port:', config.run.serve_port);
 server.listen(config.run.serve_port);

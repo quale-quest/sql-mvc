@@ -419,7 +419,16 @@ init_from_fullstash_internal = function (Target) {
             zx_SyntaxHighlighter_init();
             //alert("init_from_fullstash_internal");
 //            zx_cdv();
-
+			if (simpleautotest) {
+				setTimeout(function () {
+					var event = new Event('change', {'bubbles': true,'cancelable': true});
+					var s= document.getElementById("edit-120000000-1");
+					console.log("on setTimeout :",Date.now() );
+					s.value = Date.now();
+					s.dispatchEvent(event);
+					}
+				, 1000)
+			}
 }
 
 var render_from_fullstash = function (cx,html) {
@@ -429,17 +438,6 @@ var render_from_fullstash = function (cx,html) {
 
             init_from_fullstash_internal(cx.obj.Target);
 			//alert("render_from_fullstash");
-			
-			if (simpleautotest) {
-				setTimeout(function () {
-					var event = new Event('change', {'bubbles': true,'cancelable': true});
-					var s= document.getElementById("edit-120000000-1");
-					//console.log("on setTimeout :",Date.now() );
-					s.value = Date.now();
-					s.dispatchEvent(event);
-					}
-				, 600)
-			}
 }
 
 

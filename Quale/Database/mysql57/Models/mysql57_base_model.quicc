@@ -421,7 +421,8 @@ proc_label:  BEGIN
 
 			call Z$EXECUTE_STRINGS(@script_exec);
 			set info    = @info_ret;	       
-			set res     = @res_ret;	       
+			set res     = @res_ret;	
+			-- TODO catch exception and output on info on MYSQL Z$RUN			
         end if;   
 
 	select NEW_CONTEXT_ID,info,res,ScriptNamed;

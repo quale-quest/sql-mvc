@@ -4,7 +4,6 @@
 /*
 The login/page and updates can all be integrated into a single request,
 but then the page must be stored on the db server, else we will have to ask it and that is pointless.....
-
  */
 
 
@@ -29,7 +28,7 @@ exports.produce_div = function (req, res, ss, rambase, messages, session,recursi
 }
 
 exports.connect_and_produce_div = function (req, res, ss, rambase, messages, session,recursive,cb) {
-    console.time("========================DB QUERY");
+    //console.time("========================DB QUERY");
 	//input='SELECT info,p.RES FROM Z$RUN ('SESSION1', 'ACT', 999,999, 'VALU', 'u08USER8002p041257x00end') p;
 
 	//console.log("Server received messages:", messages);
@@ -69,70 +68,224 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
 		message.typ = "";
 	update += par_format('w', '');
 	update += "x00";
-	console.log("Server received update:", update);
-	console.log("rambase.conf.db.dialect:", rambase.conf.db.dialect);
+	//console.log("Server received update:", update);
+	//console.log("rambase.conf.db.dialect:", rambase.conf.db.dialect);
+	
+	var par = {
+		req:req,
+		rambase:rambase,
+		message:message,
+		recursive:recursive,
+		public_parameters:public_parameters,
+		update:update,
+		queryStamp:Date.now(),
+		retry_count:0
+	};
 
     if (rambase.conf.db.dialect=="fb25")  {
-		connect_and_produce_div_sub_fbsql(req,ss,rambase,message,recursive,public_parameters,update,cb);
+		connect_and_produce_div_sub_fbsql(ss,par,null,null,cb);
 	} else if (rambase.conf.db.dialect=="mysql57")  {			
-		connect_and_produce_div_sub_mysql(req,ss,rambase,message,recursive,public_parameters,update,cb);
+		connect_and_produce_div_sub_mysql(ss,par,null,null,cb);
 	} else if (rambase.conf.db.dialect=="mssql12")  {
-		//console.trace("rambase.conf.db.dialect:", rambase.conf.db.dialect);		
-		connect_and_produce_div_sub_mssql(req,ss,rambase,message,recursive,public_parameters,update,cb);		
+		connect_and_produce_div_sub_mssql(ss,par,null,null,cb);		
 	} else throw new Error("dialect code missing");
 			
 }
 
-function connect_and_produce_div_sub_fbsql(req,ss,rambase,message,recursive,public_parameters,update,cb)  {
-	console.log('\n\n SELECT NEW_CONTEXT_ID,info,RES,ScriptNamed FROM Z$RUN (\'' + message.session + '\',' + 
-	  message.cid + ',' + message.pkf + ',\'' + public_parameters + '\',\'' + update + 
-	  '\')');
-	console.log('\n\n SELECT * FROM Z$RUN_SUB (\'' + message.session + '\',' + 
-	  message.cid + ',' + message.pkf + ',\'' + update + 
-	  '\')\n');	  
 
-	console.log('starting Transaction :');
+function fb_read_blob(RES,cb)  {
+	if (typeof RES === "function") {	
+		var newdata = '';
+		RES(function(err, name, e) { //res as a blob stream
+			//console.log('RES as a function ');
+			if (err) throw err;
+			e.on('data', function(chunk) {
+				newdata = newdata + chunk;
+			});
+			e.on('end', function() {
+				//console.log('RES newdata: '+newdata);
+				cb(newdata);			
+			}); //on end
+		});	
+	}
+	else cb(RES);	//res as a field	
+}
+
+function timing(record,duration,dt,sessions ) {
+
+	//console.log('x timing ',duration,' count:', dt);
+	if (record.stamp==undefined) {
+		record.stamp=Date.now()-1;		
+	}
+	
+	if (Date.now()>record.stamp) {
+		
+		if (record.cnt!==undefined) {
+			if (record.cnt>0)  {
+				winston.info('timing ',{duration:duration , cnt:record.cnt , dt:record.dt,ave:Math.round(record.dt/record.cnt),sessions:sessions}); 
+				}
+		}
+		record.cnt=0;
+		record.dt=0;
+		record.stamp=Date.now() + duration;		
+	}
+	record.cnt++;
+	record.dt+=dt;
+	//console.log('timing z ',duration,' count:', record.cnt , ' time:', record.dt);
+}
+	
+function dataprocess(ss,par,newdata,cb) { //should only process after transaction.commit
+		//console.log('db - JSON LENGTH: ', newdata.length, '');
+		//console.log('db - JSON       :\n', newdata, '\n\n');
+
+		if (par.NEW_CONTEXT_ID!==0) 
+		   par.rambase.current_cid    = par.NEW_CONTEXT_ID;
+	   
+		//console.log('db - NOW_CID    :', par.rambase.current_cid);
+		par.rambase.current_script = par.SCRIPTNAMED;
+		//todo filter developers on some key value - so only a small subset of users can do live editing of source
+		db.developers[par.message.session] = par.SCRIPTNAMED;
+		var sessions_size = Object.keys(db.developers).length;
+		if (par.infos === 'logout') {
+			par.rambase.logged_out = true;
+			//console.log('db - logged_out message for :', rambase);
+		} else par.rambase.logged_out = false;   
+		
+		var dt=(Date.now()-par.queryStamp) ;
+		//console.log('db.developers.length :', sessions_size);
+		
+		timing(db.stats.ppm,60000,dt,sessions_size);
+
+		
+
+		console.log("========================Query_Time : "+dt);
+		if (cb) {
+			//console.log('db - fbsql data callback :',cb,newdata);
+			//console.log('db - fbsql data callback ');
+			cb(par.SCRIPTNAMED,newdata)
+		
+		} else {    
+			//console.log('db - fbsql data ss.publish :',newdata);
+			//console.log('db - fbsql data publish ');
+			if (ss.publish && ss.publish.socketId) {
+				//console.log('db - fbsql data publish A ');
+				ss.publish.socketId(par.req.socketId, 'newData', 'content', newdata);
+				ss.publish.socketId(par.req.socketId, 'switchPage', '#PAGE_2', '');
+				//console.log('db - fbsql data publish B ');
+				} else console.warn('=================================Data processing lost due to not having a connected socket ');
+		}
+									
+} //dataprocess
+
+
+
+
+function connect_and_produce_div_sub_fbsql(ss,par,ErrorText, err,cb)  {
+	//retries is called recursivly
+	if (ErrorText!=null) {
+		
+		if (err=='DEADLOCK') {
+			var str = '\n\n\n\nSET TERM ^ ;' + par.newdata  + '^\nSET TERM ; ^\n\n\n\n';
+			console.log(str);                                
+			fs.writeFileSync( path.resolve('output/runtime_exception.txt'), str );			
+		}
+		winston.warn('Z$RUN ',{ip:ip , url:req.url , inst:LoadedInstance,ErrorText:ErrorText,err:err,retry_count:par.retry_count,qry:par.QryDebug}); 
+				
+	}
+	if (par.retry_count>3) {//no more retries
+		//console.log('To many retries - aborting'); 
+	    return;
+	}
+	if (par.retry_count>1) {
+		//console.log('Retrying '+par.retry_count); 
+	}
+
+	par.retry_count+=1;
+	//console.log('starting Transaction :');
 	try {// does not seem to catch silent failing queries
-	rambase.db.startTransaction(//transaction(fb.ISOLATION_READ_COMMITED,
-		function (err, transaction) {
-			console.log('startTransaction fb err:', err);
+		par.rambase.db.startTransaction(//transaction(fb.ISOLATION_READ_COMMITED,
+		function (err, transaction) {		
 		if (err) {
-			error(err);
-			var source = {}; //filename,start_line,start_col,source};
-			parse_error(zx, err, source, line_obj);
-			console.log('Error starting transaction:', err);
-
+			//console.log('Error starting transaction :', err); 
+			connect_and_produce_div_sub_fbsql(ss,par,'Error starting transaction :', err,cb);				
 			return;
 		}
+		
+		par.QryDebug = 'SELECT NEW_CONTEXT_ID,info,RES,ScriptNamed FROM Z$RUN (\'' + par.message.session + '\',' + 
+		  par.message.cid + ',' + par.message.pkf + ',\'' + par.public_parameters + '\',\'' + par.update + 
+		  '\')';
+		console.log(par.QryDebug);  
+		console.log('SELECT * FROM Z$RUN_SUB (\'' + par.message.session + '\',' + 
+		  par.message.cid + ',' + par.message.pkf + ',\'' + par.update + 
+		  '\')\n');	  		
+		
 		//var qry = 'SELECT a.REF, a.SUBJECT,   a.NOTES AS RES, a.STAMP FROM MAIL a';
 		//var qry = "SELECT a.info,a.RES FROM SPTEST ('12345') a;";
 		var qry = 'SELECT NEW_CONTEXT_ID,info,RES,scriptnamed FROM Z$RUN (?,?,?,?,?)';
 		transaction.query(qry,
-			[message.session, message.cid, message.pkf, public_parameters, update],
+			[par.message.session, par.message.cid, par.message.pkf, par.public_parameters, par.update],
 			function (err, result) {
+				if (err) {
+					//console.log('error in transaction.query', err);
+					transaction.rollback(function (rollback_err) {
+						//retrying
+						connect_and_produce_div_sub_fbsql(ss,par,'Error query transaction :', err,cb);				
+						});//rollback
+				} else {
+					fb_read_blob(result[0].RES,function(newdata) {
+						//console.log('fb_read_blob ', newdata);
+						par.newdata = newdata;
+						transaction.commit(function (err) {	
+						    //console.timeEnd("========================DB QUERY");
+							if (err) {
+								//console.log('error in transaction.commit', err);
+								transaction.rollback(function (rollback_err) {
+									//retrying
+									connect_and_produce_div_sub_fbsql(ss,par,'Error commit transaction :', err,cb);				
+									});//rollback
+							} else {
+								//successful transaction, query and commit
+								//console.log('transaction.commited',result[0]);
+								par.SCRIPTNAMED = (result[0].SCRIPTNAMED||'').toString();
+								par.NEW_CONTEXT_ID = result[0].NEW_CONTEXT_ID;
+								par.infos=String(result[0].INFO||''); 	
+								//console.log('transaction B');
+								par.error_str = par.infos.substring(0,9);
+								par.error_code = par.infos.substring(10,20).trim();
+								//console.log('transaction D');
+								
+								//console.log('error_str:', par.error_str, ':   error_code:',par.error_code,':');
+								if ((par.error_str === 'exception')&&(par.error_code === '-913')) {
+									connect_and_produce_div_sub_fbsql(ss,par,'DEADLOCK in Query :','DEADLOCK',cb);													
+								}
+								else dataprocess(ss,par,newdata,cb); 						
+							} //else err
+						});//commit
+					});//fb_read_blob
+				}			
+			});//query
+		}); //startTransaction
+	} catch (err) {          
+        console.error("fbsql transaction.query err: ",err);//process.exit(2);
+	}
+}	
 
-            console.log('fbsql dbresult raw:', result);
-			if (err !== undefined || result===null || result.length<1 || result[0].scriptnamed===null) {
-				console.log('dberror:', err);
-				//console.log('dbresult on err: ',result );
-				//todo - show operator some kind of server error
-				transaction.rollback();
-			} else {
 
-            
-                if (!recursive && rambase.conf.run.monitor_mode === "jit" && result[0].scriptnamed) {
+/*
+addback >>
+                if (!recursive && rambase.conf.run.monitor_mode === "jit" && SCRIPTNAMED) {
                     if (result.length > 0) {
                         
-                        console.log('db -jit- ScriptNamed:', result[0].scriptnamed.toString());
-                        if (app_utils.check_children(result[0].scriptnamed))  {
-                            console.log('check_children fileobj changed :', result[0].scriptnamed);
+                        console.log('db -jit- ScriptNamed:', SCRIPTNAMED);
+                        if (app_utils.check_children(SCRIPTNAMED))  {
+                            console.log('check_children fileobj changed :', SCRIPTNAMED);
                             if (ss.publish && ss.publish.socketId)
                                 ss.publish.socketId(req.socketId, 'switchPage', '#PAGE_4', '');
                             transaction.rollback();
 
-                            app_utils.queue_compiler (result[0].scriptnamed,session,function (err) {
+                            app_utils.queue_compiler (SCRIPTNAMED,session,function (err) {
                                 //recursively resubmit the query
-                                console.log('app_utils.call_compiler callback on :',err, result[0].scriptnamed);
+                                console.log('app_utils.call_compiler callback on :',err, SCRIPTNAMED);
                                 exports.produce_div(req, res, ss, rambase, messages, session,1);
                                 
                             });   
@@ -142,132 +295,11 @@ function connect_and_produce_div_sub_fbsql(req,ss,rambase,message,recursive,publ
                     }
                     //process.exit(2);
                 }
-            
-				{ //block
-						if (result.length === 0) {
-							console.log('no database results'); //this could be use full for save only instructions that don't feedback
-							transaction.commit(function (err) {
-								if (err) {
-									console.log('error in transaction.commit with no database results ', err);
-									transaction.rollback();
-								}
-							//todo what must we tell the client? - for now just ignor		
-							});
-						}
-						else {
-							//if ((rambase.conf.run_mode=="dev")&&result[0].res)
-                            var infos=String(result[0].info);    
-							//console.log('dbresult infos:', infos, '');
-							if (infos === 'exception') {
-								var str = '\n\n\n\nSET TERM ^ ;' + result[0].res + '^\nSET TERM ; ^\n\n\n\n';
-								//write this to a audit
-								console.log(str);                                
-						        fs.writeFileSync( path.resolve('output/runtime_exception.txt'), str );
-								transaction.commit(function (err) {
-									if (err) {
-										console.log('error in transaction.commit', err);
-										transaction.rollback();
-									}		
-								});//commit
 
-							} else {
-								var SCRIPTNAMED = (result[0].SCRIPTNAMED||'').toString();
-								var NEW_CONTEXT_ID = result[0].NEW_CONTEXT_ID;
-								var newdata = result[0].res||'';
-                                console.log('db - ScriptNamed:', SCRIPTNAMED);
-                                console.log('db - NEW_CONTEXT_ID :', NEW_CONTEXT_ID);
-                                
-								function dataprocess() {
-										console.log('db - JSON LENGTH: ', newdata.length, '');
-										console.log('db - JSON       :\n', newdata, '\n\n');
-										
 
-										if (NEW_CONTEXT_ID!==0) 
-										   rambase.current_cid    = NEW_CONTEXT_ID;
-										console.log('db - NOW_CID    :', rambase.current_cid);
-										rambase.current_script = SCRIPTNAMED;
-										//todo filter developers on some key value - so only a small subset of users can do live editing of source
-										db.developers[message.session] = SCRIPTNAMED;
+*/
 
-										if (infos === 'logout') {
-											rambase.logged_out = true;
-											//console.log('db - logged_out message for :', rambase);
-										} else rambase.logged_out = false;   
 
-										//console.log('=================================rambase.current_cid> ',rambase.current_cid );
-										console.timeEnd("========================DB QUERY");
-										//console.log('db - cb fbsql     :',cb);
-
-										transaction.commit(function (err) {
-											if (err) {
-												console.log('error in transaction.commit', err);
-												transaction.rollback();
-											} else {
-												//console.log('transaction.commited :',newdata);
-												if (cb) {
-													//console.log('db - fbsql data callback :',cb,newdata);
-													cb(SCRIPTNAMED,newdata)
-												
-												} else {    
-													//console.log('db - fbsql data ss.publish :',newdata);
-													if (ss.publish && ss.publish.socketId) {
-													ss.publish.socketId(req.socketId, 'newData', 'content', newdata);
-													ss.publish.socketId(req.socketId, 'switchPage', '#PAGE_2', '');
-													} else console.warn('=================================Data processing lost due to not having a connected socket ');
-												}
-
-											
-											}//err
-										});//tr commit
-																			
-								} //function
-
-								// first row
-								if (result[0].res) {//res as a field
-									console.log('res as a field');
-									dataprocess();
-								} else						
-									result[0].RES(function(err, name, e) { //res as a blob stream
-									console.log('RES as a function ');
-
-									if (err)
-										throw err;
-
-									// +v0.2.4
-									// e.pipe(writeStream/Response);
-
-									// e === EventEmitter
-									e.on('data', function(chunk) {
-										// reading data
-										//console.log('db - RES chunk :',chunk);
-										newdata = newdata + chunk;
-										
-									});
-
-									e.on('end', function() {
-										dataprocess();
-										
-									}); //on end
-									//console.log('db - RES fnx :',e);
-								});	//res function							
-														
-								
-							}  //infos !== 'exception'
-						} //result.length
-					} //commit
-				}//block  //tr com
-			
-		}); //tr qry
-		
-
-	}); //tr	
-	
-		} catch (err) {          
-            console.error("fbsql transaction.query err: ",err);//process.exit(2);
-		}
-	
-	
-}	
 
 
 
@@ -277,7 +309,6 @@ function connect_and_produce_div_sub_mysql(req,ss,rambase,message,recursive,publ
 	console.log('\n\nCALL Z$RUN(\'' + message.session + '\',' + message.cid + ',' + message.pkf + ',\'\',\'' + update + '\')\n\n');
 	var query_str = 'CALL Z$RUN(?,?,?,?,?)';
 	//query_par = [message.session, message.cid, message.pkf, update];			
-		
 
 	console.log('starting Transaction :');
 	rambase.db.beginTransaction(function (err) {
@@ -285,7 +316,7 @@ function connect_and_produce_div_sub_mysql(req,ss,rambase,message,recursive,publ
 		if (err) {
 			error(err);
 			var source = {}; //filename,start_line,start_col,source};
-			parse_error(zx, err, source, line_obj);
+			parse_error(zx, err, source, line_obj);// TODO - parse_error is the wrong fn, - create new
 			console.log('Error starting transaction:', err);
 
 			return;
@@ -362,7 +393,7 @@ function connect_and_produce_div_sub_mysql(req,ss,rambase,message,recursive,publ
 
                                 
                                 //console.log('=================================rambase.current_cid> ',rambase.current_cid );
-                                console.timeEnd("========================DB QUERY");
+                                //console.timeEnd("========================DB QUERY");
 								console.log('db - cb -mysql      :',cb);
                                 if (cb) cb((result[0].scriptnamed||'').toString(),newdata)
                                 else {    
@@ -393,7 +424,7 @@ function connect_and_produce_div_sub_mssql(req,ss,rambase,message,recursive,publ
 		if (err) {
 			error(err);
 			var source = {}; //filename,start_line,start_col,source};
-			parse_error(zx, err, source, line_obj);
+			parse_error(zx, err, source, line_obj);// TODO - parse_error is the wrong fn, - create new
 			console.log('Error starting transaction:', err);
 
 			return;
@@ -412,7 +443,7 @@ function connect_and_produce_div_sub_mssql(req,ss,rambase,message,recursive,publ
 					if (err) {
 						error(err);
 						var source = {}; //filename,start_line,start_col,source};
-						parse_error(zx, err, source, line_obj);
+						parse_error(zx, err, source, line_obj);// TODO - parse_error is the wrong fn, - create new
 						console.log('Error commitTransaction:', err);
 
 						return;
@@ -513,7 +544,7 @@ function connect_and_produce_div_sub_mssql(req,ss,rambase,message,recursive,publ
 
 exports.push_passed_params = function (rambase,messagelist) {
 //	var message = [];
-         console.log('push_passed_params params 183135 :',rambase.params);            
+        //console.log('push_passed_params params 183135 :',rambase.params);            
         app_utils.forFields(rambase.params, function (field, key) {  
             if (key !== 'object_ended_at') {        
             
@@ -523,7 +554,7 @@ exports.push_passed_params = function (rambase,messagelist) {
 					valu: '' + field
                     };	
                messagelist.push(message);  
-               console.log('params 183135 :',key,field);
+               //console.log('params 183135 :',key,field);
             }
         
         });
@@ -544,7 +575,7 @@ exports.facebook_check = function (rambase,Login_response,response,cb) {
 		if (err) {
 			error(err);
 			var source = {}; 
-			parse_error(zx, err, source, line_obj);
+			parse_error(zx, err, source, line_obj);// TODO - parse_error is the wrong fn, - create new
 			console.log('Error starting transaction:', err);
 
 			return;
@@ -772,7 +803,7 @@ exports.actions = function (req, res, ss) {
 				//console.log("message done:", message);
 
 
-				console.log('NavSubmit is', message);
+				//console.log('NavSubmit is', message);
 				exports.produce_div(req, res, ss, rambase, message, LoadedInstance);
                 });
 
