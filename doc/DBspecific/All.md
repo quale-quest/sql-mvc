@@ -104,6 +104,29 @@ node server/compiler/compile.js file /home/xie01/sql/sql-mvc/Quale/Standard/Home
 node server/compiler/compile.js deltafile /tmp/file-monitor-delta.txt
 
 
+## Transactions, deadlocks, ACID and concurrent CRUD
+
+	Short transactions  minimise deadlocks,
+	Good design eliminates deadlocks,
+	
+	Quale transactions are short lived, and furter many of the helper functions like context variables are designed to be deadlock safe.
+	
+	However it is important to not follow anti-paterns.
+	
+	Upsert in a single place with a single user is cool. Upsert on common data is not.
+	Always make sure users will be working on seperate parts of the data.
+	
+	
+	Pub/sub concurrency - a future feature that will sit outside of the databse but will make use of pub/sub to manage concurrent user updates to records that may want record locking.
+			"Another user [has already started|has just now started| wants to start] editing this record"
+	
+	
+	
+	
+	
+	
+	
+	
 
 ## TODO
 

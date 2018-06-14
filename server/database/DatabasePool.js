@@ -83,7 +83,8 @@ var maintenance_timer = setInterval(function () {
                         
                     } else {
                         console.log('maintenance_timer...: Detaching :',key);
-                        c.db.detach();
+                        if (c.db.detach) c.db.detach(); //fb/mysql
+						if (c.db.release) c.db.release(); //mssql
                         c.db =null;
                         console.log('maintenance_timer...: Done Detaching :',key);
                     }
@@ -302,8 +303,11 @@ exports.check_run_mode = function (config) {
 }
 
 
+
+
 exports.databasePooled = function (root_folder, LoadedInstance, Application, callback) {
 	//util.log('db connections json 164959 :'+util.inspect(exports.connections));
+	//console.trace('MSSQL databasePooled  ');
 	if (exports.connections[LoadedInstance] !== undefined) {
 		//console.log("database connection cached from : ", LoadedInstance);
 		if (callback !== undefined)
@@ -326,76 +330,67 @@ exports.databasePooled = function (root_folder, LoadedInstance, Application, cal
 
 		//console.log("\n\n============================: ",JSON.stringify(rambase.conf.db.dialect, null, 4) );
 		if (rambase.conf.db.dialect=="mssql12")  {
-			db_req.mssql = require('tedious');
-						
-			//var Connection = require('tedious').Connection;
-			//var Request = require('tedious').Request;
-			//var TYPES = require('tedious').TYPES;
-			
-			rambase.user = conf.db.username;
-			rambase.password = conf.db.password;		
-			rambase.user_table = conf.db.user_table;
-			rambase.pk = conf.pk;	
+			if (db_req.msConnectionPool==undefined) {
+				db_req.msConnectionPool = require('tedious-connection-pool');
+				db_req.msRequest = require('tedious').Request;
 
-			var config = {
-			  userName: rambase.user, 
-			  password: rambase.password,
-			  server: 'localhost',
-			  options: {
-				  database: rambase.database
-			  }
-			}
-			
-			
-			
-			rambase.db = new db_req.mssql.Connection(config);
-			rambase.Request = db_req.mssql.Request;
-			// Attempt to connect and execute queries if connection goes through
-			rambase.db.on('connect', function(err) {
-			  if (err) {
-				console.log('MSSQL Failed to Connect! ',err);
-			  } else {
-				console.log('MSSQL Connected!');
 				
-				var Req = new rambase.Request('SELECT @@VERSION;', function (err, rowCount, rows) {
-					if (err) throw err;
+				rambase.user = conf.db.username;
+				rambase.password = conf.db.password;		
+				rambase.user_table = conf.db.user_table;
+				rambase.pk = conf.pk;	
 
-					console.log("MSSQL info :",rowCount,rows);
-					
-					rambase.LoadedInstance = LoadedInstance;
-					rambase.ready = true;
-					rambase.last_connect_stamp = Date.now();
-					exports.connections[LoadedInstance] = rambase;
-					
-					if (callback !== undefined)
-						callback(null, "Connected", exports.connections[LoadedInstance]);			  			  					
+				var config = {
+				  userName: rambase.user, 
+				  password: rambase.password,
+				  server: 'localhost',
+				  options: {
+					  database: rambase.database
+				  }
+				}
 
-			
-						
+				var poolConfig = {
+					min: 10,
+					max: 50,
+					log: true,
+					idleTimeout : 300000
+				};
+
+				//create the pool
+				//console.log('MSSQL create the pool');
+				db_req.mspool = new db_req.msConnectionPool(poolConfig, config);
+				
+				db_req.mspool.on('error', function(err) {
+					console.error('db_req.mspool err : ',err);
 				});
-							
-				// Print the rows read
-				
-				var result = "";
-				Req.on('row', function(columns) {
-					columns.forEach(function(column) {
-						if (column.value === null) {
-							console.log('NULL');
-						} else {
-							result += 'col : ' + column.value + " ";
-						}
-					});
-					console.log('MSSQL row',result);
-					result = "";
-				});
-				
+					
+			}		
+		
+			//rambase.db = new db_req.mssql.Connection(config);
+			db_req.mspool.acquire(function (err, pool_connection) {
+					if (err) {
+						console.log('MSSQL Failed to acquire! ',err);
+					} else {				
+						//console.trace('MSSQL mspool.acquire  ');
+						rambase.db = pool_connection;
+						rambase.Request = db_req.msRequest;
+						// Attempt to connect and execute queries if connection goes through
+						
 
-				// Execute SQL statement
-				rambase.db.execSql(Req);				
-				
-			  }
-			});
-			
+						//console.log('MSSQL Connected!');
+						
+						rambase.LoadedInstance = LoadedInstance;
+						rambase.ready = true;
+						rambase.last_connect_stamp = Date.now();
+						exports.connections[LoadedInstance] = rambase;
+						
+						if (callback !== undefined)
+							callback(null, "Connected", exports.connections[LoadedInstance]);			  			  					
+
+					}
+					
+				});//acquire
+	
 			
 			 
 		} else {

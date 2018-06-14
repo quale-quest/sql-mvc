@@ -251,7 +251,7 @@ var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx,
 		if (tcx.implied_pk_name !== '')
 			tcx.query = tcx.query.replace(tcx.implied_pk_name, 'INSERT_REF');
 
-		
+		//console.log('autoinsert_internal ??? :',tcx.query);
 		if (zx.fb25||zx.mssql12) {
 			//only 1 record on a insert
 			var pat = /select\s+first\s+\d+/i;
@@ -269,7 +269,7 @@ var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx,
 
 
 	}
-
+	//o.q.query = tcx.query;
 };
 
 var formulatemodel = exports.formulatemodel = function (zx, cx, o) {
@@ -293,12 +293,13 @@ var formulatemodel = exports.formulatemodel = function (zx, cx, o) {
 	//	formulatemodel_ini(zx, cx, tcx, o);
 	//else
 	formulatemodel_quale(zx, cx, tcx, o);
-
+    //console.log("\r\ncx.query:"+tcx.query);
 	cx.fields = tcx.fields;
 	cx.query = zx.dbu.sql_make_compatable(zx,tcx.query);
+	//console.log("\r\ncx.query B:"+tcx.query);
 
 	//zx.dbg.emit_comment(zx,"cx.query:"+cx.query);
-	//console.log("\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\ncx.query:"+cx.query);
+	//console.log("\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\ncx.query:"+tcx.query);
 
 	//map widget fields to real fields
 	try {
@@ -341,7 +342,7 @@ var formulatemodel = exports.formulatemodel = function (zx, cx, o) {
 		});
 	});
 
-	//console.log('done formulatemodel:',tcx);
+	//console.log('done formulatemodel:',tcx.query);
 
 	//attach to field widgits
 	//tcx.fields.forEach(function (r) {r.cf.forEach(function (r) {}); });
@@ -383,11 +384,13 @@ var exec_query = function (zx, o, QueryType) {
 
 	try {
 		formulatemodel(zx, cx, o);
+		//console.log('autoinsert_internal 386 :',cx.query);
+		//console.log('formulatemodel:');
 	} catch (e) {
 		zx.error.caught_exception(zx, e, " exec_query -114812, formulatemodel ");
 		throw new Error("local known error");
 	}
-	//console.log('generatetable call:',QueryType);
+	console.log('generatetable call:',QueryType);
 	if (QueryType === "Table") {
 		try {
 			var tabletext = generatetable(zx, cx, o);

@@ -546,16 +546,17 @@ var CREATE_TABLE = function (zx, qrystr) {
 			} else if (zx.mysql57){
 				throw new Error("todo update dialect code ");
 				field = defs[1] + " " + defs[2]	+ (NOT_NULL?" NOT NULL":"") 
-						+ (Unique?" UNIQUE":"") 
+						//+ (Unique?" UNIQUE":"") 
 						+ (AUTO_INCREMENT?" AUTO_INCREMENT":"")  
 						+ (PRIMARY_KEY?(" PRIMARY KEY "):"")
 						+ (default_value?(" DEFAULT "+default_value):"")
 						;				
+				if (Unique) bottom_of_create +=  '\r\n    UNIQUE('+defs[1]+')';
+				TODO
 			} else if (zx.mssql12){	
-			    throw new Error("todo update dialect code ");
 				field = defs[1] + " " + defs[2]	+ (NOT_NULL?" NOT NULL":"") 
 						+ (Unique?" UNIQUE":"") 
-						+ (AUTO_INCREMENT?" AUTO_INCREMENT":"")  
+						+ (AUTO_INCREMENT?"  IDENTITY(1,1) ":"")  
 						+ (PRIMARY_KEY?(" PRIMARY KEY "):"")
 						+ (default_value?(" DEFAULT "+default_value):"")
 						;			

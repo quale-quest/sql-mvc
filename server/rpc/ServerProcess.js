@@ -16,7 +16,9 @@ var fs = require('fs');
 var path = require('path');
 var winston = require('winston');
 
-const TYPES = require('tedious').TYPES;
+const msTYPES = require('tedious').TYPES;
+const msISOLATION_LEVEL = require('tedious').ISOLATION_LEVEL;
+var msConnectionPool = require('tedious-connection-pool');
 
 exports.produce_div = function (req, res, ss, rambase, messages, session,recursive,cb) {    
     
@@ -152,8 +154,6 @@ function dataprocess(ss,par,newdata,cb) { //should only process after transactio
 		} else par.rambase.logged_out = false;   
 		
 		var dt=(Date.now()-par.queryStamp) ;
-		//console.log('db.developers.length :', sessions_size);
-		
 		timing(db.stats.ppm,60000,dt,sessions_size);
 
 		
@@ -302,11 +302,11 @@ addback >>
 
 
 
-
-function connect_and_produce_div_sub_mysql(req,ss,rambase,message,recursive,public_parameters,update,cb)  {
+function connect_and_produce_div_sub_mysql(ss,par,ErrorText, err,cb)  {
+//function connect_and_produce_div_sub_mysql(req,ss,rambase,message,recursive,public_parameters,update,cb)  {
 	
 	console.log("connect_and_produce_div_sub_mysql:");
-	console.log('\n\nCALL Z$RUN(\'' + message.session + '\',' + message.cid + ',' + message.pkf + ',\'\',\'' + update + '\')\n\n');
+	console.log('\n\nCALL Z$RUN(\'' + message.session + '\',' + message.cid + ',' + message.pkf + ',\'\',\'' + par.update + '\')\n\n');
 	var query_str = 'CALL Z$RUN(?,?,?,?,?)';
 	//query_par = [message.session, message.cid, message.pkf, update];			
 
@@ -324,7 +324,7 @@ function connect_and_produce_div_sub_mysql(req,ss,rambase,message,recursive,publ
 		console.log('rambase.db.queryx:');
 		console.log('rambase.db.query:', query_str);
 		rambase.db.query(query_str,
-			[message.session, message.cid, message.pkf,'', update],
+			[message.session, message.cid, message.pkf,'', par.update],
 			function (err, result_x,fields) {
 			console.log('mysql dbresult raw:', result_x[0][0]);//.res);
 			var result = [{}];
@@ -413,50 +413,63 @@ function connect_and_produce_div_sub_mysql(req,ss,rambase,message,recursive,publ
 }	
 
 
-function connect_and_produce_div_sub_mssql(req,ss,rambase,message,recursive,public_parameters,update,cb)  {
+
+function connect_and_produce_div_sub_mssql(ss,par,ErrorText, err,cb)  {
+//function connect_and_produce_div_sub_mssql(req,ss,rambase,message,recursive,public_parameters,update,cb)  {
 	
 	console.log("connect_and_produce_div_sub_mssql:");
 	var scriptnamed="", newdata="";
 
-	console.log('starting Transaction mssql:');
-	rambase.db.beginTransaction(function (err) {
-			console.log('startTransaction mssql  err:', err);
+	console.log("\r\n\r\n-----------------------------------------------------------");
+	console.log('starting Transaction mssql:','['+new Date().toISOString().slice(11,-5)+']');
+	par.rambase.db.beginTransaction(function (err) {
+		console.log('startTransaction mssql  err:', err);
 		if (err) {
-			error(err);
-			var source = {}; //filename,start_line,start_col,source};
-			parse_error(zx, err, source, line_obj);// TODO - parse_error is the wrong fn, - create new
+			//error(err);
+			//var source = {}; //filename,start_line,start_col,source};
+			//parse_error(zx, err, source, line_obj);// TODO - parse_error is the wrong fn, - create new
 			console.log('Error starting transaction:', err);
-
+			winston.warn('Error beginTransaction ',{err:err}); 
+			process.exit(2);
 			return;
 		}
 		
 		try {		
 			var result = [];
 			console.log(' rambase.db.Request ...:');		
-			var request = new rambase.Request('Z$RUN', function(err, rowCount) {
+			var request = new par.rambase.Request('Z$RUN', function(err, rowCount) {
 		
-				console.log('rambase.Request err:',err);
+				if (err) {
+					console.log('rambase.Request err:',err);
+					winston.warn('rambase.db.Request ',{err:err}); 
+					}
 				
 				
-				rambase.db.commitTransaction(function (err) {
+				par.rambase.db.commitTransaction(function (err) {
 						console.log('startTransaction mssql  err:', err);
 					if (err) {
-						error(err);
-						var source = {}; //filename,start_line,start_col,source};
-						parse_error(zx, err, source, line_obj);// TODO - parse_error is the wrong fn, - create new
+						//error(err);
+						//var source = {}; //filename,start_line,start_col,source};
+						//parse_error(zx, err, source, line_obj);// TODO - parse_error is the wrong fn, - create new
 						console.log('Error commitTransaction:', err);
+						winston.warn('Error commitTransaction ',{err:err}); 
 
 						return;
 					}
+								
+					db.developers[par.message.session] = scriptnamed;
+					var sessions_size = Object.keys(db.developers).length;					
 					
-					
+					var dt=(Date.now()-par.queryStamp) ;
+					timing(db.stats.ppm,60000,dt,sessions_size);
+
 					
 								console.log('db - cb -mssql      :',cb);
                                 if (cb) cb((scriptnamed||'').toString(),newdata)
                                 else {    
                                     if (ss.publish && ss.publish.socketId) {
-                                    ss.publish.socketId(req.socketId, 'newData', 'content', newdata);
-                                    ss.publish.socketId(req.socketId, 'switchPage', '#PAGE_2', '');
+                                    ss.publish.socketId(par.req.socketId, 'newData', 'content', newdata);
+                                    ss.publish.socketId(par.req.socketId, 'switchPage', '#PAGE_2', '');
                                     } else console.warn('=================================Data processing lost due to not having a connected socket ');
                                 }					
 					
@@ -486,21 +499,21 @@ function connect_and_produce_div_sub_mssql(req,ss,rambase,message,recursive,publ
 			  
 			request.on('returnValue', function(parameterName, value, metadata) {
 				console.log('mssql returnValue:' + parameterName + ' = ' + value); 
-				if (parameterName=='ScriptNamed') {scriptnamed=value;}				
+				if (parameterName=='ScriptNamed') {scriptnamed=value||'';}				
 				if (parameterName=='res') {newdata=value;  }				
 			  });
 			  
 		
 			console.log('request.addParameter ...:');
-			request.addParameter('SESSIONID', TYPES.VarChar, message.session);
-			request.addParameter('PRIOR_CONTEXT_ID', TYPES.Int, message.cid);
-			request.addParameter('PRIOR_ITEM_ID', TYPES.Int, message.pkf );  
-			request.addParameter('PUBLIC_PARAMETERS', TYPES.VarChar,'' );  
-			request.addParameter('UPDATES', TYPES.VarChar, update);
-		    request.addOutputParameter('NEW_CONTEXT_ID', TYPES.Int);
-			request.addOutputParameter('info', TYPES.VarChar);
-			request.addOutputParameter('res', TYPES.VarChar);
-			request.addOutputParameter('ScriptNamed', TYPES.VarChar);
+			request.addParameter('SESSIONID', msTYPES.VarChar, par.message.session);
+			request.addParameter('PRIOR_CONTEXT_ID', msTYPES.Int, par.message.cid);
+			request.addParameter('PRIOR_ITEM_ID', msTYPES.Int, par.message.pkf );  
+			request.addParameter('PUBLIC_PARAMETERS', msTYPES.VarChar,par.message.public_parameters );  
+			request.addParameter('UPDATES', msTYPES.VarChar, par.update);
+		    request.addOutputParameter('NEW_CONTEXT_ID', msTYPES.Int);
+			request.addOutputParameter('info', msTYPES.VarChar);
+			request.addOutputParameter('res', msTYPES.VarChar);
+			request.addOutputParameter('ScriptNamed', msTYPES.VarChar);
 		  
 			console.log('request.callProcedure ...:');  
 			
@@ -517,8 +530,8 @@ function connect_and_produce_div_sub_mssql(req,ss,rambase,message,recursive,publ
 			console.log('declare @IN_CID Integer;');
 			console.log('declare @IN_PKREF Integer;	');		
 			
-			console.log('EXEC Z$RUN \''+message.session+'\', '+message.cid+','+message.pkf+',\'\', \''+update+'\',@lCIDRETURN output,  @lINFO output, @res output, @lCURRENTPAGE output');
-			console.log('-- EXEC Z$RUN_SUB \''+message.session+'\', '+message.cid+','+message.pkf+',  \''+update+'\',@lINFO output,  @ScriptNamed output, @page_params output, @IN_CID output, @IN_PKREF output');
+			console.log('EXEC Z$RUN \''+par.message.session+'\', '+par.message.cid+','+par.message.pkf+',\'\', \''+par.update+'\',@lCIDRETURN output,  @lINFO output, @res output, @lCURRENTPAGE output');
+			console.log('-- EXEC Z$RUN_SUB \''+par.message.session+'\', '+par.message.cid+','+par.message.pkf+',  \''+par.update+'\',@lINFO output,  @ScriptNamed output, @page_params output, @IN_CID output, @IN_PKREF output');
 			console.log('select  @lCIDRETURN as lCIDRETURN,  @lINFO as  lINFO, @res as res, @lCURRENTPAGE as lCURRENTPAGE');
 			console.log('select  @lINFO as lINFO,  @ScriptNamed as ScriptNamed, @page_params as page_params, @IN_CID as IN_CID, @IN_PKREF as IN_PKREF');
 			console.log('select @lCIDRETURN,@lINFO ,@res,@lCURRENTPAGE as pki');
@@ -527,7 +540,7 @@ function connect_and_produce_div_sub_mssql(req,ss,rambase,message,recursive,publ
 			console.log('\r\n\r\n');
 
 			
-			rambase.db.callProcedure(request);		
+			par.rambase.db.callProcedure(request);		
 				
 		} catch (e) {
 			console.log("Threw error in callProcedure :" ,e,"\r\n",JSON.stringify(e));				
@@ -537,7 +550,10 @@ function connect_and_produce_div_sub_mssql(req,ss,rambase,message,recursive,publ
 		
 		
 		
-	}); //tr	
+	},
+	"",
+	msISOLATION_LEVEL.READ_COMMITTED  //READ_UNCOMMITTED / READ_COMMITTED / REPEATABLE_READ /SERIALIZABLE / SNAPSHOT  - (default: READ_COMMITED).
+	); //tr	
 }	
 
 

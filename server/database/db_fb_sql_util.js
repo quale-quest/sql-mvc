@@ -20,7 +20,7 @@ var deasync_const=5;
 
 var connection = {};
 var deepcopy = require('deepcopy');
- var TYPES = require('tedious').TYPES;
+var TYPES = require('tedious').TYPES;
 
 var parse_error = function (zx, err, source, script) {
 	//console.log('\n\n\n\n\n\n\nparse_error a :');
@@ -464,11 +464,10 @@ exports.write_script = function (zx, real, spi, name, mtHash, script, code) {
 			exports.fetch_query_result(zx, connection, "Error in creating real SP :", compoundscript,[],0,undefined);
 			//console.log('create_script_async done :',FN_HASH );
 			
-			throw new Error("dialect code missing");	//following code is the fb version, it needs to be updated to mysql
 			if (spi !== null)
 				return spi;
 			else
-				return exports.singleton(zx, "PK", "select PK from z$SP where FILE_NAME='" + name + "'");		
+				return exports.singleton(zx, "PK", "select PK from z$SP where FILE_NAME='" + name + "'",1);		
 			
 		}
     } else throw new Error("dialect code missing");		                         
@@ -738,23 +737,25 @@ exports.sql_make_compatable_final_pass = function (zx,qrystr) {	//only on final 
 }
 
 
-//const zxxx = require('../compiler/zx.js');
+
 exports.sql_make_compatable = function (zx,qrystr) {	
 /* Take common sql syntax used by many engines and convert it to the current engine
 */
+//console.log('>>>>>>>>>>>>>>>sql_make_compatable ',qrystr);
 var params;
 var instr='';
 //process.exit(2);
 //simple convertions
 	
-	if (zx.fb25||zx.mysql57||zx.mssql12) {
-		qrystr = exports.sql_make_compatable_final_pass(zx,qrystr);
-	} else throw new Error("dialect code missing");
+//	if (zx.fb25||zx.mysql57||zx.mssql12) {
+//		qrystr = exports.sql_make_compatable_final_pass(zx,qrystr);
+//	} else throw new Error("dialect code missing");
 
 
 //more complex convertions
 	while (instr!=qrystr) {
 		instr=qrystr;
+		qrystr = exports.sql_make_compatable_final_pass(zx,qrystr);
 		
 		if (params=qrystr.match(/(\w+)\s+containing\s+'([^']*)'/i)) {
 			if (zx.fb25) { 
@@ -794,15 +795,37 @@ var instr='';
 		}	
 		
 		
-		if (params=qrystr.match(/substring\s*\((\S+)\s+from\s+(\S+)\s+for\s+(\S+)\s*\)/i)) {
+		
+		if (params=qrystr.match(  /substring\s*\(/i  )) {
 			if (zx.fb25) { 
 			} else if (zx.mysql57) {				
 			} else if (zx.mssql12) {		
-				//params=qrystr.match(/substring\s+\((\S+)\s+from\s+(\S+)\s+for\s+(\S+)/i)			
-				params=qrystr.match(/substring\s*\((\S+)\s+from\s+(\S+)\s+for\s+(\S+)\s*\)/i);
-				var inj = "substring(" + params[1] + "," + params[2] + "," +  params[3] + ")" ;
-			    //console.log('substring(name from 1 for 8): ',params,inj);
-				qrystr=qrystr.replace(params[0], inj) ;				
+
+				
+				var l = params[0].length+params.index-1 ;
+				var p = zx.GetClosingBracket(qrystr,l);
+				
+				var xx='';
+				//console.log(' substring a   : ',qrystr ,params );
+
+				var in_side_brackets = qrystr.slice(l+1, p);
+				//console.log(' substring in_side_brackets      : ',in_side_brackets);
+				var done_in_side_brackets=exports.sql_make_compatable(zx,in_side_brackets);
+				//console.log(' substring done_in_side_brackets : ',done_in_side_brackets);
+				var fromto=done_in_side_brackets.match(/from\s+([0-9]+)\s+for\s+([0-9]+)$/i);
+				if (fromto) {
+					var _from = fromto[1];
+					var _to   = fromto[2];
+					xx=done_in_side_brackets.replace(fromto[0], ','+_from+','+_to) ;	
+					//console.log(' substring fromto : ',fromto);
+					//console.log(' substring done_in_side_brackets : ',done_in_side_brackets);
+					//console.log(' substring done_in_side_bracketsx: ',xx);
+					//console.log(' substring a00 : >'+qrystr.slice(0, l+1)+'<');
+					//console.log(' substring a01 : >'+qrystr.slice(l+1, p)+'<');
+					//console.log(' substring a02 : >'+qrystr.slice(p)+'<');					
+					qrystr = qrystr.slice(0, l+1) + xx + qrystr.slice(p);
+					//console.log(' substring a09 : >'+qrystr+'<');					
+				}
 			} else throw new Error("dialect code missing");
 		}		
 		
@@ -820,6 +843,8 @@ var instr='';
 			} else throw new Error("dialect code missing");
 		}		
 	}
+	
+    //console.log('<<<<<<<<<<<<<<<sql_make_compatable ',qrystr);	
 	return qrystr;
 }
 
@@ -840,10 +865,14 @@ exports.sql_make_compatable_TestOne = function (zx,desc,qrystr,resultstr) {
 }	
 
 exports.sql_make_compatable_TestX = function (desc,qrystr,fbstr,mystr,msstr) {
+	const zxxx = require('../compiler/zx.js');
 	var zxfb = {conf:{db:{dialect:"fb25"   }},fb25:1,mysql57:0,mssql12:0};
 	var zxmy = {conf:{db:{dialect:"mysql57"}},fb25:0,mysql57:1,mssql12:0};
 	var zxms = {conf:{db:{dialect:"mssql12"}},fb25:0,mysql57:0,mssql12:1};
 	var errors=0;
+	zxfb.GetClosingBracket = zxxx.GetClosingBracket ;
+	zxmy.GetClosingBracket = zxxx.GetClosingBracket ;
+	zxms.GetClosingBracket = zxxx.GetClosingBracket ;
 	errors+=exports.sql_make_compatable_TestOne(zxfb,desc,qrystr,fbstr);
 	errors+=exports.sql_make_compatable_TestOne(zxmy,desc,qrystr,mystr);
 	errors+=exports.sql_make_compatable_TestOne(zxms,desc,qrystr,msstr);
@@ -873,32 +902,36 @@ exports.sql_make_compatable_test = function () {
 			"Select STRING_AGG( NAME) From GALLERY");
 */
 	
-	errors+=exports.sql_make_compatable_TestX("list",
+	errors+=exports.sql_make_compatable_TestX("listA",
 			"Select List( xxx(name,')',1,8)) From GALLERY",
 			"Select List( xxx(name,')',1,8)) From GALLERY",
 			"Select GROUP_CONCAT(  xxx(name,')',1,8)) From GALLERY",
 			"Select STRING_AGG(   xxx(name,')',1,8),','  ) From GALLERY"   );
 
+
+	
+
+	errors+=exports.sql_make_compatable_TestX("substring",
+			"substring(name from 1 for 8)",
+			"substring(name from 1 for 8)",
+			"substring(name from 1 for 8)",
+			"substring(name ,1,8)");			
 			
-	errors+=exports.sql_make_compatable_TestX("list",
+	errors+=exports.sql_make_compatable_TestX("list of substring",
 			"Count(*,','  ), List(  substring(name,1,8))",
 			"Count(*,','  ), List(  substring(name,1,8))",
 			"Count(*,','  ), GROUP_CONCAT(   substring(name,1,8))",
 			"Count(*,','  ), STRING_AGG(    substring(name,1,8),','  )"   );
 
 			
- 
-
-
-
 			
-	errors+=exports.sql_make_compatable_TestX("substring",
-			"substring(name from 1 for 8)",
-			"substring(name from 1 for 8)",
-			"substring(name from 1 for 8)",
-			"substring(name,1,8)");
+	errors+=exports.sql_make_compatable_TestX("substring of list of substring",
+			"substring(list(substring(name from 1 for 8)) from 1 for 198)",
+			"substring(list(substring(name from 1 for 8)) from 1 for 198)",
+			"substring(list(substring(name from 1 for 8)) from 1 for 198)",
+			"substring(STRING_AGG(  substring(name ,1,8),','  ) ,1,198)");	
 	
-	
+
 	
 	//errors+=1;
 	if (errors>0){
