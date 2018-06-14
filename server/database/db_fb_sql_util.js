@@ -433,8 +433,6 @@ exports.write_script = function (zx, real, spi, name, mtHash, script, code) {
 			//console.log('create_script_async done :',FN_HASH );
 				
 		}
-		
-		throw new Error("dialect code missing");	//following code is the fb version, it needs to be updated to mysql
 		if (spi !== null)
 			return spi;
 		else
@@ -467,7 +465,7 @@ exports.write_script = function (zx, real, spi, name, mtHash, script, code) {
 			if (spi !== null)
 				return spi;
 			else
-				return exports.singleton(zx, "PK", "select PK from z$SP where FILE_NAME='" + name + "'",1);		
+				return exports.singleton(zx, "PK", "select PK from z$SP where FILE_NAME='" + name + "'",0);		
 			
 		}
     } else throw new Error("dialect code missing");		                         
@@ -831,15 +829,22 @@ var instr='';
 		
 		if (params=qrystr.match(/list\s*\(/i)) {
 			if (zx.fb25) { 
-			} else if (zx.mysql57) {
-			    qrystr = qrystr.replace(/\slist\s*\(/gi, " GROUP_CONCAT( ");	//fb to mysql	
+			} else if (zx.mysql57) {				
+				var m = qrystr.match(/(.*)([\s(])(list\s*\()(.*)/i);
+				if (m) {
+					//console.log('list GROUP_CONCAT A: ',m);
+					//console.log('list GROUP_CONCAT D: ',qrystr.substring(0,m.index));
+					qrystr = qrystr.substring(0,m.index) + m[1]+ m[2]+"GROUP_CONCAT("+m[4];	//fb to mysql	
+					//console.trace('list GROUP_CONCAT F: ',qrystr);
+				}
 			} else if (zx.mssql12) {		
 				var l = params[0].length+params.index-1;
 				var p = zx.GetClosingBracket(qrystr,l);
 				//console.log('list GROUP_CONCAT a : ',qrystr ,params , " sl:>",qrystr.slice(l, p)+"<");
 				qrystr = qrystr.slice(0, p) + ",','  " + qrystr.slice(p);
 			    //console.log('list GROUP_CONCAT: ',l,' qry',qrystr);
-				qrystr=qrystr.replace(params[0], 'STRING_AGG(  ') ;							
+				qrystr=qrystr.replace(params[0], 'STRING_AGG(  ') ;	
+				
 			} else throw new Error("dialect code missing");
 		}		
 	}
@@ -905,11 +910,8 @@ exports.sql_make_compatable_test = function () {
 	errors+=exports.sql_make_compatable_TestX("listA",
 			"Select List( xxx(name,')',1,8)) From GALLERY",
 			"Select List( xxx(name,')',1,8)) From GALLERY",
-			"Select GROUP_CONCAT(  xxx(name,')',1,8)) From GALLERY",
+			"Select GROUP_CONCAT( xxx(name,')',1,8)) From GALLERY",
 			"Select STRING_AGG(   xxx(name,')',1,8),','  ) From GALLERY"   );
-
-
-	
 
 	errors+=exports.sql_make_compatable_TestX("substring",
 			"substring(name from 1 for 8)",
@@ -920,16 +922,14 @@ exports.sql_make_compatable_test = function () {
 	errors+=exports.sql_make_compatable_TestX("list of substring",
 			"Count(*,','  ), List(  substring(name,1,8))",
 			"Count(*,','  ), List(  substring(name,1,8))",
-			"Count(*,','  ), GROUP_CONCAT(   substring(name,1,8))",
+			"Count(*,','  ), GROUP_CONCAT(  substring(name,1,8))",
 			"Count(*,','  ), STRING_AGG(    substring(name,1,8),','  )"   );
-
-			
 			
 	errors+=exports.sql_make_compatable_TestX("substring of list of substring",
-			"substring(list(substring(name from 1 for 8)) from 1 for 198)",
-			"substring(list(substring(name from 1 for 8)) from 1 for 198)",
-			"substring(list(substring(name from 1 for 8)) from 1 for 198)",
-			"substring(STRING_AGG(  substring(name ,1,8),','  ) ,1,198)");	
+			"count,substring(list(substring(name from 1 for 8)) from 1 for 198) from",
+			"count,substring(list(substring(name from 1 for 8)) from 1 for 198) from",
+			"count,substring(GROUP_CONCAT(substring(name from 1 for 8)) from 1 for 198) from",
+			"count,substring(STRING_AGG(  substring(name ,1,8),','  ) ,1,198) from");	
 	
 
 	

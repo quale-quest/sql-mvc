@@ -252,22 +252,22 @@ var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx,
 			tcx.query = tcx.query.replace(tcx.implied_pk_name, 'INSERT_REF');
 
 		//console.log('autoinsert_internal ??? :',tcx.query);
+		var pat = /select\s+first\s+\d+/i;
+		if (tcx.query.search(pat) < 0) pat = /select\s/i;
+		var FirstFirst="";
+		var LastFirst="";
+		
 		if (zx.fb25||zx.mssql12) {
-			//only 1 record on a insert
-			var pat = /select\s+first\s+\d+/i;
-			var keyword="select " + zx.dbu.sqltype(zx,"first "," ","top ") + cx.table.autoinsert_internal + " ";
-			if (tcx.query.search(pat) < 0) pat = /select\s/i;
-			tcx.query = tcx.query.replace(pat, keyword );
-
-			//console.log('autoinsert_internal :',tcx.query);
+			//only 1 record on a insert - replace first or insert first FirstFirst
+			FirstFirst="select " + zx.dbu.sqltype(zx,"first "," ","top ") + cx.table.autoinsert_internal + " ";
 		} else if (zx.mysql57) { 
-			tcx.query += " Limit 1 ";
-		//} else if (zx.mssql12) { 
-
+			FirstFirst="select ";
+			LastFirst= " Limit 1 ";
 		} else throw new Error("dialect code missing");
-
-
-
+		
+		tcx.query = tcx.query.replace(pat, FirstFirst )+LastFirst;
+		//console.trace('autoinsert_internal :',tcx.query);
+			
 	}
 	//o.q.query = tcx.query;
 };
@@ -293,10 +293,11 @@ var formulatemodel = exports.formulatemodel = function (zx, cx, o) {
 	//	formulatemodel_ini(zx, cx, tcx, o);
 	//else
 	formulatemodel_quale(zx, cx, tcx, o);
-    //console.log("\r\ncx.query:"+tcx.query);
+    //console.log("\r\n tcx.query A:"+tcx.query,"\r\n\r\n\r\n");
 	cx.fields = tcx.fields;
 	cx.query = zx.dbu.sql_make_compatable(zx,tcx.query);
 	//console.log("\r\ncx.query B:"+tcx.query);
+	//console.log("\r\ncx.query BB:"+cx.query);
 
 	//zx.dbg.emit_comment(zx,"cx.query:"+cx.query);
 	//console.log("\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\ncx.query:"+tcx.query);
@@ -390,7 +391,7 @@ var exec_query = function (zx, o, QueryType) {
 		zx.error.caught_exception(zx, e, " exec_query -114812, formulatemodel ");
 		throw new Error("local known error");
 	}
-	console.log('generatetable call:',QueryType);
+	//console.log('generatetable call:',QueryType);
 	if (QueryType === "Table") {
 		try {
 			var tabletext = generatetable(zx, cx, o);
@@ -433,6 +434,13 @@ exports.tag_table = function (zx, o) {
 
 	//top insert
 	var ai = false;
+	
+	if (o.q.Table==undefined) {
+		zx.error.log_syntax_warning(zx, 'Syntax err: Table() or Form() missing all header info ', zx.err, zx.line_obj);
+		return;
+	}
+	
+	
 	if (o.q && o.q.Table.autoinsert === "top") {
 		ai = true;
 		o.q.Table.autoinsert_internal = 1;

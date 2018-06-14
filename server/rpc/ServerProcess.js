@@ -306,53 +306,51 @@ function connect_and_produce_div_sub_mysql(ss,par,ErrorText, err,cb)  {
 //function connect_and_produce_div_sub_mysql(req,ss,rambase,message,recursive,public_parameters,update,cb)  {
 	
 	console.log("connect_and_produce_div_sub_mysql:");
-	console.log('\n\nCALL Z$RUN(\'' + message.session + '\',' + message.cid + ',' + message.pkf + ',\'\',\'' + par.update + '\')\n\n');
+	var query_debug ='CALL Z$RUN(\'' + par.message.session + '\',' + par.message.cid + ',' + par.message.pkf + ',\'\',\'' + par.update + '\')';
+	console.log('\n\n'+query_debug+'\n\n');
 	var query_str = 'CALL Z$RUN(?,?,?,?,?)';
 	//query_par = [message.session, message.cid, message.pkf, update];			
 
 	console.log('starting Transaction :');
-	rambase.db.beginTransaction(function (err) {
-			console.log('startTransaction :', err);
+	par.rambase.db.beginTransaction(function (err) {
 		if (err) {
-			error(err);
-			var source = {}; //filename,start_line,start_col,source};
-			parse_error(zx, err, source, line_obj);// TODO - parse_error is the wrong fn, - create new
+			winston.warn('Error beginTransaction ',{err:err}); 
 			console.log('Error starting transaction:', err);
-
 			return;
 		}
 		console.log('rambase.db.queryx:');
 		console.log('rambase.db.query:', query_str);
-		rambase.db.query(query_str,
-			[message.session, message.cid, message.pkf,'', par.update],
+		par.rambase.db.query(query_str,
+			[par.message.session, par.message.cid, par.message.pkf,'', par.update],
 			function (err, result_x,fields) {
-			console.log('mysql dbresult raw:', result_x[0][0]);//.res);
-			var result = [{}];
-			result[0].NEW_CID = result_x[0][0].NEW_CID;
-			result[0].info = result_x[0][0].info;
-			result[0].res = result_x[0][0].res;
-			result[0].scriptnamed = result_x[0][0].ScriptNamed;
-
-            console.log('result :', result);
-			console.log('result[0].scriptnamed :', result[0].scriptnamed);
-			console.log(' result.length :',  result.length);
-			console.log(' err :',  err,(err !== null));
 			
 			//console.log('dbresult fields:', fields);
-			if (err !== null || result===null || result.length<1 || result[0].scriptnamed===null) {
-				console.log('dberror:', err);
+			if (err !== null || result_x===null || result_x.length<1 || result_x[0].scriptnamed===null) {
+				console.log('mysql db.query error:', err);
 				//console.log('dbresult on err: ',result );
 				//todo - show operator some kind of server error
-				rambase.db.rollback();
+				winston.warn('Error db.query ',{err:err,query_debug:query_debug}); 
+				par.rambase.db.rollback();
 			} else {
+				console.log('mysql result :', result);			
+				console.log('mysql dbresult raw:', result_x[0][0]);//.res);
+				var result = [{}];
+				result[0].NEW_CID = result_x[0][0].NEW_CID;
+				result[0].info = result_x[0][0].info;
+				result[0].res = result_x[0][0].res;
+				result[0].scriptnamed = result_x[0][0].ScriptNamed;
+
+				console.log('result[0].scriptnamed :', result[0].scriptnamed);
+				console.log(' result.length :',  result.length);
+				console.log(' err :',  err,(err !== null));
 
 				//todo addback jit compiling
 
 				console.log('rambase.db.commit');
-				rambase.db.commit(function (err) {
+				par.rambase.db.commit(function (err) {
 					if (err) {
 						console.log('error in transaction.commit', err);
-						rambase.db.rollback();
+						par.rambase.db.rollback();
 					} else {
 						if (result.length === 0)
 							console.log('no database results'); //this could be use full for save only instructions that don't feedback
@@ -380,26 +378,31 @@ function connect_and_produce_div_sub_mysql(ss,par,ErrorText, err,cb)  {
 
 								//console.log('Index.htm.sql  ouput: ',result[0].res );
                                 if (result[0].new_cid!==0) 
-                                   rambase.current_cid    = result[0].new_cid;
-							    console.log('db - NOW_CID    :', rambase.current_cid);
-                                rambase.current_script = (result[0].scriptnamed||'').toString();
+                                   par.rambase.current_cid    = result[0].new_cid;
+							    console.log('db - NOW_CID    :', par.rambase.current_cid);
+                                par.rambase.current_script = (result[0].scriptnamed||'').toString();
                                 //todo filter developers on some key value - so only a small subset of users can to live editing of source
-                                db.developers[message.session] = (result[0].scriptnamed||'').toString();
+                                db.developers[par.message.session] = (result[0].scriptnamed||'').toString();
 
                                 if (infos === 'logout') {
-                                    rambase.logged_out = true;
+                                    par.rambase.logged_out = true;
                                     //console.log('db - logged_out message for :', rambase);
-                                } else rambase.logged_out = false;   
+                                } else par.rambase.logged_out = false;   
 
-                                
+								var sessions_size = Object.keys(db.developers).length;					
+								
+								var dt=(Date.now()-par.queryStamp) ;
+								timing(db.stats.ppm,60000,dt,sessions_size);
+
+		                                
                                 //console.log('=================================rambase.current_cid> ',rambase.current_cid );
                                 //console.timeEnd("========================DB QUERY");
 								console.log('db - cb -mysql      :',cb);
                                 if (cb) cb((result[0].scriptnamed||'').toString(),newdata)
                                 else {    
                                     if (ss.publish && ss.publish.socketId) {
-                                    ss.publish.socketId(req.socketId, 'newData', 'content', newdata);
-                                    ss.publish.socketId(req.socketId, 'switchPage', '#PAGE_2', '');
+                                    ss.publish.socketId(par.req.socketId, 'newData', 'content', newdata);
+                                    ss.publish.socketId(par.req.socketId, 'switchPage', '#PAGE_2', '');
                                     } else console.warn('=================================Data processing lost due to not having a connected socket ');
                                 }
 							}

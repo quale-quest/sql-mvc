@@ -494,8 +494,12 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 		{
 		if (obj[i].tag.toLowerCase() === 'table') {
 			if (obj[i].q) {
+				if (obj[i].q.Table ==undefined) zx.error.log_syntax_warning(zx, 'Syntax err: Table() header info    ', zx.err, zx.line_obj);				
+				if (obj[i].q.Fields==undefined) zx.error.log_syntax_warning(zx, 'Syntax err: Table() missing fields ', zx.err, zx.line_obj);
+				//console.log('quale table tag A: ',obj[i]);
 				//console.log('quale table tag: ',obj[i].q.Fields );
 				//obj[i].q.Fields.forEach(function (f) {
+				if (obj[i].q.Fields)	
 				for (var i2 = 0; i2 < obj[i].q.Fields.length; i2++) {
 					var f = obj[i].q.Fields[i2];
 					addFileToLinkFiles(zx, f.form, obj[i], 120015);

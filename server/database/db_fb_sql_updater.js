@@ -543,16 +543,14 @@ var CREATE_TABLE = function (zx, qrystr) {
 						+ (Unique?" UNIQUE":"") 
 						+ (default_value?(" DEFAULT "+default_value):"")
 						;
-			} else if (zx.mysql57){
-				throw new Error("todo update dialect code ");
+			} else if (zx.mysql57){				
 				field = defs[1] + " " + defs[2]	+ (NOT_NULL?" NOT NULL":"") 
-						//+ (Unique?" UNIQUE":"") 
+						+ (Unique?" UNIQUE":"") 
 						+ (AUTO_INCREMENT?" AUTO_INCREMENT":"")  
 						+ (PRIMARY_KEY?(" PRIMARY KEY "):"")
 						+ (default_value?(" DEFAULT "+default_value):"")
 						;				
-				if (Unique) bottom_of_create +=  '\r\n    UNIQUE('+defs[1]+')';
-				TODO
+				//if (Unique) bottom_of_create +=  '\r\n    UNIQUE('+defs[1]+')';
 			} else if (zx.mssql12){	
 				field = defs[1] + " " + defs[2]	+ (NOT_NULL?" NOT NULL":"") 
 						+ (Unique?" UNIQUE":"") 
@@ -973,9 +971,9 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 			var gen_name =   name[1];
 			if (zx.mysql57) gen_name +=	"_GENERATOR";
 			//console.log("setGenerator  ",name, 'as ',gen_name);
-			var gv=0,cg=checkGenerator(zx, gen_name,1)
+			var gv=0,cg=checkGenerator(zx, gen_name,0);
 			if (cg) gv = getGenerator(zx, gen_name, 0, 0);			
-			console.log("check setGenerator ",name[1],' exists :',cg ," is set to ",gv);
+			//console.log("check setGenerator ",name[1],' exists :',cg ," is set to ",gv);
 			if (gv>0) { //ignore if already set
 				qrystr = "";
 				//console.log("setGenerator ",name[1]," already set to ",gv);

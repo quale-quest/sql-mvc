@@ -7,7 +7,7 @@ var zx_client_side_plugins = require('./zx_client_side_plugins.js');
 /*var without var goes into dom root*/ //zx_za_cdv = require('./za_cdv.js');   
 
    
-var simpleautotest=0;    //set to 1 to automatically post records to demo todo site
+var simpleautotest=1;    //set to 1 to automatically post records to demo todo site
 var zx_view_page='#PAGE_3';       
 var zx_prev_page='#PAGE_3';
 var qq_session,qq_cid;

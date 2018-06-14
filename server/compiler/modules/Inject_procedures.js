@@ -105,7 +105,7 @@ exports.check_inline_link_procedure = function (zx, line_obj,debug) {
 
 exports.tag_inject_point = function (zx, line_obj) {
 
-	console.log('Injecting check at :',line_obj.srcinfo.current_tag_index+1,zx.injected.inject_procedures);
+	//console.log('Injecting check at :',line_obj.srcinfo.current_tag_index+1,zx.injected.inject_procedures);
 	if (zx.pass !== 2)
 		return; //first pass sets up the items second pass injects them
 	var myname = zx.injected.page_name;

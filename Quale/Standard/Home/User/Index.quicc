@@ -25,9 +25,7 @@ form()
 #>
 
 
-<#table()
-	
-
+<#
 table()
 	Select  --:{Title:"Make new records",from:TODO_MVC,autoinsert:top,tablestyle:Todo}
 	first 10
