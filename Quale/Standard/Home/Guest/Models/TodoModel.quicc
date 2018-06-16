@@ -12,7 +12,8 @@ CREATE TABLE TODO_MVC				--:{as:"Table"}
   STATUS VARCHAR(10) default ''    	--:{as:ticked}  
 );
 
-
+CREATE INDEX IDX_TODO_MVC1 ON TODO_MVC (REF);
+CREATE INDEX IDX_TODO_MVC2 ON TODO_MVC (OWNER,STATUS);
 
 #>
 

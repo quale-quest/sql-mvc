@@ -436,7 +436,7 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 	console.warn('=======================================================================================================================================Making simple objects');
 	var obj = exports.ParseFileToObject(zx, filename);
 	//console.warn('main  file ', filename, JSON.stringify(obj, null, 4).length);
-	console.warn('=======================================================================================================================================Done Making simple objects, now parsing paramaters');
+	console.warn('=======================================================================================================================================Done Making simple objects');
 	for (var i = 0; i < obj.length; i++) {
 		//console.warn('page-Tag ', zx.dialect_active, i, obj.length, obj[i].tag);
 		obj[i].dialect_active = zx.dialect_active ;

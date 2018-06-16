@@ -245,10 +245,12 @@ function connect_and_produce_div_sub_fbsql(ss,par,ErrorText, err,cb)  {
 									});//rollback
 							} else {
 								//successful transaction, query and commit
-								//console.log('transaction.commited',result[0]);
+								
 								par.SCRIPTNAMED = (result[0].SCRIPTNAMED||'').toString();
 								par.NEW_CONTEXT_ID = result[0].NEW_CONTEXT_ID;
 								par.infos=String(result[0].INFO||''); 	
+								console.log('transaction.commited \r\n   NEW_CONTEXT_ID:',par.NEW_CONTEXT_ID,'\r\n   SCRIPTNAMED:',par.SCRIPTNAMED,
+								'\r\n   infos:',par.infos,'\r\n   newdata:',newdata);
 								//console.log('transaction B');
 								par.error_str = par.infos.substring(0,9);
 								par.error_code = par.infos.substring(10,20).trim();

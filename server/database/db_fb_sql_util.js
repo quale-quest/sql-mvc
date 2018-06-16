@@ -392,17 +392,22 @@ exports.write_script = function (zx, real, spi, name, mtHash, script, code) {
 	//console.log('.write_script_async - ' +spiname,'>',name,'<'	);
 	//console.log('<',script);
 	script = script.replace('Z$$integer', FN_HASH);
-    
-
 	
     if (zx.conf.db.dialect=="fb25") {
+		var call_script = "EXECUTE BLOCK RETURNS  (info varchar(200),res blob SUB_TYPE 1,SCRIPTNAMED varchar(200))AS begin EXECUTE procedure "+FN_HASH+" ";
+
 		exports.fetch_query_result(zx, connection, "create_script_async fb25 UPDATE", 
 			"UPDATE OR INSERT INTO Z$SP (PK,TSTAMP,FILE_NAME,SCRIPT,CODE,MT_HASH)VALUES (?,'now',?,?,?,?) MATCHING (PK) ",
-			[spi, name, script, JSON.stringify(code),mtHash],
+			[spi, name, call_script, JSON.stringify(code),mtHash],
 			0,undefined);
 			
 		if (real) {
 			//exports.fetch_query_result(zx, connection, "create_script_async  UPDATE real", script,	[],	0,undefined);			
+			
+			var compoundscript = zx.sql.testhead +script + zx.sql.testfoot;
+			//console.log('compoundscript >',compoundscript);
+			exports.fetch_query_result(zx, connection, "Error in creating real SP :", compoundscript,[],0,undefined);			
+			
 		} 
 		if (spi !== null)
 			return spi;

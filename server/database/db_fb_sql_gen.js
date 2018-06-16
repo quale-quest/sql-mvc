@@ -1249,8 +1249,9 @@ exports.start_pass = function (zx /*, line_objects*/
 	zx.sql.cidi = 0;
 	zx.sql.cidti = []; //each table will have id's starting from a range 100000000+  //limits 10 million records per table - 4 hundred tables on one page
 	zx.sql.cidti_factor = 10000000;
+	var pname = "ZZ$"+zx.ShortHash(zx.main_page_name);
 
-    if (zx.fb25)  { 	
+    if (zx.fb25block)  { 	
 		zx.sql.testhead =
 		"\n\n\nset term #;\n" +
 		"EXECUTE BLOCK RETURNS  (cid  integer,info varchar(200), res blob SUB_TYPE 1)AS \n" +
@@ -1258,8 +1259,23 @@ exports.start_pass = function (zx /*, line_objects*/
 		"declare pkf integer=12345678;\n" +
 		"declare Z$SESSIONID varchar(40)='12345678';\n\n\n";
 		zx.sql.testfoot = "\n-- no need to - set term ;#\n";	
-	} else if (zx.mysql57) {
-		var pname = "ZZ$"+zx.ShortHash(zx.main_page_name);
+	} else if (zx.fb25) {	
+		zx.sql.testhead =
+		"CREATE OR ALTER PROCEDURE "+pname+"(\n" +		
+		"  z$sessionid varchar(40),\n" +
+		"  pki INTEGER,\n"+
+		"  pkf INTEGER,\n"+
+		"  cid INTEGER )\n"+
+		"RETURNS ("+
+		"  INFO Blob sub_type 1,\n"+
+		"  RES  Blob sub_type 1,\n"+		
+		"  SCRIPTNAMED Varchar(250)\n"+
+		") AS "+
+		"declare NEW_CID INTEGER;\n"+
+		"";	
+
+		zx.sql.testfoot = "\n\n-- no need to - set term ;#\n";	
+	} else if (zx.mysql57) {		
 		zx.sql.testhead =
 		//"\n\n\nDELIMITER $$\nDROP PROCEDURE IF EXISTS "+pname+" $$\n" +
 		"CREATE PROCEDURE "+pname+"()\nBEGIN\n" +
@@ -1275,7 +1291,6 @@ exports.start_pass = function (zx /*, line_objects*/
 		//console.log('zx.sql.testhead : ',zx.sql.testhead);
 	    zx.sql.testfoot = "\nend\n";	
 	} else if (zx.mssql12) {
-		var pname = "ZZ$"+zx.ShortHash(zx.main_page_name);
 		zx.sql.testhead =
 		//"\n\n\nDELIMITER $$\nDROP PROCEDURE IF EXISTS "+pname+" $$\n" +
 		"CREATE OR ALTER PROCEDURE "+pname+"(\n"+

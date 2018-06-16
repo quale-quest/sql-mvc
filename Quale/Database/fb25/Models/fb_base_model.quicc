@@ -260,6 +260,7 @@ BEGIN
                   
       END
 
+
     --info=:usern||'&'||:passw||'&'||:currentpage;  suspend;
     /*part of post updates is creating a new session if login info is supplied*/
 
@@ -300,12 +301,15 @@ BEGIN
 			PRIOR_ITEM_ID	 =0;			 
           
         end         
-
+		
+	DELETE FROM Z$PK_CACHE WHERE a.MASTER = :update_cid;
+	DELETE FROM Z$CONTEXT  WHERE a.PK = :update_cid;
+	
     NEW_CONTEXT_ID  = gen_id( Z$CONTEXT_seq, 1 );  
 	
     INSERT INTO Z$CONTEXT (PK,     TSTAMP, OPERATOR_REF, ID,          SESSION_REF,  PAGE,        LINKED_FROM_CID,  LINKED_FROM_INDX) 
 	       VALUES (:NEW_CONTEXT_ID,'now',  :o_ref,       :SESSION_ID, :SESSION_ID,  :currentpage, :PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID );
-			
+	-- info=:usern||'&'||:passw||'&'||:currentpage||'&'||:NEW_CONTEXT_ID||'&'||'&';  suspend;				
 	suspend;     
           
 END^
@@ -315,15 +319,8 @@ SET TERM ; ^
 
 SET TERM ^ ;
 /*test code:
-SELECT NEW_CONTEXT_ID,INFO,RES,SCRIPTNAMED FROM Z$RUN_SUP ('SESSION1',  999,999, 'u08USER8002p041257x00end') p;
 
-SELECT NEW_CONTEXT_ID,INFO,RES,SCRIPTNAMED FROM Z$RUN_SUP ('SESSION1', 999,999,  'u05Guestp041258x00end') p;
-
-SELECT NEW_CONTEXT_ID,INFO,RES,SCRIPTNAMED FROM Z$RUN_SUP ('SESSION1', 999,-1,  'x00end') p;
-
-
-SELECT NEW_CONTEXT_ID,INFO,RES,SCRIPTNAMED FROM Z$RUN ('SESSION1','', 999,999, '','',  'u05Guestp11AnyPasswordx00end') p;
-SELECT NEW_CONTEXT_ID,SCRIPTNAMED FROM Z$RUN ('SESSION1','', 999,999, '','',  'u05Guestp11AnyPasswordx00end') p;
+SELECT NEW_CONTEXT_ID,INFO,RES,SCRIPTNAMED FROM Z$RUN ('SESSION1', 999,999, '', 'u05Guestp11AnyPasswordx00end')
 
 */
 CREATE OR ALTER PROCEDURE Z$RUN (
@@ -343,7 +340,7 @@ AS
 DECLARE VARIABLE o_ref    varchar(40);
 DECLARE VARIABLE current_page_pk  integer;
 DECLARE VARIABLE script    BLOB SUB_TYPE 1;
-DECLARE VARIABLE Openstr   varchar(1000);
+DECLARE VARIABLE CloseStr   varchar(1000);
 DECLARE VARIABLE page_params  varchar(1000)='';  -- retrieved from the database injected into  script at --assign_params 
 
 BEGIN
@@ -358,24 +355,19 @@ BEGIN
 				  suspend; 					
 				  exit;
 				end	
-
-      --info=COALESCE(:o_ref,'null')||'&'||COALESCE(:user_landing_page,'null')||'&'||COALESCE(:SCRIPTNAMED,'null')||'&'||COALESCE(:passw,'null')||'&'||COALESCE(current_page_pk,'null');  suspend;          
-      /*execute the page or SP*/  
-    Openstr = 'EXECUTE BLOCK RETURNS  (info varchar(200),res blob SUB_TYPE 1)AS declare cid integer='||NEW_CONTEXT_ID||';declare pki integer='||PRIOR_CONTEXT_ID||';declare pkf integer='||PRIOR_ITEM_ID||';'
-         --||COALESCE(:public_parameters,'')
-		 --||COALESCE(:page_params,'')
-         ||'declare z$sessionid varchar(40)='''||:SESSIONID||''''
-         ||';'; 
+		
+    CloseStr = ' ('''||:SESSIONID||''','||PRIOR_CONTEXT_ID||','||PRIOR_ITEM_ID||','||NEW_CONTEXT_ID||') RETURNING_VALUES  :info,:res,:SCRIPTNAMED;suspend; end;';
     
-    --further match language and coy custom files  
-    SELECT first 1 pk,:Openstr||q.SCRIPT FROM Z$SP q where file_name=:SCRIPTNAMED into :current_page_pk,:script ;
+	
+    --TODO also match language and coy custom files  
+    SELECT first 1 pk,q.SCRIPT||:CloseStr FROM Z$SP q where file_name=:SCRIPTNAMED into :current_page_pk,:script ;
     if (script is null) then /*back home or direct to an 404 error page ..?*/   
       begin                 
-        SELECT first 1 pk,:Openstr||q.SCRIPT FROM Z$SP q where 
+        SELECT first 1 pk,q.SCRIPT||:CloseStr FROM Z$SP q where 
                    file_name='//'||(SELECT user_landing_page FROM user_table_name WHERE user_pk_field = :o_ref)||'/404' into :current_page_pk,:script ;                        
       end             
     if (script is null) then /*global 404 error page */
-        SELECT first 1 pk,:Openstr||q.SCRIPT FROM Z$SP q where file_name='//Default/404' into :current_page_pk,:script ;                        
+        SELECT first 1 pk,q.SCRIPT||:CloseStr FROM Z$SP q where file_name='//Default/404' into :current_page_pk,:script ;                        
       
     if (script is null) then
         begin 
@@ -383,13 +375,11 @@ BEGIN
         end
     ELSE   
         begin           
-		  script = replace(:script,'-- assign_params',COALESCE(:page_params,''));
-          --res= :script ;  suspend;
-          FOR EXECUTE STATEMENT script INTO :info,:res DO suspend;
+          FOR EXECUTE STATEMENT script INTO :info,:res,:CloseStr DO suspend;
           WHEN ANY DO
               BEGIN
-              info='exception,'||sqlcode;
-              res= sqlcode ||'   SET TERM ^ ;'|| :script ;   
+              info='exception,'||sqlcode||' , '||GDSCODE||' , '||SQLSTATE||' , '||CURRENT_USER;
+              res= '   SET TERM ^ ;'||:script ;   
               suspend;              
               END   
         end    
