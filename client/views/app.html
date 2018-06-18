@@ -207,7 +207,23 @@ window.location.href = "ie.html";
 
 
 <script>
-
+   console.log("LoadedInstance:",LoadedInstance);
+   		window.addEventListener( "pageshow", function ( event ) {			
+			
+			
+		    var historyTraversal = event.persisted || 
+				( typeof window.performance != "undefined" && 
+				window.performance.navigation.type === 2 );
+		    if ( historyTraversal ) {
+			// Handle page restore.
+			console.log("############# pageshow/restore:",LoadedInstance);
+			LoadFromBrowserBackNavigation();
+			//window.location.reload();
+		  }
+		});
+			
+   
+   
   // Here we run a very simple test of the Graph API after login is
   // successful.  See statusChangeCallback() for when this call is made.
   function testAPI(Login_response) {

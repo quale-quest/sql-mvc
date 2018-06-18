@@ -810,7 +810,19 @@ exports.actions = function (req, res, ss) {
 				return res(false);
 			}
 		},
-
+		
+		ClosingBrowser : function (message,LoadedInstance) {
+			console.log("------------------------------ ClosingBrowser:", message,' LoadedInstance',LoadedInstance);
+			return res(true);
+			//todo  - Alternative ways of managing Browser exit
+		},
+		
+		BrowserBack : function (message,LoadedInstance) {
+			console.log("------------------------------ BrowserBack:", message,' LoadedInstance',LoadedInstance);
+			return res(true);
+			//todo  - Alternative ways of managing Browser back
+		},
+		
 		NavSubmit : function (message,LoadedInstance) {
 			if (message && message.length > 0) { // Check for blank messages
             

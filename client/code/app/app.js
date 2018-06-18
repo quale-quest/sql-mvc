@@ -7,7 +7,7 @@ var zx_client_side_plugins = require('./zx_client_side_plugins.js');
 /*var without var goes into dom root*/ //zx_za_cdv = require('./za_cdv.js');   
 
    
-var simpleautotest=1;    //set to 1 to automatically post records to demo todo site
+var simpleautotest=0;    //set to 1 to automatically post records to demo todo site
 var zx_view_page='#PAGE_3';       
 var zx_prev_page='#PAGE_3';
 var qq_session,qq_cid;
@@ -429,6 +429,7 @@ init_from_fullstash_internal = function (Target) {
 					}
 				, 1000)
 			}
+		window.onbeforeunload = exports.ClosingBrowser;	
 }
 
 var render_from_fullstash = function (cx,html) {
@@ -517,16 +518,8 @@ var process_new_data = function (cx) {
                                     .fail(function() {
                                     alert( "error - could not load the template" );
                                     });
-                                                            
-                            
-                            
-                            
                         }    
-                      
-                      
                     }        
-                    
-
             } 
             
 		}
@@ -770,6 +763,16 @@ exports.sendClick = function (text, cb) {
 	return ss.rpc('ServerProcess.NavSubmit', text,LoadedInstance, cb);
 
 };
+
+exports.ClosingBrowser = function (event) {
+	return ss.rpc('ServerProcess.ClosingBrowser', '',LoadedInstance, null);
+};
+
+
+exports.LoadFromBrowserBackNavigation = function () {
+	return ss.rpc('ServerProcess.BrowserBack', '',LoadedInstance, null);
+};
+
 
 // bind to the login form and submit the fields after validation
 if (0) {
