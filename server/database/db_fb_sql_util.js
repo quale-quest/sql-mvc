@@ -65,7 +65,11 @@ var parse_error = function (zx, err, source, script) {
 			srcx = source.src_obj.srcinfo;
 		else
 			srcx = source.srcinfo;
+		//console.log('script_err source:', source);
+		//this needs a lot of review .. where this  srcinfo gets generated must be made consistent
+		//the syntax_warning is very generic - does not help at all
 		if (srcx !== undefined) {
+			//console.log('script_err srcx:', srcx);
 			var src = deepcopy(srcx);
 			if (src.source && src.source.length > 200)
 				src.source = zx.show_longstring(src.source);
@@ -81,9 +85,9 @@ var parse_error = function (zx, err, source, script) {
 			if (script !== undefined)
 				script_err.context = script.substr(script_err.col - 10, 20);
 			//console.log('script_err source err:', script_err);
-			zx.error.log_syntax_warning(zx, 'script_err source err:', zx.err, zx.line_obj);
+			zx.error.log_syntax_warning(zx, 'script_err source err:', zx.err, script_err);
 		} else {
-			zx.error.log_syntax_warning(zx, 'script_err source err:', zx.err, zx.line_obj);
+			zx.error.log_syntax_warning(zx, 'script_err source err type 2:', zx.err, zx.line_obj);
 		}
 
 	}
@@ -131,7 +135,7 @@ exports.databaseUtils = function (root_folder, connectionID, url, callback) {
 
 
 	 
-var check_parse = function (zx, err, script, line_obj,expect,result,name,defaultval,callback) {
+var check_parse = function (zx, err, script, params, line_obj,expect,result,name,defaultval,callback) {
 	
 	if (err) {
 		//parse the error
@@ -155,13 +159,13 @@ var check_parse = function (zx, err, script, line_obj,expect,result,name,default
 			script_err = parse_error(zx, err, line_obj);
 			zx.err = script_err;
 			zx.eachplugin(zx, "commit", 0);
-			
+			zx.db_update.write_log.push("-- "+name + "  --- "+ script_err.message);
 			if (zx.fb25) { 
-			    fs.writeFileSync("exit2.sql","SET TERM ^ ;\n" +script +"^ \nSET TERM ; ^\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message+"\r\n"+name);
+			    fs.writeFileSync("exit2.sql","SET TERM ^ ;\n" +script +"^ \nSET TERM ; ^\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message+"\r\n"+name+"\r\nparams:"+params);
 			} else if (zx.mysql57) {				
-				fs.writeFileSync("exit2.sql","DELIMITER //\n" +script +"//\nDELIMITER ;\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message+"\r\n"+name);
+				fs.writeFileSync("exit2.sql","DELIMITER //\n" +script +"//\nDELIMITER ;\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message+"\r\n"+name+"\r\nparams:"+params);
 			} else if (zx.mssql12) {				
-				fs.writeFileSync("exit2.sql","DELIMITER //\n" +script +"//\nDELIMITER ;\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message+"\r\n"+name);
+				fs.writeFileSync("exit2.sql","DELIMITER //\n" +script +"//\nDELIMITER ;\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message+"\r\n"+name+"\r\nparams:"+params);
 			} else throw new Error("dialect code missing");
 				
 			
@@ -192,7 +196,7 @@ exports.exec_query_async = function (zx, connection, name, script,params,line_ob
 		//console.log('MSSQL check_parse :'+qrystr);
 		var result = [];
 		var Req = new connection.rambase.Request(qrystr, function (err, rowCount, rows) {
-			check_parse(zx, err, script, line_obj,expect,result, name,defaultval,callback);
+			check_parse(zx, err, script, params, line_obj,expect,result, name,defaultval,callback);
 		});
 
 		Req.on('row', function(columns) {
@@ -228,7 +232,7 @@ exports.exec_query_async = function (zx, connection, name, script,params,line_ob
 		connection.db.query(qrystr, params,
 		function (err, result, fields) {
 			//console.trace("exec_query_async check_parse: ");
-			check_parse(zx, err, script, line_obj,expect,result,name,defaultval,callback);
+			check_parse(zx, err, script, params, line_obj,expect,result,name,defaultval,callback);
 		});
 	}
 };
@@ -360,9 +364,9 @@ exports.getUpdateOrInsert = function (zx, name) {
 exports.getPageIndexNumber = function (zx, name) {
     if (zx.fb25) {
 		//console.log('getPageIndexNumber : A' ,name);
-		exports.singleton(zx, "", "UPDATE OR INSERT INTO Z$SP (FILE_NAME)VALUES ('" + name + "') MATCHING (FILE_NAME) ");
+		exports.singleton(zx, "", "UPDATE OR INSERT INTO Z$SP (FILE_NAME)VALUES ('" + name + "') MATCHING (FILE_NAME) ",1);
 		//console.log('getPageIndexNumber : B' );
-		var CurrentPageIndex = exports.singleton(zx, "PK", "select PK from Z$SP where FILE_NAME='" + name + "'");
+		var CurrentPageIndex = exports.singleton(zx, "PK", "select PK from Z$SP where FILE_NAME='" + name + "'",1);
 
 		//console.log('getPageIndexNumber : ' +CurrentPageIndex);
 		return CurrentPageIndex;

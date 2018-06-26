@@ -10,6 +10,7 @@ var fileutils = require('../../server/lib/fileutils.js');
 //var ss = require('socketstream');
 var Hogan = require('ss-hogan/client.js');
 var HoganC = require('ss-hogan/node_modules/hogan.js/lib/compiler.js');
+var winston = require('winston');
 
 
 var qq_tmpl_cache =  [];
@@ -98,11 +99,13 @@ exports.render = function (qq_page_id,jsonstring,template_filename,cb) {
     var mtHash=0;
     var cx={};
     try {  
+		if (jsonstring==null ) throw new Error("jsonstring missing in render");
 		var page_id = qq_page_id.substr(2).replace(/\//g,'-');
 		cx.obj = JSON.parse(jsonstring);
 		//console.log("cx.obj.mtHash :",cx.obj[0].mtHash);
 		//console.log("cx.obj[0].Session :",cx.obj[0].Session);
 		//console.log("cx.obj[0].Data :",cx.obj[0].Data);
+		//console.log("jsonstring :",jsonstring);
             cx.obj[0].Data.Session =  cx.obj[0].Session;
             zx_client_side_plugins.fill_data(cx.obj[0].Data,sst);
             //console.log("cx.obj.mtHash :",cx.obj[0].Data);

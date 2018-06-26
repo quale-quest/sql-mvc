@@ -39,31 +39,41 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
 	//TODO write audit trail to log file-can also happen inside the db - one idea is to have a external change log in redis that can be shown to the user if the server creashes during a update
 	//convert from json to internal update form for easier parsing in sql
 	var message = [];
+	var msg = {};
 	var update = '';
 	var last_cid = '';
 	var public_parameters = '';
-	messages.forEach(function (msg) {
+	//messages.forEach(function (msg) {
+	//console.log("Server received messages:", messages);
+	for (var indx in messages) {	
 		//last one will be a click
-		message = msg;
-		message.session = session;
+		msg = messages[indx];
+		console.log("Server received msg:", msg);
 		if (msg.update !== undefined) { //only the login command currently updates directly
 			update += msg.update;
+			message = msg;
 		} else {
+			if (msg.typ === 'click') {
+				console.log("Server received msg:", msg);
+				message = msg;
+			}
 			if (msg.typ === 'change') {
-				if (last_cid !== message.cid) {
-					update += par_format('c', message.cid);
-					last_cid = message.cid;
+				if (last_cid !== msg.cid) {
+					update += par_format('c', msg.cid);
+					last_cid = msg.cid;
 				}
-				update += par_format('k', message.pkf);
-				update += par_format('v', message.valu);
+				update += par_format('k', msg.pkf);
+				update += par_format('v', msg.valu);
 			}
 			if (msg.typ === 'params') {
-				update += par_format('t', message.key);
-				update += par_format('r', message.valu);
+				update += par_format('t', msg.key);
+				update += par_format('r', msg.valu);
 			}            
 		}
-	});
-
+	}//for );
+	//console.log("Server received update:", update);
+	console.log("Server received update:", update);
+	message.session = session;
 	if (message.valu === undefined)
 		message.valu = "";
 	if (message.typ === undefined)
@@ -84,6 +94,7 @@ exports.connect_and_produce_div = function (req, res, ss, rambase, messages, ses
 		retry_count:0
 	};
 
+	//console.log("Server received update par:", par);
     if (rambase.conf.db.dialect=="fb25")  {
 		connect_and_produce_div_sub_fbsql(ss,par,null,null,cb);
 	} else if (rambase.conf.db.dialect=="mysql57")  {			
@@ -573,8 +584,9 @@ exports.push_passed_params = function (rambase,messagelist) {
 					typ : 'params',
 					key : '' +  key,
 					valu: '' + field
-                    };	
-               messagelist.push(message);  
+                    };	 
+				message.id = key;
+                messagelist[message.id] = message;			   
                //console.log('params 183135 :',key,field);
             }
         
@@ -690,14 +702,16 @@ var produce_login = exports.produce_login = function (req, res, ss, rambase, Pag
                     if (rambase.params.pass) Password=rambase.params.pass||'';
                 }
                 
-				var messagelist = [];
+				var messagelist = {};
 				var message = {
 					cid : 1000,
 					pkf : 0,
-					valu : ''
+					valu : '',
+					typ : 'click'
 				};
                                 
 				// update:'u08USER8002p041258x00end'                
+				message.id = '"'+message.cid+'-'+message.pkf+'"';				
 				message.update = par_format('u', User) + par_format('p', Password);
                 
                 //this could be a security issue so maybe only allow it in dev
@@ -705,7 +719,7 @@ var produce_login = exports.produce_login = function (req, res, ss, rambase, Pag
 					                
                 exports.push_passed_params(rambase,messagelist);
 
-                messagelist.push(message);
+                messagelist[message.id] = message;
 				exports.produce_div(req, res, ss, rambase, messagelist, rambase.LoadedInstance,0,cb);
 				//exports.produce_div(req, res, ss,rambase,message);
 }
@@ -743,17 +757,17 @@ exports.actions = function (req, res, ss) {
                     produce_login(req, res, ss, rambase, '', 'guest','gu35t');
                 
             } else {    
-                var messagelist = [];
+                var messagelist = {};
                 var message = {
                     cid : rambase.current_cid,
                     pkf : 0,
                     valu : '',
                     typ : 'click'
                 };
-                
+				message.id = '"'+message.cid+'-'+message.pkf+'"';                
                 console.log("Connected message reloading 065230 :");
                 exports.push_passed_params(rambase,messagelist);
-                messagelist.push(message);
+				messagelist[message.id] = message;
                 exports.produce_div(req, res, ss, rambase, messagelist, LoadedInstance);
             }
             }

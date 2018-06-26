@@ -680,11 +680,13 @@ ss.event.on('newMessage', function (message) {
 });
 
 //bind crucial lib  functions to root so they are accessable by qq js
-var DeltaList = [];
+var DeltaList = {};
 exports.delta = function (cell) {
-	console.log("server-typ-container-pk-f-v ", cell, DeltaList);
-
-	DeltaList.push(cell);
+	console.log("server-typ-container-pk-f-v ", cell);
+	cell.id = '"'+cell.cid+'-'+cell.pkf+'"';
+	DeltaList[cell.id] = cell;
+	//DeltaList.push(cell);
+	console.log("exports.delta DeltaList ", DeltaList);
 
 	if (cell.typ === 'click') { // should warn if changes has been made
 	}
@@ -695,8 +697,8 @@ exports.delta = function (cell) {
 	}
 
 	var data = JSON.stringify(DeltaList);
-
-	DeltaList = [];
+	console.log("exports.delta data", data);
+	DeltaList = {};
 	deltacount = 0;
 	$('#deltacounter1').text(deltacount);
 	$('#deltacounter2').text(deltacount);
@@ -716,16 +718,18 @@ zx_delta = exports.delta;
 zxnav_reload = function () {
     //in place reloading  without saving - preserve changes -todo
     
-	DeltaList = [];
+	DeltaList = {};
     var message = {
         cid : qq_cid,
         pkf : 0,
         valu : '',
         typ : 'click'
     };  
-    DeltaList.push(message);   
+    //DeltaList.push(message);   
+	message.id = '"'+message.cid+'-'+message.pkf+'"';
+	DeltaList[message.id] = message;
     var data = JSON.stringify(DeltaList);    
-    DeltaList = [];         
+    DeltaList = {};         
     
 	deltacount = 0;
 	$('#deltacounter1').text(deltacount);

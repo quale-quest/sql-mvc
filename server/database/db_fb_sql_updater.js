@@ -267,7 +267,7 @@ var exec_qry = function (cx, qrys) {
 
 	if (cx.zx.config.db.schema_mode !== "slave") {
 		//console.log('exec_qry_cb.sync  :', qrys );
-		cx.zx.dbu.exec_qry_cb(cx, "exec_qry", qrys, cx.zx.line_obj);
+		cx.zx.dbu.exec_qry_cb(cx, "exec_qry fn", qrys, cx.zx.line_obj);
 	}
 	delete cx.expect;
 };
@@ -612,7 +612,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 			//console.log('Table fields ---:', Table,'>',field,'<');
 			FieldNumber = FieldNumber + 1;			
 			cx.expect = zx.dbu.sqltype(zx,/unsuccessful metadata update/,/ER_DUP_FIELDNAME/,/is specified more than once/);
-			exec_qry(cx, "ALTER TABLE " + Table + " ADD " + field);
+			exec_qry(cx, "ALTER TABLE " + Table + " ADD " + field +"; ");
             if (cx.zx.config.db.schema_alter_fields === "yes") { 
 			
 			//find and remove unique key			
@@ -670,9 +670,9 @@ var CREATE_TABLE = function (zx, qrystr) {
                     	
 					cx.expect = zx.dbu.sqltype(zx,/unsuccessful metadata update/,/ER_DUP_FIELDNAME/,/is specified more than once/);
 					if (zx.fb25) { 
-						exec_qry(cx, "ALTER TABLE " + Table + " alter " + FieldName + " TYPE " + FieldType); 
+						exec_qry(cx, "ALTER TABLE " + Table + " alter " + FieldName + " TYPE " + FieldType+"; "); 
 					} else if (zx.mysql57) { 
-						exec_qry(cx, "ALTER TABLE " + Table + " MODIFY " + FieldName + "  " + FieldType);
+						exec_qry(cx, "ALTER TABLE " + Table + " MODIFY " + FieldName + "  " + FieldType+"; ");
 					} else 
 						throw new Error("dialect code missing");
 					
@@ -682,9 +682,9 @@ var CREATE_TABLE = function (zx, qrystr) {
                         
                         cx.expect = /unsuccessful metadata update/; 
 						if (zx.fb25) {
-							exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " set DEFAULT " + Default);
+							exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " set DEFAULT " + Default+"; ");
 						} else if (zx.mysql57) {
-							exec_qry(cx, "ALTER TABLE " + Table + "   MODIFY column  " + FieldName + "  " + FieldType + " DEFAULT " + Default);
+							exec_qry(cx, "ALTER TABLE " + Table + "   MODIFY column  " + FieldName + "  " + FieldType + " DEFAULT " + Default+"; ");
 						}  else throw new Error("dialect code missing"); 
                         //exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " set " + Default);
 						// updating the default before commit seems a problem ... this should be moved to phase 2
@@ -694,9 +694,9 @@ var CREATE_TABLE = function (zx, qrystr) {
 
 						cx.expect = /unsuccessful metadata update/;
 						if (zx.fb25) {  
-							exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " DROP DEFAULT ");
+							exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " DROP DEFAULT "+"; ");
 						} else if (zx.mysql57)  {
-							exec_qry(cx,  "ALTER TABLE " + Table + "   alter column  " + FieldName + " DROP DEFAULT ");
+							exec_qry(cx,  "ALTER TABLE " + Table + "   alter column  " + FieldName + " DROP DEFAULT "+"; ");
 						}  else throw new Error("dialect code missing"); 
                         
 					}
@@ -713,9 +713,9 @@ var CREATE_TABLE = function (zx, qrystr) {
 
 								cx.expect = /unsuccessful metadata update/;
 								if (zx.fb25) {
-									exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " DROP DEFAULT ");
+									exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " DROP DEFAULT ;");
 								} else if (zx.mysql57) {
-									exec_qry(cx,  "ALTER TABLE " + Table + "   alter column  " + FieldName + " DROP DEFAULT ");
+									exec_qry(cx,  "ALTER TABLE " + Table + "   alter column  " + FieldName + " DROP DEFAULT ;");
 								} else if (zx.mssql12) { 
 								    exec_qry(cx, mssql_alter_table_drop_default(zx.conf.db.database_schema,Table,FieldName));
 								} else throw new Error("dialect code missing");
@@ -729,7 +729,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 			}
                     if (cx.zx.config.db.schema_reorder_fields === "yes") { 
                         cx.expect = /unsuccessful metadata update/; 
-						exec_qry(cx, "ALTER TABLE " + Table + " ALTER " + FieldName + " POSITION " + FieldNumber);						
+						exec_qry(cx, "ALTER TABLE " + Table + " ALTER " + FieldName + " POSITION " + FieldNumber+"; ");						
                     }
 			
             }
@@ -1456,8 +1456,8 @@ exports.update = function (zx) {
 }
   
 exports.commit = function (zx) {  
-	fs.writeFileSync(zx.output_folder + 'input.sql', exports.input_audit.join(''));
-	fs.writeFileSync(zx.output_folder + 'build.sql', exports.write_log.join(''));
+	fs.writeFileSync(zx.output_folder + 'input.sql', exports.input_audit.join('\r\n'));
+	fs.writeFileSync(zx.output_folder + 'build.sql', exports.write_log.join('\r\n'));
 	
 };
 
