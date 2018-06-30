@@ -14,7 +14,11 @@ exports.compile = function (zx, obj) {
 	tag,
 	done;
 
+	//todo - make some UI for setting on debug info's
 	zx.debug = 0;
+	zx.debug_element_class_selection=1;
+	
+	
 	zx.line_objects = obj;
 
 	zx.pass_max = 5;

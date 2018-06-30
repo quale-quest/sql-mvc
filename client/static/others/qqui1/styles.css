@@ -1399,6 +1399,37 @@ label.fldTitle,legend.fldTitle,legend.choiceFld {
 	display:block;
 	width:48%;
 }
+
+.validationhidden {
+	padding: 0 30px 0 50px;
+	color: #999;
+	max-height: 0;
+	transition: 0.28s;
+	overflow: hidden;
+	color: red;
+	font-style: italic;
+}
+.validationshown {
+	padding: 0 30px 0 50px;
+	color: #999;
+	transition: 0.28s;
+	overflow: hidden;
+	color: red;
+	font-style: italic;
+}
+.hidden {
+	content:".";
+	height:0;
+	clear:both;
+	visibility:hidden;
+	display: none;
+}
+.devdebugvisable {
+	display: none;
+	text-align: left;
+}
+
+
 .topLabel li fieldset {
 	border:#CCC 1px solid;
 	padding:10px;

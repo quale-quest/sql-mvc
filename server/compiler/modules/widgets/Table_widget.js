@@ -356,8 +356,11 @@ var generatetable = exports.generatetable = function (zx, cx) {
 
 	var html = zxTable(cx);
 	//console.log('generatetable: ',html);
-	html = html.replace(/\[/g, "{");
-	html = html.replace(/\]/g, "}");
+	//html = html.replace(/\[/g, "{");   causes a problem for pattern validation - it is used to "pop" moustaches for runtime evaluation  [[0]]
+	html = html.replace(/\[\[\[/g, "{{{"); 
+	html = html.replace(/\]\]\]/g, "}}}");
+	html = html.replace(/\[\[/g, "{{"); 
+	html = html.replace(/\]\]/g, "}}");
 
 	return html;
 	//exit (2);
@@ -520,13 +523,14 @@ exports.tag_list = function (zx, o) {
 		return;
 	}
 
+	var DictionaryTableName = 'Z$DICTIONARY';//TODO get the DictionaryTableName from the config file
 	if (zx.gets(o.from) === "")
-		o.from = "DataFile";
-	if ((zx.gets(o.from) === "DataFile") && (zx.gets(o.select) === ""))
+		o.from = DictionaryTableName;
+	if ((zx.gets(o.from) === DictionaryTableName) && (zx.gets(o.select) === ""))
 		o.select = "valu,Name"; //TODO get this field names from a  config file per table
 	if ((zx.gets(o.select) === ""))
 		o.select = "Ref,Name"; //TODO get this field names from a  config file per table
-	if ((zx.gets(o.from) === "DataFile") && (zx.gets(o.where) === ""))
+	if ((zx.gets(o.from) === DictionaryTableName) && (zx.gets(o.where) === ""))
 		o.where = "Context='" + zx.sql_escapetoString(zx.gets(o.name)) + "'";
 	o.MakeList = 1;
 
@@ -634,6 +638,7 @@ var zxTable = exports.zxTable = function (cx) {
 
 
 	var html = "";
+	cx.fieldDebug = [];
 	//Divine-PrepFormatAndData-Redo on Server
 	//exports.Validate(cx);
 	//Divine-TopTitle
@@ -663,6 +668,8 @@ var zxTable = exports.zxTable = function (cx) {
 	//Divine-TailDiv
 	//Divine-Final_DebugResult +TopTileResult+ Pager + OpenResult+TableFieldScripts
 
+	if (zx.debug_element_class_selection) html += "<pre class=\"devdebugvisable \"> debug_element_class_selection : " + JSON.stringify(cx.fieldDebug, null, 4) + "</pre>";
+	
 	return html;
 };
 

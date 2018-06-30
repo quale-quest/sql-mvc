@@ -8,8 +8,9 @@ exports.module_name = 'element_widget.js';
 exports.tags=[{name:"element"}];
 
 var zx;
-var getFieldStyleSub = function (CompoundKey) {
-	var Result = zx.UIsl[CompoundKey];
+var getFieldStyleSub = function (obj) {
+	var Result = zx.UIsl[obj.Key];
+	obj.tried.push(obj.Key);
 	if (Result === undefined)
 		return Result;
 	if (Array.isArray(Result))
@@ -17,7 +18,7 @@ var getFieldStyleSub = function (CompoundKey) {
 	return String(Result).trim();
 };
 
-var getFieldStyle = function (cx, SubStyle, Type, Class, Action, Key) {
+var getFieldStyle = function (cx, SubStyle, Type, Class, Action, Key,FT) {
 	var Result = '';
 	/*
 	Field style inheritance:
@@ -44,25 +45,26 @@ var getFieldStyle = function (cx, SubStyle, Type, Class, Action, Key) {
 	Class = zx.properCase(Class);
 	Action = zx.properCase(Action);
 
-	var Try;
+	var Try={tried:[]};
 	var Generic;
 	Key = '_' + Key;
 
 	//try first table specific styles
-	Try = Style + SubStyle + Type + Class + Action + Key;
+	var Full = Style + SubStyle + Type + Class + Action + Key;
+	Try.Key = Style + SubStyle + Type + Class + Action + Key;
 	Result = getFieldStyleSub(Try); //sbtca
 	if (Result === undefined) {
-		Try = SubStyle + Type + Class + Action + Key; //just without the table
+		Try.Key = SubStyle + Type + Class + Action + Key; //just without the table
 		//Generic=Try; no need to warn
 		Result = getFieldStyleSub(Try); //btca
 	}
 	if (Result === undefined) {
-		Try = Style + Type + Class + Action + Key;
+		Try.Key = Style + Type + Class + Action + Key;
 		Generic = Try;
 		Result = getFieldStyleSub(Try); //stca
 	}
 	if (Result === undefined) {
-		Try = Style + Class + Action + Key;
+		Try.Key = Style + Class + Action + Key;
 		Generic = Try;
 		Result = getFieldStyleSub(Try); //sca - extra new in Divout
 	}
@@ -70,33 +72,33 @@ var getFieldStyle = function (cx, SubStyle, Type, Class, Action, Key) {
 	//generic styles
 
 	if (Result === undefined) {
-		Try = Type + Class + Action + Key;
+		Try.Key = Type + Class + Action + Key;
 		Generic = Try;
 		Result = getFieldStyleSub(Try); //tca
 	}
 	if (Result === undefined) {
-		Try = Type + Class + Action + Key;
+		Try.Key = Type + Class + Action + Key;
 		Generic = Try;
 		Result = getFieldStyleSub(Try); //tca
 	}
 	if (Result === undefined) {
-		Try = Class + Action + Key;
+		Try.Key = Class + Action + Key;
 		Generic = Try;
 		Result = getFieldStyleSub(Try); //ca
 	}
 
 	if (Result === undefined) {
-		Try = Action + Key;
+		Try.Key = Action + Key;
 		Generic = Try;
 		Result = getFieldStyleSub(Try); //a
 	}
 	if (Result === undefined) {
-		Try = Class + "View" + Key;
+		Try.Key = Class + "View" + Key;
 		Generic = Try;
 		Result = getFieldStyleSub(Try); //cv
 	}
 	if (Result === undefined) {
-		Try = "View" + Key;
+		Try.Key = "View" + Key;
 		Generic = Try;
 		Result = getFieldStyleSub(Try); //v
 	}
@@ -113,11 +115,13 @@ var getFieldStyle = function (cx, SubStyle, Type, Class, Action, Key) {
 	}
 	//console.log('getFieldStyle: ',Style,"ss:",SubStyle,"t:",Type,"c:",Class,"a:",Action,'k:',Key,'Result:',Result);
 	if (Result.substring(0, 8) === 'inherit:') {
-		var inherit = Result.substring(8);
-		Result = getFieldStyleSub(inherit);
+		var inheritedFrom = Try.Key;
+		Try.tried.push("InheritingFrom:"+inheritedFrom);
+		Try.Key = Result.substring(8);
+		Result = getFieldStyleSub(Try);
 		if (Result === undefined) {
 			Result = '';
-			zx.error.log_noStyle_warning(zx, "ErrorNoInheritedgetFieldStyle: 1:", "inherit:" + inherit + " from:" + Try, zx.line_obj);
+			zx.error.log_noStyle_warning(zx, "ErrorNoInheritedgetFieldStyle: 1:", "inherit:" + inherit + " from:" + inheritedFrom, zx.line_obj);
 		}
 
 	}
@@ -132,6 +136,11 @@ var getFieldStyle = function (cx, SubStyle, Type, Class, Action, Key) {
     
 	
     //var show=0;
+	
+	//console.log('getFieldStyle FT  : ', FT.name);
+	//console.log('getFieldStyle Try : ', Try.tried);
+	cx.fieldDebug.push('getFieldStyle FieldName:'+FT.name+' Full :'+Full+' Tried :'+JSON.stringify(Try.tried));
+	//if (zx.pass==5) console.log('getFieldStyle FT :', FT.name,' Full :', Full,' Tried :', JSON.stringify(Try.tried));
 	Result = zx.process_tags(Result, 'repack(', ')', 0, function (value) {
     //console.log('repacking process_tags a: ', value);
 		var a = value.split(',') || [value];
@@ -169,7 +178,7 @@ var fieldSubItem = function (cx, FT) {
 			cx.QryOffset = zx.dbg.link_from_table(cx.zx,cx, FT);
 			//  cx.QryUrl = "return(zxnav(event,{{0}},"+QryOffset+"));";
 
-			tt = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Main");
+			tt = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Main",FT);
 			//console.log('fieldSubItem A2: ',FT.SubStyle,FT.cf[0].Type,"Field",FT.cf[0].Action,ts);
 			if (tt !== '') {
 				//template = hogan.compile(tt);
@@ -187,7 +196,7 @@ var fieldSubItem = function (cx, FT) {
 
 			cx.QryOffset = zx.dbg.edit_from_table(zx, cx, FT);
 
-			tt = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Main");
+			tt = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Main",FT);
 			if (tt !== '') {
 
 				//template = hogan.compile(tt);
@@ -197,7 +206,7 @@ var fieldSubItem = function (cx, FT) {
 			//console.log('fieldSubItem B2: ',FieldHtml,tt,FT);
 		} else {
 			//console.log('fieldSubItem C: ', cx.pop, FT);
-			tt = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Main");
+			tt = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Main",FT);
 			//console.log('fieldSubItem C1: ', tt);
 			if (tt !== '') {
 				//template = hogan.compile(tt);
@@ -239,7 +248,7 @@ var formatField = function (cx, FT /*, itemindex*/
 
 		/*div wraps individual radios all into one*/
 		try {
-			var ts = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Div");
+			var ts = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Div",FT);
 			//var template = hogan.compile(ts);
             //console.log('template.render(cx): -----------------------------------',cx.field);
 			//cx.pop = '' + template.render(cx); //pop
@@ -253,9 +262,9 @@ var formatField = function (cx, FT /*, itemindex*/
 		//console.log('fieldSubItem X2: ',ts,cx.pop);
 
 		//this is produces scripts for executing after the page has loaded
-		//template = hogan.compile(getFieldStyle(cx, FT.substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Script"));        
+		//template = hogan.compile(getFieldStyle(cx, FT.substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Script",FT));        
 		//cx.TableFieldScripts += template.render(cx); //cs.id displayvalue size maxsize value variable ContextHelp
-        cx.TableFieldScripts += zx.hogan_ext.compile_render(zx, cx , getFieldStyle(cx, FT.substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Script"));  
+        cx.TableFieldScripts += zx.hogan_ext.compile_render(zx, cx , getFieldStyle(cx, FT.substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Script",FT));  
 
 	} //h
 

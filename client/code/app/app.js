@@ -21,6 +21,7 @@ var zx_switch_page = function (div){
         zx_view_page = div;        
         $('.zxPage').hide();        
         $(div).show();
+		$('.devdebugvisable').show();        		
        } 
 }
 
