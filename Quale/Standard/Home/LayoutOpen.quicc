@@ -5,7 +5,7 @@
 xifnotexists="select user_display_field from user_table_name where user_table_name.user_pk_field=user_pk_field and  user_keys_field containing 'SWB'"
 #>	
 
-<div  id="wrapper"> <!--this should hold all content excluding footer -->
+<!-- div id=wrapper... --><div  id="wrapper"> <!--this should hold all content excluding footer -->
 <#include(file=~/Layout/ProfileMenu)#>
 <#include(file=~/Layout/Notify)#>
 <div id="basicmodaldialog" "> <h3>Loading...</h3></div>
@@ -14,7 +14,7 @@ xifnotexists="select user_display_field from user_table_name where user_table_na
 #>	
 
 
-<div id="container">
+<!-- div id=container... --><div id="container">
 
 <#
 Menu (name:"Start",style:"LBMenu")
@@ -34,8 +34,8 @@ MenuEnd
 
 <!--end  Menu2-->
 
-<!--end  Menu3-->
-<div id="content"><div style="margin-left:4px;" class="container_12">
+<!-- div id=content... --><div id="content">
+<div style="margin-left:4px;" class="container_12">
 
 <#xG960 #>
 

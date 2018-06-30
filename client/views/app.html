@@ -70,7 +70,7 @@ padding: 0.0em 0.5em 0.0em 1.7em;
 		<span class="icon-wrap-lb"><a href="#" language="javascript" id="DebugViewControllers" title="Controllers"><span class="icon-block-black "></span>Controllers</a></span>			
 		<span class="icon-wrap-lb"><a href="#" language="javascript" id="DebugViewViews" title="Views"><span class="icon-block-black "></span>Views</a></span>					
 		<span class="icon-wrap-lb"><a href="#" language="javascript" id="DebugRebuild" title="Rebuild"><span class="icon-block-black "></span>Rebuild</a></span>					
-		<span class="icon-wrap-lb"><a href="#" language="javascript" onclick="return(zx_switch_key());" title="View Web"><span class="icon-block-black "></span>Web</a></span>			
+		<span class="icon-wrap-lb"><a href="#" language="javascript" onclick="return(zx_switch_key());" title="Back To App"><span class="icon-block-black "></span>Web</a></span>			
 		<HR/>		
 		<div divout="Standard" id="debugBuildNotify"></div>
         <div divout="Standard" id="debugcontainer">		
@@ -80,7 +80,7 @@ padding: 0.0em 0.5em 0.0em 1.7em;
 
 </div><!--PAGE_3 -->
 
-<div id="PAGE_1" class="zxPage"  style="display: none;">
+<div id="PAGE_1" class="zxPage" style="display: none;">
 
 <!--[if IE]>
 <script type="text/javascript">
@@ -132,12 +132,12 @@ window.location.href = "ie.html";
   
 </div><!--PAGE_1 -->
 
-<div class="zxPage" id="PAGE_2" style="display: none;">  
+<div id="PAGE_2" class="zxPage" style="display: none;">  <!--this is matched in serverside_render.js -->
 <div divout="Frame" id="framecontainer"></div>
 <div divout="Standard" id="maincontainer"></div>
 </div><!--PAGE_2 -->	
 
-<div id="PAGE_0" class="zxPage"  en0_style="display: none;">
+<div id="PAGE_0" class="zxPage" style="display: block;">  <!--this is matched in serverside_render.js -->
 <!--[if IE]>
 <script type="text/javascript">
 window.location.href = "ie.html";

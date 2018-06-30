@@ -722,7 +722,7 @@ var seq_page = function (zx) {
 		//if (valid.result) {};
 		//console.log('validate_scriptxxx-----------------------------',valid);
 		if (valid === 'ok') { //only update when no syntax errors exist
-			console.log('Script validated - no error ' + zx.main_page_name);
+			//console.log('Script validated - no error ' + zx.main_page_name);
             if (zx.cache_page_in_app) { //we can still write pages to go with the first open of the app, like the index page
             //todo need an interface to set cache_page_in_app
             fs.writeFileSync(fnh,zx.mtscript);
@@ -745,7 +745,7 @@ var seq_page = function (zx) {
             //console.trace('Writing script to database - ' + zx.main_page_name, 'size:', script.length," spi:",zx.CurrentPageIndex);       
 			if (zx.CurrentPageIndex==undefined) throw new Error("zx.CurrentPageIndex==undefined");
 			zx.dbu.write_script(zx,true, zx.CurrentPageIndex ,zx.main_page_name,zx.mtHash, script,'');
-			console.log('Wrote script to database - ' + zx.main_page_name, 'size:', script.length);
+			//console.log('Wrote script to database - ' + zx.main_page_name, 'size:', script.length);
 
 			var errtxt = zx.sql.testhead + script + zx.sql.testfoot + zx.mtscript;
 			fs.writeFileSync(lokfn, errtxt); //for easy debugging - when this file reloads it means there was an error

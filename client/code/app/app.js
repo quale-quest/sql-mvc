@@ -8,13 +8,13 @@ var zx_client_side_plugins = require('./zx_client_side_plugins.js');
 
    
 var simpleautotest=0;    //set to 1 to automatically post records to demo todo site
-var zx_view_page='#PAGE_3';       
+var zx_view_page='#PAGE_2';   //ctrl-Q toggles between them    
 var zx_prev_page='#PAGE_3';
 var qq_session,qq_cid;
 
 
 var zx_switch_page = function (div){
-    console.log("zx_switch_page :",div );
+    console.log("zx_switch_page new:",div," old:",zx_view_page );
     if (div!==zx_view_page)
        {
         zx_prev_page=zx_view_page;
@@ -25,6 +25,7 @@ var zx_switch_page = function (div){
 }
 
 zx_switch_key = function (){
+	//alert('zx_switch_key '+zx_prev_page ); 
 zx_switch_page(zx_prev_page);
 }
 

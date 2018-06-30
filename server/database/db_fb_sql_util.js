@@ -364,9 +364,9 @@ exports.getUpdateOrInsert = function (zx, name) {
 exports.getPageIndexNumber = function (zx, name) {
     if (zx.fb25) {
 		//console.log('getPageIndexNumber : A' ,name);
-		exports.singleton(zx, "", "UPDATE OR INSERT INTO Z$SP (FILE_NAME)VALUES ('" + name + "') MATCHING (FILE_NAME) ",1);
+		exports.singleton(zx, "", "UPDATE OR INSERT INTO Z$SP (FILE_NAME)VALUES ('" + name + "') MATCHING (FILE_NAME) ",0);
 		//console.log('getPageIndexNumber : B' );
-		var CurrentPageIndex = exports.singleton(zx, "PK", "select PK from Z$SP where FILE_NAME='" + name + "'",1);
+		var CurrentPageIndex = exports.singleton(zx, "PK", "select PK from Z$SP where FILE_NAME='" + name + "'",0);
 
 		//console.log('getPageIndexNumber : ' +CurrentPageIndex);
 		return CurrentPageIndex;

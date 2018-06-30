@@ -221,10 +221,10 @@ exports.beginblock = function (zx, line_obj) {
 };
 
 exports.tag_sqlcomment = function (zx, o) {
-	console.log('+++++++++++++++++++++++++++++++++++++++++');
-	console.log(o.nonkeyd.trim());
+	//console.log('+++++++++++++++++++++++++++++++++++++++++');
+	//console.log(o.nonkeyd.trim());
 	
-	zx.dbg.emit_comment(zx,'+++++++++++++++++++++++++++++++++++++++++');	
+	//zx.dbg.emit_comment(zx,'+++++++++++++++++++++++++++++++++++++++++');	
     zx.dbg.emit_comment(zx,o.nonkeyd.trim());	
 }
 

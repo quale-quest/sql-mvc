@@ -148,11 +148,11 @@ ss.http.route('/', function (req, res) {
 				function (scriptnamed,jsonstring){
                     //console.log("severside_render",jsonstring);
                     severside_render.render(scriptnamed,jsonstring,"client/views/app.html",
-                        function (html_inject){
+                        function (cx,html_inject){
 							//console.log("severside_render html_inject");
                             res.serveClient('main',
                             function (html){
-                                 html = severside_render.render_inject(html,html_inject,LoadedInstance);
+                                 html = severside_render.render_inject(html,html_inject,LoadedInstance,cx);
                                  return html;
                             });
                         });    

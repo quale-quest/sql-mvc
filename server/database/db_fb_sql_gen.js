@@ -1716,7 +1716,7 @@ exports.AutoMaticDLL = function (zx,line_obj) {
    //console.log('    sqlgen_fb AutoMaticDLL for : ',trigger.Table,trigger.Field,pk_seq.substring(0,80));   
    zx.db_update.Prepare_DDL(zx, null, pk_seq, line_obj)
  });
- console.log('\r\nAutoMaticDLL done: ');   
+ //console.log('\r\nAutoMaticDLL done: ');   
 }
 
 exports.init = function (zx) {

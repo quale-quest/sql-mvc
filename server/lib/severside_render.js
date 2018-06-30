@@ -68,19 +68,25 @@ var update_in_mem_template = function (page_id,mtHash, text) {
 	}
 
 var render_from_fullstash = function (cx,cont_content,cb) {	
-   cb(cont_content);
+   cb(cx,cont_content);
 }
 
 
-exports.render_inject = function (html_inp,html_inject,LoadedInstance) { 
+exports.render_inject = function (html_inp,html_inject,LoadedInstance,cx) { 
 	//switch visible page
-    html_inp=html_inp.replace(/id="PAGE_2" style="display: none;"/,'id="PAGE_2" x2style="display: none;"');
-    html_inp=html_inp.replace(/en0_style/,'style');
-	//console.log("render_inject :");
+    //html_inp=html_inp.replace(/id="PAGE_2" style="display: none;"/,'id="PAGE_2" x2style="display: none;"');
+	html_inp=html_inp.replace(/<div id="PAGE_2" class="zxPage" style="display: none;">/,'<div id="PAGE_2" class="zxPage" style="display: block;">');
+	html_inp=html_inp.replace(/<div id="PAGE_0" class="zxPage" style="display: block;">/,'<div id="PAGE_0" class="zxPage" style="display: none;">');
+	
+    //html_inp=html_inp.replace(/en0_style/,'style');
+	//console.log("render_inject :",cx.obj[0]);
     var inits =  '<script type="text/javascript" language="javascript">'
 				+'first_page_rendered=true;'
 				+'first_page_container="#maincontainer";'
 				+"LoadedInstance='"+LoadedInstance+"';"
+				+"qq_page_id = '"+cx.obj[0].Stash+"';"
+				+"qq_cid = '"+cx.obj[0].Data.cid+"';"
+				+"qq_session ='"+cx.obj[0].Session+"';"
 				+'</script>\n';
     
     var container_start = 'id="maincontainer">';

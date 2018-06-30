@@ -696,9 +696,9 @@ exports.start_up = function (zx) {
         //var APPDATA = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + 'Library/Preference' : '/var/local');
         //APPDATA = path.join(APPDATA,'Notepad++','userDefineLang.xml');
         var APPDATA = 'install/userDefineLang.xml';
-        console.log('Notepad userDefineLang:', APPDATA);
+        //console.log('Notepad userDefineLang:', APPDATA);
         //if (!fs.existsSync(APPDATA))    {
-		    console.log('Creating Notepad userDefineLang:', APPDATA);	
+		    //console.log('Creating Notepad userDefineLang:', APPDATA);	
             var npp = 'install/npp.txt';
             var str = String(fs.readFileSync(npp));
 		    str = str.replace('QUICCKEYWORDS',Keyword_API_npp);

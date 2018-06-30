@@ -7,7 +7,7 @@ CREATE TABLE TODO_MVC				--:{as:"Table"}
 (
   REF VARCHAR(40),					--:{as:pk}
   NAME VARCHAR(100),				--:{as:text,size:40,title:"todo"}  
-  Progress VARCHAR(100),			--:{as:text,size:40,title:"Progress"}  
+  PROGRESS VARCHAR(100),			--:{as:text,size:40,title:"Progress"}  
   OWNER VARCHAR(40),				--:{as:hidden}
   STATUS VARCHAR(10) default ''    	--:{as:ticked}  
 );

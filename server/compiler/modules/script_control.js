@@ -104,7 +104,7 @@ var script_into = function (zx, line_obj, r) {
 			params = params.replace(/#defaultmastertable#/g, zx.conf.db.platform_user_table.user_table_name);
 		}
 		if (params.indexOf('::') > 0) {
-			console.log('script_into   params : ',params);
+			//console.log('script_into   params : ',params);
 			params = params.replace(/::/g, zx.config.db.var_actaul);
 			complex = true;
 		}
@@ -125,16 +125,16 @@ var script_into = function (zx, line_obj, r) {
 		if (b4 !== params) {
 			//process.exit(2);
 			complex = true;
-			console.log('TextWithEmbededExpressions tag_script complex   : ',b4);
+			//console.log('TextWithEmbededExpressions tag_script complex   : ',b4);
 		}
 
 		if (complex) {
 			// inject  '''||  and  ||'''  around variables starting :   as in '''||:pki||''');
 			// provide for unqoted syntax with :-
-			console.log('TextWithEmbededExpressions tag_script b4   : >'+b4+'<');
-			console.log('TextWithEmbededExpressions tag_script vars : ',vars);
-			console.log('TextWithEmbededExpressions tag_script names: ',fieldnames);
-			console.log('TextWithEmbededExpressions tag_script      : >'+params+'<');
+			//console.log('TextWithEmbededExpressions tag_script b4   : >'+b4+'<');
+			//console.log('TextWithEmbededExpressions tag_script vars : ',vars);
+			//console.log('TextWithEmbededExpressions tag_script names: ',fieldnames);
+			//console.log('TextWithEmbededExpressions tag_script      : >'+params+'<');
 			
 			params = zx.escape_scriptstring(zx, params, 1, /:[^\-]/g, "", "'''||:", "||'''");
 			params = zx.escape_scriptstring(zx, params, 2, /:-/g, "", "'||:", "||'");
