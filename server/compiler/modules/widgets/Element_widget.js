@@ -50,7 +50,7 @@ var getFieldStyle = function (cx, SubStyle, Type, Class, Action, Key,FT) {
 	Key = '_' + Key;
 
 	//try first table specific styles
-	var Full = Style + SubStyle + Type + Class + Action + Key;
+	var Full = FT.name+' : '+Style +'.'+ SubStyle +'.'+ Type +'.'+ Class +'.'+ Action;// +'.'+ Key;
 	Try.Key = Style + SubStyle + Type + Class + Action + Key;
 	Result = getFieldStyleSub(Try); //sbtca
 	if (Result === undefined) {
@@ -137,10 +137,9 @@ var getFieldStyle = function (cx, SubStyle, Type, Class, Action, Key,FT) {
 	
     //var show=0;
 	
-	//console.log('getFieldStyle FT  : ', FT.name);
-	//console.log('getFieldStyle Try : ', Try.tried);
-	cx.fieldDebug.push('getFieldStyle FieldName:'+FT.name+' Full :'+Full+' Tried :'+JSON.stringify(Try.tried));
-	//if (zx.pass==5) console.log('getFieldStyle FT :', FT.name,' Full :', Full,' Tried :', JSON.stringify(Try.tried));
+	 
+	if (!cx.fieldDebug[Full]) cx.fieldDebug[Full] = {};
+	cx.fieldDebug[Full][Key] = Try.tried;
 	Result = zx.process_tags(Result, 'repack(', ')', 0, function (value) {
     //console.log('repacking process_tags a: ', value);
 		var a = value.split(',') || [value];

@@ -26,6 +26,7 @@ The select statement can be either ini style select=,from=where=orderby=  or a "
 
  */
 var zx = require('../../zx.js');
+var ide = require("../../../../server/IDE/debugger");
 
 //var deepcopy = require('deepcopy');
 //var extend = require('node.extend');
@@ -638,7 +639,7 @@ var zxTable = exports.zxTable = function (cx) {
 
 
 	var html = "";
-	cx.fieldDebug = [];
+	cx.fieldDebug = {};
 	//Divine-PrepFormatAndData-Redo on Server
 	//exports.Validate(cx);
 	//Divine-TopTitle
@@ -667,8 +668,10 @@ var zxTable = exports.zxTable = function (cx) {
 	//Divine-BottomRightButtons -MoveTo compiler+static+metaupdate
 	//Divine-TailDiv
 	//Divine-Final_DebugResult +TopTileResult+ Pager + OpenResult+TableFieldScripts
-
-	if (zx.debug_element_class_selection) html += "<pre class=\"devdebugvisable \"> debug_element_class_selection : " + JSON.stringify(cx.fieldDebug, null, 4) + "</pre>";
+	
+	console.log("\r\ntreeview:",JSON.stringify(cx.fieldDebug,null,4));	
+	var treeview = ide.json_tree_view("Field Style Debug",cx.fieldDebug);
+	if (zx.debug_element_class_selection) html += "<pre class=\"devdebugvisable \"> " + treeview + "</pre>";
 	
 	return html;
 };

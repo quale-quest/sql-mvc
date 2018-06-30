@@ -80,14 +80,14 @@ exports.render_inject = function (html_inp,html_inject,LoadedInstance,cx) {
 	
     //html_inp=html_inp.replace(/en0_style/,'style');
 	//console.log("render_inject :",cx.obj[0]);
-    var inits =  '<script type="text/javascript" language="javascript">'
-				+'first_page_rendered=true;'
-				+'first_page_container="#maincontainer";'
-				+"LoadedInstance='"+LoadedInstance+"';"
-				+"qq_page_id = '"+cx.obj[0].Stash+"';"
-				+"qq_cid = '"+cx.obj[0].Data.cid+"';"
-				+"qq_session ='"+cx.obj[0].Session+"';"
-				+'</script>\n';
+    var inits =  '<script type="text/javascript" language="javascript">\r\n'
+				+'first_page_rendered=true;\r\n'
+				+'first_page_container="#maincontainer";\r\n'
+				+"LoadedInstance='"+LoadedInstance+"';\r\n"
+				+"qq_page_id = '"+cx.obj[0].Stash+"';\r\n"
+				+"qq_cid = '"+cx.obj[0].Data.cid+"';\r\n"
+				+"qq_session ='"+cx.obj[0].Session+"';\r\n"
+				+'</script>\r\n';
     
     var container_start = 'id="maincontainer">';
     var cont_content = container_start+ html_inject + inits;
@@ -96,7 +96,18 @@ exports.render_inject = function (html_inp,html_inject,LoadedInstance,cx) {
     var html=html_inp.replace(container_start,cont_content);
     
     //console.log("template html :",html);
+	
+	//code from app.js
+	var where = 'console.log("LoadedInstance:",LoadedInstance);';	
+	var Onload = '\r\n' + where+ '\r\n'
+		+ "$('#maincontainer').off('click', '.showtree', function () {$( this ).next().toggle();});\r\n"
+		+ "$('#maincontainer').off('click', 'ul.tree .plus', function () {	$( this ).next().toggle();	});\r\n"
+		+ "$('#maincontainer').on('click', '.showtree', function () {$( this ).next().toggle();});\r\n"
+		+ "$('#maincontainer').on('click', 'ul.tree .plus', function () {	$( this ).next().toggle();	});\r\n"
+		+ "\r\n";
     
+	html=html.replace(where,Onload);
+	
     return html;
     //render_from_fullstash(cx,html); 
 }

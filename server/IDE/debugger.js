@@ -58,12 +58,21 @@ var prep_debug__tool = function (str) {
 	}
 
 	var output = [];
-	jt.html("root", obj, output);
+	jt.html("root", obj, output, "Show Errors");
 
-	console.log('prep_debug__tool: \n\n', output.join('\n'));
+	//console.log('prep_debug__tool: \n\n', output.join('\n'));
 	return output.join('\n');
 
 }
+
+exports.json_tree_view = function (TreeMessage,obj) {
+	var output = [];
+	jt.html("root", obj, output,TreeMessage);
+
+	//console.log('prep_debug__tool: \n\n', output.join('\n'));
+	return output.join('\n');	
+}
+
 
 exports.ProcessDebugRequest = function (cmds) {
 	console.log('ProcessDebugRequest cmds:', JSON.stringify(cmds, null, 4));
