@@ -8,12 +8,14 @@
 --:{regex:"regex:/integer/i",Default_length:"10",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} 
 --:{regex:"regex:/SHORT_NAME/i",Default_length:"20",length:"regex:/(\\d+)/",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} 
 
+--:{validator:"SMS",pattern:"^\+[0-9_]{1,15}$",pass:"The sms number must be a valid phone number "}
 
 --:{class:"pk",Action:View,Type:Hide,PrimaryKey:true,fb_trigger:true}
 --:{class:"existing_pk",Action:View,Type:Hide,PrimaryKey:true,fb_trigger:false}
 --:{class:"fk",Action:Link,Type:Link}
 
 
+--:{class:hidden,Action:View,Type:Hidden}
 --:{class:ticked,Type:Pick,List:Ticked}  
 --:{class:gender,Type:Pick,List:Gender}  
 --:{class:yesno,Type:Pick,List:YesNo}  

@@ -190,6 +190,9 @@ function tokenscheck_eachRecursive(obj) {
 						var re = new RegExp(sp[1], flags);
 						obj[k] = re;
 					}
+				} else if (obj[k].substring(0, 11) === "validator:/") {
+					
+					
 				}
                 else if (obj[k].substring(0, 9) === "replace:/") { //concat:/regex/mod/replacementPattern/regex/mod/replacementPattern ....
                     //this code is the setup execution for  , which get executed in tokens_eval_eachRecursive - marked 053212

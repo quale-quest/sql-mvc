@@ -161,12 +161,14 @@ window.close();
 }
 
 
-function FindCell(e,pkf)
+function FindCell(e)
 {
+	var el;	
     if (!e) e = window.event;
   
     if (e.target) el = e.target;
     else if (e.srcElement) el = e.srcElement;
+	else el = e;
   
     var valu=e.target.value;
     var typ=e.type;
@@ -192,7 +194,7 @@ function FindCell(e,pkf)
       //console.log("Parent ",Parent.tagName,Parent.attributes.cid,Parent);
       }
       
-    var o = {typ:typ,cid:cid_id.value,pkf:pkf,valu:valu,el:el};  
+    var o = {typ:typ,cid:cid_id.value,valu:valu,el:el};  
     //console.log("client-typ-container-pk-f-v",typ,cid_id,String(pkf),valu,o);  
     return o;
 }
@@ -247,24 +249,63 @@ deltacount=deltacount+1;
 $('#deltacounter1').text(deltacount);
 $('#deltacounter2').text(deltacount);
 }
+function check_validity(Cell,el) {
+	  var isValid = el.checkValidity();
+	  var isValid2 = new RegExp(el.getAttribute("data-pattern2")).test(Cell.valu);
+	  
+      //console.log("change test:",el.pattern);   
+	  //console.log("change valu:",Cell.valu);   
+	  //console.log("res:",res,' isValid:',isValid);   
+	  //console.log("change test:",el.parentNode);   
+	  //el.parentNode.getElementsByClassName('validationhidden').className = 'validationshown';
 
+	  console.log(' isValid:',isValid,' isValid2:',isValid2);   
+/* not used yet
+	  if (isValid || isValid2) {
+		  let elementlist = el.parentNode.getElementsByClassName('validationshown');
+		  while (elementlist && elementlist.length) elementlist[0].className = 'validationhidden';		  		  
+		  console.log(' returning isValid || isValid2 ');
+	  } else {
+		  let elementlist = el.parentNode.getElementsByClassName('validationhidden');
+		  while (elementlist && elementlist.length) elementlist[0].className = 'validationshown';		  		  
+		  console.log(' returning');   
+		  return;
+	  }	
+*/
+}
+function zxf(e) {	
+	let Cell=FindCell(e); //get a new object for the element
+	check_validity(Cell,Cell.el);	
+	var r=Cell.el.dataset.touched;
+	console.log("zxf(el) :",r); 
+	Cell.el.dataset.touched = 1;
+	
+}
 function zxd(e,pkf,pko) { //delta
 var r;
 
   if (pko!==undefined) pkf=String(+pkf + (+pko));
-  var Cell=FindCell(e,pkf);    
+  var Cell=FindCell(e); //get a new object for the element
+  Cell.pkf = pkf;
   var el=Cell.el;
   delete Cell.el;
   //console.log("zxd :",Cell,el);  
-  if (el.type=="checkbox")  zxd_checkbox(Cell,el); //returns updates in Cell
+  console.log("zxd Cell:",Cell);  
+  console.log("zxd el:",el); 
+  console.log("zxd el.pattern:",el.pattern);
+  console.log("zxd el.data-pattern2:",el.getAttribute("data-pattern2"));
+  console.log("zxd el.min:",el.min);
+  if (Cell.typ=="change")  {
+	  check_validity(Cell,el);
+  }
   
+  if (el.type=="checkbox")  zxd_checkbox(Cell,el); //returns updates in Cell
   zx_delta(Cell);
-
   zxdelta_increment();
 
  var autosave=$( el ).attr("data-autosave");
  var save=truish(autosave);
- console.log("zxd autosave:",autosave,' saveing:',save);  
+ console.log("zxd autosave :",autosave,' saveing:',save);  
  if (autosave=="push") {
          //alert("pushing data");
          var savecell={typ:"click",cid:Cell.cid,pkf:"-1"};
@@ -286,7 +327,8 @@ function zxnav(e,pkf,pko) {
   //alert(pkf+pko);   
   e.stopPropagation();  
   if (pko!==undefined) pkf=String(+pkf + (+pko));
-  var Cell=FindCell(e,pkf); 
+  var Cell=FindCell(e);
+  Cell.pkf = pkf;
   delete Cell.el;
   console.log("zxnav:",Cell);
   zx_delta(Cell);
@@ -390,7 +432,8 @@ function FillList(e,SelListName)
   var typ=e.type;
 //  console.log("FillList:",e,el,e.target.value);
 
-  var Cell=FindCell(e,0);    
+  var Cell=FindCell(e);
+  Cell.pkf = 0;
   //console.log("FillList Cell:",Cell);    
   
   //console.log("SelList info:",SelListName,Cell.cid,qq_stache);
@@ -451,7 +494,8 @@ function alt_FillList(e,SelListName) //depricate
 //  console.log("FillList:",e,el,e.target.value);
   
 
-  var Cell=FindCell(e,0);    
+  var Cell=FindCell(e);
+  Cell.pkf = 0;  
   //console.log("FillList Cell:",Cell);    
   
   //console.log("SelList info:",SelListName,Cell.cid,qq_stache);
@@ -589,10 +633,11 @@ $(document).keydown(function(e) {
   focusable = form.find('input,a,select,button,textarea,div[contenteditable=true]').filter(':visible');
 
   function enterKey(){
-    if ((e.keyCode === 81 ) && e.ctrlKey === true )
+	//alert('pressed'+String(e));   
+    if ((e.keyCode === 81 ) && e.ctrlKey === true ) //ctrl-q
        {
-       
-       zx_switch_key();
+        //alert('pressed 81 - ctrl-q'); 
+        zx_switch_key();
        }
       // alert('pressed'+String(e));    
     
