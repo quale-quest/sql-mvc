@@ -194,14 +194,17 @@ function dataprocess(ss,par,newdata,cb) { //should only process after transactio
 function connect_and_produce_div_sub_fbsql(ss,par,ErrorText, err,cb)  {
 	//retries is called recursivly
 	if (ErrorText!=null) {
-		
+		console.log('produce_div error start ErrorText:',ErrorText);
+		//console.log('produce_div error start ss:',ss);
+		//console.log('produce_div error start par:',par);
 		if (err=='DEADLOCK') {
 			var str = '\n\n\n\nSET TERM ^ ;' + par.newdata  + '^\nSET TERM ; ^\n\n\n\n';
 			console.log(str);                                
 			fs.writeFileSync( path.resolve('output/runtime_exception.txt'), str );			
 		}
-		winston.warn('Z$RUN ',{ip:ip , url:req.url , inst:LoadedInstance,ErrorText:ErrorText,err:err,retry_count:par.retry_count,qry:par.QryDebug}); 
-				
+		//console.log('produce_div error winston');
+		winston.warn('Z$RUN ',{ip:par.clientIp ,sessionId:par.sessionId, ErrorText:ErrorText,err:err,retry_count:par.retry_count,qry:par.QryDebug}); 
+		//console.log('produce_div error done');		
 	}
 	if (par.retry_count>3) {//no more retries
 		//console.log('To many retries - aborting'); 
@@ -237,10 +240,11 @@ function connect_and_produce_div_sub_fbsql(ss,par,ErrorText, err,cb)  {
 			[par.message.session, par.message.cid, par.message.pkf, par.public_parameters, par.update],
 			function (err, result) {
 				if (err) {
-					//console.log('error in transaction.query', err);
+					console.log('error in transaction.query', err);
 					transaction.rollback(function (rollback_err) {
+						console.log('error in rolling back transaction.query', rollback_err);
 						//retrying
-						connect_and_produce_div_sub_fbsql(ss,par,'Error query transaction :', err,cb);				
+						connect_and_produce_div_sub_fbsql(ss,par,'Error query transaction :'/*+par.QryDebug*/, err,cb);				
 						});//rollback
 				} else {
 					fb_read_blob(result[0].RES,function(newdata) {
