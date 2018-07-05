@@ -666,19 +666,28 @@ var forFieldsx = exports.forFieldsx = function (object,callback) {
     //return false;
 }                      
 
-var stringify_2 = exports.stringify_2 = function (object,depth) {
+var stringify_2 = exports.stringify_2 = function (object,depth,maxdepth) {
 //returns true and stops if a match is found - acts like arr.some
+    //console.log(' xxxx>',depth,':',maxdepth,':');
     if (!depth) depth=0;
+	if (!maxdepth) maxdepth=99;
+	let indent_depth = depth*4;
+	//console.log(' xxxx>',depth,':',maxdepth,':',indent_depth);
     forFields(object, function (field, key) {
         
         if (typeof field === 'object') {
-            console.log(indent(depth)+'',key,':');
-            console.log(indent(depth)+'  { ');
-            if (key!=='zx')
-                stringify_2(field,depth+4);
-            console.log(indent(depth)+'  } //',key);
+			if (depth<maxdepth) {
+				console.log(indent(indent_depth)+'',key,':');
+				console.log(indent(indent_depth)+'  { ');
+				if (key!=='zx')
+					stringify_2(field,depth+1,maxdepth);
+				console.log(indent(indent_depth)+'  } //',key);
+			}
+			else {
+				console.log(indent(indent_depth)+'',key,':{...object depth limited...} >>>>>>>>>>>>>>>>>>>');
+			}
         }else{
-            console.log(indent(depth)+'',typeof field ,key,exports.show_longstring(String(field)));
+            console.log(indent(indent_depth)+'',typeof field ,key,exports.show_longstring(String(field)));
         }
         		
 			

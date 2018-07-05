@@ -662,6 +662,11 @@ var zxTable = exports.zxTable = function (cx) {
 	//Divine-table_content
 	html += table_content(cx); //Should push direct to div
 
+	zx.forFields(cx.fields, function (field, key) {
+		if (!cx.fieldDebug[field.f.name]) cx.fieldDebug[field.f.name] = {};		
+		cx.fieldDebug[field.f.name].Qualia = field.f;
+	});
+	
 	//Divine-SetIsEmpty
 	//Divine-PostConditionalParams   - hide the table if blank,
 	//Divine-BottomLeftButtons  -MoveTo compiler+static+metaupdate

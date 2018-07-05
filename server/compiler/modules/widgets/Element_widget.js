@@ -50,6 +50,7 @@ var getFieldStyle = function (cx, SubStyle, Type, Class, Action, Key,FT) {
 	Key = '_' + Key;
 
 	//try first table specific styles
+	var QFull = FT.name;
 	var Full = FT.name+' : '+Style +'.'+ SubStyle +'.'+ Type +'.'+ Class +'.'+ Action;// +'.'+ Key;
 	Try.Key = Style + SubStyle + Type + Class + Action + Key;
 	Result = getFieldStyleSub(Try); //sbtca
@@ -138,8 +139,10 @@ var getFieldStyle = function (cx, SubStyle, Type, Class, Action, Key,FT) {
     //var show=0;
 	
 	 
-	if (!cx.fieldDebug[Full]) cx.fieldDebug[Full] = {};
-	cx.fieldDebug[Full][Key] = Try.tried;
+	if (!cx.fieldDebug[QFull]) cx.fieldDebug[QFull] = {Qualia:{},search:'',tried:{}};	
+	cx.fieldDebug[QFull]['tried'][Key] = Try.tried;
+	cx.fieldDebug[QFull]['search'] = Full;
+	
 	Result = zx.process_tags(Result, 'repack(', ')', 0, function (value) {
     //console.log('repacking process_tags a: ', value);
 		var a = value.split(',') || [value];
