@@ -22,6 +22,7 @@ var fs = require('fs'), bcb = require('./bcbiniparse.js');
 
 
 var appendToDepenance = exports.appendToDepenance = function (zx, filename) {
+	/* zx.depends holds details for testing if a "include" file has changed, then which file(s) is to be compiled to update all dependencies */
     var page_name=zx.main_page_name.replace(/\\/g, "/");
     
 //from child perspective    
@@ -372,6 +373,7 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 };
 
 var addFileToLinkFiles = function (zx, fn, obj, debugref) {
+	//console.log('addFileToLinkFiles  a: ',fn );
 	if ((fn !== '') && (fn !== undefined)) {
 		var ofn = fn;
 		fn = fileutils.locatefile(zx, fn, zx.file_name, obj, debugref);
@@ -381,12 +383,14 @@ var addFileToLinkFiles = function (zx, fn, obj, debugref) {
 				console.trace('process.exit(2) from addFileToLinkFiles : ');
 				process.exit(44);
 			}
-
-			zx.linkfiles.push({
-				name : zx.Current_main_page_name,
-				obj : obj
-			});
-
+			//console.log('addFileToLinkFiles: ',fn, zx.Current_main_page_name );
+			
+			if (zx.exists_inArray_byname(zx.linkfiles,zx.Current_main_page_name)<0) {
+				zx.linkfiles.push({
+					name : zx.Current_main_page_name,
+					obj : obj
+				});
+			}
 		}
 	}
 };
@@ -440,6 +444,7 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 	for (var i = 0; i < obj.length; i++) {
 		//console.warn('page-Tag ', zx.dialect_active, i, obj.length, obj[i].tag);
 		obj[i].dialect_active = zx.dialect_active ;
+		let tag=obj[i].tag.toLowerCase();
 		if (obj[i].tag === undefined)
 			console.warn('page-undefined Tag ', i, obj[i]);
 
@@ -454,7 +459,7 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 			if (obj[i].body) {
 				//console.log('Quic RecurseParseFileToObject 172021 :', obj[i]);
 
-                if (zx.tag_attr[ obj[i].tag.toLowerCase() ] && zx.tag_attr[ obj[i].tag.toLowerCase() ].dontparseparam===true) {
+                if (zx.tag_attr[ tag ] && zx.tag_attr[ tag ].dontparseparam===true) {
                     //console.log('Quic RecurseParseFileToObject dontparseparam 172029m :',obj[i].body);
                     obj[i].nonkeyd = obj[i].body;
                 }
@@ -486,13 +491,13 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 			zx.error.caught_exception(zx, e, " RecurseParseFileToObject mark-172032 ");
 			throw new Error("local known error 117017");
 		}
-		if (obj[i].tag.toLowerCase() === 'dialect') {
+		if (tag === 'dialect') {
 				//console.log('Dialect object:', obj[i]);
 				zx.flow_control.dialect_eval(zx, obj[i]);
 		}
 		if (obj[i].dialect_active)
 		{
-		if (obj[i].tag.toLowerCase() === 'table') {
+		if (tag === 'table') {
 			if (obj[i].q) {
 				if (obj[i].q.Table ==undefined) zx.error.log_syntax_warning(zx, 'Syntax err: Table() header info    ', zx.err, zx.line_obj);				
 				if (obj[i].q.Fields==undefined) zx.error.log_syntax_warning(zx, 'Syntax err: Table() missing fields ', zx.err, zx.line_obj);
@@ -502,6 +507,7 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 				if (obj[i].q.Fields)	
 				for (var i2 = 0; i2 < obj[i].q.Fields.length; i2++) {
 					var f = obj[i].q.Fields[i2];
+					//console.log('form tag or ',tag,' file:',f.form );
 					addFileToLinkFiles(zx, f.form, obj[i], 120015);
 				}
 			}
@@ -511,20 +517,22 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 				for (var i3 = 0; i3 < arr.length; i3++) {
 					var fn3 = arr[i3];
 					//arr.forEach(function (fn) {
+					//console.log('form tag or ',tag,' file:',fn3 );
 					addFileToLinkFiles(zx, fn3, obj[i], 120019);
 				}
 			}
 		}
-		if (obj[i].tag.toLowerCase() === 'menu') {
+		if ((tag === 'menu')||(tag === 'link')||(tag === 'button')||(tag === 'sqlbutton')) {
 			//console.log('menu tag: ',obj[i] );
 			if (obj[i].form !== undefined) {
 				var menufile = zx.gets(obj[i].form);
+				//console.log('form tag or ',tag,' file:',menufile );
 				addFileToLinkFiles(zx, menufile, obj[i], 120016);
 
 			}
 		}
 
-		if (obj[i].tag.toLowerCase() === 'include') {
+		if (tag === 'include') {
 			var file_name;
 			 //console.log('include this tag found obj : ', obj[i]);
 			if (zx.gets(obj[i].file) === 'this') { //useful for displaying own source

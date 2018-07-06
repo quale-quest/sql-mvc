@@ -55,6 +55,19 @@ exports.deduplicate_byname = function (array) {
 		r.push(temp[k]);
 	return r;
 };
+exports.exists_inArray_byname = function (array,name,def) {
+	
+	for (var i = 0; i < array.length; i++)
+		if (array[i].name == name) return i;
+	return def||-1;
+};
+exports.GetNamesInArray = function (array) {
+	var names = [];
+	for (var i = 0; i < array.length; i++)
+		names.push(array[i].name);
+	
+	return names;
+};
 
 exports.sortObj = function (arr) {
 	//http://www.latentmotion.com/how-to-sort-an-associative-array-object-in-javascript/

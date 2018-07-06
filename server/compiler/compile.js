@@ -119,14 +119,16 @@ var queue_file_to_be_compiled = function (zx, dfn) {
 			});
 			zx.pages = zx.deduplicate_byname(zx.pages);
 		} else {
+			/* zx.depends holds details for testing if a "include" file has changed, then which file(s) is to be compiled to update all dependencies */
 			fileobj = zx.depends[dfn];
-			//console.log('Dependancy  :',dfn,' >>>',fileobj);
+			console.log('Dependancy  :',dfn,' >>>',fileobj);
 
 			if (fileobj !== undefined) {
 				//console.log('zx.depends :',fileobj.parents);
 
 				for (name in fileobj.parents) {
 					if (fileobj.parents.hasOwnProperty(name)) {
+						//console.log('queue_file_to_be_compiled pushing:', name);
 						zx.pages.push({
 							name : name,
 							obj : "filedeps"
@@ -155,6 +157,27 @@ function getDirectories(srcpath,Filter) {
   console.log('getFiles:' + getFiles('.', null, /widget/gi));
 }
 
+var List_Pages = function (zx,msg) {
+		zx.forFields(zx.pages, function (obj,key) {
+			console.log(msg, obj.name);
+		});	
+}		
+
+var AddDependedFilesToBeCompiled = function (zx,fn) {				
+
+	fileobj = zx.depends[fn];
+	console.warn('Dependancy  :', fileobj);
+	//console.warn('zx.depends :',zx.depends);
+
+	for (name in fileobj.parents) {
+		if (fileobj.parents.hasOwnProperty(name)) {
+			zx.pages.push({
+				name : name,
+				obj : "filedeps"
+			});
+		}
+	}
+}
 
  var seq_main = function () {
 	var cmd,
@@ -383,7 +406,7 @@ function getDirectories(srcpath,Filter) {
 		if (zx.pages.length === 0) {
 
 			if (program.args.length > 0) {
-				cmd = program.args[0];
+				cmd = program.args[0].toLowerCase();
 			}
 
 			if (cmd === 'index') {
@@ -449,19 +472,8 @@ function getDirectories(srcpath,Filter) {
 					console.warn('invalid , expected : file filename ');
 					return;
 				}
-				fn = program.args[1];
-				fileobj = zx.depends[fn];
-				console.warn('Dependancy  :', fileobj);
-				//console.warn('zx.depends :',zx.depends);
+				AddDependedFilesToBeCompiled(zx,program.args[1]);
 
-				for (name in fileobj.parents) {
-					if (fileobj.parents.hasOwnProperty(name)) {
-						zx.pages.push({
-							name : name,
-							obj : "filedeps"
-						});
-					}
-				}
 
 			} else if (cmd === 'deltafile') { // used by the file monitor to pass a list of files that have changed
 
@@ -484,13 +496,8 @@ function getDirectories(srcpath,Filter) {
 				});
 
 				zx.pages = zx.deduplicate_byname(zx.pages);
-				//console.log('compiling  :', zx.pages);
-
-			} else if (cmd === 'all') { // TODO compile all index.htm in the whole tree
-				// compile all the menus
-				//this is done with a shell command at the moment
-				//currently this is being done by a bash shell .. change so windows would also work
-				console.warn('compiling :', cmd);
+				console.log('compiling  :', zx.pages);
+			
 			} else {
 				console.warn('invalid command expected[app|file|deltafile|index] got :', cmd);
 				return;
@@ -498,9 +505,10 @@ function getDirectories(srcpath,Filter) {
 
 		}
 
-		//console.log('file list:', zx.pages);
+		//List_Pages(zx,'input page list:');
 		zx.pgi = 0;
 		seq_pages(zx);
+		List_Pages(zx,'final page list:');		
 
 	}
 };
@@ -531,8 +539,8 @@ var get_model_files = function (zx, path) {
 
 var seq_page = function (zx) {
 
-           
-    console.warn('\n\n\n=============================================================================Page ', zx.pages[zx.pgi].name);
+    //List_Pages(zx,'wip page list:');       
+    console.warn('\n\n\n=============================================================================Page ', zx.pages[zx.pgi].name);	
 	//console.warn('Checking Z process.exit(2); ');process.exit(2);
     start_page_compiler(zx);
 	//console.warn('Checking A process.exit(2); ');process.exit(2);
@@ -671,9 +679,11 @@ var seq_page = function (zx) {
 			zx.error.caught_exception(zx, e, " diviner.compile mark-114233 ");
 			throw new Error("local known error 117011");
 		}
-		fs.writeFileSync(ofn + '.linkfiles.txt', JSON.stringify(zx.linkfiles, null, 4));
-
-		if (zx.wildcard || zx.pages[zx.pgi].wildcard === true) {
+		
+		var LinkFilesTxT = ((zx.wildcard || zx.pages[zx.pgi].wildcard === true)?"wildcard==true ":"wildcard==false ") + JSON.stringify(zx.GetNamesInArray(zx.linkfiles), null, 4);
+		fs.writeFileSync(ofn + '.linkfiles.txt',LinkFilesTxT );
+	
+		if (zx.wildcard || zx.pages[zx.pgi].wildcard === true) { //wildcard is true for compiling 'ALL' or 'APP'
 			// console.log('wildcard adding pages:',zx.linkfiles);
 			//console.log('B4p zx.pages:',zx.pages," lf:",zx.linkfiles);
 			zx.pushArray(zx.pages_addiing, zx.linkfiles);
@@ -682,6 +692,7 @@ var seq_page = function (zx) {
 			//console.log('WC zx.pages:',zx.pages);
 			//if (zx.pgi==2) process.exit(1);
 		}
+		//console.log('.zx.pages_addiing:',zx.GetNamesInArray(zx.pages_addiing));
 
 		fs.writeFileSync(ofn + '.mt.txt', JSON.stringify(zx.mt, null, 4));
 		fs.writeFileSync(ofn + '.sql.txt', JSON.stringify(zx.sql, null, 4));
@@ -775,7 +786,7 @@ var seq_page = function (zx) {
 
 var deepcopy = require('deepcopy');
 var seq_pages = function (zx) {
-	while (zx.pgi < zx.pages.length) {
+	while (1) { 
 		while (zx.pgi < zx.pages.length) {
             var ok;
 			try {
@@ -793,10 +804,10 @@ var seq_pages = function (zx) {
 			zx.pgi++;
 		} //for pages
 
-		//console.log('wildcard pages_addiing:',zx.pages_addiing);
 		zx.pushArray(zx.pages, zx.pages_addiing);
 		zx.pages_addiing = [];
 		zx.pages = zx.deduplicate_byname(zx.pages);
+		if (zx.pgi >= zx.pages.length) break;		
 	} {
 		//console.log('page...........................................\n',zx.pages[zx.pgi],zx.obj);
 		console.log('\n...........................................all done\n');

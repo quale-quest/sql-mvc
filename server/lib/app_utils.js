@@ -37,7 +37,8 @@ exports.run_monitor = function (interval_ms) {
 	console.log('monitoring for application changes :');
 	var interval = setInterval(function () {
 
-			var command = spawn('./check.sh');
+			//var command = spawn('./check.sh');
+			var command = spawn('./server/compiler/check.sh');
 			var output = [];
 
 			command.stdout.on('data', function (chunk) {
@@ -47,7 +48,7 @@ exports.run_monitor = function (interval_ms) {
 
 			command.on('close', function (code) {
 				if (code === 0) {
-
+				//console.log('compiler done :');
 					var str = output.join('').toString();
 					if (str.length > 10) {
 						var fn = path.resolve('output/consol.txt');

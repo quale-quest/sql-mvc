@@ -3,10 +3,11 @@
 #
 
 
+# do not clear for when called from app.js
+# clear 
+# printf '\033[3J'
 
-clear
-printf '\033[3J'
-
+echo check....
  
 # The absolute path of the directory containing this script.
 DIR="$( cd "$( dirname "$0" )" && pwd -P)"
@@ -43,6 +44,7 @@ flock -x -w 0.1 200 || exit 1
 
 if [ -f "$PROJECT_DIR/output/built_complete" ]; then
 
+echo checking file changes 
 # Give some user feedback 
  #echo Monitoring ${MONITOR[*]}
  
@@ -106,9 +108,11 @@ else
 	#pushd ${PROJECT_DIR}/server/compiler
 	pwd
 	#node compile.js deltafile ${DELTA_FILE} 
-	node $COMPILER_DIR/compile.js deltafile ${DELTA_FILE} 
+	#node $COMPILER_DIR/compile.js deltafile ${DELTA_FILE} 
 
-	#touch $PROJECT_DIR/output/built_complete   
+	node  $COMPILER_DIR/compile.js all
+		
+ 	touch $PROJECT_DIR/output/built_complete   
 
 	#diff output/Home/Guest/Index.sql ../Index.sql
 	#diff output/Home/User/Index.sql ../UserIndex.sql

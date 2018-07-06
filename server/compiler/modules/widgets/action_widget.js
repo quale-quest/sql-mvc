@@ -276,10 +276,13 @@ var tag_menuscan_recurse = function (zx, o, menuhdr) {
 				//produce the menu item
 
 				var br = fileutils.locateclosestbuildroot(zx, fn);
-				zx.linkfiles.push({
-					name : "//" + br.filename,
-					obj : o
-				});
+				br.filename = "//" + br.filename;
+				if (zx.exists_inArray_byname(zx.linkfiles,br.filename)<0) {
+					zx.linkfiles.push({
+						name : br.filename,
+						obj : o
+					});
+				}
 				o.form = br.filename;
 				obj = getDecoratedMenuObject(zx, o, fileutils.changefileextn(i, ''));
 				o.title = obj.title;
