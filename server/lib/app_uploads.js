@@ -90,7 +90,7 @@ exports.ajax_upload_with_rpc_feedback = function (req, res) {
 		cx.dbref = db.LocateDatabasePool(session);
 
 		//var readstream = fs.createReadStream(fx.tempName);
-        console.log('ajax_upload_with_rpc_feedback :',cx.dbref,session);
+        //console.log('ajax_upload_with_rpc_feedback :',cx.dbref,session);
 		if (cx.dbref !== null) {
 
 			//create the thumb nail
@@ -108,15 +108,16 @@ exports.ajax_upload_with_rpc_feedback = function (req, res) {
 
 			var jobs = [
 				["connect"],
-				["query", "SELECT first 1 a.BASERECORD,a.QUERY FROM Z$PK_CACHE a where a.MASTER=? and a.INDX=?", [cx.cid, cx.pkf]],
+				["query", "SELECT first 1 a.POST_PROCEDURE,a.QUERY FROM Z$PK_CACHE a where a.MASTER=? and a.INDX=?", [cx.cid, cx.pkf]],
 				["log", " r "],
-				["if", "r.baserecord>0", [
-						["adapt", "query", "SELECT first 1 a.CODE FROM Z$SP a where a.PK={{r.baserecord}} ", []],
+				["if", "r.POST_PROCEDURE!=''", [
+						["adapt", "query", "SELECT first 1 a.CODE FROM Z$SP a where a.FN_HASH='{{r.POST_PROCEDURE}}' ", []],
 						["log", " r "],
 						["cb", function (cx, inst, cb) {
                                 console.log('js if cx.r :', cx.r);
 								console.log('js if cx.dbref.conf.async :', cx.dbref.conf.async);
-								var quale = json_like.parse(cx.r.code);
+								var quale = json_like.parse(cx.r.CODE);
+								//todo add exception handing here test like: var quale = json_like.parse(cx.r.CODEX);
 								console.log('js to check on what type of upload :', quale);
 								var fileinfo = {};
 								if (quale.Target) { //destination defined in the project config,json
@@ -165,14 +166,14 @@ exports.ajax_upload_with_rpc_feedback = function (req, res) {
 							}
 						],
 						["if", "v.type==='blob'", [
-								["adapt", "query", "SELECT p.PKO FROM Z${{r.baserecord}}(2,       '{{{r.query}}}' , ?,       ?,      ?          , ?       , ?,?) p",
+								["adapt", "query", "SELECT p.PKO FROM {{r.POST_PROCEDURE}}(2,       '{{{r.QUERY}}}' , ?,       ?,      ?          , ?       , ?,?) p",
 									//                                                      "ACTION"', 'PKI',         'BINTYPE', 'BINI', 'THUMBTYPE', 'THUMB', 'NAME'
 									//[fx.mimetype, fs.createReadStream(fx.tempName), fx.THUMBTYPE, fx.THUMB, fileinfo.filename]]
 									local_par]
 								//this does not work yet due to node-firebird driver needing to be updated...
 							],
 							[//else
-								["adapt", "query", "SELECT p.PKO FROM Z${{r.baserecord}}(2,       '{{{r.query}}}' , ?,       ?,      ?          , ?       , ?,?) p",
+								["adapt", "query", "SELECT p.PKO FROM {{r.POST_PROCEDURE}}(2,       '{{{r.QUERY}}}' , ?,       ?,      ?          , ?       , ?,?) p",
 									//                                                      "ACTION"', 'PKI',         'BINTYPE', 'BINI', 'THUMBTYPE', 'THUMB', 'NAME'
 									//[fx.mimetype, 'file', fx.THUMBTYPE, fx.THUMB, fileinfo.filename]]
 									local_par]

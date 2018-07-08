@@ -960,7 +960,7 @@ exports.edit_from_table = function (zx, cx, fld_obj) {
 
     var pkname = check_pointer(zx,cx,fld_obj);
     
-    var baserecord_ref=zx.async_data.check_Async_Binary_Fields(zx,fld_obj);
+    var post_procedure=zx.async_data.check_Async_Binary_Fields(zx,fld_obj);
 
     
 	var TARGET_VALUES = "''";
@@ -998,11 +998,11 @@ exports.edit_from_table = function (zx, cx, fld_obj) {
 	var links = " INSERT INTO Z$PK_CACHE("+
 			  "MASTER, INDX, FIELD_NAME, VALU,"+
 			  "Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS,"+ // PAGE_PARAMS used as Soft_decode
-			  "TARGET_FIELDS,TARGET_VALUES,baserecord)" + 
+			  "TARGET_FIELDS,TARGET_VALUES,post_procedure)" + 
 			  
 			  "VALUES ("+zx.config.db.var_actaul+"cid,"+zx.config.db.var_actaul+"tfid,'updateonpk','" + /*valu*/	from + "',"+
 		      "'" + pkname + "', '" + fld_obj.name + "', "+zx.config.db.var_actaul+"F" + fld_obj.cf[0].pointer + " ,'" + Soft_decode + "' ,"+
-			  "'" + TARGET_FIELDS + "'," + TARGET_VALUES + ","+baserecord_ref+");"+zx.config.db.sql_set_prefix+"tfid="+zx.config.db.var_actaul+"tfid+1;";				
+			  "'" + TARGET_FIELDS + "'," + TARGET_VALUES + ",'"+post_procedure+"');"+zx.config.db.sql_set_prefix+"tfid="+zx.config.db.var_actaul+"tfid+1;";				
 				
 		
 	

@@ -15,7 +15,7 @@ The purpose here is to provide a structure to do adhoc async updates and process
 
 exports.check_Async_Binary_Fields = function (zx, fld, line_object) {
 	try {
-		var baserecord_ref = 0;
+		var post_procedure = '';
 
 		if (fld.f.Async !== undefined) { //,Async:{BlobField:"PICTUR",BlobType:"PICT_MIME",NameField:"PICT_NAME",DescField:"PICT_DESC",ThumbNail:"PICT_TN",ThumbType:"PICT_TN_MIME",MimeTypeValid:"image"}
 			//console.log('check_Async_Binary_Fields fn - ', fld);
@@ -42,13 +42,13 @@ exports.check_Async_Binary_Fields = function (zx, fld, line_object) {
 				//console.log('check_Async_Binary_Fields fn B - ' + zx.sql.sub_proc_index);
                 //console.log('check_Async_Binary_Fields fn lcx - ' ,lcx);
                 //console.log('check_Async_Binary_Fields fn code - \r\nvvvvvvvvvv\r\n' ,sql,"^^^^^^^^^^^^^^");
-				//throw new Error("check_Async_Binary_Fields");
+				//throw new Error("check_Async_Binary_Fields");				
 
 				var save_testhead = zx.sql.testhead;
 				var save_testfoot = zx.sql.testfoot;
 				zx.sql.testhead ="";
 				zx.sql.testfoot ="";
-				baserecord_ref = zx.dbu.write_script(zx, true, indx, pn,'0', sql, fld.f.Async);
+				post_procedure = zx.dbu.write_script(zx, true, indx, pn,'0', sql, fld.f.Async);
 				zx.sql.testhead = save_testhead;
 				zx.sql.testfoot = save_testfoot;
 				zx.sql.sub_proc_index++;
@@ -61,7 +61,7 @@ exports.check_Async_Binary_Fields = function (zx, fld, line_object) {
 		zx.error.caught_exception(zx, e, "check_Async_Binary_Fields 170105, : ", fld);
 		throw new Error("local known error");
 	}
-	return baserecord_ref;
+	return post_procedure;
 }
 
 exports.plug_field_check = function (zx, line_object,field) {

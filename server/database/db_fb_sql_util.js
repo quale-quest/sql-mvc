@@ -401,8 +401,8 @@ exports.write_script = function (zx, real, spi, name, mtHash, script, code) {
 		var call_script = "EXECUTE BLOCK RETURNS  (info varchar(200),res blob SUB_TYPE 1,SCRIPTNAMED varchar(200))AS begin EXECUTE procedure "+FN_HASH+" ";
 
 		exports.fetch_query_result(zx, connection, "create_script_async fb25 UPDATE", 
-			"UPDATE OR INSERT INTO Z$SP (PK,TSTAMP,FILE_NAME,SCRIPT,CODE,MT_HASH)VALUES (?,'now',?,?,?,?) MATCHING (PK) ",
-			[spi, name, call_script, JSON.stringify(code),mtHash],
+			"UPDATE OR INSERT INTO Z$SP (PK,TSTAMP,FILE_NAME,SCRIPT,CODE,MT_HASH,FN_HASH)VALUES (?,'now',?,?,?,?,?) MATCHING (PK) ",
+			[spi, name, call_script, JSON.stringify(code),mtHash,FN_HASH],
 			0,undefined);
 			
 		if (real) {
@@ -412,15 +412,14 @@ exports.write_script = function (zx, real, spi, name, mtHash, script, code) {
 			//console.log('compoundscript >',compoundscript);
 			exports.fetch_query_result(zx, connection, "Error in creating real SP :", compoundscript,[],0,undefined);			
 			
-		} 
-		if (spi !== null)
-			return spi;
-		else
-			return exports.singleton(zx, "PK", "select PK from z$SP where FILE_NAME='" + name + "'");		
+		}
+
+		return FN_HASH;	
+
 		
 	} else if (zx.mysql57) {
 		var call_script = "call "+FN_HASH+";";
-		var UPDATE_script = "UPDATE Z$SP set FILE_NAME=? , SCRIPT= ? , CODE=?, MT_HASH = ?, FN_HASH=?  where PK=? "; 
+		var UPDATE_script = "UPDATE Z$SP set FILE_NAME=? , SCRIPT= ? , CODE=?, MT_HASH = ?, FN_HASH=? where PK=? "; 
 		
 		exports.fetch_query_result(zx, connection, "create_script_async mysql57 UPDATE", 
 			UPDATE_script,
@@ -442,11 +441,7 @@ exports.write_script = function (zx, real, spi, name, mtHash, script, code) {
 			//console.log('create_script_async done :',FN_HASH );
 				
 		}
-		if (spi !== null)
-			return spi;
-		else
-			return exports.singleton(zx, "PK", "select PK from z$SP where FILE_NAME='" + name + "'");		
-		
+		return FN_HASH;		
 		
     } else if (zx.mssql12) {
 		var call_script = "EXECUTE "+FN_HASH+" ";
@@ -478,7 +473,7 @@ exports.write_script = function (zx, real, spi, name, mtHash, script, code) {
 			
 		}
     } else throw new Error("dialect code missing");		                         
-
+	return FN_HASH;	
     
 };
 

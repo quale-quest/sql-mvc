@@ -7,7 +7,7 @@
 # clear 
 # printf '\033[3J'
 
-echo check....
+# echo check....
  
 # The absolute path of the directory containing this script.
 DIR="$( cd "$( dirname "$0" )" && pwd -P)"
@@ -44,7 +44,7 @@ flock -x -w 0.1 200 || exit 1
 
 if [ -f "$PROJECT_DIR/output/built_complete" ]; then
 
-echo checking file changes 
+# echo checking file changes 
 # Give some user feedback 
  #echo Monitoring ${MONITOR[*]}
  

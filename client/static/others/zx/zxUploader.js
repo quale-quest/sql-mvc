@@ -80,7 +80,8 @@ function AJAXSubmit (e,pkf,pko) {
    //alert("AJAXSubmit from zxUploader."+pkf+pko);
   e.stopPropagation();  
   if (pko!==undefined) pkf=String(+pkf + (+pko));
-  var Cell=FindCell(e,pkf);    
+  var Cell=FindCell(e,pkf); 
+  Cell.pkf = pkf;  
   var el=Cell.el;
   delete Cell.el;
   console.log("AJAXSubmit from zxUploader.",Cell);
