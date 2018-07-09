@@ -3,7 +3,7 @@
 /* qq App */
 
 
-var zx_client_side_plugins = require('./zx_client_side_plugins.js');
+var plugins = require('./plugins.js');
 /*var without var goes into dom root*/ //zx_za_cdv = require('./za_cdv.js');   
 
    
@@ -465,7 +465,7 @@ var process_new_data = function (cx) {
 			//console.log("cx.Data  :",cx.obj.Stash,cx.obj.Data);
 			//zxhogan parametrised function
             cx.obj.Data.Session =  cx.obj.Session;
-            zx_client_side_plugins.fill_data(cx.obj.Data,ss.tmpl);
+            plugins.init_client_plugin_mt_functions(cx.obj.Data,ss.tmpl);
 
 			qq_stache[cx.obj.Data.cid] = cx.obj.Data; //set global
 			console.log("qq_stache.cid  :", cx.obj.Data.cid,cx.obj.Stash);

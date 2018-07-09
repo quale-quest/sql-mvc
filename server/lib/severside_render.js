@@ -4,7 +4,7 @@ var temp = require('temp'),
 path = require('path'),
 os = require('os');
 var fs = require('fs');
-var zx_client_side_plugins = require('../../client/code/app/zx_client_side_plugins.js');
+var plugins = require('../../client/code/app/plugins.js');
 var fileutils = require('../../server/lib/fileutils.js');
 
 //var ss = require('socketstream');
@@ -124,7 +124,7 @@ exports.render = function (qq_page_id,jsonstring,template_filename,cb) {
 		//console.log("cx.obj[0].Data :",cx.obj[0].Data);
 		//console.log("jsonstring :",jsonstring);
             cx.obj[0].Data.Session =  cx.obj[0].Session;
-            zx_client_side_plugins.fill_data(cx.obj[0].Data,sst);
+            plugins.init_client_plugin_mt_functions(cx.obj[0].Data,sst);
             //console.log("cx.obj.mtHash :",cx.obj[0].Data);
             
             var tmpl = sst[page_id];

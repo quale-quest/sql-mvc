@@ -19,8 +19,8 @@ var parse_json_attributes = function (cx,attr) {
 }                
 
             
-var create_fill_data = function (obj) {            
-            console.log('create_fill_data client side plugin :',obj);
+var init_client_plugin = function (obj) {            
+            console.log('init_client_plugin client side plugin :',obj);
 			obj.Data.lookup = function () {
 				return function (ctx) {
 					//console.log('obj.Data.lookup:',this,ctx,ctx[0]);
@@ -147,8 +147,9 @@ var create_fill_data = function (obj) {
             
 }
 
+exports.name= 'base_plugins'; 
 
-exports.fill_data = function (obj,ss_tmpl) {     
+exports.init_client_plugin_mt_functions = function (obj,ss_tmpl) {     
     //console.log('filling client side plugin :',obj);
     sst=ss_tmpl;
     obj.lookup = precompiled.Data.lookup;
@@ -158,9 +159,12 @@ exports.fill_data = function (obj,ss_tmpl) {
     obj.upload = precompiled.Data.upload;
     obj.codec_date = precompiled.Data.codec_date;
     obj.codec_stamp = precompiled.Data.codec_stamp;
+	//fill_data_InjectPoint
+	
 }  
 
-create_fill_data(precompiled);    
+
+init_client_plugin(precompiled);    
   
   
 
