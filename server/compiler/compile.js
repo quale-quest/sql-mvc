@@ -262,7 +262,7 @@ var AddDependedFilesToBeCompiled = function (zx,fn) {
                 Popup
                     
         */
-        
+        require('./modules/plugins.js').build(zx,zx.config.packages,zx.config.db.packages);
         
         //Find Installable drop-in folders
         if (fs.existsSync('./node_modules')) {

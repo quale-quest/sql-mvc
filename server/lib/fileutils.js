@@ -145,26 +145,39 @@ exports.getDropinFileList = function (zx, regex, current_page , line_obj, trce
 	return filelist;
 };
 
-var getFiles = exports.getFiles = function(dir, files_, regex) { //regular recursive search
+var getFiles = exports.getFiles = function(dir, files_, regex,maxdepth) { //regular recursive search
 	files_ = files_ || [];
+	maxdepth = maxdepth || 99;
+	
+	//console.log('getFiles :',dir,fs.statSync(dir))
 	if (typeof files_ === 'undefined')
 		files_ = [];
+	if (!fs.existsSync(dir)) {
+		//console.log('getFiles !isDirectory:',dir);
+		return files_;
+	}	
 	var files = fs.readdirSync(dir);
-    //console.log('getFiles found:',files);
+
+		//console.log('getFiles found:',files);
 	for (var i in files) { //is this ok??? should it not be foreach???  TODO
+		//console.log('getFiles checking:',i);
 		if (!files.hasOwnProperty(i))
 			continue;
 		var name = files[i];
 		var pathname = path.join(dir , name);
 		if (fs.statSync(pathname).isDirectory()) {
-			getFiles(pathname, files_, regex);
+			if (maxdepth>1)
+				getFiles(pathname, files_, regex,maxdepth-1);
 		} else {
-			if (regex !== undefined) {
-				if (!regex.test(name))
+			//console.log('getFiles regex:',pathname);
+			if ((regex !== undefined)&&(regex !== null)) {
+				if (!regex.test(name)) {
+					//console.log('getFiles regex test!:',name, ' x:',regex);
 					continue;
+				}
 			}
 			files_.push(pathname);
-            //console.log('inheritFiles found:',pathname);
+            //console.log('getFiles found:',pathname);
 		}
 	}
     
