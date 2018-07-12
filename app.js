@@ -134,9 +134,8 @@ ss.http.route('/', function (req, res) {
 		} else {
 			try {
 			  //console.log("db.databasePooled :",params,'============================');
-              rambase.params=params;
-		
-              if (params.user=='') {
+              rambase.params=params;		
+              if (params.user=='' || config.run.severside_render!=="FirstPage") {
 				//this is a first page load ... without rendering - will be rendered on the login from the user
 				//console.log("first page load ... without server-side rendering");
 				//todo inject LoadedInstance

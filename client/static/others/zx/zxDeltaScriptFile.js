@@ -168,9 +168,9 @@ function FindCell(e)
   
     if (e.target) el = e.target;
     else if (e.srcElement) el = e.srcElement;
-	else el = e;
-  
-    var valu=e.target.value;
+	else el = e;  
+    var valu='';
+	if (e.target) if (e.target.value) valu=e.target.value;
     var typ=e.type;
     //console.log("FindCell:",e,el,e.target.value);
  

@@ -18,8 +18,35 @@ var deepcopy = require('deepcopy');
 //      Chrome requires the 1st chunk to be at least 1k then upcoming chunks can be smaller than that.//http://stackoverflow.com/questions/16184103/how-to-flush-chunks-of-arbitrary-sizes-in-nodejs
 
 
-
-
+const MaxUploadFileSizeInMeg = 4;
+var ajax_upload_save_file = function (fx,img) {
+	//save content that was sent as a file
+	//check size
+  if (img.length>(MaxUploadFileSizeInMeg*1024*1024)) {
+	  fx.return_error = 'File To Large';
+	  return;
+  }
+  
+  fx.filename = 'data.png';
+  fx.encoding = 'base64';
+  fx.mimetype = 'image/png';
+  fx.tempName = temp.path({suffix : '.tmp'});	   
+  
+  console.log('ajax_upload_save_file : "' +img.substring(0,22)+'"');
+  if (img.substring(0,22)=='data:image/png;base64,') {
+	console.log('saveTo :' + fx.tempName);
+	var base64Data = img.replace(/^data:image\/png;base64,/, "");
+	require("fs").writeFile(fx.tempName, base64Data, 'base64', function(err) {
+		console.log('ajax_upload_save_file err:',err);
+	});	
+	
+   }
+   else
+   {
+	   
+   }
+	
+}	
 
 exports.ajax_upload_with_rpc_feedback = function (req, res) {
 
@@ -27,7 +54,10 @@ exports.ajax_upload_with_rpc_feedback = function (req, res) {
 		return false;
 	var session = '',
 	cx = {},
-	fx = {};
+	fx = {return_error:0};
+	
+	
+	
 
 	var busboy = new Busboy({
 			headers : req.headers
@@ -61,14 +91,19 @@ exports.ajax_upload_with_rpc_feedback = function (req, res) {
 			cx.cid = val;
 		if (fieldname === 'pkf')
 			cx.pkf = val;
+		if (fieldname === 'filecontent') {
+			ajax_upload_save_file(fx,val);
+		}
+			
 
 	});
 	busboy.on('finish', function () {
-		console.log('Done parsing form!');
+		console.log('Done parsing form! : ',(fx.return_error==0?'No Error':fx.return_error));
 		res.writeHead(200, {
 			'Content-Type' : 'text/plain'
 		});
-		res.write('{"message": "Server Complete"}');
+	
+		res.write('{"message": "'+(fx.return_error==0?'Server Complete':fx.return_error)+'"}');
 		res.end();
 
 		//now what to do with the file (the quicc application will tell us) ....
@@ -86,7 +121,7 @@ exports.ajax_upload_with_rpc_feedback = function (req, res) {
 		// make thumbnails from images and video's
 		//https://github.com/hacksparrow/node-easyimage
 		//we now have {session,cid,pkf,a:[{inlinetransfromname,name,type,value/file}]}
-
+		if (fx.return_error===0) {
 		cx.dbref = db.LocateDatabasePool(session);
 
 		//var readstream = fs.createReadStream(fx.tempName);
@@ -185,8 +220,8 @@ exports.ajax_upload_with_rpc_feedback = function (req, res) {
 			];
 
 			require("../../lib/query-proc/query-proc").exec(cx, jobs);
-
-		}
+			}
+		}//return_error
 	});
 	req.pipe(busboy);
 

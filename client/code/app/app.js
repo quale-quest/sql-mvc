@@ -417,6 +417,9 @@ init_from_fullstash_internal = function (Target) {
 
 			capture_enter();
             zxUploaderInit(); //todo make this conditional call only if it is inclueded
+			
+			plugins.init_after_render(Target); //this will execute the code in plugin.js
+		
             zx_gallery_adaptive_touch_init();
             zx_SyntaxHighlighter_init();
             //alert("init_from_fullstash_internal");

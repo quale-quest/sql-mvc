@@ -35,7 +35,7 @@ MenuEnd
 <!--end  Menu2-->
 
 <!-- div id=content... --><div id="content">
-<div style="margin-left:4px;" class="container_12">
+<div style="margin-left:4px;margin-right:4px;" class="container_12">
 
 <#xG960 #>
 

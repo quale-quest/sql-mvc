@@ -16,8 +16,8 @@ var build_injectpoint = function (txt,packages,path,name) {
 	var val='';
 	packages.forEach(function(pk) {	
 		search_paths.forEach(function(sp) {			
-			let fn = sp+pk+'/'+path+name+'.html_fragment';						
-			//console.log('build_injectpoint :',fn,'\t\t fx:',fs.existsSync(fn));
+			let fn = sp+pk+'/'+path+name+'.fragment';						
+			//console.log('build_injectpoin field:',field,' exists:',fs.existsSync(fn),' filename:',fn);
 			if (fs.existsSync(fn)) {				
 				//console.log('build_injectpoint :',fn,' ');
 				val += fs.readFileSync(fn).toString();
@@ -25,7 +25,7 @@ var build_injectpoint = function (txt,packages,path,name) {
 			}
 		});	
 	});
-	//console.log('build_injectpoint valx:',val.length,'\t\t ');
+	//console.log('build_injectpoint field:',field,'  val.length:',val.length);
 	txt=txt.replace(field,val);
 	
 return txt;	
@@ -89,7 +89,13 @@ exports.find_and_build_files = function (zx,packages,from_folder,src_folder,from
 	
 exports.build = function (zx,config_packages,parent_packages) {
 	let packages = (config_packages||[]).concat(parent_packages||[]);
-	let src = 'client/source/';
+	
+	
+	exports.build_file(zx,packages,'client/source/plugin_fragments/','client/source/plugins.js','client/code/app/plugins.js');
+	// process.exit(2);
+	exports.build_file(zx,packages,'client/source/app_fragments/','client/source/app.html','client/views/app.html');
+	exports.find_and_build_files(zx,packages,'client/source/widget_fragments/','client/templates/Widgets/',/\.html$/i,'client/templates/Widgets/');
+	
 	
 	exports.find_and_build_files(zx,packages,null,'client/code/',/\.js$/i,'client/code/',3);
 	
@@ -101,10 +107,6 @@ exports.build = function (zx,config_packages,parent_packages) {
 	exports.find_and_build_files(zx,packages,null,'client/static/images/',/\.jpg$/i,'client/static/images/',2);
 	exports.find_and_build_files(zx,packages,null,'client/static/images/',/\.jpeg$/i,'client/static/images/',2);
 	exports.find_and_build_files(zx,packages,null,'client/static/images/',/\.ico$/i,'client/static/images/',2);
-	
-	exports.find_and_build_files(zx,packages,src,'client/templates/Widgets/',/\.html$/i,'client/templates/Widgets/');
-	
-	exports.build_file(zx,packages,src,'client/source/app.html','client/views/app.html');
 	
 }
 //eof

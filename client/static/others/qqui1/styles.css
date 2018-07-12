@@ -4995,7 +4995,7 @@ blockquote {
 @media all and (min-width: 521px) and (max-width:719px) {
 #topbar{ width:auto !important;}
 #shortcur-bar{ display: none;}
-#wrapper{ width:720px !important;}
+#wrapper{ width:99.8% !important;}
 .copyright { display:none;}
 
 #sidebar {
@@ -5018,7 +5018,7 @@ blockquote {
 @media all and (min-width: 0px) and (max-width:520px){
 #shortcur-bar{ display:none;}
 #topbar{ width:auto !important;}
-#wrapper{ width:520px !important;}
+#wrapper{ width:99.8% !important;}
 .copyright { display:none;}
 .search-box{ display:none;}
 

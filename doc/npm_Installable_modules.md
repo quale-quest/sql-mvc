@@ -16,7 +16,7 @@ The feature should be re-factored to avoid global variables, and only use one gl
 
 Once the feature demo is ready, it gets split info html_fragments (keep original demo) to be injected into the root view. 
 check app.qhtml for where these html_fragment files are injected
-
+                                                                    
 sql-mvc-signature_pad\client\views\  - contains the links for loading of assets and code	
 	script_link.html_fragment
 	script_run_inline.html_fragment

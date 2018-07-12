@@ -165,7 +165,7 @@ var List_Pages = function (zx,msg) {
 
 var AddDependedFilesToBeCompiled = function (zx,fn) {				
 
-	fileobj = zx.depends[fn];
+	var fileobj = zx.depends[fn],name;
 	console.warn('Dependancy  :', fileobj);
 	//console.warn('zx.depends :',zx.depends);
 
