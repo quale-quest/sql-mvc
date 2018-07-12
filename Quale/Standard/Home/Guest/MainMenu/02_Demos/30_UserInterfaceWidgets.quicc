@@ -4,6 +4,7 @@
 
 
 
+
 <p>
 A link <#:link(form:"Index",title:"Back to the welcome page")#> and a button to 
 <#button(form:"Operator/Inbox",glymph:"box-outgoing-b",title:"Read mail")  #> 
@@ -22,6 +23,164 @@ failure a failure message sent at here.this_page_info
 
 notify (style=Brief icon=alert.png  title="Some brief icon notification") a notification with a icon where the icon is specified in the icon property and it will remain on screen for 5 seconds
 notify (style=Sticky title="Some sticky notification") a sticky at here.this_page_info, you have to close it manually
+
+#>
+
+
+<hr>
+<h1>glymph:  buttons</h1>
+
+<#button(glymph:'magnifying-glass-b' title:'magnifying-glass-b' #>
+<#button(glymph:'trashcan-b' title:'trashcan-b' #>
+<#button(glymph:'cup-b' title:'cup-b' #>
+<#button(glymph:'download-computer-b' title:'download-computer-b' #>
+<#button(glymph:'flag-b' title:'flag-b' #>
+<#button(glymph:'flag-tw-b' title:'flag-tw-b' #>
+<#button(glymph:'home-b' title:'home-b' #>
+<#button(glymph:'link-b' title:'link-b' #>
+<#button(glymph:'book-large-b' title:'book-large-b' #>
+<#button(glymph:'book-b' title:'book-b' #>
+<#button(glymph:'note-book-b' title:'note-book-b' #>
+<#button(glymph:'help-b' title:'help-b' #>
+<#button(glymph:'umbrella-b' title:'umbrella-b' #>
+<#button(glymph:'mail-b' title:'mail-b' #>
+<#button(glymph:'rss-b' title:'rss-b' #>
+<#button(glymph:'pacman-ghost-b' title:'pacman-ghost-b' #>
+<#button(glymph:'pacman-b' title:'pacman-b' #>
+<#button(glymph:'alarm-bell-b' title:'alarm-bell-b' #>
+<#button(glymph:'companies-b' title:'companies-b' #>
+<#button(glymph:'alert-b' title:'alert-b' #>
+<#button(glymph:'alert-tw-b' title:'alert-tw-b' #>
+<#button(glymph:'file-cabinet-b' title:'file-cabinet-b' #>
+<#button(glymph:'archive-b' title:'archive-b' #>
+<#button(glymph:'globe-tw-b' title:'globe-tw-b' #>
+<#button(glymph:'light-bulb-b' title:'light-bulb-b' #>
+<#button(glymph:'globe-b' title:'globe-b' #>
+<#button(glymph:'safari-b' title:'safari-b' #>
+<#button(glymph:'paperclip-b' title:'paperclip-b' #>
+<#button(glymph:'post-card-b' title:'post-card-b' #>
+<#button(glymph:'tag-b' title:'tag-b' #>
+<#button(glymph:'tags-tw-b' title:'tags-tw-b' #>
+<#button(glymph:'key-b' title:'key-b' #>
+<#button(glymph:'key-tw-b' title:'key-tw-b' #>
+<#button(glymph:'acces-denied-sign-b' title:'acces-denied-sign-b' #>
+<#button(glymph:'create-write-b' title:'create-write-b' #>
+<#button(glymph:'info-about-b' title:'info-about-b' #>
+<#button(glymph:'locked-tw-b' title:'locked-tw-b' #>
+<#button(glymph:'unlocked-b' title:'unlocked-b' #>
+<#button(glymph:'folder-b' title:'folder-b' #>
+<#button(glymph:'month-calendar-b' title:'month-calendar-b' #>
+<#button(glymph:'alarm-clock-b' title:'alarm-clock-b' #>
+<#button(glymph:'clock-b' title:'clock-b' #>
+<#button(glymph:'day-calendar-b' title:'day-calendar-b' #>
+<#button(glymph:'user-b' title:'user-b' #>
+<#button(glymph:'users-b' title:'users-b' #>
+<#button(glymph:'admin-user-b' title:'admin-user-b' #>
+<#button(glymph:'user-comment-b' title:'user-comment-b' #>
+<#button(glymph:'users-tw-b' title:'users-tw-b' #>
+<#button(glymph:'admin-user-tw-b' title:'admin-user-tw-b' #>
+<#button(glymph:'user-tw-b' title:'user-tw-b' #>
+<#button(glymph:'medical-case-b' title:'medical-case-b' #>
+<#button(glymph:'suitcase-b' title:'suitcase-b' #>
+<#button(glymph:'bag-b' title:'bag-b' #>
+<#button(glymph:'ladys-purse-b' title:'ladys-purse-b' #>
+<#button(glymph:'shopping-bag-b' title:'shopping-bag-b' #>
+<#button(glymph:'printer-b' title:'printer-b' #>
+<#button(glymph:'camera-b' title:'camera-b' #>
+<#button(glymph:'computer-iMac-b' title:'computer-iMac-b' #>
+<#button(glymph:'fax-b' title:'fax-b' #>
+<#button(glymph:'microphone-b' title:'microphone-b' #>
+<#button(glymph:'digg-b' title:'digg-b' #>
+<#button(glymph:'digg-tw-b' title:'digg-tw-b' #>
+<#button(glymph:'google-buzz-b' title:'google-buzz-b' #>
+<#button(glymph:'twitter-tw-b' title:'twitter-tw-b' #>
+<#button(glymph:'tumbler-b' title:'tumbler-b' #>
+<#button(glymph:'stubleUpon-b' title:'stubleUpon-b' #>
+<#button(glymph:'youTube-b' title:'youTube-b' #>
+<#button(glymph:'delicious-b' title:'delicious-b' #>
+<#button(glymph:'facebook-b' title:'facebook-b' #>
+<#button(glymph:'vimeo-tw-b' title:'vimeo-tw-b' #>
+<#button(glymph:'skype-b' title:'skype-b' #>
+<#button(glymph:'iChat-b' title:'iChat-b' #>
+<#button(glymph:'facebook-like-b' title:'facebook-like-b' #>
+<#button(glymph:'dropbox-b' title:'dropbox-b' #>
+<#button(glymph:'twitter-b' title:'twitter-b' #>
+<#button(glymph:'sound-b' title:'sound-b' #>
+<#button(glymph:'megaphone-b' title:'megaphone-b' #>
+<#button(glymph:'film-strip-b' title:'film-strip-b' #>
+<#button(glymph:'headphones-b' title:'headphones-b' #>
+<#button(glymph:'gals-tw-b' title:'gals-tw-b' #>
+<#button(glymph:'clipboard-b' title:'clipboard-b' #>
+<#button(glymph:'cut-scissors-b' title:'cut-scissors-b' #>
+<#button(glymph:'pencil-b' title:'pencil-b' #>
+<#button(glymph:'sign-post-b' title:'sign-post-b' #>
+<#button(glymph:'marker-b' title:'marker-b' #>
+<#button(glymph:'v-card-tw-b' title:'v-card-tw-b' #>
+<#button(glymph:'cog-b' title:'cog-b' #>
+<#button(glymph:'settings-b' title:'settings-b' #>
+<#button(glymph:'cog-tw-b' title:'cog-tw-b' #>
+<#button(glymph:'frames-b' title:'frames-b' #>
+<#button(glymph:'blocks-w-b' title:'blocks-w-b' #>
+<#button(glymph:'list-b' title:'list-b' #>
+<#button(glymph:'list-w-b' title:'list-w-b' #>
+<#button(glymph:'list-l-b' title:'list-l-b' #>
+<#button(glymph:'paypal-tw-b' title:'paypal-tw-b' #>
+<#button(glymph:'money-b' title:'money-b' #>
+<#button(glymph:'money-tw-b' title:'money-tw-b' #>
+<#button(glymph:'shopping-basket-tw-b' title:'shopping-basket-tw-b' #>
+<#button(glymph:'price-tags-b' title:'price-tags-b' #>
+<#button(glymph:'piggy-bank-b' title:'piggy-bank-b' #>
+<#button(glymph:'shopping-cart-tr-b' title:'shopping-cart-tr-b' #>
+<#button(glymph:'shopping-cart-fr-b' title:'shopping-cart-fr-b' #>
+<#button(glymph:'shopping-cart-tw-b' title:'shopping-cart-tw-b' #>
+<#button(glymph:'shopping-cart-b' title:'shopping-cart-b' #>
+<#button(glymph:'scan-label-tw-b' title:'scan-label-tw-b' #>
+<#button(glymph:'paypal-b' title:'paypal-b' #>
+<#button(glymph:'shopping-basket-tw-b' title:'shopping-basket-tw-b' #>
+<#button(glymph:'paypal-tr-b' title:'paypal-tr-b' #>
+<#button(glymph:'Paypal-tr-b' title:'Paypal-tr-b' #>
+<#button(glymph:'money-tw-b' title:'money-tw-b' #>
+<#button(glymph:'visa-b' title:'visa-b' #>
+<#button(glymph:'visa-tw-b' title:'visa-tw-b' #>
+<#button(glymph:'mastercard-b' title:'mastercard-b' #>
+<#button(glymph:'american-express-b' title:'american-express-b' #>
+<#button(glymph:'graph-b' title:'graph-b' #>
+<#button(glymph:'graph-tw-b' title:'graph-tw-b' #>
+<#button(glymph:'chart-et-b' title:'chart-et-b' #>
+<#button(glymph:'box-outgoing-b' title:'box-outgoing-b' #>
+<#button(glymph:'box-incoming-b' title:'box-incoming-b' #>
+<#button(glymph:'speech-bubble-b' title:'speech-bubble-b' #>
+<#button(glymph:'speech-bubbles-b' title:'speech-bubbles-b' #>
+<#button(glymph:'speech-bubbles-tw-b' title:'speech-bubbles-tw-b' #>
+<#button(glymph:'speech-bubble-tw-b' title:'speech-bubble-tw-b' #>
+<#button(glymph:'phone-b' title:'phone-b' #>
+<#button(glymph:'document-b' title:'document-b' #>
+<#button(glymph:'documents-b' title:'documents-b' #>
+<#button(glymph:'pdf-documents-b' title:'pdf-documents-b' #>
+<#button(glymph:'word-documents-b' title:'word-documents-b' #>
+<#button(glymph:'zip-files-b' title:'zip-files-b' #>
+<#button(glymph:'excel-documents-b' title:'excel-documents-b' #>
+<#button(glymph:'bended-arrow-right-b' title:'bended-arrow-right-b' #>
+<#button(glymph:'bended-arrow-left-b' title:'bended-arrow-left-b' #>
+<#button(glymph:'bended-arrow-down-b' title:'bended-arrow-down-b' #>
+<#button(glymph:'bended-arrow-up-b' title:'bended-arrow-up-b' #>
+<#button(glymph:'refresh-b' title:'refresh-b' #>
+<#button(glymph:'refresh-tr-b' title:'refresh-tr-b' #>
+<#button(glymph:'refresh-fr-b' title:'refresh-fr-b' #>
+<#button(glymph:'go-back-from-screen-b' title:'go-back-from-screen-b' #>
+<#button(glymph:'go-full-screen-b' title:'go-full-screen-b' #>
+<#button(glymph:'go-back-from-full-screen-b' title:'go-back-from-full-screen-b' #>
+<#button(glymph:'repeat-b' title:'repeat-b' #>
+<#button(glymph:'shuffle-b' title:'shuffle-b' #>
+<#button(glymph:'refresh-tw-b' title:'refresh-tw-b' #>
+<br>
+<hr>
+
+
+
+<#
+
+
 
 html <br><h2>A few containers</h2>
 Container (style=Tab                                                                   title="A tab")
@@ -95,4 +254,5 @@ CloseContainer
 
 
 <#script set here.this_page_info=cast('now' as timestamp);#><br>
+
 
