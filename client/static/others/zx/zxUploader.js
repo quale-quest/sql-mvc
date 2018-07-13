@@ -231,10 +231,15 @@ log_message("zxUploaderInit");
 doClear();
 //document.getElementById('dbid').value = dbid;   
 //alert("zxUploaderInit ");    
-
+document.getElementById('loadFileXml').addEventListener("click", function(e) {
+	e.stopPropagation();
+    e.preventDefault();
+	console.log('loadFileXml clicked:',this.value);
+	document.getElementById('fileselect').click();
+	}, false);
 document.getElementById('fileselect').addEventListener("change", function() {FileSelectHandler(this.value)}, false);
 //document.getElementById('file_upload_ref').value=BatchRef ;
 }
 
-
+ 
 //eof

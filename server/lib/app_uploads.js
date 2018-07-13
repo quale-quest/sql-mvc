@@ -149,11 +149,13 @@ exports.ajax_upload_with_rpc_feedback = function (req, res) {
 						["adapt", "query", "SELECT first 1 a.CODE FROM Z$SP a where a.FN_HASH='{{r.POST_PROCEDURE}}' ", []],
 						["log", " r "],
 						["cb", function (cx, inst, cb) {
+							    try {
                                 console.log('js if cx.r :', cx.r);
 								console.log('js if cx.dbref.conf.async :', cx.dbref.conf.async);
 								var quale = json_like.parse(cx.r.CODE);
 								//todo add exception handing here test like: var quale = json_like.parse(cx.r.CODEX);
 								console.log('js to check on what type of upload :', quale);
+								if (!quale) winston.error('Upload failed as quale is null')
 								var fileinfo = {};
 								if (quale.Target) { //destination defined in the project config,json
 									fileinfo = deepcopy(cx.dbref.conf.async[quale.Target]);
@@ -198,6 +200,9 @@ exports.ajax_upload_with_rpc_feedback = function (req, res) {
 								console.log('js cb final final destination:', fileinfo, fx);
 								cx.fi = fileinfo;
 								cb();
+								} catch (e) {
+									winston.error('uploading a file: threw',e);
+								}
 							}
 						],
 						["if", "v.type==='blob'", [
