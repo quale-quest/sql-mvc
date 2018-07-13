@@ -27,6 +27,7 @@ The select statement can be either ini style select=,from=where=orderby=  or a "
  */
 var zx = require('../../zx.js');
 var ide = require("../../../../server/IDE/debugger");
+var deepcopy = require('deepcopy');
 
 //var deepcopy = require('deepcopy');
 //var extend = require('node.extend');
@@ -555,25 +556,46 @@ exports.init = function (zx) {
 	zx.TableContexts = {};
 	zx.softcodecs = {};
 };
-
+var esc = function (txt) {
+	if (txt==undefined) return ' undefined ';
+return txt.replace(/{/g,'{ ').replace(/}/g,' }').replace(/</g,' &lt ').replace(/>/g,' &gt ');
+	//return txt.replace('{',' %7B ').replace('}',' %7D ').replace('<','&lt').replace('>','&gt');
+}	
 var table_style = function (cx, Key) {
 	var StyleTemplate;
+	var StyleTemplateFrom;
 	var InheritLook = cx.table.tablestyle + "Data" + "_Inherit";
 	if (cx.table.tablestyle === undefined)
 		cx.table.tablestyle = '';
 	var firstLook = cx.table.tablestyle + "Data" + Key;
 	var secondLook = cx.CurrentTableInheritStyle + "Data" + Key;
 	var thirdLook = "Data" + Key;
-
-	//console.log("table_style StyleTemplate:",firstLook+' 2:'+secondLook+' 3:'+thirdLook);
+	var debug ={};
+	
+	
+	debug.tries = [];
+	//debug.firstLook = firstLook;
+	//debug.secondLook = secondLook;
+	//debug.thirdLook = thirdLook;
+	//console.log("table_style StyleTemplate:"+cx.table.tablestyle+' 1:'+firstLook+' 2:'+secondLook+' 3:'+thirdLook);
 
 	if ((StyleTemplate === undefined) && (cx.table.tablestyle !== "")) {
 		StyleTemplate = cx.zx.UIsl[firstLook];
+		StyleTemplateFrom='firstLook:'+firstLook+':'+esc(StyleTemplate);
+		debug.tries.push(StyleTemplateFrom);
 		if (StyleTemplate === undefined) {
 			var InheritStyle = cx.zx.UIsl[InheritLook];
-			//console.log("table_style InheritStyle:",firstLook+' 2:'+InheritStyle+' 3:'+InheritLook,InheritStyle+"Data"+Key);
-			if (InheritStyle !== undefined)
-				StyleTemplate = cx.zx.UIsl[InheritStyle + "Data" + Key];
+			//debug.tries.push('Inherit:'+InheritLook+' '+InheritStyle+' ');
+			//console.log("table_style InheritStyle:",firstLook+' 2:'+InheritStyle+' 3:'+InheritLook,InheritStyle+"Data"+Key);			
+			debug.tries.push('InheritLook:'+InheritLook+':'+InheritStyle||'Not Found');
+			
+			if (InheritStyle !== undefined) {
+				var ihs=InheritStyle + "Data" + Key;
+				StyleTemplate = cx.zx.UIsl[ihs];
+				//console.log('StyleTemplate : ',ihs,esc(StyleTemplate));
+				StyleTemplateFrom='first Inherit:'+ihs+':'+esc(StyleTemplate);
+				debug.tries.push(StyleTemplateFrom);
+			}	
 		}
 		if (StyleTemplate === undefined)
 			zx.error.log_noStyle_warning(cx.zx, "ErrorNo.table.tablestyle: 1:", firstLook, 0);
@@ -581,6 +603,8 @@ var table_style = function (cx, Key) {
 
 	if ((StyleTemplate === undefined) && (cx.CurrentTableInheritStyle !== "")) {
 		StyleTemplate = cx.zx.UIsl[secondLook].trim();
+		StyleTemplateFrom='secondLook:'+secondLook+':'+esc(StyleTemplate);
+		debug.tries.push(StyleTemplateFrom);		
 		if (StyleTemplate === undefined)
 			zx.error.log_noStyle_warning(cx.zx, "ErrorNoCurrentInherittable_style: 2:", secondLook + ' 3:' + thirdLook, 0);
 	}
@@ -590,6 +614,8 @@ var table_style = function (cx, Key) {
 		if ((thirdLook !== secondLook) || (thirdLook !== firstLook))
 			zx.error.log_noStyle_warning(cx.zx, "WarnUsingGenerictable_style: 3:", thirdLook + ' instead of 1:' + firstLook + ' or 2:' + secondLook, 0);
 		StyleTemplate = cx.zx.UIsl[thirdLook];
+		StyleTemplateFrom='thirdLook:'+thirdLook+':'+esc(StyleTemplate);
+		debug.tries.push(StyleTemplateFrom);			
 	}
 
 	if (StyleTemplate === undefined) {
@@ -603,6 +629,9 @@ var table_style = function (cx, Key) {
 	if (StyleTemplate.substring(0, 8) === 'inherit:') {
 		var inherit = StyleTemplate.substring(8);
 		StyleTemplate = cx.zx.UIsl[inherit];
+		StyleTemplateFrom='resolved inherit:'+inherit+':'+esc(StyleTemplate);
+		debug.tries.push(StyleTemplateFrom);			
+		
 		if (StyleTemplate === undefined) {
 			StyleTemplate = '';
 			zx.error.log_noStyle_warning(zx, "ErrorNoInheritedtable_style: 1:", "inherit:" + inherit + " from:", zx.line_obj);
@@ -611,13 +640,15 @@ var table_style = function (cx, Key) {
 	}
 
 	StyleTemplate = StyleTemplate.trim();
-
+	debug.Found = esc(StyleTemplate);
+	debug.FoundFrom = StyleTemplateFrom;
 	StyleTemplate = StyleTemplate.replace("$CRLF$", "\n");
     //console.log('properproperproperproperproperproperproperproperproperproperproperproper xxxxxx:',StyleTemplate);
 	var Result = zx.hogan_ext.compile_render(zx, cx , StyleTemplate);
 	//console.log("table_style hogan:",Key,">>",cx.pop,">>",StyleTemplate,">>",Result);
 
-
+	//console.log("table_style debug:",debug);
+	cx.table_style[Key] = deepcopy(debug);
 	cx.pop = Result;
 	return Result; //TrimQ(Result);
 };
@@ -640,6 +671,9 @@ var zxTable = exports.zxTable = function (cx) {
 
 	var html = "";
 	cx.fieldDebug = {};
+	
+	cx.fieldDebug.table =deepcopy(cx.table);
+	cx.table_style = {};
 	//Divine-PrepFormatAndData-Redo on Server
 	//exports.Validate(cx);
 	//Divine-TopTitle
@@ -647,7 +681,7 @@ var zxTable = exports.zxTable = function (cx) {
 	//Divine-New-Transpose  swaps field layout, cols and row - not the input
 
 	//console.log("DataStyle",cx.Static.Format,cx.Static.DataStyle);
-
+	
 	//console.log("Static",cx);
 	try {
 		cx.pop = table_style(cx, 'TopTitle');
@@ -662,6 +696,8 @@ var zxTable = exports.zxTable = function (cx) {
 	//Divine-table_content
 	html += table_content(cx); //Should push direct to div
 
+	cx.fieldDebug.table_style =deepcopy(cx.table_style);
+	
 	zx.forFields(cx.fields, function (field, key) {
 		if (!cx.fieldDebug[field.f.name]) cx.fieldDebug[field.f.name] = {};		
 		cx.fieldDebug[field.f.name].Qualia = field.f;
