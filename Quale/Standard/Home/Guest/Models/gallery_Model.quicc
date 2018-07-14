@@ -5,11 +5,12 @@
 CREATE TABLE GALLERY		     	--:{as:"Table"} 
 (
   REF VARCHAR(40),					--:{as:pk}
-  NAME VARCHAR(100),				--:{as:text,size:40,title:"todo",onupdate:"owner=session.id"}  
+  NAME VARCHAR(100),				--:{as:text,size:40,title:"Image Name",onupdate:"owner=session.id"}  
   OWNER VARCHAR(40),				--:{as:hidden}
   STATUS VARCHAR(10) default '',	--:{as:ticked}  
   
   PAGE_NUMBER INTEGER,			    --:{as:text,size:4, length:4}  
+  PAGE_ROTATE INTEGER,			    --:{as:text,size:4, length:4}  
   IMAGE_TYPE VARCHAR(40),			--:{as:text,size:40}  
   
   FILE_TYPE VARCHAR(40),			--:{as:text,size:40}  

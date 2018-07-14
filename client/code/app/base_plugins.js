@@ -5,14 +5,15 @@
 var precompiled = {Data:{}};  
 var sst;          
 
-var parse_json_attributes = function (cx,attr) {
+var unpack_elements = function (cx,attr) {
+	//decodes the content sent by the 'repack' function used in an element
     cx.f = {};
     if (attr !== undefined) {        
         var jsonobj = '{' + attr + '}';
         try {
             cx.f = JSON.parse(jsonobj);
         } catch (e) {
-            console.log('parse_json_attributes failed:', e);
+            console.log('unpack_elements failed:', e);
         }
         //console.log('cx.obj.Data.pick vals:',cx.f);
     }
@@ -23,7 +24,7 @@ var init_client_plugin = function (obj) {
             console.log('init_client_plugin client side plugin :',obj);
 			obj.Data.lookup = function () {
 				return function (ctx) {
-					//console.log('obj.Data.lookup:',this,ctx,ctx[0]);
+					console.log('obj.Data.lookup:',this,ctx,ctx[0]);
 					var look = ctx[0][this[1]];
 					var findkey = this[0];
 					if (look === undefined)
@@ -49,7 +50,7 @@ var init_client_plugin = function (obj) {
 					items = ths[0].split(",");
                     
 				//console.log('obj.Data.pick obj:',fn,ths);
-                parse_json_attributes(cx,ths[4]);
+                unpack_elements(cx,ths[4]);
 
 				var look = ctx[0][ths[1]]; //this[1] is the name of the lookup list and look is the dictionary
 				//var findkey = ths[0];
@@ -109,7 +110,7 @@ var init_client_plugin = function (obj) {
 				var items = ths[0].split(",");
 				if (ths[0] === "")
 					items = [];
-                parse_json_attributes(lcx,ths[4]);
+                unpack_elements(lcx,ths[4]); // repack function in element
                 lcx.Session=ctx[0].Session;
 				//console.log('lobj.Data.pick obj:',qq_session,qq_Stash);
 
