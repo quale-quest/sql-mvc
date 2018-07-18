@@ -193,6 +193,7 @@ function dataprocess(ss,par,newdata,cb) { //should only process after transactio
 
 function connect_and_produce_div_sub_fbsql(ss,par,ErrorText, err,cb)  {
 	//retries is called recursivly
+	par.rambase.last_connect_stamp = Date.now();
 	if (ErrorText!=null) {
 		console.log('produce_div error start ErrorText:',ErrorText);
 		//console.log('produce_div error start ss:',ss);
@@ -208,6 +209,7 @@ function connect_and_produce_div_sub_fbsql(ss,par,ErrorText, err,cb)  {
 	}
 	if (par.retry_count>3) {//no more retries
 		//console.log('To many retries - aborting'); 
+		par.rambase.transaction_active = false;
 	    return;
 	}
 	if (par.retry_count>1) {
@@ -216,11 +218,13 @@ function connect_and_produce_div_sub_fbsql(ss,par,ErrorText, err,cb)  {
 
 	par.retry_count+=1;
 	//console.log('starting Transaction :');
+	par.transaction_active = true;
 	try {// does not seem to catch silent failing queries
 		par.rambase.db.startTransaction(//transaction(fb.ISOLATION_READ_COMMITED,
 		function (err, transaction) {		
 		if (err) {
-			//console.log('Error starting transaction :', err); 
+			//console.log('Error starting transaction :', err);
+			par.rambase.transaction_active = false;			
 			connect_and_produce_div_sub_fbsql(ss,par,'Error starting transaction :', err,cb);				
 			return;
 		}
@@ -242,6 +246,7 @@ function connect_and_produce_div_sub_fbsql(ss,par,ErrorText, err,cb)  {
 				if (err) {
 					console.log('error in transaction.query', err);
 					transaction.rollback(function (rollback_err) {
+						par.rambase.transaction_active = false;
 						console.log('error in rolling back transaction.query', rollback_err);
 						//retrying
 						connect_and_produce_div_sub_fbsql(ss,par,'Error query transaction :'/*+par.QryDebug*/, err,cb);				
@@ -252,15 +257,15 @@ function connect_and_produce_div_sub_fbsql(ss,par,ErrorText, err,cb)  {
 						par.newdata = newdata;
 						transaction.commit(function (err) {	
 						    //console.timeEnd("========================DB QUERY");
+							par.rambase.transaction_active = false;
 							if (err) {
 								//console.log('error in transaction.commit', err);
 								transaction.rollback(function (rollback_err) {
-									//retrying
+									//retrying									
 									connect_and_produce_div_sub_fbsql(ss,par,'Error commit transaction :', err,cb);				
 									});//rollback
 							} else {
 								//successful transaction, query and commit
-								
 								par.SCRIPTNAMED = (result[0].SCRIPTNAMED||'').toString();
 								par.NEW_CONTEXT_ID = result[0].NEW_CONTEXT_ID;
 								par.infos=String(result[0].INFO||''); 	

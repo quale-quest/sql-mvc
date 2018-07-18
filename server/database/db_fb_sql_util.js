@@ -16,7 +16,7 @@ var fs = require('fs');
 //var Sync = require('sync');
 var deasync = require('deasync');
 
-var deasync_const=5; 
+var deasync_const=15; 
 
 var connection = {};
 var deepcopy = require('deepcopy');
@@ -87,9 +87,8 @@ var parse_error = function (zx, err, source, script) {
 			//console.log('script_err source err:', script_err);
 			zx.error.log_syntax_warning(zx, 'script_err source err:', zx.err, script_err);
 		} else {
-			zx.error.log_syntax_warning(zx, 'script_err source err type 2:', zx.err, zx.line_obj);
+			zx.error.log_syntax_warning(zx, 'script_err source err type 2:', script_err, zx.line_obj);
 		}
-
 	}
 
 	zx.err = script_err;
@@ -241,7 +240,7 @@ exports.exec_query_async = function (zx, connection, name, script,params,line_ob
 
 exports.fetch_query_result = function (zx, connection, name, script,params,line_obj,expect,defaultval) {		
 	var error,result, done=false;
-    //console.log("fetch_query_result:" ,script,params);
+    //console.log("fetch_query_result a:" ,script.substring(0,80),params);
 	exports.exec_query_async(zx, 
 		connection, 
 		name, 
@@ -260,7 +259,7 @@ exports.fetch_query_result = function (zx, connection, name, script,params,line_
 	while (!done) {
 		deasync.sleep(deasync_const);
 	}
-	//console.log("fetch_query_result:" ,error,result);
+	//console.log("fetch_query_result z:" ,error,result);
 	if (error && error.thrw==true){
 		//callback(null,[thrw=true,name, script_err + '\r\n' + script]);	
 		//throw new Error(error.name, error.script_err + '\r\n' + error.script);

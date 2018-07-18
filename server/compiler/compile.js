@@ -203,7 +203,8 @@ var AddDependedFilesToBeCompiled = function (zx,fn) {
 		//console.log('Require zx.UIsl:', zx.UIsl);
 
 		zx.default_pk_name = 'ref';
-
+		zx.transaction_active = true;
+		zx.compiler_active = true;
 		zx.debug = 1;
 		zx.debug_conditional_structure = 0;
 		zx.exit_on_error=1;
@@ -563,6 +564,7 @@ var seq_page = function (zx) {
         zx.dbu.databaseUtils(zx.root_folder, zx.pages[zx.pgi].name, zx.pages[zx.pgi].name
         ,function cb(err,res,rambase){
             //console.warn('database connecting on config AA',err,res,rambase);
+			  rambase.transaction_active = true;
               zx.conf = rambase.conf;
               //result = res;
               done=true;
@@ -570,7 +572,8 @@ var seq_page = function (zx) {
             
         } );
         while(!done) { 
-          require('deasync').sleep(15);
+		  var deasync_const=15;
+          require('deasync').sleep(deasync_const);
         }
 		
 		//console.warn('database synced on config ',JSON.stringify(zx.conf, null, 4) );

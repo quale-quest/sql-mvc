@@ -1713,7 +1713,7 @@ exports.AutoMaticDLL = function (zx,line_obj) {
  //console.log('sqlgen_fb AutoMaticDLL: ',zx.sql.triggers);    
  zx.forFields(zx.sql.triggers, function (trigger) {
    var pk_seq = make_pk_seq(zx,trigger.Table,trigger.Field);
-   //console.log('    sqlgen_fb AutoMaticDLL for : ',trigger.Table,trigger.Field,pk_seq.substring(0,80));   
+   //console.log('    sqlgen_fb AutoMaticDLL for triggers: ',trigger.Table,trigger.Field,pk_seq.substring(0,80));   
    zx.db_update.Prepare_DDL(zx, null, pk_seq, line_obj)
  });
  //console.log('\r\nAutoMaticDLL done: ');   

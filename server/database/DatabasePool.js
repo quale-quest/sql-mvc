@@ -10,7 +10,7 @@ var path = require('path');
 var util = require('util');
 var os = require('os');
 var extend = require('node.extend');
-var deasync = require('deasync');
+var deasync = require('deasync');var deasync_const=15;
 var deepcopy = require('deepcopy');
 
 var winston = require('winston');
@@ -48,51 +48,81 @@ exports.insert_array = function (db,sql,arry,index,cb) {
 }    
 
 
-var maintenance_timer = setInterval(function () {
-	//console.log('maintenance_timer...:');
-	var to= Date.now() - 300000; //5mins
-	for (var key in exports.connections) {
-		if (exports.connections.hasOwnProperty(key)) {
-			var c = exports.connections[key];
-			if (c && c.db)
-				if (c.last_connect_stamp < to) {
-					console.log('maintenance_timer...: Preparing to Detach :',key);
-                    if (c.tr_log&&c.tr_log.length>0) {
-                        c.tr_log.push([c.LoadedInstance,'x',c.tr_last_contact,'','']);
-                        winston.info('tacking',[c.LoadedInstance,'x',c.tr_last_contact,'','']);
-                        c.tr_log_send = c.tr_log;
-                        c.tr_log = [];
-					    console.log('maintenance_timer...: logging :',
-                            key,c.tr_last_contact,c.tr_log.length);   
 
-                        exports.insert_array(c.db
-                            ,'INSERT INTO track (session, act, stamp, par1, par2) VALUES(?, ?, ?, ?, ?)'
-                            ,c.tr_log_send
-                            ,0
-                            ,function () {
-                                console.log('maintenance_timer...: Detaching after loging :',key,c);
-                                try {
-                                c.db.detach();
-                                c.db =null;                                
-                                } catch (e) {
-                                    winston.error('Error detatching db 170900',key);
-                                }    
-                                console.log('maintenance_timer...: Done Detaching  after loging:',key);
-                                
-                            });
-                        
-                    } else {
-                        console.log('maintenance_timer...: Detaching :',key);
-                        if (c.db.detach) c.db.detach(); //fb/mysql
-						if (c.db.release) c.db.release(); //mssql
-                        c.db =null;
-                        console.log('maintenance_timer...: Done Detaching :',key);
-                    }
-				}
-		}
-	};
+
+var maintenance_timer_rambase = null;
+var FindOldest_rambase = function (connections) { 
+	var to= Date.now() + 5000;
+	var found_rambase = null;
+	for (var key in connections) {if (connections.hasOwnProperty(key)) {
+		
+		var rambase = connections[key]; 
+		  if (rambase && rambase.db)
+			//console.log('FindOldest_rambase...:',rambase.last_connect_stamp,to);
+			if ((rambase.last_connect_stamp < to) && (!rambase.transaction_active)) {
+				found_rambase = rambase;
+				to = rambase.last_connect_stamp;
+			}	
+	}}	
+	return found_rambase;
+}
+
+var maintenance_timer = setInterval(function () {
+	//every 5 seconds check if we need to disconnect one connection
+	//console.log('maintenance_timer...:');//,maintenance_timer_rambase);
+	
+	//find newest
+	var to= Date.now() - 600000; //older than 10 mins	
+	if (maintenance_timer_rambase!==null) if (maintenance_timer_rambase.transaction_active)  maintenance_timer_rambase=null; //kill if busy again
+	
+	if (maintenance_timer_rambase==null)
+		maintenance_timer_rambase = FindOldest_rambase(exports.connections);
+	if (1)
+	if (maintenance_timer_rambase!==null) {
+		console.log('maintenance_timer...:',maintenance_timer_rambase.transaction_active,maintenance_timer_rambase.last_connect_stamp,to);
+		if (maintenance_timer_rambase.last_connect_stamp < to) {
+			var rambase = maintenance_timer_rambase;
+			var key = rambase.last_connect_stamp;
+		
+			console.log('maintenance_timer...: Preparing to Detach :',key);
+			if (rambase.tr_log&&rambase.tr_log.length>0) { //used by trace_to_server
+				rambase.tr_log.push([rambase.LoadedInstance,'x',rambase.tr_last_contact,'','']);
+				winston.info('tacking',[rambase.LoadedInstance,'x',rambase.tr_last_contact,'','']);
+				rambase.tr_log_send = rambase.tr_log;
+				rambase.tr_log = [];
+				console.log('maintenance_timer...: logging :',
+					key,rambase.tr_last_contact,rambase.tr_log.length);   
+
+				exports.insert_array(rambase.db
+					,'INSERT INTO track (session, act, stamp, par1, par2) VALUES(?, ?, ?, ?, ?)'
+					,rambase.tr_log_send
+					,0
+					,function () {
+						console.log('maintenance_timer...: Detaching after loging :',key,c);
+						try {
+							if (rambase.db.detach) rambase.db.detach(); //fb/mysql
+							if (rambase.db.release) rambase.db.release(); //mssql
+							rambase.db =null;                                
+						} catch (e) {
+							winston.error('Error detatching db 170900',key);
+						}    
+						console.log('maintenance_timer...: Done Detaching  after loging:',key);
 						
-	}, 500);
+					});
+				
+			} else {
+				console.log('maintenance_timer...: Detaching :',key);
+				if (rambase.db.detach) rambase.db.detach(); //fb/mysql
+				if (rambase.db.release) rambase.db.release(); //mssql
+				rambase.db =null;
+				console.log('maintenance_timer...: Done Detaching :',key);
+			}
+			maintenance_timer_rambase = null;
+		}		
+	}
+	
+					
+	}, 5000); //every 5 seconds check if we need to disconnect
 
 
 
@@ -327,7 +357,6 @@ exports.databasePooled = function (root_folder, LoadedInstance, Application, cal
 		//console.log('db connections json 165225 :', JSON.stringify(rambase, null, 4));
 		rambase.database = conf.db.database_folder + conf.db.database_filename + conf.db.database_extension;
 
-
 		//console.log("\n\n============================: ",JSON.stringify(rambase.conf.db.dialect, null, 4) );
 		if (rambase.conf.db.dialect=="mssql12")  {
 			if (db_req.msConnectionPool==undefined) {
@@ -425,7 +454,7 @@ exports.databasePooled = function (root_folder, LoadedInstance, Application, cal
 					rambase.last_connect_stamp = Date.now();
 					exports.connections[LoadedInstance] = rambase;
 					
-					deasync.sleep(15); //on windows this is needed to prevent the compiler form hanging
+					deasync.sleep(deasync_const); //on windows this is needed to prevent the compiler form hanging
 					rambase.db.query("select version()", [],	function (err, result, fields) {
 						console.log("MySQL info :",result);//, fields);
 						if (callback !== undefined)
@@ -505,7 +534,7 @@ exports.databasePooled = function (root_folder, LoadedInstance, Application, cal
 				//console.log('db connections json 165301 :', JSON.stringify(rambase,null,4));
 				// console.log('db connections json :', JSON.stringify(exports.connections,null,4));
 				//console.log("connection number 164955 " + Object.keys(exports.connections).length + " for " + LoadedInstance + ' on ' + exports.connections[LoadedInstance]);
-                deasync.sleep(15); //on windows this is needed to prevent the compiler form hanging
+                deasync.sleep(deasync_const); //on windows this is needed to prevent the compiler form hanging
 				if (callback !== undefined)
 					callback(null, "Connected", exports.connections[LoadedInstance]);
 			}
@@ -533,7 +562,7 @@ exports.connect_if_needed = function (connection, callback) {
 			} else {
 				connection.db = dbref;
                 connection.ready = true;
-                deasync.sleep(15); //on windows this is needed to prevent the compiler form hanging
+                deasync.sleep(deasync_const); //on windows this is needed to prevent the compiler form hanging
 				connection.last_connect_stamp = Date.now();
                 //console.log('connect_if_needed connected callback 080005 :');    
 				if (callback !== undefined)

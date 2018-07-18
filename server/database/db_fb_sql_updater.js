@@ -102,7 +102,7 @@ Ported from UpdateFDB.py
 var fs = require('fs');
 var deepcopy = require('deepcopy');
 var extend = require('node.extend');
-var deasync = require('deasync'); var deasync_const=5;
+var deasync = require('deasync'); var deasync_const=15;
 
 exports.module_name = 'db_fb_updater.js';
 
@@ -248,7 +248,18 @@ function dll_blocks_seperate_term(inputs, src_obj) { //splits the input into blo
 	return blocks;
 }
 
+var exec_qry_cache = {};
 var exec_qry = function (cx, qrys) {
+	if (exec_qry_cache[qrys]) {
+		console.log("exec_qry_cache: " ,qrys.substring(0,80));
+		return;	
+	}
+	console.log("exec_qry: " ,qrys.substring(0,80));
+	exec_qry_cache[qrys] = true;
+	exec_qry(cx, qrys);
+}
+
+var exec_qry_non_cached = function (cx, qrys) {
 	
 	if (zx.fb25) { 
 	} else if (zx.mysql57) {
@@ -271,6 +282,9 @@ var exec_qry = function (cx, qrys) {
 	}
 	delete cx.expect;
 };
+
+
+
 
 var dataset = function (zx, qrys) {//could use the one from sql_utils
     //console.log("dataset:" ,qrys);
@@ -337,7 +351,19 @@ var checkView = function (zx, name) {
 //	if (zx.mssql12)	
 	throw new Error("dialect code missing");
 };
+
+var checkGenerator_cache = {};
 var checkGenerator = function (zx, name,debug) {
+	var sg=checkGenerator_cache[name];
+	//console.log('checkGenerator : ', sg);
+	if (!sg) {
+		//console.log('checkGenerator non: ', sg);
+		sg=checkGenerator_non_cached(zx, name,debug);
+		checkGenerator_cache[name]=sg;
+	}
+	return sg;
+}
+var checkGenerator_non_cached = function (zx, name,debug) {
 	//CREATE SEQUENCE IF NOT EXISTS myschema.myseq;  Postgres 9.5+
 	if (zx.fb25)
 	    return singleton(zx, "COUNT", "SELECT count(*) FROM RDB$GENERATORS  where RDB$GENERATOR_NAME='" + name + "' ;",debug);	
@@ -347,7 +373,20 @@ var checkGenerator = function (zx, name,debug) {
         return singleton(zx, "count(*)", "SELECT count(*) FROM sys.sequences WHERE name = '" + name.toUpperCase() + "';",debug);	
 	throw new Error("dialect code missing");
 };
+
+
+var getGenerator_cache = {};
 var getGenerator = function (zx, name, increment,debug) {
+	var sg=getGenerator_cache[name];
+	//console.log('getGenerator_cache : ', sg);
+	if (!sg) {
+		//console.log('getGenerator_cache non: ', sg);
+		sg=getGenerator_non_cached(zx, name, increment,debug);
+		getGenerator_cache[name]=sg;
+	}
+	return sg;
+}
+var getGenerator_non_cached = function (zx, name, increment,debug) {
  //console.log("getGenerator:", name,zx.fb25);
 	if (zx.fb25) { 
 		return singleton(zx, "GEN_ID", "SELECT GEN_ID( " + name + "," + increment + " ) FROM RDB$DATABASE;",debug);
@@ -1247,6 +1286,8 @@ exports.Sort_DDL = function (zx, blocks) {
 	var build_str = [];
 	var build_exec_str = [];
 	var block_hashes = {};
+	
+	//console.log('Sort_DDL blocks.length:', blocks.length);
 	
 	blocks.forEach(function (block, i) {
 		var qrystr = block.qrystr;

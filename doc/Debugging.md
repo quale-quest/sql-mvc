@@ -16,3 +16,6 @@ Often it is hard to track the element names used,
 Make small changes via GIT to check when stuff breaks
 
 
+## Client side trace logging to database
+	for logging From client check  trace_to_server rambase.tr_dt - not sure of use or implementation.
+	"INSERT INTO track" track table does not exist yet
