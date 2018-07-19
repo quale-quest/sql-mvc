@@ -79,7 +79,7 @@ var maintenance_timer = setInterval(function () {
 		maintenance_timer_rambase = FindOldest_rambase(exports.connections);
 	if (1)
 	if (maintenance_timer_rambase!==null) {
-		console.log('maintenance_timer...:',maintenance_timer_rambase.transaction_active,maintenance_timer_rambase.last_connect_stamp,to);
+		//console.log('maintenance_timer...:',maintenance_timer_rambase.transaction_active,maintenance_timer_rambase.last_connect_stamp,to);
 		if (maintenance_timer_rambase.last_connect_stamp < to) {
 			var rambase = maintenance_timer_rambase;
 			var key = rambase.last_connect_stamp;

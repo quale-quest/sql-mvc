@@ -820,7 +820,8 @@ var seq_pages = function (zx) {
 
 
 console.log('compiler started');
-if (!fs.existsSync("Quale")||!fs.existsSync("node_modules/sql-mvc-ui-dark")) {
+var ui=fs.existsSync("node_modules/sql-mvc-ui-dark")||fs.existsSync("../node_modules/sql-mvc-ui-dark");
+if (!fs.existsSync("Quale")||!ui) {
     // Do something
 	console.log('\r\n...........................................');
     console.log('The compiler must be run with the current working directory being the root of the project to be compiled.');

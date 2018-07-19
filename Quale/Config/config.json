@@ -11,12 +11,14 @@
             "db_create": "yes",
             "url_page": true,
             "serve_port": "3000",
+			"severside_render": "FirstPage",
             "debugkey": ""
         },
         "win": {
             "db_create": "yes",
             "monitor_mode": "jit",
             "serve_port": "3000",
+			"severside_render": "FirstPage",
             "debugkey": "",
             "db": {
                 "database": "demo_db_2.fdb",
@@ -29,6 +31,7 @@
             "db_create": "yes",
             "monitor_mode": "jit",
             "serve_port": "3000",
+			"severside_render": "FirstPage",
             "note":"this has not been checked yet"
         },
         "c9": {
@@ -36,12 +39,14 @@
             "db_create": "yes",
             "url_page": true,
             "serve_port": "8080",
+			"severside_render": "FirstPage",
             "debugkey": ""
         },
         "prod": {
             "db_create": "yes",
             "monitor_mode": "none",
             "serve_port": "80",
+			"severside_render": "FirstPage",
             "db": {
                 "schema_backup": 1
             }
@@ -53,7 +58,7 @@
 	       },
     "db":	{
 				"dialect": "fb25",
-				"dialect_options": "fb25,mysql57,mssql12,pgsql90,odsql11",
+				"dialect_options": "fb25,mysql57,mssql12,pgsql90,odsql11,nuosql32",
 				"packages":["sql-mvc-ui-dark"],
 				
 				"database_filename": "demo_db_2",
