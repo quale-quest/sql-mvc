@@ -8,7 +8,7 @@ ls -la client/code/app
 ls -la client/templates/Widgets
 
 
-
+rm events.log
 rm -R output
 rm -R client/static/others/signature_pad
 rm -R client/code/app/signature_pad_plugin.js

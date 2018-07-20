@@ -11,3 +11,4 @@ server/compiler/output
 
 /output
 syntaxhighlighter_3.0.83
+/package-lock.json

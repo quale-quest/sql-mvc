@@ -16,7 +16,7 @@
 	<div id="withIcon">
 		<a class="ui-notify-close ui-notify-cross" href="#">x</a>
 		<div style="float:left;margin:0 10px 0 0">
-			<img src="images/#{icon}" alt="warning"/>
+			<img src="images/qqui1/x.png" alt="warning"/>
 		</div>
 		<h1>#{title}</h1>
 		<p>

@@ -27,7 +27,15 @@ Skip what you already have or don't need.
 #sql-mvc from npm
 
     mkdir  myapp;cd myapp
-    npm install sql-mvc
+    npm install sql-mvc	
+	node --es_staging  node_modules/sql-mvc/bin/sql-mvc.js patch
+	node node_modules/sql-mvc/bin/sql-mvc.js new app
+	cd app
+	npm install
+	node --es_staging  ../node_modules/sql-mvc/bin/sql-mvc.js patch
+	./check.sh
+	node app.js
+	
     
 
 #Enjoy
