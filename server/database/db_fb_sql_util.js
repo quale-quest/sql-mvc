@@ -160,11 +160,11 @@ var check_parse = function (zx, err, script, params, line_obj,expect,result,name
 			zx.eachplugin(zx, "commit", 0);
 			zx.db_update.write_log.push("-- "+name + "  --- "+ script_err.message);
 			if (zx.fb25) { 
-			    fs.writeFileSync("exit2.sql","SET TERM ^ ;\n" +script +"^ \nSET TERM ; ^\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message+"\r\n"+name+"\r\nparams:"+params);
+			    fs.writeFileSync(zx.output_folder+"/exit2.sql","SET TERM ^ ;\n" +script +"^ \nSET TERM ; ^\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message+"\r\n"+name+"\r\nparams:"+params);
 			} else if (zx.mysql57) {				
-				fs.writeFileSync("exit2.sql","DELIMITER //\n" +script +"//\nDELIMITER ;\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message+"\r\n"+name+"\r\nparams:"+params);
+				fs.writeFileSync(zx.output_folder+"/exit2.sql","DELIMITER //\n" +script +"//\nDELIMITER ;\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message+"\r\n"+name+"\r\nparams:"+params);
 			} else if (zx.mssql12) {				
-				fs.writeFileSync("exit2.sql","DELIMITER //\n" +script +"//\nDELIMITER ;\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message+"\r\n"+name+"\r\nparams:"+params);
+				fs.writeFileSync(zx.output_folder+"/exit2.sql","DELIMITER //\n" +script +"//\nDELIMITER ;\r\n\r\n\r\n\r\n>>>>>>>>>>>>>>>>>\r\n"+ script_err.message+"\r\n"+name+"\r\nparams:"+params);
 			} else throw new Error("dialect code missing");
 				
 			

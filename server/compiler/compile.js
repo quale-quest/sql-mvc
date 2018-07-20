@@ -70,30 +70,20 @@ replace with a <#jscript tag, to store away for execution after the dom injectio
 var hogan = require('ss-hogan/node_modules/hogan.js');
  
 var program = require('commander');
-//var XLSX =  require('xlsx');
 var fs = require('fs');
 var path = require('path');
-
-//var mmh3 = require('murmurhash3');
-
 var page = require('./modules/page.js');
-
 var diviner = require('./modules/diviner.js');
-
 var zx = require('./zx.js');
-zx.TemplateHashPrefix = 'a';
-
 var db = require("../../server/database/DatabasePool");
-
-var dirxww = 493;
-/* octal 0755 */
-//var bcb = require('./modules/bcbiniparse.js');
-
 var fsx = require('node-fs');
-
-//var Sync = require('sync'); // https://github.com/ybogdanov/node-sync
-
 var fileutils = require('../lib/fileutils.js');
+
+var dirxww = 493; /* octal 0755 */
+zx.TemplateHashPrefix = 'a';
+var search_paths = ['./node_modules/','../node_modules/','../../node_modules/'];
+
+
 
 var queue_file_to_be_compiled = function (zx, dfn) {
 	var fileobj,
@@ -266,17 +256,16 @@ var AddDependedFilesToBeCompiled = function (zx,fn) {
         require('./modules/plugins.js').build(zx,zx.config.packages,zx.config.db.packages);
         
         //Find Installable drop-in folders
-        if (fs.existsSync('./node_modules')) {
-			fileutils.getDropinPackages('./node_modules/',/sql-mvc-di/,zx.config.packages, zx.build_roots);
-            fileutils.getDropinPackages('./node_modules/',/sql-mvc-di/,zx.config.db.packages, zx.build_roots);
-		}
-        if (fs.existsSync('../node_modules')) {
-			fileutils.getDropinPackages('../node_modules/',/sql-mvc-di/,zx.config.packages, zx.build_roots);
-            fileutils.getDropinPackages('../node_modules/',/sql-mvc-di/,zx.config.db.packages, zx.build_roots);
-		}	
+		
+		search_paths.forEach(function(sp) {			
+			if (fs.existsSync(sp)) {
+				fileutils.getDropinPackages(sp,/sql-mvc-di/,zx.config.packages, zx.build_roots);
+				fileutils.getDropinPackages(sp,/sql-mvc-di/,zx.config.db.packages, zx.build_roots);
+			}		
+		});
+
         
         //Add plug-in folders
-        
         zx.build_roots.push(""); //last one MUST be "" 
 
 
@@ -820,7 +809,9 @@ var seq_pages = function (zx) {
 
 
 console.log('compiler started');
-var ui=fs.existsSync("node_modules/sql-mvc-ui-dark")||fs.existsSync("../node_modules/sql-mvc-ui-dark");
+var ui=false;
+search_paths.forEach(function(sp) {	ui|=fs.existsSync(sp+"sql-mvc-ui-dark") });
+
 if (!fs.existsSync("Quale")||!ui) {
     // Do something
 	console.log('\r\n...........................................');

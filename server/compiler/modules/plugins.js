@@ -6,7 +6,7 @@ var deepcopy = require('deepcopy');
 var fileutils = require('../../lib/fileutils.js');
 exports.module_name = 'plugins.js';
 
-var search_paths = ['./node_modules/','../node_modules/'];
+var search_paths = ['./node_modules/','../node_modules/','../../node_modules/'];
 
 //build app.html
 var build_injectpoint = function (txt,packages,path,name) {

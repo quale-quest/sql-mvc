@@ -7,12 +7,15 @@ echo Post_Script :
 #service firebird2.5-classic start
 #chmod o+r /etc/firebird/2.5/SYSDBA.password
 
-node server/compiler/compile.js app Home/Guest all
+
+echo "node server/compiler/compile.js app Home/Guest all"
+# cd node_modules/sql-mvc/;node server/compiler/compile.js app Home/Guest all
 
 
-echo you can now run :
+
+echo you can now run the server like this :
 #pwd ==/home/ubuntu/workspace/node_modules/sql-mvc
-echo cd node_modules/sql-mvc/;node app.js
+echo "cd node_modules/sql-mvc/;node app.js"
 
 
 #ln Quale/Standard/Home/Guest/Index.quicc ../../Index.quicc -s

@@ -251,12 +251,12 @@ function dll_blocks_seperate_term(inputs, src_obj) { //splits the input into blo
 var exec_qry_cache = {};
 var exec_qry = function (cx, qrys) {
 	if (exec_qry_cache[qrys]) {
-		console.log("exec_qry_cache: " ,qrys.substring(0,80));
+		//console.log("exec_qry_cache: " ,qrys.substring(0,80));
 		return;	
 	}
-	console.log("exec_qry: " ,qrys.substring(0,80));
+	//console.log("exec_qry: " ,qrys.substring(0,80));
 	exec_qry_cache[qrys] = true;
-	exec_qry(cx, qrys);
+	exec_qry_non_cached(cx, qrys);
 }
 
 var exec_qry_non_cached = function (cx, qrys) {
@@ -1474,6 +1474,7 @@ exports.update = function (zx) {
        }
     
 	if ((exports.lastHash === null) || (exports.lastHash !== B.Hashes["Complete"]) || (zx.config.db.schema_rebuild==="always")) {
+		//console.log("Model meta hash indicates it has changed...");
 	    //console.log('exports.Execute_DDL hashed:',exports.lastHash,"\n   B.Hash 210425:",B.Hash);
 		//console.log('Backup_DDL');
 		exports.Backup_DDL(zx, 0, 1); //audit trail
