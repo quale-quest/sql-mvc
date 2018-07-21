@@ -255,14 +255,20 @@ var getDropinPackages = exports.getDropinPackages = function(dir, dir_regex,pack
 		if (!package_list.hasOwnProperty(i))
 			continue;
 		var name = package_list[i];
-        var libname = path.join(dir , name, 'Quale', 'Lib');
-        try {
-            if (fs.statSync(libname).isDirectory()) {
-                console.log('getFiles plugin pathname:',libname);
-                files_.push(libname);           
-            } else {
-            }
-        } catch (err) {}
+		//check if package not already found
+		var found = files_.findIndex(function(e) {
+			return (e.indexOf(name) > -1);
+		});
+		if (found<0) {
+			var libname = path.join(dir , name, 'Quale', 'Lib');
+			try {
+				if (fs.statSync(libname).isDirectory()) {
+					console.log('getFiles plugin pathname:',libname);
+					files_.push(libname);           
+				} else {
+				}
+			} catch (err) {}
+		}
 	}
         
     

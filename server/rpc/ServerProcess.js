@@ -275,7 +275,8 @@ function connect_and_produce_div_sub_fbsql(ss,par,ErrorText, err,cb)  {
 								par.error_str = par.infos.substring(0,9);
 								par.error_code = par.infos.substring(10,20).trim();
 								//console.log('transaction D');
-								
+								console.log('transaction error_str :',par.error_str,'  error_code:',par.error_code);
+								//todo winston log exceptions
 								//console.log('error_str:', par.error_str, ':   error_code:',par.error_code,':');
 								if ((par.error_str === 'exception')&&(par.error_code === '-913')) {
 									connect_and_produce_div_sub_fbsql(ss,par,'DEADLOCK in Query :','DEADLOCK',cb);													

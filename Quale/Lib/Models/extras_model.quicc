@@ -1,6 +1,6 @@
 
 
-<#
+<#:model()
 list{
     "name": "YesNo",
     "values": {
@@ -25,6 +25,10 @@ list{name=Ticked,values={
 	"":"ifblank:"
 	}}
 
+#>
+	
+<#:model()
+	
 CREATE DOMAIN TEXT40
  AS VARCHAR(40)
  DEFAULT '';

@@ -9,12 +9,12 @@ as opposed to using a general purpose language (JavaScript) for writing applicat
 In 1991 Oracle added a few extensions to SQL to create Procedural SQL, so now I have added a 
 few more extensions to SQL, to create QUery Application Language Extensions (QUALE) - it is that simple.
 
-**Recent change log: Divout popup, Automatic JIT compiler, Windows Installer and dev environment with syntax highlighting.**
+**Recent change log: Added My-SQL and MS-SQL drivers. Updated Node version- caused a lot of breakage.**
 
 Please join our new Google group to comment on, or discuss the technology : [sql-mvc-talk](https://groups.google.com/group/sql-mvc-talk)
 
 *Alpha version 0.0 Notice: When evaluating SQL-MVC keep in mind this project is still version 0.0.x- alpha/preview release.
-The GUI looks old and clunky, but it is fully customisable and will be modernised, a lot of stuff is not 100% polished or even to spec,
+A lot of stuff is not 100% polished or even to spec,
 try and pick up the key points we are trying to demonstrate not shortcomings or bugs
  (although all feedback is welcome). *
  
@@ -110,7 +110,7 @@ The following may be broken as of June 2018 due to node changes.
 than a few SQL statements, directives and properties and produces:
   1. All the database code as a single stored procedure, to be run to produce JSON output.
   2. a Moustache Template(Hogan) containing all the client side code to be filled with the JSON.
-When the two are combined in the browser !!voila!!.
+When the two are combined in the browser.
 * The server node.js does very little other than pass JSON between the server and client.
 * All the business logic remains in the database server.
 * You have full control of the client side look, feel and behaviour, the 
