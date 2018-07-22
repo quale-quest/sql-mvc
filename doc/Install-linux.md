@@ -16,11 +16,11 @@ Skip what you already have or don't need.
 
 #node.js
 
-	curl -sL https://deb.nodesource.com/setup | sudo bash -
-	apt-get install -y nodejs
-	sudo npm cache clean -f
-	sudo npm install -g n
-	sudo n latest
+Install node version 9.11.0 according to your distro
+
+	curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
+	sudo apt-get install -y nodejs
+	sudo apt-get install -y build-essential
 	npm install -g forever
 
 

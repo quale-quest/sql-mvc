@@ -2,7 +2,7 @@
 
 	<div id="header">
 		<div id="logo" class="droptips">
-			<a href="#" title="sql-mvc.com"><img src="../../images/Green_strawberryIconAlpha.png" width="58" height="58" alt="sql-mvc.com"></a>
+			<a href="#" title="<%branding.app_short_title%>"><img src="<%branding.menu_image%>" width="58" height="58" alt="<%branding.app_short_title%>"></a>
 		</div>
 		<div id="topbar">
 

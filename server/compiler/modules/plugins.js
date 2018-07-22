@@ -12,7 +12,7 @@ var search_paths = ['./node_modules/','../node_modules/','../../node_modules/'];
 var build_injectpoint = function (txt,packages,path,name) {
 
 		
-	var field = '{{'+name+'_inject_point}}';
+	var field = '<%'+name+'_inject_point%>';
 	var val='';
 	packages.forEach(function(pk) {	
 		search_paths.forEach(function(sp) {			
@@ -46,17 +46,21 @@ exports.build_file = function (zx,packages,from_folder,from_fn,to_fn) {
 	else {
 		console.log('plugins.build from_fn:',from_fn,' to_fn:',to_fn);
 		var text = fs.readFileSync(from_fn).toString();		
-		let text_list = text.match(/{{.+_inject_point}}/gi);
+		let text_list = text.match(/<%.+_inject_point%>/gi);
 		//console.log('plugins.build text_list:',text_list);
 		if (text_list!=null) {
 			text_list.forEach(function(ip) {
-				ip = ip.replace('_inject_point}}','').replace('{{','');
-				//console.log('plugins.build ip:',ip);
+				ip = ip.replace('_inject_point%>','').replace('<%','');
+				console.log('plugins.build ip:',ip);
 				text= build_injectpoint(text,packages,from_folder,ip);
 			});
 		}
+		console.error("zx.config.branding xx:",zx.config.branding);	
+		text =  zx.hogan_ext.compile_render(zx, zx.config , text, {delimiters: '<% %>'}); 
+		
 		//console.log('plugins.build to_fn:',to_fn);
 		fs.writeFileSync(to_fn,text);
+		//process.exit(2);
 	}
 	
 }

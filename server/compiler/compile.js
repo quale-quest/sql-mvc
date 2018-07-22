@@ -253,7 +253,6 @@ var AddDependedFilesToBeCompiled = function (zx,fn) {
                 Popup
                     
         */
-        require('./modules/plugins.js').build(zx,zx.config.packages,zx.config.db.packages);
         
         //Find Installable drop-in folders
 		
@@ -336,8 +335,10 @@ var AddDependedFilesToBeCompiled = function (zx,fn) {
         zx.page=page;
 		zx.plugins.push(page);
 
-		zx.hogan_ext = require('./modules/hogan_ext.js');
-		zx.plugins.push(zx.hogan_ext);        
+		zx.hogan_ext = require('./modules/hogan_ext.js');        
+		zx.plugins.push(zx.hogan_ext);   
+		console.error("zx.config.branding :",zx.config.branding);		
+		require('./modules/plugins.js').build(zx,zx.config.packages,zx.config.db.packages);		
         
 		zx.Container_widget = require('./modules/widgets/G960_widget.js');
 		zx.plugins.push(zx.Container_widget);

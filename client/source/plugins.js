@@ -42,7 +42,7 @@ exports.init_after_render = function (Target) {
 /*Plugin list has to be updated by compiler as the client side does not have access to require('fs') */
 /*Start Of Plugins */
 exports.require_plugin('base_plugins');
-{{plugin_inject_point}}
+<%plugin_inject_point%>
 
 /*End Of Plugins */
 

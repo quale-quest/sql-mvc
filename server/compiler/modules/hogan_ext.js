@@ -15,7 +15,7 @@ marked.setOptions({
 	smartypants : false
 });
 
-exports.compile_render = function (zx, cx , Template) {
+exports.compile_render = function (zx, cx , Template,options) {
 
     //escape text embeded
     if (cx.Text) {
@@ -66,7 +66,7 @@ exports.compile_render = function (zx, cx , Template) {
 		}                
         
         
-	var code = hogan.compile(Template);
+	var code = hogan.compile(Template,options);
 	var Result = code.render(cx);
     Result = Result.replace(/\@\@\[\@\@\[/g,'{{');		
     Result = Result.replace(/\@\@\]\@\@\]/g,'}}');		

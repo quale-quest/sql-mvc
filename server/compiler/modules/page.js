@@ -182,6 +182,7 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 		}
 		str = check_user_table_name(zx, str);
 		//console.log('not a json page..processing as htm',filename,str.length);
+		str =  zx.hogan_ext.compile_render(zx, zx.config , str, {delimiters: '<% %>'});  // moustache config.branding
 
 		//check file type - markdown etc....
 		str = preProcess(zx, filename, str);

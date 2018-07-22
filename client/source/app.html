@@ -2,12 +2,12 @@
 <html>
 <head>
 <meta charset="utf-8">
-<link rel="shortcut icon" type="image/ico" href="/favicon.ico">
+<link rel="shortcut icon" type="image/ico" href="<%branding.favicon%>">
 <meta name="viewport" content="initial-scale=1.0, maximum-scale=2.0">
 
 
 
-<title>SQL-MVC</title>
+<title><%branding.app_short_title%></title>
 <style type="text/css">
 body {
 	margin:0;
@@ -25,7 +25,7 @@ body {
 <link rel="stylesheet" href="/others/qqui1/emoji/emoji.css" type="text/css" />
 <link rel="stylesheet" href="/others/qqui1/timepicker/jquery-ui-timepicker-addon.css" type="text/css" />
 <link rel="stylesheet" href="/others/qqui1/CSSTree/CSSTree.css"  type="text/css">
-{{style_link_inject_point}}
+<%style_link_inject_point%>
 <style type="text/css" class="init"></style>
 
 <style type="text/css">
@@ -45,13 +45,13 @@ padding: 0.0em 0.5em 0.0em 1.7em;
 <script src="/others/qqui1/uniform/jquery.uniform.min.js"></script>
 <script src="/others/qqui1/DataTables/media/js/jquery.dataTables.min.js"></script>
 <script src="/others/qqui1/emoji/emoji.js"></script>	    
-{{script_link_inject_point}}	
+<%script_link_inject_point%>	
 <script type="text/javascript" language="javascript" src="/others/zx/zxDeltaScriptFile.js"></script>	
 <script type="text/javascript" language="javascript" src="/others/zx/zxUploader.js"></script>	
 <script type="text/javascript" language="javascript" class="init">
 
 
-  var myFaceBookAppID='';
+  var myFaceBookAppID='<%branding.FaceBookAppID%>';
   var auto_login_facebook_on_return=false;
   
 </script>
@@ -92,10 +92,10 @@ window.location.href = "ie.html";
 <div id="login-wrapper">
 	<div id="login-header" class="top-round">
 		<div class="login-left">
-			<span class="icon-wrap-lb-less"><span class="icon-block-black key-tw-b"></span>SQL-MVC</span>
+			<span class="icon-wrap-lb-less"><span class="icon-block-black key-tw-b"></span><%branding.menu_short_title%></span>
 		</div>
 		<div class="login-right">
-			<a href="#" title="SQL-MVC"><img src="images/Green_strawberryIconAlpha.png" width="55" height="55" alt="SQL-MVC"></a>
+			<a href="#" title="<%branding.menu_short_title%>"><img src="<%branding.menu_image%>" width="55" height="55" alt="<%branding.menu_short_title%>"></a>
 		</div>
 	</div>
 	<div class="login-box bottom-round">		
@@ -124,7 +124,7 @@ window.location.href = "ie.html";
 <div id="footer-wrap">
 	<div id="footer">
 		<div class="login-footer-container">
-			 &copy; 2003 ... QualeQuest - All rights reserved
+			 <%branding.copyright_title%>
 		</div>
 	</div>
 </div>
@@ -148,15 +148,15 @@ window.location.href = "ie.html";
 <div id="login-wrapper">
 	<div id="login-header" class="top-round">
 		<div class="login-left">
-			<span class="icon-wrap-lb-less"><span class="icon-block-black key-tw-b"></span>SQL-MVC</span>
+			<span class="icon-wrap-lb-less"><span class="icon-block-black key-tw-b"></span><%branding.menu_short_title%></span>
 		</div>
 		<div class="login-right">
-			<a href="#" title="SQL-MVC"><img src="images/Green_strawberryIconAlpha.png" width="55" height="55" alt="SQL-MVC"></a>
+			<a href="#" title="<%branding.menu_short_title%>"><img src="<%branding.menu_image%>" width="55" height="55" alt="<%branding.menu_short_title%>"></a>
 		</div>
 	</div>
 	<div class="login-box bottom-round">	
 		<div align="center">	
-		<b><BR>Welcome to SQL-MVC<BR>
+		<b><BR>Welcome to <%branding.app_short_title%><BR>
 		<BR>	
 		Please wait while the application contacts the server..
 		<BR><BR><BR>
@@ -167,7 +167,7 @@ window.location.href = "ie.html";
 <div id="footer-wrap">
 	<div id="footer">
 		<div class="login-footer-container">
-			 &copy; 2003 ... QualeQuest - All rights reserved
+			 <%branding.copyright_title%>
 		</div>
 	</div>
 </div>
@@ -186,10 +186,10 @@ window.location.href = "ie.html";
 <div id="login-wrapper">
 	<div id="login-header" class="top-round">
 		<div class="login-left">
-			<span class="icon-wrap-lb-less"><span class="icon-block-black key-tw-b"></span>SQL-MVC</span>
+			<span class="icon-wrap-lb-less"><span class="icon-block-black key-tw-b"></span><%branding.menu_short_title%></span>
 		</div>
 		<div class="login-right">
-			<a href="#" title="SQL-MVC"><img src="images/Green_strawberryIconAlpha.png" width="55" height="55" alt="SQL-MVC"></a>
+			<a href="#" title="<%branding.menu_short_title%>"><img src="<%branding.menu_image%>" width="55" height="55" alt="<%branding.menu_short_title%>"></a>
 		</div>
 	</div>
 	<div class="login-box bottom-round">	
@@ -205,7 +205,7 @@ window.location.href = "ie.html";
  
 </div><!--PAGE_4 -->	
 
-{{page_inject_point}}
+<%page_inject_point%>
 
 <script>
    console.log("LoadedInstance:",LoadedInstance);
@@ -313,6 +313,6 @@ window.location.href = "ie.html";
 
 
 </script>
-{{script_run_inline_inject_point}}
+<%script_run_inline_inject_point%>
 </body>
 </html>
