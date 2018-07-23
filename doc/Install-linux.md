@@ -50,7 +50,14 @@ Compiler error output can be viewed by pressing ctrl-q in the application page.
 And it will be on the console running the server
 and also in the file: output/error_log.json
 
+#Forever
 
+	npm install forever -g
+	/usr/local/bin/forever start --workingDir /root/myapp/app  -c /usr/local/bin/node ~/myapp/app/app.js
+
+	crontab -e
+	@reboot /usr/local/bin/forever start --workingDir /root/myapp/app  -c /usr/local/bin/node ~/myapp/app/app.js
+	
 #Production
 This is not yet production ready, but FYI.
 

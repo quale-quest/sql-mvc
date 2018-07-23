@@ -11,20 +11,22 @@ few more extensions to SQL, to create QUery Application Language Extensions (QUA
 
 **Recent change log: Added My-SQL and MS-SQL drivers. Updated Node version- caused a lot of breakage.**
 
-Please join our new Google group to comment on, or discuss the technology : [sql-mvc-talk](https://groups.google.com/group/sql-mvc-talk)
+# Feedback
+
+NPM shows thousands of weekly downloads, but I have not yet had feedback from the community, so please 
+if you have any questions, comments or even just want to say hi, please drop me a email for a personal response via
+  npm-support@sql-mvc.com
 
 *Alpha version 0.0 Notice: When evaluating SQL-MVC keep in mind this project is still version 0.0.x- alpha/preview release.
 A lot of stuff is not 100% polished or even to spec,
 try and pick up the key points we are trying to demonstrate not shortcomings or bugs
- (although all feedback is welcome). *
- 
+ (although all feedback is welcome). * 
  
 ## Example	
 
-This is a complete implementation of [todomvc.com](http://todomvc.com) functionality in 40 lines of code.
-Prerequisite knowledge : SQL,JSON and [mustache](https://mustache.github.io/mustache.5.html).
-
 Live Demo at [todomvc.sql-mvc.com](http://todomvc.sql-mvc.com/) 
+This is a complete implementation of [todomvc.com](http://todomvc.com) functionality in 40 lines of code.
+
 
 ```
 <#model

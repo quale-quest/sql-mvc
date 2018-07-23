@@ -89,6 +89,7 @@
 		"app_short_title":"SQL-MVC",
 		"menu_short_title":"SQL-MVC",
 		"menu_image":"images/Green_strawberryIconAlpha.png",
+		"favicon":"/favicon.ico",		
 		"copyright_title":"&copy; 2003 ... QualeQuest - All rights reserved",
 		"FaceBookAppID":""
 		
