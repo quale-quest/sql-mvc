@@ -16,9 +16,7 @@ var fs = require('fs');
 var path = require('path');
 var winston = require('winston');
 
-const msTYPES = require('tedious').TYPES;
-const msISOLATION_LEVEL = require('tedious').ISOLATION_LEVEL;
-var msConnectionPool = require('tedious-connection-pool');
+
 
 exports.produce_div = function (req, res, ss, rambase, messages, session,recursive,cb) {    
     
@@ -531,15 +529,15 @@ function connect_and_produce_div_sub_mssql(ss,par,ErrorText, err,cb)  {
 			  
 		
 			console.log('request.addParameter ...:');
-			request.addParameter('SESSIONID', msTYPES.VarChar, par.message.session);
-			request.addParameter('PRIOR_CONTEXT_ID', msTYPES.Int, par.message.cid);
-			request.addParameter('PRIOR_ITEM_ID', msTYPES.Int, par.message.pkf );  
-			request.addParameter('PUBLIC_PARAMETERS', msTYPES.VarChar,par.message.public_parameters );  
-			request.addParameter('UPDATES', msTYPES.VarChar, par.update);
-		    request.addOutputParameter('NEW_CONTEXT_ID', msTYPES.Int);
-			request.addOutputParameter('info', msTYPES.VarChar);
-			request.addOutputParameter('res', msTYPES.VarChar);
-			request.addOutputParameter('ScriptNamed', msTYPES.VarChar);
+			request.addParameter('SESSIONID', db.msTYPES.VarChar, par.message.session);
+			request.addParameter('PRIOR_CONTEXT_ID', db.msTYPES.Int, par.message.cid);
+			request.addParameter('PRIOR_ITEM_ID', db.msTYPES.Int, par.message.pkf );  
+			request.addParameter('PUBLIC_PARAMETERS', db.msTYPES.VarChar,par.message.public_parameters );  
+			request.addParameter('UPDATES', db.msTYPES.VarChar, par.update);
+		    request.addOutputParameter('NEW_CONTEXT_ID', db.msTYPES.Int);
+			request.addOutputParameter('info', db.msTYPES.VarChar);
+			request.addOutputParameter('res', db.msTYPES.VarChar);
+			request.addOutputParameter('ScriptNamed', db.msTYPES.VarChar);
 		  
 			console.log('request.callProcedure ...:');  
 			
@@ -578,7 +576,7 @@ function connect_and_produce_div_sub_mssql(ss,par,ErrorText, err,cb)  {
 		
 	},
 	"",
-	msISOLATION_LEVEL.READ_COMMITTED  //READ_UNCOMMITTED / READ_COMMITTED / REPEATABLE_READ /SERIALIZABLE / SNAPSHOT  - (default: READ_COMMITED).
+	db.msISOLATION_LEVEL.READ_COMMITTED  //READ_UNCOMMITTED / READ_COMMITTED / REPEATABLE_READ /SERIALIZABLE / SNAPSHOT  - (default: READ_COMMITED).
 	); //tr	
 }	
 

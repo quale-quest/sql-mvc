@@ -359,9 +359,15 @@ exports.databasePooled = function (root_folder, LoadedInstance, Application, cal
 
 		//console.log("\n\n============================: ",JSON.stringify(rambase.conf.db.dialect, null, 4) );
 		if (rambase.conf.db.dialect=="mssql12")  {
+			if (exports.msConnectionPool==undefined) {
+				exports.msTYPES = require('tedious').TYPES;
+				exports.msISOLATION_LEVEL = require('tedious').ISOLATION_LEVEL;
+				exports.msConnectionPool = require('tedious-connection-pool');				
+			}
+			
 			if (db_req.msConnectionPool==undefined) {
-				db_req.msConnectionPool = require('tedious-connection-pool');
-				db_req.msRequest = require('tedious').Request;
+				db_req.msConnectionPool = exports.msConnectionPool;
+				db_req.msRequest = exports.msConnectionPool.Request;
 
 				
 				rambase.user = conf.db.username;
