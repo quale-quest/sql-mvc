@@ -348,6 +348,15 @@ BEGIN
 
 	SELECT first 1 INFO,currentpage,page_params,NEW_CONTEXT_ID FROM Z$RUN_SUB(:SESSIONID, :PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID, :UPDATES) p 
 			into :INFO,:SCRIPTNAMED,:page_params,:NEW_CONTEXT_ID  ;
+			
+	if 	(page_params!='') then	
+		begin
+		    EXECUTE STATEMENT page_params;
+			-- SCRIPTNAMED= page_params ;  
+			-- suspend; 					
+			-- exit;		  
+		end	
+		
 	if (info='saved') then --saved without refreshing
 			    begin				 
 				  res= '' ;  

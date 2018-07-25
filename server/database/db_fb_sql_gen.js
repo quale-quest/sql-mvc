@@ -895,7 +895,7 @@ exports.link_from_table = function (zx,cx, fld_obj) {
 	var PAGE_PARAMS = run_procedure_from(zx, fld_obj.cf[0],'tfid','link_from_table');
 	PAGE_PARAMS = PAGE_PARAMS + exports.build_variable_pass_all(zx,fld_obj,fld_obj.cf[0].pass,'tfid','lft123737x')	
                 
-			
+	//console.log('link_from_table links: PAGE_PARAMS:',PAGE_PARAMS,' pass: ' ,fld_obj.cf[0].pass);		
 	var links = PAGE_PARAMS + "\r\n INSERT INTO Z$PK_CACHE(MASTER, INDX, FIELD_NAME, VALU,Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS)" +
 		"VALUES ("+
 			zx.config.db.var_actaul+"cid,"+zx.config.db.var_actaul+"tfid,'tfid','" + from + "','" + 
@@ -1410,6 +1410,7 @@ exports.done_pass = function (zx /*, line_objects*/
 
 	//console.log('sqlgen_fb declare_above: ',zx.sql.declare_above);
 	
+	//todo:what does this do? CID gets zeroed but then discarded
 	emit(zx, 0, "if ( exists(select " + zx.config.db.sql_First1+" valu from Z$VARIABLES where Z$VARIABLES.REF=" + 
 		sqlconcat(zx,"","'pass'", zx.config.db.var_actaul+"pki","'-'",zx.config.db.var_actaul+"pkf","'-DivoutName'")
 		+zx.config.db.sql_Limit1+ ")) "+zx.config.db.sql_ifthen+" "+zx.config.db.sql_set_prefix+ "cid=0;"+zx.config.db.sql_endif_postfix, "");
@@ -1583,15 +1584,15 @@ exports.emit_variable_getter = function (zx, line_obj, v , coalesce /*, comment*
 	return result;
 };
 exports.build_variable_dereferenceing_name = function (zx, key) {
-	var where = sqlconcat(zx,"'pass'",vr(zx,"pki"),"'-'",vr(zx,"pkf"),"'-'", "'" + key + "'");  
+	var where = sqlconcat(zx,"","'pass'",vr(zx,"pki"),"'-'",vr(zx,"pkf"),"'-'", "'" + key + "'");  
 	return where;	
 }	
 exports.build_variable_passing_name = function (zx, key,target_field_id) {	
 	var where;
 	if (target_field_id=='tfid') //target_field_id=vr(zx,"tfid");
-		where = sqlconcat(zx,"'pass'",vr(zx,"cid"),"'-'",vr(zx,"tfid"),"'-'", "'" + key + "'");  
+		where = sqlconcat(zx,"","'pass'",vr(zx,"cid"),"'-'",vr(zx,"tfid"),"'-'", "'" + key + "'");  
 	else	
-		where = sqlconcat(zx,"'pass'",vr(zx,"cid"),"'-"+target_field_id+"-" + key + "'");  
+		where = sqlconcat(zx,"","'pass'",vr(zx,"cid"),"'-"+target_field_id+"-" + key + "'");  
 	return where;	
 }	
 
@@ -1601,7 +1602,7 @@ exports.build_variable_passing = function (zx, key, v,target_field_id,comment) {
 	//zx.dbg.emit_comment(zx,"build_variable_passing in: "+v);	
 	//zx.dbg.emit_comment(zx,"build_variable_passing  n: "+where);		
 	//zx.dbg.emit_comment(zx,"build_variable_passing  v: "+v);	
-	
+	//console.log('build_variable_passing : where:',where);		
 	if (zx.fb25)  {
 		//statement = "UPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce(" + where + ",''),(" + v + ")) matching (REF);";
 		statement = "\r\n   param_array=:param_array||'UPDATE OR INSERT INTO Z$VARIABLES (REF,VALU) VALUES (coalesce('''||" + where + "||''',''''),('''||" + v + "||''')) matching (REF);';";
@@ -1619,13 +1620,12 @@ exports.build_variable_passing = function (zx, key, v,target_field_id,comment) {
 };
 
 exports.build_variable_pass_all = function (zx, fld_obj, pass,target_field_id, comment) {
-    var links = '';	
-	zx.forFields(pass, function (v,key) {
-		links += exports.build_variable_passing(zx, key, v,target_field_id, comment);		
+    var links = "param_array='';";	
+	zx.forFields(pass, function (v,key) {		
+		links += exports.build_variable_passing(zx, key,  "'"+v+"'" ,target_field_id, comment);		
+		console.log('build_variable_pass_all : PAGE_PARAMS:',{v:v,key:key,links:links});		
 		});
-	if (links != '')	{
-		links = emitassign(zx, fld_obj, 'param_array',"''");
-	}
+	//console.log('build_variable_pass_all links: ',{links:links});		
     return links;		
 };
 
