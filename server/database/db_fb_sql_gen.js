@@ -1623,7 +1623,7 @@ exports.build_variable_pass_all = function (zx, fld_obj, pass,target_field_id, c
     var links = "param_array='';";	
 	zx.forFields(pass, function (v,key) {		
 		links += exports.build_variable_passing(zx, key,  "'"+v+"'" ,target_field_id, comment);		
-		console.log('build_variable_pass_all : PAGE_PARAMS:',{v:v,key:key,links:links});		
+		//console.log('build_variable_pass_all : PAGE_PARAMS:',{v:v,key:key,links:links});		
 		});
 	//console.log('build_variable_pass_all links: ',{links:links});		
     return links;		
