@@ -720,7 +720,12 @@ var seq_page = function (zx) {
 
 		console.log('validate_script...........................................', zx.main_page_name, JSON.stringify(script, null, 4).length);		
 		var valid = "ok";
-		if (zx.fb25) valid = zx.dbu.validate_script(zx, "validate_script :"+ zx.main_page_name, script);
+		if (zx.fb25) {
+			var opens = "-- assign_params";
+			var closes = "res=res||'}}]';";
+			var script_v = script.replace(opens,opens+"\r\nif (1=0) then begin").replace(closes,closes+'\r\nEND'); //validate only dont execute any of the code
+			valid = zx.dbu.validate_script(zx, "validate_script :"+ zx.main_page_name, script_v);
+		}
 
 		//console.log('validate_script...........................................',valid);
 		//if (valid.result) {};

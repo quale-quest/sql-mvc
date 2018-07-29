@@ -302,8 +302,9 @@ BEGIN
           
         end         
 		
-	DELETE FROM Z$PK_CACHE WHERE MASTER = :update_cid;
-	DELETE FROM Z$CONTEXT  WHERE PK = :update_cid;
+    -- premature deletes affect reloading pages 
+	-- DELETE FROM Z$PK_CACHE WHERE MASTER = :update_cid;
+	-- DELETE FROM Z$CONTEXT  WHERE PK = :update_cid;
 	
     NEW_CONTEXT_ID  = gen_id( Z$CONTEXT_seq, 1 );  
 	

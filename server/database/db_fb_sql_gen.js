@@ -773,6 +773,18 @@ const run_procedure_from = function (zx, obj,target_field_id, viaComment) {
 	return links; 
 }	
 
+exports.check_valid_where_clause = function (zx, line_obj,where) {
+	//currently just validates that the value is not lost due to an unquoted where clause in source
+	
+	if (where.indexOf('=')>0) return true;
+	if (where.indexOf(' ')>=0) return true;
+	if (where.indexOf(' ')>=0) return true;
+	
+	//waring
+	zx.error.log_SQL_warning(zx, "Warning - Possible unquoted where clause :" + where, zx.line_obj);
+	console.log('log_SQL_warning : Warning - Possible unquoted where clause :',where, ' at \r\n', zx.line_obj.srcinfo);
+}
+	
 exports.link_from = function (zx, line_obj) {
 	// optimal back-end storage of likns are important -
 	//  currently we use basic tables -- this will be optimised - to in memory or redis type tables.
@@ -780,6 +792,8 @@ exports.link_from = function (zx, line_obj) {
 
 	var wheresx = line_obj.where;
 	var wheres = wheresx;
+	exports.check_valid_where_clause(zx, line_obj,wheres);
+		
 	//console.log('=================================\n',line_obj);
 	//console.log('=================================\n link_from a:',wheres);
 	//var queryx = zx.expressions.ConstantExpressions(zx,line_obj,from,"postback","link_from").slice(1,-1);
