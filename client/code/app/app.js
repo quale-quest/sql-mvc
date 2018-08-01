@@ -440,7 +440,11 @@ init_from_fullstash_internal = function (Target) {
 var render_from_fullstash = function (cx,html) {
                 
 			//console.log("cx.Data  :",cx.obj.Stash,cx.obj.Data);
+			console.log("cx.Target  :",cx.obj.Target);
 			$(cx.obj.Target).html(html);
+			
+			if (cx.obj.Target.indexOf('modal')>0)
+			    $(cx.obj.Target).modal();
 
             init_from_fullstash_internal(cx.obj.Target);
 			//alert("render_from_fullstash");
