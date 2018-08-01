@@ -10,7 +10,6 @@ ease of use is important
 exports.compile = function (zx, obj) {
 	//validates and translates v2 tag contents to .divin input
 	var line_obj,
-	i,
 	tag,
 	done;
 
@@ -34,35 +33,35 @@ exports.compile = function (zx, obj) {
 			//console.warn('Page ', zx.pages[zx.pgi].name,' == ',zx.CurrentPageIndex);
 		} else zx.CurrentPageIndex = 1;
 
-		for (i = 0; i < zx.line_objects.length; i += 1) {
+		for (zx.line_i = 0; zx.line_i < zx.line_objects.length; zx.line_i += 1) {
 
 			if (zx.pass === 1) {
 
 				//zx.locate_plugin(zx, "tag_pass0_", line_obj.tag, line_obj);
 				zx.eachplugin(zx, "process_pass01", {
-					line_obj : zx.line_objects[i],
+					line_obj : zx.line_objects[zx.line_i],
 					//blocks : blocks,
                     line_objects : zx.line_objects,
-                    indx : i
+                    indx : zx.line_i
 				});
 
 			}
             //console.warn('=======================================================================compile:', zx.CurrentPageIndex,' : ',zx.pgi);
-            line_obj = zx.line_objects[i];
+            line_obj = zx.line_objects[zx.line_i];
 			zx.line_obj = line_obj;
-			//console.warn('iterate over item :',i,line_obj.tag );
-			//console.warn('iterate over item :',i,line_obj );
-			zx.line_obj_current_tag_index = i;
+			//console.warn('iterate over item :',zx.line_i,line_obj.tag );
+			//console.warn('iterate over item :',zx.line_i,line_obj );
+			zx.line_obj_current_tag_index = zx.line_i;
 			if (line_obj.srcinfo === undefined) {
 				console.warn('undefined srcinfo ', line_obj);
 			}
-			line_obj.srcinfo.current_tag_index = i;
+			line_obj.srcinfo.current_tag_index = zx.line_i;
 			if (line_obj.tag === undefined) {
-				console.warn('undefined Tag ', i);
+				console.warn('undefined Tag ', zx.line_i);
 			} else {
 				if (line_obj.dialect_active === 0) {
 					if (zx.pass === 1) {
-						//console.warn('dialect_active==0 :',i,line_obj.tag ,line_obj.save );
+						//console.warn('dialect_active==0 :',zx.line_i,line_obj.tag ,line_obj.save );
 						//console.log('WARN : dialect_active==0: ', line_obj.tag, 'in', line_obj.srcinfo.filename, ' at line ',line_obj.srcinfo.start_line);
 						//console.log('WARN :                  : ', line_obj.srcinfo);
 						
@@ -70,15 +69,15 @@ exports.compile = function (zx, obj) {
 				} else {
 				tag = line_obj.tag.toLowerCase();
 
-                //console.warn('iterate over item 130405:',i,line_obj.tag ,line_obj.save);
+                //console.warn('iterate over item 130405:',zx.line_i,line_obj.tag ,line_obj.save);
 				if ((line_obj.save === undefined)&&
                     (line_obj.part_of_model === undefined)&&
                     (tag.substring(0, 1) !== 'x') && (tag.substring(tag.length - 1) !== 'x')) {
-                    //console.warn('iterate over item 130407:',i,line_obj.tag );
+                    //console.warn('iterate over item 130407:',zx.line_i,line_obj.tag );
 					//common conditional keys - they have to be all true else the operation is skipped
-					//console.warn('Divin compile conditionals :',i );
+					//console.warn('Divin compile conditionals :',zx.line_i );
 					zx.eachplugin(zx, "start_item", line_obj);
-					//console.warn('Divin compile conditionals done :',i );
+					//console.warn('Divin compile conditionals done :',zx.line_i );
 
 					//common operational values
 					//if (line_obj.assign !== undefined) {}
@@ -94,7 +93,7 @@ exports.compile = function (zx, obj) {
 					//check plugins
 					tag = line_obj.tag.toLowerCase();
 					try {
-                    //console.warn('iterate over item 130410:',i,line_obj.tag );
+                    //console.warn('iterate over item 130410:',zx.line_i,line_obj.tag );
 						done = zx.locate_plugin(zx, "tag_", tag, line_obj);
 						if (!done) {
 							//console.warn('Widgets not done for :',tag );

@@ -154,22 +154,9 @@ var ParseIntoStatements = function (zx, compound_statement, objtype) {
 }
 
 exports.ParseFileToObject = function (zx, filename, objtype) {
-	var s,
-	eob,
-	str,
-	obj,
-	debuglevel = 1;
+	var str,debuglevel = 1;
 
-	//console.log('ParseFileToObject start:');
-	//we parse <#  .. > as ini  <#: > as quic  and <{   }>  as json or the whole file as json
-	//try {
-	//....????	obj = JSON.parse(filename);
-	//	//console.log('json page..',filename,obj);
-	//	return obj;
-	//} catch (e)
-	{
-		zx.obj = [];
-		obj = zx.obj;
+		zx.obj = [];		
 		try {
 			str = String(fs.readFileSync(filename));
 			if (objtype !== "dropinmenu") {
@@ -182,39 +169,33 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 		}
 		str = check_user_table_name(zx, str);
 		//console.log('not a json page..processing as htm',filename,str.length);
+		//if (filename.indexOf('DivContainer')>0)  debuglevel = 10;
+		//console.log('not a json page..processing as htm',filename,str);
 		str =  zx.hogan_ext.compile_render(zx, zx.config , str, {delimiters: '<% %>'});  // moustache config.branding
 
 		//check file type - markdown etc....
 		str = preProcess(zx, filename, str);
 
 		zx.inputfilecount++;
-		//first dump up to <body >
 		var body = str;
 		var crCount = 1;
-		var bodies = str.split(/<body/g);
-		if (bodies !== undefined && bodies.length > 1) {
-			if (debuglevel > 5)
-				console.log('bodies', bodies);
+		
 
-			crCount += zx.counts(bodies[0], "\n");
-
-			bodies = bodies[1].split(/<\/body/g)[0];
-			//console.log('bodies2',bodies);
-			//
-			var bodytag = bodies.substring(0, bodies.indexOf('>'));
-			crCount += zx.counts(bodytag, "\n");
-
-			body = bodies.substring(bodies.indexOf('>') + 1);
-
-			//console.log('body',body);
-			//return;
-		}
-		//console.log('finding :',body);
-		//console.log('finding body :...');
-
+		//add in wrapper includes
 		if (zx.inputfilecount === 1) { //only on the first file
 			//wrap in library scripts && wrap in local layout
-			var concat_body = "<#include(file=~/All/StandardPageOpen) #> ";
+			
+			var finddivcontainer = 'divcontainer(';
+			var has_divcontainer = body.indexOf(finddivcontainer);			
+			var concat_body = "";
+			
+			if (has_divcontainer>0) {
+				
+			}else{
+				
+			}
+			concat_body = "<#include(file=~/All/StandardPageOpen) #> "; //database operations
+			
 			//console.log('building include files : ',zx.model_files);
 			zx.model_files.reverse().forEach(function (filename) {
 				if (fs.statSync(filename).isDirectory()) {}
@@ -228,18 +209,60 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 			});
 
 			//console.log('------------------------------ finding :', zx.inputfilecount,concat_body);
-			concat_body +=
-			"<#include(file=LayoutOpen)#> " +
-			body +
-			"<#include(file=LayoutClose)#> " +
-			"<#include(file=~/All/StandardPageClose)#> ";
-			body = concat_body;
+
+			//console.log('');
+			if (has_divcontainer>0) {
+				concat_body +=				
+				body +
+				"<#divcontainer()#> ";
+				//"<#include(file=~/All/StandardPageClose)#> ";
+			} else {
+				concat_body +=
+				"<#include(file=LayoutOpen)#> " +
+				body +
+				"<#include(file=LayoutClose)#> " +
+				"<#include(file=~/All/StandardPageClose)#> ";				
+			}
+			body = concat_body;			
 			//console.log('Main Body : ',body);
 		}
+		
+		return exports.ParseStringsToObjects(zx, body, objtype,debuglevel,crCount,filename); 
+		
+	
+}
 
+exports.Extract_element_blocks = function (zx, body, objtype,debuglevel,crCount,filename) 
+{// overrides <# escape levels
+    var opens='start_element_block(';
+	var closes='end_element_block()';
+	
+	var starts = body.split(/start_element_block\(/g);
+	var outs = starts[0];
+	
+	for (var i = 1; i < starts.length; i++) {
+		var elm = starts[i];
+		var a = elm.indexOf(')');
+		var name = elm.substr(0,a);
+		elm=elm.substr(a+1);
+		var b = elm.indexOf(closes);
+		var elementstr = elm.substr(0,b);
+		outs = outs + elm.substr(b+closes.length);
+		
+		//console.log('\r\n\r\n\r\n\r\n Parse_start_element_block :',name,'\r\n', elementstr,'\r\n\r\n');
+		zx.UIsl[name] = elementstr;
+	}
+
+	return outs;	
+}
+exports.ParseStringsToObjects = function (zx, body, objtype,debuglevel,crCount,filename) 
+	{
+		var eob,s,xxx;
+		body = exports.Extract_element_blocks(zx, body, objtype,debuglevel,crCount,filename);
+		
 		//we dont allow nesting of <# and <{ so parsing is more simple
 		var starts = body.split(/(<#|<\{)/g); //jshint complains about this - fix later
-		if (debuglevel > 5)
+		if (debuglevel > 15)
 			console.log('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF finding :', starts);
 
 		var blocks = [];
@@ -271,6 +294,9 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 					//var splits = Statement.match(/[:=]*\s*(\w+)\s*([\w\W]*)/);
 					var splits = Statement.match(/[:=]*\s*(\w+)\s*([\(\{\[])?([\w\W]*)/);
                     //if (compound_statement_debug) console.log('ParseFileToObject b:', is, Statements.length, splits);
+					
+					//if (debuglevel > 5) console.log('ParseFileToObject ba:', is, Statements.length,"\n", splits);
+					
 					if (splits) {
 						line_obj.tag = splits[1];
 						line_obj.json_parse = true;
@@ -287,10 +313,10 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
                         }
 
 					}
-                    if (compound_statement_debug) console.log('ParseFileToObject bb:', is, Statements.length, line_obj);
+                    //if (compound_statement_debug) console.log('ParseFileToObject bb:', is, Statements.length, line_obj);
                     //if (line_obj.tag==='count')
                     //   console.log('\n\nParseFileToObject count:', is, Statements.length,Statements,"\n", splits);
-
+					//if (debuglevel > 5) console.log('ParseFileToObject bd:', is, Statements.length,"\n", line_obj);
 					if (splits) {
 
 						line_obj.srcinfo = {};
@@ -366,10 +392,11 @@ exports.ParseFileToObject = function (zx, filename, objtype) {
 			crCount += itemCrCount;
 		}
 
-		//console.warn('blocks start ',blocks);
+		if (debuglevel > 5)
+			console.warn('============================================================blocks count ',blocks.length,' : ',blocks);
 
 		return blocks;
-	}
+	
 
 };
 
@@ -427,8 +454,42 @@ exports.check_json_parse_array = function (zx, objs) {
   //console.log(' check_json_parse_array 120807z :', objs);  
   return objs;
 }
-                
+ 
 var MaxIncludes = 0;
+exports.InjectObjects = function (zx,indx, obj, obj2) {
+	//console.log('include tag stack y:', indx, obj.length);
+	
+	//console.warn('include tag : file ', file_name, JSON.stringify(obj2, null, 4).length);
+	//console.warn('include tag : obj2 ', zx.show_longstring(JSON.stringify(obj2)));
+	if (MaxIncludes++ > 5000) {
+		console.trace('process.exit(2) from RecurseParseFileToObject MaxIncludes exceeded: ');
+		process.exit(33);
+	}
+	if (obj2 === undefined) {
+		console.warn('include file could ot be read or found ', file_name);
+		console.trace('process.exit(2) from RecurseParseFileToObject : ');
+		process.exit(33);
+	} else {
+		//console.warn('b4splice ',obj.length,obj2.length );
+		//http://fromanegg.com/post/43733624689/insert-an-array-of-values-into-an-array-in-javascript
+
+		obj[indx].Block = 'IncludeFileBlock-' + zx.BlockIndex;
+		var lobj = {
+			tag : "Unblock",
+			Label : ('IncludeFileBlock-' + zx.BlockIndex),
+			srcinfo : {}
+		};
+		obj2.push(lobj);
+		obj2.unshift(indx + 1, 0);
+		Array.prototype.splice.apply(obj, obj2);
+		//console.warn('after splice ',obj.length,obj2.length );
+		//console.warn('splice input ',obj2);
+
+		zx.BlockIndex++;
+	}
+}					
+ 
+
 exports.RecurseParseFileToObject = function (zx, filename) {
 	//get the object, find an include file and repeat the find
 
@@ -438,10 +499,10 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 	//zx.file_stack.push({filename:filename});
 
 	//console.warn('main  file 2obj ',filename);
-	console.warn('=======================================================================================================================================Making simple objects');
+	console.warn('=============================================Making simple objects');
 	var obj = exports.ParseFileToObject(zx, filename);
 	//console.warn('main  file ', filename, JSON.stringify(obj, null, 4).length);
-	console.warn('=======================================================================================================================================Done Making simple objects');
+	console.warn('=============================================Done Making simple objects');
 	for (var i = 0; i < obj.length; i++) {
 		//console.warn('page-Tag ', zx.dialect_active, i, obj.length, obj[i].tag);
 		obj[i].dialect_active = zx.dialect_active ;
@@ -533,6 +594,38 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 			}
 		}
 
+		if (tag === 'divcontainer') {
+			var divcontainer = zx.gets(obj[i].type);
+			//console.log('divcontainer tag :',zx.divcontainer,obj[i] );
+			var Layout;
+			if (divcontainer!="") {
+				zx.divcontainer = divcontainer;
+				var LayoutOpen   = zx.divcontainer + 'LayoutOpen';
+				var LayoutClose  = zx.divcontainer + 'LayoutClose';				
+				if (zx.UIsl[LayoutOpen]==undefined) 
+					zx.error.log_noQuale_warning(zx, "divcontainer("+LayoutOpen+") not defined in divcontainer.quicc", "divcontainer", o);
+				if (zx.UIsl[LayoutClose]==undefined) 
+					zx.error.log_noQuale_warning(zx, "divcontainer("+LayoutClose+") not defined in divcontainer.quicc", "divcontainer", o);				
+				Layout = LayoutOpen;
+			} else {				
+				if (zx.gets(obj[i].DivoutName)!="")
+					Layout = "";
+				else
+					Layout = zx.divcontainer + 'LayoutClose';
+				//console.log('divcontainer xxx :',Layout );
+			}
+			
+			if (Layout!=""&&zx.UIsl[Layout]!=undefined) {
+				//console.log('divcontainer UIsl :',Layout,zx.UIsl[Layout] );
+				var filename     =  'element_' + Layout;
+				zx.file_stack = obj[i].srcinfo.file_stack.slice(0);
+				zx.file_stack.push({filename : filename});
+				var obj2 = exports.ParseStringsToObjects(zx, zx.UIsl[Layout],undefined,0,1,filename); 			
+				//console.log('divcontainer obj2 :',obj2.length );
+				exports.InjectObjects(zx,i, obj, obj2) ;
+			}
+		}
+		
 		if (tag === 'include') {
 			var file_name;
 			 //console.log('include this tag found obj : ', obj[i]);
@@ -586,37 +679,9 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 						start_line : obj[i].srcinfo.start_line
 					});
 					//console.log('include tag stack x:',obj[i] );
-
-					//console.log('include tag stack y:', i, obj.length);
 					var obj2 = exports.ParseFileToObject(zx, file_name);
-					//console.warn('include tag : file ', file_name, JSON.stringify(obj2, null, 4).length);
-					//console.warn('include tag : obj2 ', zx.show_longstring(JSON.stringify(obj2)));
-					if (MaxIncludes++ > 5000) {
-						console.trace('process.exit(2) from RecurseParseFileToObject MaxIncludes exceeded: ');
-						process.exit(33);
-					}
-					if (obj2 === undefined) {
-						console.warn('include file could ot be read or found ', file_name);
-						console.trace('process.exit(2) from RecurseParseFileToObject : ');
-						process.exit(33);
-					} else {
-						//console.warn('b4splice ',obj.length,obj2.length );
-						//http://fromanegg.com/post/43733624689/insert-an-array-of-values-into-an-array-in-javascript
-
-						obj[i].Block = 'IncludeFileBlock-' + zx.BlockIndex;
-						var lobj = {
-							tag : "Unblock",
-							Label : ('IncludeFileBlock-' + zx.BlockIndex),
-							srcinfo : {}
-						};
-						obj2.push(lobj);
-						obj2.unshift(i + 1, 0);
-						Array.prototype.splice.apply(obj, obj2);
-						//console.warn('after splice ',obj.length,obj2.length );
-						//console.warn('splice input ',obj2);
-
-						zx.BlockIndex++;
-					}
+					exports.InjectObjects(zx,i, obj, obj2) ;
+					
 				}
 
 				var Inject_html = '';
@@ -654,7 +719,7 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 		}
 	}
 	//console.warn('final main  file ',filename, JSON.stringify(obj, null, 4).length );
-	console.warn('=======================================================================================================================================Done parsing paramaters');
+	console.warn('=============================================Done parsing paramaters');
 	return obj;
 };
 

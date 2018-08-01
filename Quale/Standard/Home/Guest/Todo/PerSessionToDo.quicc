@@ -1,0 +1,20 @@
+<#divcontainer(type:Divout , DivoutName:detaildiv)#>
+<hr><br>
+<#view
+
+
+
+master(TODO_MVC)
+
+	
+table(pagination:20)
+	Select  --:{Title:"Edit records",from:"TODO_MVC",tablestyle:"DT"}
+	REF	,    --:{Type:"Hide"}	
+	STATUS, --:{}
+	NAME,  --:{as:popup,form:"Todo/PerSessionEdit"}
+	OWNER   --:{Type:"Hide"}	
+	From TODO_MVC 
+    where (owner=master.owner)
+
+dialect()
+#>

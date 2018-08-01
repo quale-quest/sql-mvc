@@ -111,7 +111,7 @@ var queue_file_to_be_compiled = function (zx, dfn) {
 		} else {
 			/* zx.depends holds details for testing if a "include" file has changed, then which file(s) is to be compiled to update all dependencies */
 			fileobj = zx.depends[dfn];
-			console.log('Dependancy  :',dfn,' >>>',fileobj);
+			//console.log('Dependancy  :',dfn,' >>>',fileobj);
 
 			if (fileobj !== undefined) {
 				//console.log('zx.depends :',fileobj.parents);
@@ -156,7 +156,7 @@ var List_Pages = function (zx,msg) {
 var AddDependedFilesToBeCompiled = function (zx,fn) {				
 
 	var fileobj = zx.depends[fn],name;
-	console.warn('Dependancy  :', fileobj);
+	//console.warn('Dependancy  :', fileobj);
 	//console.warn('zx.depends :',zx.depends);
 
 	for (name in fileobj.parents) {
@@ -268,8 +268,8 @@ var AddDependedFilesToBeCompiled = function (zx,fn) {
         zx.build_roots.push(""); //last one MUST be "" 
 
 
-        console.error("\r\n\r\nQuale Search path ",zx.build_roots);
-        console.error("==================================================================== ");
+        console.error("Quale Search path ",zx.build_roots);
+        console.error("====================================================================Start ");
         
 		//if dev mode zx.build_roots.unshift("sandbox");
 		zx.output_folder = path.resolve('./output/') +path.sep;
@@ -337,7 +337,7 @@ var AddDependedFilesToBeCompiled = function (zx,fn) {
 
 		zx.hogan_ext = require('./modules/hogan_ext.js');        
 		zx.plugins.push(zx.hogan_ext);   
-		console.error("zx.config.branding :",zx.config.branding);		
+		//console.error("zx.config.branding :",zx.config.branding);		
 		require('./modules/plugins.js').build(zx,zx.config.packages,zx.config.db.packages);		
         
 		zx.Container_widget = require('./modules/widgets/G960_widget.js');
@@ -718,7 +718,7 @@ var seq_page = function (zx) {
 			throw new Error("local known error 117013");
 		} else {}
 
-		console.log('validate_script...........................................', zx.main_page_name, JSON.stringify(script, null, 4).length);		
+		console.log('validate_script........................', zx.main_page_name, JSON.stringify(script, null, 4).length);		
 		var valid = "ok";
 		if (zx.fb25) {
 			var opens = "-- assign_params";

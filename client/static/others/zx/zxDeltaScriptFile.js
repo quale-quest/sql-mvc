@@ -161,7 +161,8 @@ window.close();
 }
 
 
-function FindCell(e)
+
+function FindCell(e,level)
 {
 	var el;	
     if (!e) e = window.event;
@@ -183,18 +184,27 @@ function FindCell(e)
     //console.log("Parent ",Parent.tagName,Parent);
 
     //this currently only looks for txy , but we may have other containers such as div or other text, we here we dont have xy but just x
-    while (Parent.tagName!="BODY" && cid_id==-1) 
-      {
+	level=+(level||'0');
+	console.log("FindCell req:",level);
+    while (Parent.tagName!="BODY") // && cid_id==-1) 
+        {
+		console.log("FindCell tagName:",{level:level,tagName:Parent.tagName,cid:Parent.attributes.cid});
       if (Parent.attributes.cid !== undefined)
           {
-          cid_id=Parent.attributes.cid;
-          break;
+			
+			cid_id=Parent.attributes.cid.value;
+		    //console.log("FindCell :",{level:level,cid_id:cid_id});
+			level--;
+			
+			if (level<0) {				
+				break;
+			}
           }
       Parent=Parent.parentNode; 
       //console.log("Parent ",Parent.tagName,Parent.attributes.cid,Parent);
       }
       
-    var o = {typ:typ,cid:cid_id.value,valu:valu,el:el};  
+    var o = {typ:typ,cid:cid_id,valu:valu,el:el};  
     //console.log("client-typ-container-pk-f-v",typ,cid_id,String(pkf),valu,o);  
     return o;
 }
@@ -323,11 +333,11 @@ return;
 }
 
 
-function zxnav(e,pkf,pko) {
+function zxnav(e,pkf,pko,level) {
   //alert(pkf+pko);   
-  e.stopPropagation();  
+  if (e.stopPropagation) e.stopPropagation();  
   if (pko!==undefined) pkf=String(+pkf + (+pko));
-  var Cell=FindCell(e);
+  var Cell=FindCell(e,level); //zxnav
   Cell.pkf = pkf;
   delete Cell.el;
   console.log("zxnav:",Cell);
@@ -336,7 +346,14 @@ function zxnav(e,pkf,pko) {
 
 }
 
-
+function zxmodalclose() {
+	//closes the popup, saves changes and reloads parent
+	var e = window.event;	
+    console.log('zxmodalclose on e ' + e.target);	
+	e.preventDefault();
+	$(".simplemodal-close").trigger("click");
+	$("#MainSaveButton").trigger("click");
+}
 
 function deltaR(ref,val) {
 delta(ref,val);

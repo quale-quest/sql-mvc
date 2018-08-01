@@ -62,6 +62,10 @@ Will list all available models and controllers and print details of one named as
 
 Will enable additional console output for platform debugging.
 
+##consolelog
+
+Will print console output for platform debugging.
+
 ##compoundstatementdone
 
 Internal use - Reserved.
@@ -72,15 +76,19 @@ undefined
 
 ##container
 
-undefined
+Open a hierarchical sub containers
 
 ##nextcontainer
 
-undefined
+Splits the hierarchical sub container
 
 ##closecontainer
 
-undefined
+Closing the hierarchical sub containers
+
+##divcontainer
+
+Changes the default target div and html for wrapping the content
 
 ##notify
 

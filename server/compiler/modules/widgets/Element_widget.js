@@ -335,6 +335,7 @@ exports.tag_element = function (zx, o) { //overrides or extends the ui
     var code = o.body.trim();    
     code = code.replace(/!<=/g, ">");
     //code = code.replace(/\\#>/g, "\/>");
+	//console.log('tag_element name:',o.name);
 	//console.log('tag_element name:',o.name,code);//.name,' el:',zx.gets(o.code));
 	zx.UIsl[o.name] = code;
 };

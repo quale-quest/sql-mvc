@@ -250,7 +250,7 @@ var getDropinPackages = exports.getDropinPackages = function(dir, dir_regex,pack
         } catch (err) {}
 	}
     
-    console.log('getFiles plugin package_list:',package_list);
+    //console.log('getFiles plugin package_list:',package_list);
 	for (var i in package_list) { //is this ok??? should it not be foreach???  TODO
 		if (!package_list.hasOwnProperty(i))
 			continue;
@@ -263,7 +263,7 @@ var getDropinPackages = exports.getDropinPackages = function(dir, dir_regex,pack
 			var libname = path.join(dir , name, 'Quale', 'Lib');
 			try {
 				if (fs.statSync(libname).isDirectory()) {
-					console.log('getFiles plugin pathname:',libname);
+					//console.log('getFiles plugin pathname:',libname);
 					files_.push(libname);           
 				} else {
 				}

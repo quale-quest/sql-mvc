@@ -1396,13 +1396,17 @@ exports.start_pass = function (zx /*, line_objects*/
     
     emitset( zx,0,"", "',``Session``:``'",zx.config.db.var_actaul+"Z$SESSIONID","'``'"     );
     
-	var v = {
-		table : 'passed',
-		field : 'DivoutName'
-	};
-	var container = zx.dbg.emit_variable_getter(zx, 0, v, "maincontainer", "maincontainer variable_getter");
-	emitset( zx,0,"","',``Target``:``#'",container,"'``'");
-	//emito(zx, "Target", "#maincontainer");
+	//console.log('zx.DivContainer: ',zx.DivContainerTarget);
+
+	if (zx.DivContainerTarget==null) {
+		var v = {
+			table : 'passed',
+			field : 'DivoutName'
+		};
+		var container = zx.dbg.emit_variable_getter(zx, 0, v, "maincontainer", "maincontainer variable_getter");		
+	    emitset( zx,0,"","',``Target``:``#'",container,"'``'");
+	} else emito(zx, "Target", "#"+zx.DivContainerTarget+"");
+		
 	
 	emito(zx, "Stash", zx.main_page_name.substring(2).replace(/[\/\\]/g, '-')); //windows
     emito(zx, "mtHash",  zx.mtHash); 

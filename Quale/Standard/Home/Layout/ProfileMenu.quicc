@@ -8,7 +8,7 @@
 
 			<ul class="notify-button">
 
-                                <li  class="msg-save" ><a href="#"  title="Save Changes" language=javascript onclick="return(zxnav(event,0,0));"  >
+                                <li  class="msg-save" ><a href="#" id="MainSaveButton"  title="Save Changes" language=javascript onclick="return(zxnav(event,0,0));"  >
                                 <span id="deltacounter1" class="new-alert">0</span></a></li>
 			
 			        <#Menux (li-class="notify-alert" from=user_table_name where=user_pk_field=Operator.user_pk_field form=Index Title="Active Users" Style=HeadBar

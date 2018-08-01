@@ -1,0 +1,16 @@
+<#divcontainer(type:Popup , DivoutName:basicmodaldialog)#>
+<#view
+master(TODO_MVC)
+
+form()
+	Select  --:{Title:"Edit record",from:"TODO_MVC"}
+	STATUS, --:{Action=Edit}
+	NAME,   --:{Action=Edit}
+	OWNER,   --:{Type:"Hide"}
+	REF	    --:{Type:"Hide"}	
+	From TODO_MVC 
+    where (ref=master.ref)
+
+#>
+
+

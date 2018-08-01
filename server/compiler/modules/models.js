@@ -22,10 +22,13 @@ exports.tags = [{
 		name : "debug",
 		man_page : "Will enable additional console output for platform debugging."
 	}, {
+		name : "consolelog",
+		man_page : "Will print console output for platform debugging."
+	}, {		
 		name : "compoundstatementdone",
 		man_page : "Internal use - Reserved."
 	}
-
+	
 ];
 
 var deepcopy = require('deepcopy');
@@ -86,7 +89,12 @@ exports.tag_CompoundStatementDone = function (zx, line_obj) {
 };
 
 exports.tag_debug = function (zx, line_obj) {
-	//console.log('tag_debug:',zx.debug_options );
+	console.log('tag_debug:',zx.debug_options );
+};
+
+exports.tag_consolelog = function (zx, line_obj) {
+	console.log('tag_tag_consolelog:',line_obj.nonkeyd );
+	//process.exit(2);
 };
 
 //model code interpreted here in pass 0

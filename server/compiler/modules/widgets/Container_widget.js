@@ -6,8 +6,11 @@ ease of use is important
  
 
 exports.module_name='container_widget.js';
-exports.tags=[{name:"container"},{name:"nextcontainer"},
-{name:"closecontainer"}];
+exports.tags=[{name:"container", man_page : "Open a hierarchical sub containers"},
+{name:"nextcontainer", man_page : "Splits the hierarchical sub container"},
+{name:"closecontainer", man_page : "Closing the hierarchical sub containers"},
+{name:"divcontainer", man_page : "Changes the default target div and html for wrapping the content"}];
+
  
 var get_style = function (zx, o, Key) { //used for g960,container and notify  //this can be made common into a style plugin
 	var Value = "";
@@ -158,6 +161,20 @@ exports.tag_closecontainer = function (zx, o) {
 	zx.mt.lines.push(ReplaceText);
 };
 
+
+
+exports.tag_divcontainer = function (zx, o) {     
+	
+	var DivoutName=zx.gets(o.DivoutName);
+	//console.log('tag_divcontainer: ',{e:o.element,n:DivoutName});
+	if (DivoutName!="") zx.DivContainerTarget = DivoutName;
+
+}
+
+
+
+
+
 exports.start_pass = function (zx /*, line_objects*/
 ) {
 	zx.Container.Stack = [{
@@ -182,6 +199,8 @@ exports.done_div = function (/*zx, line_objects*/
 };
 exports.start_page = function (zx) {
     zx.Container.Style = "";
+	zx.DivContainerTarget = null;
+
     
 }
 
@@ -189,9 +208,11 @@ exports.start_up = function (zx) {
 	//validates and translates v2 tag contents to .divin input
     
 
-	//console.warn('init container_widget:');
+	//console.warn('init container_widget:');	
 	zx.Container = {};
     zx.Container.TabLists=[];
 	zx.Container.Style = "";
+	
+	zx.DivContainerTarget = null;
 
 };

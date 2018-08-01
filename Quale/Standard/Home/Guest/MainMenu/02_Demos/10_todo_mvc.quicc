@@ -4,11 +4,10 @@
 dropinmenu (icon:"nav-icon invoice-icon",title:"Todo Reports")
 
 
-
 table(pagination:3)
 	Select  --:{Title:"View sessions",from:TODO_MVC,tablestyle:DT}
 	first 1000	
-	OWNER,  --:{as:fordetaildiv,form:"Divout/PerSessionToDo"}
+	OWNER,  --:{as:fordetaildiv,form:"Todo/PerSessionToDo"}
 	Count(*), --:{Type:View}
 	substring(list(substring(name from 1 for 8))  from 1 for 198) --:{Type:"View"}
 	

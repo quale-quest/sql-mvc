@@ -1,8 +1,0 @@
-
-<span class="icon-wrap-lb">
-<a href="#" language="javascript" onclick="$.modal.close(); return(zxnav(event,-1,0));" title="Save and close">
-<span class="icon-block-black box-outgoing-b"></span>Save and close</a></span>
-
-<!--end divout-->
-
-
