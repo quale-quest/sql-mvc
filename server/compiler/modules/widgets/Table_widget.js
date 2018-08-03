@@ -710,9 +710,13 @@ var zxTable = exports.zxTable = function (cx) {
 	//Divine-TailDiv
 	//Divine-Final_DebugResult +TopTileResult+ Pager + OpenResult+TableFieldScripts
 	
-	//console.log("\r\ntreeview:",JSON.stringify(cx.fieldDebug,null,4));	
-	var treeview = ide.json_tree_view("Field Style Debug",cx.fieldDebug);
-	if (zx.debug_element_class_selection) html += "<pre class=\"devdebugvisable \"> " + treeview + "</pre>";
+	//console.log("\r\ntreeview:",JSON.stringify(cx.fieldDebug,null,4));
+	//console.warn("zx.conf.debugging :",zx.conf.debugging);		
+	if (zx.conf.debugging.element_class_trees) {
+		
+		var treeview = ide.json_tree_view("Field Style Debug",cx.fieldDebug);
+		html += "<pre class=\"devdebugvisable \"> " + treeview + "</pre>";
+		}
 	
 	return html;
 };

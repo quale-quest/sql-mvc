@@ -21,10 +21,10 @@ var unpack_elements = function (cx,attr) {
 
             
 var init_client_plugin = function (obj) {            
-            console.log('init_client_plugin client side plugin :',obj);
+            //console.log('init_client_plugin client side plugin :',obj);
 			obj.Data.lookup = function () {
 				return function (ctx) {
-					console.log('obj.Data.lookup:',this,ctx,ctx[0]);
+					//console.log('obj.Data.lookup:',this,ctx,ctx[0]);
 					var look = ctx[0][this[1]];
 					var findkey = this[0];
 					if (look === undefined)

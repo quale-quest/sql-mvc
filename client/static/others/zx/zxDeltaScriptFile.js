@@ -185,13 +185,12 @@ function FindCell(e,level)
 
     //this currently only looks for txy , but we may have other containers such as div or other text, we here we dont have xy but just x
 	level=+(level||'0');
-	console.log("FindCell req:",level);
+	//console.log("FindCell req:",level);
     while (Parent.tagName!="BODY") // && cid_id==-1) 
         {
-		console.log("FindCell tagName:",{level:level,tagName:Parent.tagName,cid:Parent.attributes.cid});
-      if (Parent.attributes.cid !== undefined)
-          {
-			
+		//console.log("FindCell tagName:",{level:level,tagName:Parent.tagName,cid:Parent.attributes.cid});
+        if (Parent.attributes.cid !== undefined)
+          {			
 			cid_id=Parent.attributes.cid.value;
 		    //console.log("FindCell :",{level:level,cid_id:cid_id});
 			level--;

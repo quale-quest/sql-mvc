@@ -13,7 +13,7 @@ else return "["+str+ "] shown in full "+ (str.length) + " bytes... ";
 }
 
 
-exports.html = function(name,object,output,TreeMessage){
+exports.json_tree_html = function(name,object,output,TreeMessage){
   
   var this_depth=0;
   function html_recur(name,object,output)
@@ -75,7 +75,7 @@ exports.html = function(name,object,output,TreeMessage){
 
 //var obj={abc:5,def:8,ghi:[123,567,870],klm:{qwery:5,yuiop:{poiuy:5}}};
 //var output  = [];
-//exports.html("root",obj,output);
+//exports.json_tree_html("root",obj,output);
 //console.log('\n...........................................\n',output.join('\n'));
 //process.exit(2);
 

@@ -58,7 +58,7 @@ var prep_debug__tool = function (str) {
 	}
 
 	var output = [];
-	jt.html("root", obj, output, "Show Errors");
+	jt.json_tree_html("root", obj, output, "Show Errors");
 
 	//console.log('prep_debug__tool: \n\n', output.join('\n'));
 	return output.join('\n');
@@ -67,7 +67,7 @@ var prep_debug__tool = function (str) {
 
 exports.json_tree_view = function (TreeMessage,obj) {
 	var output = [];
-	jt.html("root", obj, output,TreeMessage);
+	jt.json_tree_html("root", obj, output,TreeMessage);
 
 	//console.log('prep_debug__tool: \n\n', output.join('\n'));
 	return output.join('\n');	
