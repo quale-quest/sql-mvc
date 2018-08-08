@@ -77,7 +77,13 @@ ss.http.route('/files?*', function (req, res) {
 });
 
 ss.http.route('/', function (req, res) {
-	console.log('\r\n\r\n\r\n\r\n=======================================================ss.http.route: '+req.url);
+	var force_login_first=false;
+	if (req.url=='/Login') force_login_first=true;
+	
+	console.log('\r\n\r\n\r\n\r\n=======================================================ss.http.route: '+req.url,force_login_first);
+
+	
+	
 	var LoadedInstance = crypto.randomBytes(16).toString('base64');
 	//console.log('LoadedInstance: ', LoadedInstance);
 
@@ -135,23 +141,33 @@ ss.http.route('/', function (req, res) {
 			try {
 			  //console.log("db.databasePooled :",params,'============================');
               rambase.params=params;		
-              if (params.user=='' || config.run.severside_render!=="FirstPage") {
+              if (params.user=='' ||  config.run.login_first || force_login_first) {
 				//this is a first page load ... without rendering - will be rendered on the login from the user
 				//console.log("first page load ... without server-side rendering");
 				//todo inject LoadedInstance
-				res.serveClient('main');
+				//res.serveClient('main');
+				res.serveClient('main',
+					function (html){
+					var cxx = {
+						obj:[
+							{Stash:"Stash",Session:"Session",Data:{cid:"cid"}}
+						]};
+					 html = severside_render.render_inject('login',html,"",LoadedInstance,cxx);
+					 return html;
+				});
+				
 			  }  else  {
 				//this is a first page load ... server-side rendered
-				//console.log("first page load ... with server-side rendering");
+				console.log("first page load ... with server-side rendering, params:",params);
 				ServerProcess.produce_login(req, res, ss,rambase, '', params.user,params.password,
-				function (scriptnamed,jsonstring){
-                    //console.log("severside_render",jsonstring);
-                    severside_render.render(scriptnamed,jsonstring,"client/views/app.html",
+				function (switchPage,target,scriptnamed,jsonstring){
+                    console.log("severside_render:",switchPage,jsonstring);
+                    severside_render.render(switchPage,target,scriptnamed,jsonstring,"client/views/app.html",
                         function (cx,html_inject){
 							//console.log("severside_render html_inject");
                             res.serveClient('main',
                             function (html){
-                                 html = severside_render.render_inject(html,html_inject,LoadedInstance,cx);
+                                 html = severside_render.render_inject('FirstPage',html,html_inject,LoadedInstance,cx);
                                  return html;
                             });
                         });    

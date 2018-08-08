@@ -51,8 +51,19 @@ padding: 0.0em 0.5em 0.0em 1.7em;
 <script type="text/javascript" language="javascript" class="init">
 
 
-  var myFaceBookAppID='<%branding.FaceBookAppID%>';
-  var auto_login_facebook_on_return=false;
+var myFaceBookAppID='<%branding.FaceBookAppID%>';
+var auto_login_facebook_on_return=false;
+var zx_active_page='NONE'; 
+
+<%#run.login_first%>
+zx_active_page='#PAGE_1';
+console.log("zx_active_page :",zx_active_page );
+
+first_page_rendered=false;
+LoadedInstance='';
+first_page_container="#maincontainer";
+console.log("first_page_rendered:",first_page_rendered);
+<%/run.login_first%>  
   
 </script>
 <SocketStream/>
@@ -106,14 +117,18 @@ window.location.href = "ie.html";
 			<ul>
 			    <input id="LoginPage" type="hidden" value="" class="login-text-box usr"  autocomplete="off">
 				
-				<li><label>Username</label><input id="LoginName" type="text" value="guest" class="login-text-box"  autocomplete="off"></li>
-				<li><label>Password</label><input id="LoginInput" type="text" value="gu35t" class="login-text-box usr"  autocomplete="off"></li>				
-				<li><label>&nbsp;</label><input id="LoginButton" name=Go type="Submit" class="submit-button-login" value="Email Login" autocomplete="off"></li>
-				<li><label>&nbsp;</label><input id="LoginButton" name=Go type="Submit" class="submit-button-login" value="Guest Login" autocomplete="off"></li>
-				<li><label>&nbsp;</label><fb:login-button scope="public_profile,email" onlogin="checkLoginState();"></fb:login-button></li>
-				<li><span id="status"></span></li>				
+				<li><label>Username</label><input id="LoginName" type="text" value="" class="login-text-box"  autocomplete="off"></li>
+				<li><label>Password</label><input id="LoginInput" type="text" value="" class="login-text-box usr"  autocomplete="off"></li>
+				<li><label>&nbsp;</label><input id="LoginButton" name=Go type="Submit" class="submit-button-login" value="Login" autocomplete="off"></li>								
+				<li style="display: none;"><label>&nbsp;</label><fb:login-button scope="public_profile,email" onlogin="checkLoginState();"></fb:login-button></li>
+				<li id="InvalidUser" style="display: none;"><span>Invalid Login, Please try again.</span></li>				
+				<li style="display: none;"><span id="status"></span></li>				
 			</ul>		
 		</form>
+		<%#run.selfmanage%>
+		<a href="#" id="RegisterNewUser" title="Register New User" style="color:white;margin-left:15px;text-decoration: underline;">Register As New User</a>
+		<a href="#" id="ForgotPassword"  title="Forgot Password?"  style="color:white;margin-right:17px;text-decoration: underline;float: right;">Forgot Password?</a>
+		<%/run.selfmanage%>
 
 
 
@@ -138,7 +153,7 @@ window.location.href = "ie.html";
 <div divout="Standard" id="maincontainer"></div>
 </div><!--PAGE_2 -->	
 
-<div id="PAGE_0" class="zxPage" style="display: block;">  <!--this is matched in serverside_render.js -->
+<div id="PAGE_0" class="zxPage" style="display: none;">
 <!--[if IE]>
 <script type="text/javascript">
 window.location.href = "ie.html";
@@ -207,7 +222,7 @@ window.location.href = "ie.html";
 
 <%page_inject_point%>
 
-<script>
+<script type="text/javascript" language="javascript">
    console.log("LoadedInstance:",LoadedInstance);
    		window.addEventListener( "pageshow", function ( event ) {			
 			

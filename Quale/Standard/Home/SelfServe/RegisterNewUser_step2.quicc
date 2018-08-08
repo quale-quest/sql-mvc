@@ -1,0 +1,43 @@
+<#divcontainer(type:Plain , DivoutName:maincontainer)#>
+<#view
+master(user_table_name)
+notify(style=Heading) Create Login
+
+ifquery ( ($select count(*) from Z$USER u where u.INVITED_BY=session.id and (OCTET_LENGTH(u.EMAIL)<4 or (u.EMAIL NOT CONTAINING '@')) $)>0 ) 
+notify (style=Heading) Invalid email.
+
+button(glymph:"bended-arrow-right-b" from=user_table_name where="INVITED_BY=session.id" form=RegisterNewUser title:"Try Again")  
+
+elsequery 
+
+ifquery ( ($select count(*) from Z$USER u where u.status=10 and u.EMAIL=(select email from Z$USER s where s.INVITED_BY=session.id) $)>0 ) 
+notify (style=Heading) Your email is already registered.
+
+button(glymph:"bended-arrow-right-b" from=user_table_name where="INVITED_BY=session.id" form=RegisterNewUser_step2 title:"Please email me my login details")  
+button(glymph:"bended-arrow-right-b" from=user_table_name where="INVITED_BY=session.id" form=RegisterNewUser title:"Use a different Email")  
+
+elsequery 
+
+form()
+	Select  --:{Title:"Manage existing users",from:user_table_name}
+	first 1
+	NAME,     		--:{Action:Edit,Title:Display_Name}	
+	LOGIN_NAME,     --:{Action:Edit}	
+	PASSWD,  		--:{Action:Edit}
+	MOBILE_NUMBER,  --:{Action:Edit}
+	user_pk_field	    --:{as:"pk",Type:"Hide"}
+	From user_table_name 
+	where INVITED_BY=session.id
+
+button(glymph:"bended-arrow-right-b" from=user_table_name where="INVITED_BY=session.id" form=RegisterNewUser_step3 title:"Next")
+	
+endquery	
+endquery
+#>
+
+
+
+
+
+
+

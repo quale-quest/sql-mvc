@@ -1,0 +1,15 @@
+<#divcontainer(type:Divout , DivoutName:logout)#>
+
+<#script()
+
+logout()
+
+notify(style=Heading) 
+Switching user
+
+                                                                         
+#>
+
+
+
+

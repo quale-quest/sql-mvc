@@ -8,35 +8,45 @@ var plugins = require('./plugins.js');
 
    
 var simpleautotest=0;    //set to 1 to automatically post records to demo todo site
-var zx_view_page='#PAGE_2';   //ctrl-Q toggles between them    
-var zx_prev_page='#PAGE_3';
+//var zx_active_page='#PAGE_2';   - set in html
+var zx_prev_page='#PAGE_99';
+var zx_app_page='#PAGE_2';
+var zx_Q_page='#PAGE_3';   //ctrl-Q toggles between them    
+var zx_Login_page='#PAGE_1';
+
 var qq_session,qq_cid;
 
 
 var zx_switch_page = function (div){
-    console.log("zx_switch_page new:",div," old:",zx_view_page );
-    if (div!==zx_view_page)
+    console.log("zx_switch_page new:",div," old:",zx_active_page );
+    if (div!==zx_active_page)
        {
-        zx_prev_page=zx_view_page;
-        zx_view_page = div;        
-        $('.zxPage').hide();        
+        zx_prev_page=zx_active_page;
+        zx_active_page = div;        
+        $('.zxPage').hide();   //hides all pages      
         $(div).show();
-		$('.devdebugvisable').show();        		
        } 
 }
 
 zx_switch_key = function (){
 	//alert('zx_switch_key '+zx_prev_page ); 
-zx_switch_page(zx_prev_page);
+	if (zx_active_page!=zx_Q_page) {
+		zx_switch_page(zx_Q_page);	
+	} else {
+		$('.devdebugvisable').show();        			
+		zx_switch_page(zx_prev_page);		
+	}
 }
 
-ss.event.on('switchPage', function (div /*, page, message*/
-) {
-
+ss.event.on('switchPage', function (div) {
 zx_switch_page(div);
-
 return;
+});
 
+ss.event.on('logout', function (div) {
+window.location.replace("Login");
+console.log('logout reload');
+return;
 });
 
 ss.event.on('updateDiv', function (div, message) {
@@ -399,13 +409,15 @@ init_from_fullstash_internal = function (Target) {
 			/*--Input files style--*/
 
 			// $(".input-uniform input[type=file],.input-uniform input[type=radio],.input-uniform input[type=checkbox], input[type=file]").uniform();
+			if (1) {
+				//$("input, a.button, button").uniform();
+				$("select, textarea").uniform();
+				$(".uniform-input").uniform();
 
-			$("select, textarea, input, a.button, button").uniform();
-			$(".uniform-input").uniform();
-
-			console.log("setup menu  :");
-			$('.menu').initMenu();
-			console.log("done setup menu  :");
+				console.log("setup menu  :");
+				$('.menu').initMenu();
+				console.log("done setup menu  :");
+			}
 
 			//WIP - Location to load post-stache scripts
 			zxInitTabs();
@@ -608,6 +620,12 @@ ss.event.on('newData', function (div, message) {
 	//$('#content').html(message);
 	var o = JSON.parse(message);
     replace_string_in_object(o,0);
+	if (o[0].ErrorMessage=='invaliduser') {
+		//console.log('client got newData:',o[0].ErrorMessage);
+		$('#InvalidUser').show();
+		setTimeout(function () {$('#InvalidUser').hide();}, 2000);        
+		}
+	
 
 	//var zxFormater = require('/zxFormater.js');
 	if (o !== null)
@@ -786,51 +804,52 @@ exports.LoadFromBrowserBackNavigation = function () {
 	return ss.rpc('ServerProcess.BrowserBack', '',LoadedInstance, null);
 };
 
-
+var SubmitLoginOnce=new Date().getTime();
 // bind to the login form and submit the fields after validation
-if (0) {
-	$('#LoginForm').click(function () {
-		return exports.sendLogin($('#LoginName').val(), $('#LoginInput').val(), function (success) {
-			if (success) {
-				return $('#myMessage').val('');
-			} else {
-				return alert('Username or password is invalid, please retry.');
-			}
-		});
-	});
+if (1) {
+	
+	$('#RegisterNewUser').click(function () {return exports.sendLogin('SelfServe', 'SelfServe','RegisterNewUser');});
+	$('#ForgotPassword').click(function () {return exports.sendLogin('SelfServe', 'SelfServe','ForgotPassword');});	
+	$('#LoginButton').click(function () {return exports.sendLogin($('#LoginName').val(), $('#LoginInput').val(),$('#LoginPage').val());	});
 
 } else {
-	$('#LoginForm').on('submit', function () {
-
+	console.log("Init LoginForm submit  :");	
+	if (1) $('#UserLoginForm').on('submit', function (e) {
 		// Grab the message from the text box
 		// Call the 'send' funtion (below) to ensure it's valid before sending to the server
-		return exports.sendLogin($('#LoginName').val(), $('#LoginInput').val(), $('#LoginPage').val(), function (success) {
-			if (success) {
-				return $('#myMessage').val('');
-			} else {
-				return alert('Username or password is invalid, please retry.');
-			}
-		});
+		e.preventDefault(); 
+		e.stopImmediatePropagation();
+		var dt = new Date().getTime()-SubmitLoginOnce;
+		SubmitLoginOnce=new Date().getTime();
+		console.log("LoginForm submit  :",dt,SubmitLoginOnce,[$('#LoginName').val(),$('#LoginInput').val(), $('#LoginPage').val()]);
+		if (dt>300) {			
+			exports.sendLogin($('#LoginName').val(), $('#LoginInput').val(), $('#LoginPage').val(), function (success) {
+				if (success) {
+					return $('#myMessage').val('');
+				} else {
+					return alert('Username or password is invalid, please retry.');
+				}
+			});
+		}
+		return false; 
 	});
 }
 
 //
 // sharing code between modules by exporting function
 sendLogin = exports.sendLogin = function (LoginName, LoginInput, Page, cb) {
-    
-	if (loginvalid(LoginName) && loginvalid(LoginInput)) {
+    console.log('exports.sendLogin',[LoginName, LoginInput, Page]);
+	if (loginvalid(LoginName) && loginvalid(LoginInput)) 
 		return ss.rpc('ServerProcess.LoginAction', LoginName, LoginInput,Page,LoadedInstance, cb);
-	} else {
-		return cb(false);
-	}
+
 };
 
 // After load attempt initial auto loging - configured from server Quale/Config.json
 $(function () {
-    //alert('first_page_rendered :'+first_page_rendered);
+    //alert('first_page_rendered :'+ typeof first_page_rendered);
     if (typeof first_page_rendered == "undefined") first_page_rendered=0;
     if (first_page_rendered) {
-         
+        //alert('first_page_renderedX'); 
         init_from_fullstash_internal(first_page_container);
     }     
    else ss.rpc('ServerProcess.connected',first_page_rendered,LoadedInstance);
@@ -880,5 +899,5 @@ exports.sendDebug = function (text, cb) {
 };
 
 
-
+console.log('app.js loaded Version 1.06');
 

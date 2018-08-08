@@ -1,0 +1,41 @@
+<#divcontainer(type:Plain , DivoutName:maincontainer)#>
+<#view
+master(user_table_name)
+script set session.invalid='0';
+
+ifquery ( ($select count(*) from Z$USER u where u.status=10 and u.LOGIN_NAME=(select LOGIN_NAME from Z$USER s where s.INVITED_BY=session.id) $)>0 ) 
+script set session.invalid='1';
+notify (style=Heading) Your chosen user name is already in use please try another.
+endquery
+
+
+
+ifquery ( ($select count(*) from Z$USER u where u.INVITED_BY=session.id and OCTET_LENGTH(u.PASSWD)<6 $)>0 ) 
+script set session.invalid='1';
+notify (style=Heading) Your chosen password is invalid please try again.
+endquery
+
+
+
+
+ifquery ( session.invalid='1' ) 
+
+button(glymph:"bended-arrow-right-b" from=user_table_name where="INVITED_BY=session.id" form=RegisterNewUser title:"Try Again")  
+
+elsequery	
+notify (style=Heading) User Create Successful
+
+script
+UPDATE user_table_name set Status=10 where INVITED_BY=session.id
+
+
+button(glymph:"bended-arrow-right-b" from=user_table_name where="INVITED_BY=session.id" form=Operator/Switch title:"Login as the new user")  
+
+
+
+endquery	
+
+
+
+#>
+

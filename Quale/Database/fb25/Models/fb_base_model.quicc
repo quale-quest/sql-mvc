@@ -133,12 +133,10 @@ RETURNS (
     INFO VARCHAR(1000),
 	currentpage varchar(100) ,	
 	page_params varchar(1000),
-	NEW_CONTEXT_ID INTEGER
-    
+	NEW_CONTEXT_ID INTEGER,
+    o_ref    varchar(40)
     )
 AS
-
-DECLARE VARIABLE o_ref    varchar(40);
 
 DECLARE VARIABLE passw    varchar(20) ='';
 DECLARE VARIABLE usern    varchar(20) ='';
@@ -290,12 +288,15 @@ BEGIN
 			/*if null then select the guest user */
 			/* user_guest_name , unknown_user */
 			
-			select first 1 user_pk_field,user_landing_page from user_table_name where user_name_field=:usern and user_password_field=:passw into :o_ref,:landing_page;			
+			select first 1 user_pk_field,user_landing_page from user_table_name where user_name_field=:usern and user_password_field=:passw and status=10 into :o_ref,:landing_page;			
           
-            if (o_ref is NULL) then 
-                select first 1 user_pk_field,user_landing_page from user_table_name where user_name_field='user_guest_name' into :o_ref,:landing_page;
+            if (o_ref is NULL) then begin
+					info='invaliduser';
+					suspend; 					
+					exit;
+			end	
 				
-			IF ( currentpage <> '') THEN currentpage = '//'||landing_page||currentpage;
+			IF ( currentpage <> '') THEN currentpage = '//'||landing_page||'/'||currentpage;
 			ELSE currentpage = '//'||landing_page||'/Index';
 			PRIOR_CONTEXT_ID = 0;
 			PRIOR_ITEM_ID	 =0;			 
@@ -347,8 +348,8 @@ DECLARE VARIABLE page_params  varchar(1000)='';  -- retrieved from the database 
 BEGIN
 
 
-	SELECT first 1 INFO,currentpage,page_params,NEW_CONTEXT_ID FROM Z$RUN_SUB(:SESSIONID, :PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID, :UPDATES) p 
-			into :INFO,:SCRIPTNAMED,:page_params,:NEW_CONTEXT_ID  ;
+	SELECT first 1 INFO,currentpage,page_params,NEW_CONTEXT_ID,o_ref FROM Z$RUN_SUB(:SESSIONID, :PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID, :UPDATES) p 
+			into :INFO,:SCRIPTNAMED,:page_params,:NEW_CONTEXT_ID,:o_ref  ;
 			
 	if 	(page_params!='') then	
 		begin
@@ -364,9 +365,17 @@ BEGIN
 				  SCRIPTNAMED= '' ;  
 				  suspend; 					
 				  exit;
-				end	
+				end
+				
+	if (info='invaliduser') then 
+			    begin				 
+				  res= '' ;  
+				  SCRIPTNAMED= '' ;  
+				  suspend; 					
+				  exit;
+				end				
 		
-    CloseStr = ' ('''||:SESSIONID||''','||PRIOR_CONTEXT_ID||','||PRIOR_ITEM_ID||','||NEW_CONTEXT_ID||') RETURNING_VALUES  :info,:res,:SCRIPTNAMED;suspend; end;';
+    CloseStr = ' ('''||:SESSIONID||''','||PRIOR_CONTEXT_ID||','||PRIOR_ITEM_ID||','||NEW_CONTEXT_ID||','||o_ref||') RETURNING_VALUES  :info,:res,:SCRIPTNAMED;suspend; end;';
     
 	
     --TODO also match language and coy custom files  
@@ -444,6 +453,20 @@ BEGIN
 END^
 SET TERM ; ^
 
+SET TERM ^ ;
+CREATE PROCEDURE Z$CLEAN_PROCEDURES
+RETURNS ( STM Varchar(200) )
+AS
+BEGIN
+	for select cast('drop PROCEDURE "'||trim(r.RDB$PROCEDURE_NAME)||'"' as varchar(200))
+	from RDB$PROCEDURES r where r.RDB$PROCEDURE_NAME STARTING 'ZZ$'	order by 1
+	into :stm DO
+	BEGIN
+		execute statement :stm;
+		suspend;
+	END
+END^
+SET TERM ; ^
 
 
 SET TERM ^ ;

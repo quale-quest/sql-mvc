@@ -71,6 +71,7 @@ CREATE TABLE user_table_name                         --:{as:"Table"}
   Last_NAME SHORT_NAME,	                         	 --:{as:"text",title:"Last Name"}  
   Gender SHORT_NAME,                            	 --:{as:"text",title:"Gender"}  
   
+  Status Integer default 0,							 --:{}  
   
   photo 	     VARCHAR(100),						 --:{as:image}
   photo_filename VARCHAR(100),	    				 --:{as:image_filename}  
@@ -196,8 +197,9 @@ INSERT INTO Z$INSERTREF (NON_MATCH, INSERT_REF) VALUES ('NON_MATCH_2', '2');
 INSERT INTO Z$INSERTREF (NON_MATCH, INSERT_REF) VALUES ('NON_MATCH_3', '3');
 
 INSERT MATCHING user_name_field;
-INSERT INTO user_table_name (user_landing_page,user_display_field,user_name_field,user_password_field) values ('Home/Guest','Guest','user_guest_name','AnyPassword');
-INSERT INTO user_table_name (user_landing_page,user_display_field,user_name_field,user_password_field) values ('Home/SysAdmin','sysadmin','sysadmin','changethis');
+INSERT INTO user_table_name (user_landing_page,user_display_field,user_name_field,user_password_field,status) values ('Home/SelfServe','SelfServe','SelfServe','SelfServe',<%#run.selfmanage%>10<%/run.selfmanage%><%^run.selfmanage%>0<%/run.selfmanage%>);
+INSERT INTO user_table_name (user_landing_page,user_display_field,user_name_field,user_password_field,status) values ('<%run.Guest_Landingpage%>','Guest','guest','gu35t',<%#run.login_first%>0<%/run.login_first%><%^run.login_first%>10<%/run.login_first%>);
+INSERT INTO user_table_name (user_landing_page,user_display_field,user_name_field,user_password_field,status) values ('Home/SysAdmin','sysadmin','sysadmin','<%run.Sysadmin_Password%>',10);
 
 #>
 

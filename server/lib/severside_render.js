@@ -71,13 +71,18 @@ var render_from_fullstash = function (cx,cont_content,cb) {
    cb(cx,cont_content);
 }
 
-
-exports.render_inject = function (html_inp,html_inject,LoadedInstance,cx) { 
+/*
+PAGE_0 : contacting
+PAGE_1 : login
+PAGE_2 : main
+PAGE_3 : debug
+PAGE_4 : maintenance
+*/
+exports.render_inject = function (page,html_inp,html_inject,LoadedInstance,cx) { 
 	//switch visible page
-    //html_inp=html_inp.replace(/id="PAGE_2" style="display: none;"/,'id="PAGE_2" x2style="display: none;"');
-	html_inp=html_inp.replace(/<div id="PAGE_2" class="zxPage" style="display: none;">/,'<div id="PAGE_2" class="zxPage" style="display: block;">');
-	html_inp=html_inp.replace(/<div id="PAGE_0" class="zxPage" style="display: block;">/,'<div id="PAGE_0" class="zxPage" style="display: none;">');
-	
+	if (page=='login') html_inp=html_inp.replace(/<div id="PAGE_1" class="zxPage" style="display: none;">/,'<div id="PAGE_1" class="zxPage" style="display: block;">');	
+	else               html_inp=html_inp.replace(/<div id="PAGE_2" class="zxPage" style="display: none;">/,'<div id="PAGE_2" class="zxPage" style="display: block;">');	
+
     //html_inp=html_inp.replace(/en0_style/,'style');
 	//console.log("render_inject :",cx.obj[0]);
     var inits =  '<script type="text/javascript" language="javascript">\r\n'
@@ -112,7 +117,7 @@ exports.render_inject = function (html_inp,html_inject,LoadedInstance,cx) {
     //render_from_fullstash(cx,html); 
 }
 
-exports.render = function (qq_page_id,jsonstring,template_filename,cb) {    
+exports.render = function (switchPage,target,qq_page_id,jsonstring,template_filename,cb) {    
     var mtHash=0;
     var cx={};
     try {  

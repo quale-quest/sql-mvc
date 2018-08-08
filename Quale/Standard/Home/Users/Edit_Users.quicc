@@ -1,0 +1,45 @@
+<#divcontainer(element:Popup , DivoutName:basicmodaldialog)#>
+<#view
+master(user_table_name)
+
+
+list{
+    "name": "LANDING_PAGE",
+    "values": {
+        "Home/Guest": "Home/Guest",
+		"Home/User": "Home/User",
+		"Home/Manager": "Home/Manager",
+		"Home/Sysadmin": "Home/Sysadmin"
+    }
+}
+
+
+
+form()
+	Select  --:{Title:"Manage existing users",from:user_table_name}
+	first 1
+	NAME,  			--:{Action:Edit}
+	
+	LOGIN_NAME,     --:{Action:Edit}	
+	PASSWD,  		--:{Action:Edit}	
+	
+	MOBILE_NUMBER,  --:{Action:Edit}
+	EMAIL,          --:{Action:Edit}
+
+	
+	LANDING_PAGE,  --:{Action:Edit,Type:Lookup,List:LANDING_PAGE}
+	
+	
+	
+	user_pk_field	    --:{as:"pk",Type:"Hide"}
+	From user_table_name 
+	where user_pk_field=master.user_pk_field
+	
+#>
+
+
+
+
+<span class="icon-wrap-lb"><a href="#" language="javascript" onclick="zxmodalclose()" title="Done"><span class="icon-block-black help-b "></span>Done</a></span>
+
+

@@ -1271,7 +1271,8 @@ exports.start_pass = function (zx /*, line_objects*/
 		"EXECUTE BLOCK RETURNS  (cid  integer,info varchar(200), res blob SUB_TYPE 1)AS \n" +
 		"declare pki integer=12345678;\n" +
 		"declare pkf integer=12345678;\n" +
-		"declare Z$SESSIONID varchar(40)='12345678';\n\n\n";
+		"declare Z$SESSIONID varchar(40)='12345678';\n"+
+		"declare operator$ref  varchar(41)='';\n\n\n";
 		zx.sql.testfoot = "\n-- no need to - set term ;#\n";	
 	} else if (zx.fb25) {	
 		zx.sql.testhead =
@@ -1279,7 +1280,8 @@ exports.start_pass = function (zx /*, line_objects*/
 		"  z$sessionid varchar(40),\n" +
 		"  pki INTEGER,\n"+
 		"  pkf INTEGER,\n"+
-		"  cid INTEGER )\n"+
+		"  cid INTEGER,\n"+
+		"  operator$ref  varchar(41))\n"+
 		"RETURNS ("+
 		"  INFO Blob sub_type 1,\n"+
 		"  RES  Blob sub_type 1,\n"+		
@@ -1297,6 +1299,7 @@ exports.start_pass = function (zx /*, line_objects*/
 		"declare pki INTEGER;\n"+
 		"declare pkf INTEGER;\n"+
 		"declare cid INTEGER;\n"+
+		"declare operator$ref  varchar(41);\n"+
 		"declare NEW_CID INTEGER;\n"+
 		"declare INFO VARCHAR(1000);\n"+
 		"declare RES TEXT;\n"+
@@ -1312,7 +1315,7 @@ exports.start_pass = function (zx /*, line_objects*/
 		"  @pki INTEGER,\n"+	//prior cid
 		"  @pkf INTEGER,\n"+	
 		"  @cid INTEGER,\n"+	//new cid	
-
+		"  @operator$ref varchar(41),\n"+	
 		"  \n"+
 		"  @info varchar(200) OUT,\n"+
 		"  @res VARCHAR(MAX) OUT\n"+

@@ -1,0 +1,8 @@
+<#divcontainer(type:Plain , DivoutName:maincontainer)#>
+<#master(user_table_name)#>
+
+<#button(glymph:"bended-arrow-right-b" from=user_table_name where="INVITED_BY=session.id" form=RegisterNewUser title:"RegisterNewUser")  #>
+<#button(glymph:"bended-arrow-right-b" from=user_table_name where="INVITED_BY=session.id" form=ForgotPassword title:"ForgotPassword")  #>
+
+
+

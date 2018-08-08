@@ -1,0 +1,40 @@
+
+
+<#view
+
+dropinmenu (icon:"nav-icon invoice-icon",title:"Manage")
+
+list{
+    "name": "LANDING_PAGE",
+    "values": {
+        "Home/Guest": "Home/Guest",
+		"Home/User": "Home/User",
+		"Home/Manager": "Home/Manager",
+		"Home/Sysadmin": "Home/Sysadmin"
+    }
+}
+
+
+
+button () --{title:"Create new user" glymph:"pencil-b" from=user_table_name where="OWNER=operator.id and name=''New User''"   form=Users/edit}
+sql UPDATE OR INSERT INTO user_table_name (OWNER,NAME,STATUS) VALUES ( operator.id, 'New User',10 ) matching (OWNER,NAME) ;
+select first 1 user_pk_field from user_table_name where owner=operator.id and name='New User' into :master_id;
+
+
+
+table(pagination:25)
+	Select  --:{Title:"Manage existing users",from:user_table_name,tablestyle:DT}
+	first 1000	
+	NAME,  --:{as:fk,form:"Users/Edit_Users",pointer:3}
+	MOBILE_NUMBER,  --:{}
+	LANDING_PAGE,  --:{Action:View,Type:Lookup,List:LANDING_PAGE}
+	user_pk_field	    --:{as:pk}
+	From user_table_name where status=10
+
+
+#>
+
+
+<div id=detaildiv></div>
+
+

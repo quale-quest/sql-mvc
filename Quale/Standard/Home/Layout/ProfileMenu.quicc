@@ -32,7 +32,7 @@
 				        <#Menu (icon="icon-block-black cog-b" from=user_table_name          where="user_pk_field=operator.user_pk_field" form=Operator/Preferences title="Preferences" style=UserBar)#>
 				        <#xMenu (icon="icon-block-black info-about-b" from=user_table_name  where="user_pk_field=Operator.user_pk_field" form=Help/Main title="Help?" style=UserBar)#>
 				        <#Menu (icon="icon-block-black box-incoming-b" from=user_table_name where="user_pk_field=Operator.user_pk_field" form=Operator/Inbox title="Inbox" style=UserBar)#>
-				        <#Menu (icon="icon-block-black locked-tw-b" from=user_table_name    where="user_pk_field=Operator.user_pk_field" form=~/Layout/Operator/Logout title="Switch User" style=UserBar)#>
+				        <#Menu (icon="icon-block-black locked-tw-b" from=user_table_name    where="user_pk_field=Operator.user_pk_field" form=Operator/Switch title="Switch User" style=UserBar)#>
 				</ul>
 				<div class="admin-thumb">
 					<img src="../../images/qqui1/user-thumb1.png" alt="user" width="50" height="50">

@@ -280,13 +280,14 @@ exports.validate_script = function (zx, name, script) {
 
 	if (zx.fb25) {
 		querys = 'EXECUTE BLOCK RETURNS  (cid integer,info varchar(200),res blob SUB_TYPE 1)AS '+
-			     'declare pki integer=0;declare pkf integer=0;declare z$sessionid varchar(40)=\'\';' + script;
+			     'declare pki integer=0;declare pkf integer=0;declare z$sessionid varchar(40)=\'\';declare operator$ref  varchar(41)=\'\';' + script;
 	} else if (zx.mysql57) {
 		querys =
 			"\r\n\r\n\r\nDELIMITER  $$\r\nDROP PROCEDURE IF EXISTS execute_test $$\r\n" +
 			"CREATE PROCEDURE execute_test (cid  integer,info varchar(200), res TEXT)\r\nBEGIN\r\n" +
 			"declare pki integer default 0;\r\n" +
 			"declare pkf integer default 0;\r\n" +
+			"declare  operator$ref varchar(41) default '';\r\n" +
 			"declare Z$SESSIONID varchar(40) default '';\r\n\r\n\r\n"+ script + "\r\n-- no need to - set term ;#\r\n";
 	} else if (zx.mssql) {
 		

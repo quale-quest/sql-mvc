@@ -148,7 +148,7 @@ function timing(record,duration,dt,sessions ) {
 function dataprocess(ss,par,newdata,cb) { //should only process after transaction.commit
 		//console.log('db - JSON LENGTH: ', newdata.length, '');
 		//console.log('db - JSON       :\n', newdata, '\n\n');
-
+		var logging_out=false;
 		if (par.NEW_CONTEXT_ID!==0) 
 		   par.rambase.current_cid    = par.NEW_CONTEXT_ID;
 	   
@@ -157,29 +157,39 @@ function dataprocess(ss,par,newdata,cb) { //should only process after transactio
 		//todo filter developers on some key value - so only a small subset of users can do live editing of source
 		db.developers[par.message.session] = par.SCRIPTNAMED;
 		var sessions_size = Object.keys(db.developers).length;
+		var dt=(Date.now()-par.queryStamp) ;
+		timing(db.stats.ppm,60000,dt,sessions_size);		
+		var switchPage = '#PAGE_2';
+		par.rambase.logged_out = false;
+		
+		if (par.infos === 'invaliduser') {
+			newdata = '[{"Data":{},"Session":"","ErrorMessage":"invaliduser"}]';
+			switchPage = '#PAGE_1';
+			//Data.Session =  cx.obj[0].Session;
+		}
 		if (par.infos === 'logout') {
 			par.rambase.logged_out = true;
-			//console.log('db - logged_out message for :', rambase);
-		} else par.rambase.logged_out = false;   
+			logging_out = true;
+			switchPage = '#PAGE_1';			 
+			//console.log('db - logged_out message for :',(ss.publish && ss.publish.socketId));
+		} 
 		
-		var dt=(Date.now()-par.queryStamp) ;
-		timing(db.stats.ppm,60000,dt,sessions_size);
 
 		
 
 		console.log("========================Query_Time : "+dt);
 		if (cb) {
-			//console.log('db - fbsql data callback :',cb,newdata);
-			//console.log('db - fbsql data callback ');
-			cb(par.SCRIPTNAMED,newdata)
+			cb(switchPage,'target',par.SCRIPTNAMED,newdata);
 		
 		} else {    
-			//console.log('db - fbsql data ss.publish :',newdata);
-			//console.log('db - fbsql data publish ');
 			if (ss.publish && ss.publish.socketId) {
 				//console.log('db - fbsql data publish A ');
-				ss.publish.socketId(par.req.socketId, 'newData', 'content', newdata);
-				ss.publish.socketId(par.req.socketId, 'switchPage', '#PAGE_2', '');
+				if (logging_out) {
+					ss.publish.socketId(par.req.socketId, 'logout',switchPage, '');
+					} else {					
+					ss.publish.socketId(par.req.socketId, 'newData', 'content', newdata);
+					ss.publish.socketId(par.req.socketId, 'switchPage',switchPage, '');
+					}
 				//console.log('db - fbsql data publish B ');
 				} else console.warn('=================================Data processing lost due to not having a connected socket ');
 		}
@@ -586,7 +596,11 @@ exports.push_passed_params = function (rambase,messagelist) {
 //	var message = [];
         //console.log('push_passed_params params 183135 :',rambase.params);            
         app_utils.forFields(rambase.params, function (field, key) {  
-            if (key !== 'object_ended_at') {        
+            if  ( (key !== 'object_ended_at') && 
+				  (key !== 'user')&&
+				  (key !== 'password')
+				)
+				{        
             
             	var message = {
 					typ : 'params',
@@ -704,7 +718,9 @@ exports.BuildNotify = function (message) {
 
 var produce_login = exports.produce_login = function (req, res, ss, rambase, Page, User,Password,cb) {   
                 if (!Page) Page='';
-                if (rambase.params) {
+				
+				console.log('produce_login rambase.params:', rambase.params);				
+                if (User=='' && rambase.params) {
                     if (rambase.params.page) Page=rambase.params.page||'';
                     if (rambase.params.user) User=rambase.params.user||'';
                     if (rambase.params.pass) Password=rambase.params.pass||'';

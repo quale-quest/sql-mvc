@@ -1,0 +1,34 @@
+<#divcontainer(type:Plain , DivoutName:maincontainer)#>
+<#
+master(user_table_name)
+
+#>
+
+<#
+script
+UPDATE OR INSERT INTO user_table_name (NAME,LOGIN_NAME,OWNER,INVITED_BY,LANDING_PAGE) VALUES ('Your Display Name','Login Name' ,operator.id, session.id,'<%run.SelfCreate_Landingpage%>') matching (INVITED_BY) ;
+
+#>
+
+<#view
+
+
+notify(style=Heading) Create Login
+
+
+form()
+	Select  --:{Title:"Manage existing users",from:user_table_name}
+	first 1
+	
+	EMAIL,          --:{Action:Edit}
+	
+	user_pk_field	    --:{as:"pk",Type:"Hide"}
+	From user_table_name 
+	where INVITED_BY=session.id
+	
+#>
+
+<#button(glymph:"bended-arrow-right-b" from=user_table_name where="INVITED_BY=session.id" form=RegisterNewUser_step2 title:"Next")  #>
+
+
+
