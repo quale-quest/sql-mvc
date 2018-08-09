@@ -1,0 +1,29 @@
+	
+		<div id="usermenu">
+
+			<a href="#" class="admin-user">Login<span class="user-icon"></span></a>
+			
+			<div class="sub-menu">
+			
+				<ul>
+				<li>&nbsp;</li>
+				<li>
+				<#Menu (icon="icon-block-black unlocked-b" from=user_table_name    where="user_pk_field=Operator.user_pk_field" form=Operator/Switch title="Login" style=UserBar)#>
+				</li>
+				
+				
+				<li>&nbsp;</li>
+				
+				<li>				
+				<a href="#" id="RegisterNewUser" title="Register/Sign up" style="text-decoration: underline;" 
+					onclick="sendLogin('SelfServe', 'SelfServe','RegisterNewUser');return false;"><span class="icon-block-black create-write-b"></span>Register/Sign up</a>
+				</li>
+				</ul>
+				<div class="admin-thumb">
+					<img src="../../images/qqui1/user-thumb1.png" alt="user" width="50" height="50">
+				</div>
+			</div>
+		</div>
+
+
+<!--end  ProfileMenu-->

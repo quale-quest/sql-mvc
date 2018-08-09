@@ -1,0 +1,5 @@
+<div id="header">
+<#include(file=~/Layout/TopLeft)#>
+<#include(file=~/Layout/ProfileMenuGuest)#>
+</div>
+<!--end  header-->
