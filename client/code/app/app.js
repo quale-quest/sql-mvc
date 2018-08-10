@@ -15,6 +15,7 @@ var zx_Q_page='#PAGE_3';   //ctrl-Q toggles between them
 var zx_Login_page='#PAGE_1';
 
 var qq_session,qq_cid;
+var popStateInProgress=false;
 
 
 var zx_switch_page = function (div){
@@ -602,7 +603,7 @@ var replace_string_in_object = function (object,depth) {
 }                        
 
 
-ss.event.on('newData', function (div, message) {
+ss.event.on('newData', function (div, message,info) {
 	//object queue and dispatcher
 	//first we will just use it locally , later we will cache the header globally to late/ajax data can also be parsed
 	var cx = {}; //context
@@ -619,16 +620,27 @@ ss.event.on('newData', function (div, message) {
 
 	//$('#content').html(message);
 	var o = JSON.parse(message);
-    replace_string_in_object(o,0);
-	if (o[0].ErrorMessage=='invaliduser') {
-		//console.log('client got newData:',o[0].ErrorMessage);
-		$('#InvalidUser').show();
-		setTimeout(function () {$('#InvalidUser').hide();}, 2000);        
-		}
-	
 
 	//var zxFormater = require('/zxFormater.js');
-	if (o !== null)
+	if (o !== null) {
+		replace_string_in_object(o,0);
+		if (o[0].ErrorMessage=='invaliduser') {
+			//console.log('client got newData:',o[0].ErrorMessage);
+			$('#InvalidUser').show();
+			setTimeout(function () {$('#InvalidUser').hide();}, 2000);        
+			}
+			
+		if (o[0].Target=="#maincontainer") $(".simplemodal-close").trigger("click");
+		if (!popStateInProgress) {
+			if (o[0].Target=="#maincontainer") {
+				var ho = {cidx:info.cid,cid:o[0].Data.cid,stash:o[0].Stash};
+				console.log('history.pushState >',info,ho, o[0].Stash);
+				history.pushState(ho, o[0].Stash,'#'+o[0].Stash);// +  ".html");
+				
+			}
+		}
+		popStateInProgress=false;
+		
 		for (var oi = 0, NumberOfObjects = o.length; oi < NumberOfObjects; oi++) {
 
 			cx.obj = o[oi];
@@ -637,6 +649,7 @@ ss.event.on('newData', function (div, message) {
 			process_new_data(cx);
 
 		} //for NumberOfObjects
+	}	
 	// final
 	html = "";
 	//
@@ -743,11 +756,15 @@ zx_delta = exports.delta;
 // bind to the helpbutton action
 
 zxnav_reload = function () {
+	zxnav_load(qq_cid);
+}
+
+zxnav_load = function (cid) {	
     //in place reloading  without saving - preserve changes -todo
-    
+    popStateInProgress=true;
 	DeltaList = {};
     var message = {
-        cid : qq_cid,
+        cid : cid,
         pkf : 0,
         valu : '',
         typ : 'click'
@@ -755,7 +772,8 @@ zxnav_reload = function () {
     //DeltaList.push(message);   
 	message.id = '"'+message.cid+'-'+message.pkf+'"';
 	DeltaList[message.id] = message;
-    var data = JSON.stringify(DeltaList);    
+    var data = JSON.stringify(DeltaList); 
+	console.log("history.zxnav_load ", data);	
     DeltaList = {};         
     
 	deltacount = 0;
@@ -899,5 +917,5 @@ exports.sendDebug = function (text, cb) {
 };
 
 
-console.log('app.js loaded Version 1.06');
+console.log('app.js loaded Version 1.08');
 

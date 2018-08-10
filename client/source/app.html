@@ -225,18 +225,28 @@ window.location.href = "ie.html";
 <script type="text/javascript" language="javascript">
    console.log("LoadedInstance:",LoadedInstance);
    		window.addEventListener( "pageshow", function ( event ) {			
-			
-			
 		    var historyTraversal = event.persisted || 
 				( typeof window.performance != "undefined" && 
 				window.performance.navigation.type === 2 );
 		    if ( historyTraversal ) {
 			// Handle page restore.
 			console.log("############# pageshow/restore:",LoadedInstance);
-			LoadFromBrowserBackNavigation();
+			//LoadFromBrowserBackNavigation();
 			//window.location.reload();
 		  }
 		});
+		
+    window.onpopstate = function (event) {  
+		//console.log("#history.onpopstate:",event);
+		if(event.state) {
+			if (event.state.cid=="Home")
+				window.location.reload();
+			else
+				zxnav_load(event.state.cid);
+		} 
+	}
+	history.pushState({cid:"Home"}, 'Home','#Home');
+		
 			
    
    
