@@ -55,7 +55,7 @@
 				
 				"Guest_Landingpage":"Home/Guest",				
 				"SelfCreate_Landingpage":"Home/User",
-				"Sysadmin_Password":"PasswordGen"			
+				"Sysadmin_Password":"PasswordGen"
 
 	       },
     "db":	{
@@ -73,8 +73,8 @@
 				"schema_reorder_fields": "no",
 				"platform_user_table": {
 					"user_table_name": "Z$USER",		
-					"user_display_field": "name",
 					"user_pk_field": "id",
+					"user_display_field": "name",					
 					"user_name_field": "login_name",
 					"user_password_field": "passwd",
 					"user_landing_page": "LANDING_PAGE",

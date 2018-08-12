@@ -603,7 +603,7 @@ var replace_string_in_object = function (object,depth) {
 }                        
 
 
-ss.event.on('newData', function (div, message,info) {
+ss.event.on('newData', function (div, message) {
 	//object queue and dispatcher
 	//first we will just use it locally , later we will cache the header globally to late/ajax data can also be parsed
 	var cx = {}; //context
@@ -633,8 +633,8 @@ ss.event.on('newData', function (div, message,info) {
 		if (o[0].Target=="#maincontainer") $(".simplemodal-close").trigger("click");
 		if (!popStateInProgress) {
 			if (o[0].Target=="#maincontainer") {
-				var ho = {cidx:info.cid,cid:o[0].Data.cid,stash:o[0].Stash};
-				console.log('history.pushState >',info,ho, o[0].Stash);
+				var ho = {cid:o[0].Data.cid,stash:o[0].Stash};
+				console.log('history.pushState >',ho);
 				history.pushState(ho, o[0].Stash,'#'+o[0].Stash);// +  ".html");
 				
 			}

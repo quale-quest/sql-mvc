@@ -288,12 +288,21 @@ BEGIN
 			/*if null then select the guest user */
 			/* user_guest_name , unknown_user */
 			
-			select first 1 user_pk_field,user_landing_page from user_table_name where user_name_field=:usern and user_password_field=:passw and status=10 into :o_ref,:landing_page;			
+			select first 1 user_pk_field,user_landing_page from user_table_name where user_name_field=:usern and user_password_field=:passw and status=10 into :o_ref,:landing_page;
           
             if (o_ref is NULL) then begin
+				<%#run.cookie_guest%>
+				if (:usern='guest') then begin
+					INSERT INTO user_table_name (owner,user_display_field,user_name_field,user_password_field,user_landing_page,status) VALUES (2,'user_guest_name',:usern ,:passw,'<%run.Guest_Landingpage%>',10);
+					select first 1 user_pk_field,user_landing_page from user_table_name where user_name_field=:usern and user_password_field=:passw and status=10 into :o_ref,:landing_page;	
+				end
+				<%/run.cookie_guest%>
+		
+				if (o_ref is NULL) then begin	
 					info='invaliduser';
 					suspend; 					
 					exit;
+				end
 			end	
 				
 			IF ( currentpage <> '') THEN currentpage = '//'||landing_page||'/'||currentpage;
@@ -454,7 +463,7 @@ END^
 SET TERM ; ^
 
 SET TERM ^ ;
-CREATE PROCEDURE Z$CLEAN_PROCEDURES
+CREATE PROCEDURE X$CLEAN_PROCEDURES
 RETURNS ( STM Varchar(200) )
 AS
 BEGIN
@@ -465,6 +474,14 @@ BEGIN
 		execute statement :stm;
 		suspend;
 	END
+	
+	for select 'DROP TRIGGER ' || rdb$trigger_name || ';' from rdb$triggers where (rdb$system_flag = 0 or rdb$system_flag is null)
+	into :stm DO
+	BEGIN
+		execute statement :stm;
+		suspend;
+	END	
+	
 END^
 SET TERM ; ^
 

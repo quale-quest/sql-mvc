@@ -645,20 +645,6 @@ exports.facebook_check = function (rambase,Login_response,response,cb) {
                     rs.link, rs.locale,rs.name,rs.timezone+'', 
                     rambase.params.invite || '', rambase.params.site || '',rambase.LoadedInstance
                     ];
-        var pars2 = [ '101619350173460',
-  'john@our-beloved.co.za',
-  'John',
-  'male',
-  'Ourbeloved',
-  'https://www.facebook.com/app_scoped_user_id/101619350173460/',
-  'en_US',
-  'John Ourbeloved',
-  '2',
-  
-  '',
-  '',
-  '7:28:16.721' ];
-
   
         console.log('\npars 084245:',pars);//pars);
 		transaction.query("SELECT INFO FROM FACEBOOK_CHECK (?,?,?,?,?, ?,?,?,?,'now', ?,?,?)",

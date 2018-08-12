@@ -100,7 +100,14 @@ ss.http.route('/', function (req, res) {
 	winston.verbose('Connect route/ ',{ip:ip , url:req.url , inst:LoadedInstance}); 
      
 	//console.log('===========================Inital contents of my session is ',ip,  LoadedInstance,  req.headers.host, req.url);
-
+	if (req.session.myStartID === undefined) {
+        req.session.myStartID = crypto.randomBytes(14).toString('base64').substring(0,18);       
+        console.log('===========================Assigned new session ID ',req.session.myStartID);
+		req.session.save(); 
+	}  else {
+    	console.log('===========================Using Existing session ID ',req.session.myStartID);
+	}  
+    
 	/*
 	TODO locate the application that wants to be run
 	within that application we retrieve a config file
@@ -128,8 +135,13 @@ ss.http.route('/', function (req, res) {
 		
 		//finally default use a guest user
 		params.user	= 'guest';
-		params.password	= 'gu35t';
+		if (config.run.cookie_guest) {
+			params.password	= req.session.myStartID;
+			console.log("config.run.cookie_guest :");
+		} else {
+			params.password	= 'gu35t';
 		}
+	}
 	
     //console.log('serveClient params:',params);
     var Application = params.app || ''; 
@@ -180,7 +192,7 @@ ss.http.route('/', function (req, res) {
 			}			
 		}
 
-	});
+	});//databasePooled
 
 }); //end of ss.http.route callback
 

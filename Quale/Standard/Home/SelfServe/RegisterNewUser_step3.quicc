@@ -26,8 +26,21 @@ elsequery
 notify (style=Heading) User Create Successful
 
 script
-UPDATE user_table_name set Status=10 where INVITED_BY=session.id
 
+<%#run.cookie_guest%>
+UPDATE user_table_name set 
+	user_display_field   =(select user_display_field  from user_table_name where INVITED_BY=session.id),
+	user_name_field      =(select user_name_field     from user_table_name where INVITED_BY=session.id),
+	user_password_field  =(select user_password_field from user_table_name where INVITED_BY=session.id),
+	MOBILE_NUMBER        =(select MOBILE_NUMBER       from user_table_name where INVITED_BY=session.id),
+	user_landing_page    =(select user_landing_page   from user_table_name where INVITED_BY=session.id),
+	EMAIL                =(select EMAIL               from user_table_name where INVITED_BY=session.id) 
+where user_pk_field=operator.id
+<%/run.cookie_guest%>
+
+<%^run.cookie_guest%>
+UPDATE user_table_name set Status=10 where INVITED_BY=session.id
+<%/run.cookie_guest%>
 
 button(glymph:"bended-arrow-right-b" from=user_table_name where="INVITED_BY=session.id" form=Operator/Switch title:"Login as the new user")  
 
