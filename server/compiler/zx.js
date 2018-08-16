@@ -226,6 +226,19 @@ exports.gets = function (val,sep) {
 	return "";
 };
 
+exports.geta = function (val) {
+	if (val === undefined)
+		return [];
+	if (Array.isArray(val))
+		return val;
+
+	if (val.array)
+		return val.array;
+				
+	return [val];	
+};
+
+
 exports.getA = function (val) {
 	if (val === undefined)
 		return [];

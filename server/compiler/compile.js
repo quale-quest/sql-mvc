@@ -374,6 +374,9 @@ var AddDependedFilesToBeCompiled = function (zx,fn) {
 		zx.script_control = require('./modules/script_control.js');
 		zx.plugins.push(zx.script_control);
 
+		zx.validation = require('./modules/validation.js');
+		zx.plugins.push(zx.validation);		
+		
 		zx.error = require('./modules/error.js');
 		zx.plugins.push(zx.error);
 

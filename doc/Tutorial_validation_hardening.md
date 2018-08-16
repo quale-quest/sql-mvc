@@ -20,9 +20,9 @@ http://www.guidanceshare.com/wiki/Security_Design_Principles_-_Input/Data_Valida
 https://websec.io/2015/02/10/Input-Validation-Strategies-Intro.html
 
 Composing SQL, JSON and HTML data must always encode and decode the user input out of "code" space.
-This is the #1 princple of integerety and safty.
+This is the #1 principle of integrity and safety.
 
-When making changes to the platform #1 principle must always be appled to public facing code.
+When making changes to the platform #1 principle must always be applied to public facing code.
 (In the compiler where we have safe input this can be relaxed)
 
 Within the quicc source files all statements are always "prepared", even when it looks 

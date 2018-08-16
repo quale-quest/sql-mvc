@@ -13,6 +13,8 @@ We want to protect our users' accounts — by forcing our users to enter secure 
 We want to protect ourselves — there are many ways that malicious users can misuse unprotected forms to damage the application they are part of (see Website security).
 
 Validation versus Codecs - Codecs translate user input and output, instead of strict validation, allow slacker validation and use a codec to transform to a more strict storage format.
+	Best is to offer the user a transformed format - example codec converts 1.999 to 2.00 and says "only 2 decimal places allowed, do you want to use 2.00?"
+	or "User name john" is already in use do you want to use "john100" - codec tests against db and offers an available alternative
 
 
 https://developer.mozilla.org/en-US/docs/Learn/HTML/Forms/Form_validation
@@ -26,7 +28,7 @@ https://blog.securityinnovation.com/blog/2011/03/input_validation_using_regular_
 
 ## Client and server side
 Validation is specified either at the model, view or controller level. The actual validation specified is projected into both
-at the client side code to give the user feedback on what he should be doing, and at the server side 
+ the client side code to give the user feedback on what he should be doing, and at the server side 
 to avoid hacking attempts. The validation is as implementation independent as possible, 
 
 -- Notice however practically some advance validations may require custom code or settings for the server and the client side. For example JS Regex and SQL Similar use different regex syntax, so we may have to specify both.
@@ -35,6 +37,14 @@ to avoid hacking attempts. The validation is as implementation independent as po
 
 -------------------------------------------------------
 # Mechanism
+Field validation vs Form validation
+	Field validation is a lot simpler that form validation. UI can be fast and operates only on the field during editing, it does not change the stash.
+	Form validation reloads the stash after changes - is much slower but still faster than DB exchanges.
+	On the last field or when there is only one field, the field validation and form validation happens at the same time  - effectively is one validation 
+	
+	
+
+
 
 Server SQL validation
 	start transaction
@@ -45,27 +55,53 @@ Server SQL validation
 	-- uses different regex expressions to the client
 	++ Validating/aborting within a transaction gives the highest level of protection.
 	
+	
+JS Stash validation
+	Update WIP changes to the stash(server and client side), and validate against the stach. 
+			set flags in the stash and reload the page with the WIP stash.	
+	++ Needs no SQL server cycles.
+	++ uses same validation code server and client side
+	++ if the server side fails it means the client side was compromised- warn some intrusion attempt detected.
+			- server could discard silently.
+	++ Dropdown list validation, will test both sides but server side protects against hacking on client side.			
+	-- weakness, multi stash divs input could allow some sort of update on one stash and compromising another.
+			the designer must be aware of this.
+
+	
 Server JS validation	
 	Need the database field values in a javascript object stored server side before sending the stash to client.
 	run js validation script, if fails, make error message for client
 	++ uses same validation code server and client side
 
-Client side JS validation
-
+	
+	
 
 How does this get implemented in SQL-MVC ?
-	Named validator classes are stored in memory, when they are used in the 
-	model or the view then the field values out of the class is injected into the qualia of the field.
+XXXX	Named validator classes are stored in memory, when they are used in the 
+XXXX	model or the view then the field values out of the class is injected into the qualia of the field.
 	
 	The UI elements extract the qualia from the field to inject code into the HTML .
 	The JS in the client validates and enables actions
 		
--- Notice currently it only implements Client side validation - server side must still be implemented
+-- Notice currently it only implements JS Stash validation(client and server) validation - SQL server validation must still be implemented
 
-## Alternative Mechanism
 
-The change log can also be stored in a cookie or on the server side  rather than accepting partial changes on the server .. needs some server side code.
-A cookie is useful as it can keep changes even when the network has failed.
+
+## Alternative Mechanism 3}
+Update WIP changes to the stash, and validate against the stash. set flags in the stash and reload the page with the WIP stash.
+
+
+
+
+## Optional extra Mechanism 
+The change log can be stored in the client or server, allowing the user to review changes.
+	- security risk!
+	- must enable/disable system wide/user preferences/per instance
+	- Must be able to flag fields like bank account# password# etc to not be logged or be masked
+	- must be clearly visible
+	- must clear on logout
+
+
 
 ## Expressions 
 Evaluate against compile time const values
@@ -89,7 +125,7 @@ Field Validation
 	Alerts as “Validation Message/ colour” close to the error field while editing with Disabled submit buttons (save may still work but not submit).
 		Validation messages are part of the field html/css structure
 	Help Symbols (?), Dynamic help that pops up only after the user has not typed anything in a while ( 5 seconds),tool tip messages
-	Error feedback did you mean "......" click able  for spelling mistakes suggestions
+	Error feedback did you mean "......" click able  for spelling mistakes suggestions  ...++database feedback same
 	Positive feedback indicating good input Ok "name looks great"
 
 Blocking
@@ -101,10 +137,19 @@ Blocking
 
 ## Blocking type
 	Blocking is how validation affects the user interface
-	Indicate -	simply highlight the field error - no blocking
-	Warn	-	aggressively warn about the field error - no blocking
-	Form	-	prevent the user leaving the form
-	Field	-	prevent the user leaving the field - the field will not update to the database
+	Check:
+		None	-	simply highlight the field error - no blocking -Default
+		Warn	-	Warn 	aggressively warn about the field error - no blocking
+		From	-	block the user from saving or leaving the form - can navigate between fields
+		Field	-	prevent the user leaving the field - the field will not update to the database
+		
+	..	
+	Check:From 	
+	
+	
+	
+	
+	
 	
 
 
@@ -112,7 +157,8 @@ Blocking
 	1) creating a new from - fill in a form, save some stuff, come back later and update, finally when all is valid, sign of and submit / activate.
 	2) update a 'live' form - a form that must never be invalid - when it is saved it must be valid, cannot come back and correct.
 	3) Variation on live form, Deactivate a form, edit, reactivate.
-	4) update a copy of a live form, when all correct, copy over the changes.	
+	4) create a copy of a live form, when all is correct, copy over the changes. - example in the self create of cookie users	
+	
 
 ## Typical simple work flow	
 	Display simple empty form
@@ -131,24 +177,32 @@ Blocking
 # Syntax
 
 Declaration
---:{validator:"VALIDATORNAME",
+validator{
+	name:""VALIDATORNAME",
+		nullok,  																		-- indicates null is acceptable
 		pattern:"JS-REGEX" ,
 		similar:"SQL-REGEX",
+		math:""  - expression using mathjs and stash field available - 
 		jsscript:CDV_CHECK,
 		sqlscript:CDV_CHECK,
-		length:{5,20}																	-- or length_min length_max  size_min	
-		min:1,max:140 		
-		expression:"((Aggregate(Balance) + Aggregate(values)) > Aggregate(Limit))",		-- should be a boolean evaluation
-		expression:"(VALIDATORNAME & VALIDATORNAME | VALIDATORNAME)",					-- should be a boolean evaluation		
+		length:[5,20]																	-- or length_min length_max  size_min	
+		range:[3,99]
+		min:1,max:140 		-- range
+		--use math expression:"((Aggregate(Balance) + Aggregate(values)) > Aggregate(Limit))",		-- should be a boolean evaluation
+		--use math expression:"(VALIDATORNAME & VALIDATORNAME | VALIDATORNAME)",					-- should be a boolean evaluation		
 		And:",,"																		-- ListOf other VALIDATORNAME's  could use & in expression
-		Or:",,"																			-- ListOf other VALIDATORNAME's  could use || in expression
+		??? Or:",,"																			-- ListOf other VALIDATORNAME's  could use || in expression
 		Assign:"max=Aggregate(Limit)-Aggregate(Balance)-Aggregate(values)" 				-- Updates the element max whenever the Aggregate change
 		Aggregate:AggregateName															-- the result is shared by this name
 		
         fails:"The email address must be valid",
-		pass:"The email address is be valid",
+		pass:"The email address is valid",
+		
 		blank:"Valid email",
-		placeholder:"Enter valid Email"}
+		placeholder:"Enter valid Email",
+		hint:"..."
+		}
+		
 
 
  
@@ -179,30 +233,30 @@ validator will translate short format to long format that is easy to use in ui_e
 ## Examples
 
 Simple Named validations
-	--:{validator:"name",length:{5,20}}	-- or length_min length_max  size_min	
-	--:{validator:"age1",min:1,max:140 }	
-	--:{validator:"age2",pattern:"(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}",Aggregate:Age}	
-	--:{validator:"age3",regex:/^[0-9]\d*$/}	
+	validator{name:"name",length:[5,20]}	-- or length_min length_max  size_min	
+	validator{name:"age1",range:[1,140] }	
+	validator{name:"age2",pattern:"(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}",Aggregate:Age}	
+	validator{name:"age3",regex:/^[0-9]\d*$/}	
 		
-	--:{validator:"Gender",range:['male','female']}	  -- better to use lists for this
+	validator{name:"Gender",range:['male','female']}	  -- better to use lists for this
 	
 Complex validations	
-	--:{validator:"CDV",script:CDV_CHECK}	
+	validator{name:"CDV",script:CDV_CHECK}	
 
---:{validator:"EMAIL",pattern:"^[a-zA-Z0–9.!#$%&’*+\/=?^_`{|}~-]+@[a-zA-Z0–9](?:[a-zA-Z0–9-]{0,61} [a-zA-Z0–9])?(?:\.[a-zA-Z0–9](?:[a-zA-Z0–9-]{0,61}[a-zA-Z0–9])?)*$" 
+validator{name:"EMAIL",pattern:"^[a-zA-Z0–9.!#$%&’*+\/=?^_`{|}~-]+@[a-zA-Z0–9](?:[a-zA-Z0–9-]{0,61} [a-zA-Z0–9])?(?:\.[a-zA-Z0–9](?:[a-zA-Z0–9-]{0,61}[a-zA-Z0–9])?)*$" 
                       ,fails:"The email address must be valid"
 					  ,pass:"The email address is be valid",
 					  ,blank:"Valid email",
 					  placeholder:"Enter valid Email"}
---:{validator:"TWEET",pattern:"^@[A-Za-z0-9_]{1,15}$",fails:"The twitter handle must be valid check https://help.twitter.com/en/managing-your-account/twitter-username-rules for more info "}
---:{validator:"SMS",pattern:"^\+[0-9_]{1,15}$",pass:"The sms number must be a valid phone number "}
---:{validator:"BLANK",pattern:"^$",pass:"This Field must be filled."}
---:{validator:"NONBLANK",pattern:".+",pass:"This Field must be filled."}
+validator{name:"TWEET",pattern:"^@[A-Za-z0-9_]{1,15}$",fails:"The twitter handle must be valid check https://help.twitter.com/en/managing-your-account/twitter-username-rules for more info "}
+validator{name:"SMS",pattern:"^\+[0-9_]{1,15}$",pass:"The sms number must be a valid phone number "}
+validator{name:"BLANK",pattern:"^$",pass:"This Field must be filled."}
+validator{name:"NONBLANK",pattern:".+",pass:"This Field must be filled."}
 
 wrong --:{validator:"OptionalIMContact",validate_any:"+BLANK,-EMAIL,-TWEET",fails:"Either a EMAIL or Twitter handle MUST be filled."}
 wrong --:{validator:"MustHaveIMContact",validate_any:"+EMAIL,+TWEET",pass:"Either a EMAIL or Twitter handle can be filled in."}
 
---:{validator:"Limit",expression:"((Aggregate(Balance) + Aggregate(values)) > Aggregate(Limit))",Aggregate:Limit}	
+validator{name:"Limit",expression:"((Aggregate(Balance) + Aggregate(values)) > Aggregate(Limit))",Aggregate:Limit}	
 
 
 
@@ -261,7 +315,14 @@ https://itnext.io/https-medium-com-joshstudley-form-field-validation-with-html-a
 
 # Implementation strategy
 
-Fake the UI
+update stash - display stash
+
+Fake the UI - partly done
+
+Evaluate with mathjs 
+
+Aggregates over stash
+
 
 implement Aggregate classes - consider client side codec's
 
@@ -272,5 +333,8 @@ implement the validator definition & storage
 implement the validator evaluation
 
 Real UI
+
+
+$('.box').css('opacity', '0.2');
 
 
