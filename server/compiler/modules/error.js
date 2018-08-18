@@ -62,6 +62,15 @@ exports.log_noStyle_warning = function (zx, text, Style, source_line_obj) {
 	});
 };
 
+exports.log_compile_warning = function (zx, text, Style, source_line_obj) {
+	exports.error_log.push({
+		endpoint : "compile_warning",
+		at : text,
+		Style : Style,
+		source : source_line_obj
+	});
+};
+
 exports.log_noQuale_warning = function (zx, text, Quale, source_line_obj) {
 	exports.error_log.push({
 		endpoint : "NoQuale",
@@ -155,7 +164,7 @@ exports.caught_exception = function (zx,e,msg) {
 }
 
 exports.commit = function (zx) {
-	//console.log("error.js  commit :", zx.error_log_file_name);
+	console.log("error.js committing :", zx.error_log_file_name);
 	if (zx.error_log_file_name)
 	  fs.writeFileSync(zx.error_log_file_name, JSON.stringify(exports.error_log_obj, null, 4));
     if (zx.sql_log_file_name)

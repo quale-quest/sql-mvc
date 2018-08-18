@@ -59,8 +59,10 @@ exports.tag_html = function (zx, line_obj) {
     }
 	zx.mt.lines.push(zx.gets(line_obj.html));
 	if (line_obj.html.indexOf("<script") >= 0) {
-		if (zx.pass === 1)
+		if (zx.pass === 1) {
 			console.warn('Script found in template - this might not execute in DOM - rather use <#jscript tag : in file:', line_obj.filename);
+			zx.error.log_compile_warning(zx, "Script found in template - this might not execute in DOM - rather use <#jscript tag :", "" , line_obj);
+		}
 	}
 };
 
