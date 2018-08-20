@@ -28,6 +28,7 @@ The select statement can be either ini style select=,from=where=orderby=  or a "
 var zx = require('../../zx.js');
 var ide = require("../../../../server/IDE/debugger");
 var deepcopy = require('deepcopy');
+var extend = require('node.extend');
 
 //var deepcopy = require('deepcopy');
 //var extend = require('node.extend');
@@ -128,6 +129,8 @@ var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx,
 	tcx.query_original = o.q.query;
 	tcx.query = o.q.query; //thats it!!!
 
+	var table_alias = cx.table.from;
+	if (cx.table.alias) table_alias=cx.table.alias;
 
 	//console.log('done - QICC style query',tcx.query);
 
@@ -521,7 +524,7 @@ exports.tag_list = function (zx, o) {
 		if (values.array)
 			delete values.array;
 		//console.log('tag_list:',name,JSON.stringify(values) );
-		zx.dbg.emit_mt_obj(zx, name, JSON.stringify(values));
+		zx.static_stash.Data[name] = values;
 		return;
 	}
 
@@ -555,6 +558,7 @@ exports.init = function (zx) {
 
 	zx.TableContexts = {};
 	zx.softcodecs = {};
+	zx.static_stash.TablesIndex ={};
 };
 var esc = function (txt) {
 	if (txt==undefined) return ' undefined ';
@@ -695,7 +699,29 @@ var zxTable = exports.zxTable = function (cx) {
 	}
 	//Divine-table_content
 	html += table_content(cx); //Should push direct to div
-
+	
+	//validation	
+	console.log('\n\nexports.zxTable:',cx.table);
+	var T={validator:cx.table.validator};
+	zx.forFields(cx.fields, function (field, key) {
+		if (field.f.validator||field.f.List) {
+			var F={
+				//i:field.f.indx,
+				//n:field.f.name,
+				length:field.f.length,
+				size:field.f.size,
+				validator:field.f.validator,
+				Pick:field.f.Pick,
+				List:field.f.List
+				};
+			//console.log("validation field:",field.f);
+			extend(true, F,T[field.f.indx]);
+			T[field.f.indx] = F;
+		}
+	});	
+	zx.static_stash.TablesIndex[cx.tid] = T;	
+	
+	//debugging styles
 	cx.fieldDebug.table_style =deepcopy(cx.table_style);
 	
 	zx.forFields(cx.fields, function (field, key) {

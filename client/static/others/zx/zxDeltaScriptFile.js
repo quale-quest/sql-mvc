@@ -172,10 +172,13 @@ function FindCell(e,level)
 	else el = e;  
     var valu='';
 	if (e.target) if (e.target.value) valu=e.target.value;
-    var typ=e.type;
-    //console.log("FindCell:",e,el,e.target.value);
- 
-      
+    var typ=e.type;	
+
+	var els = el.id.match( /(.+)-(.+)-(.+)/ )||[];
+    var pki = els[2]||'';
+	var pkt = pki.slice(-100,-7);
+	var pko = els[3]||'';
+	var pkio = +pki + +pko;
     var Parent=el;
     var row=-1;
     var cel=-1;
@@ -202,8 +205,8 @@ function FindCell(e,level)
       Parent=Parent.parentNode; 
       //console.log("Parent ",Parent.tagName,Parent.attributes.cid,Parent);
       }
-      
-    var o = {typ:typ,cid:cid_id,valu:valu,el:el};  
+	//console.log("qq_static_stash:",qq_static_stash);	
+    var o = {typ:typ,cid:cid_id,valu:valu,el:el,pk:{t:pkt,i:pki,f:pko,tif:pkio}};  
     //console.log("client-typ-container-pk-f-v",typ,cid_id,String(pkf),valu,o);  
     return o;
 }
@@ -258,41 +261,91 @@ deltacount=deltacount+1;
 $('#deltacounter1').text(deltacount);
 $('#deltacounter2').text(deltacount);
 }
-function check_validity(Cell,el) {
-	  var isValid = el.checkValidity();
-	  var isValid2 = new RegExp(el.getAttribute("data-pattern2")).test(Cell.valu);
-	  
-      //console.log("change test:",el.pattern);   
-	  //console.log("change valu:",Cell.valu);   
-	  //console.log("res:",res,' isValid:',isValid);   
-	  //console.log("change test:",el.parentNode);   
-	  //el.parentNode.getElementsByClassName('validationhidden').className = 'validationshown';
 
-	  console.log(' isValid:',isValid,' isValid2:',isValid2);   
-/* not used yet
-	  if (isValid || isValid2) {
-		  let elementlist = el.parentNode.getElementsByClassName('validationshown');
-		  while (elementlist && elementlist.length) elementlist[0].className = 'validationhidden';		  		  
-		  console.log(' returning isValid || isValid2 ');
-	  } else {
-		  let elementlist = el.parentNode.getElementsByClassName('validationhidden');
-		  while (elementlist && elementlist.length) elementlist[0].className = 'validationshown';		  		  
-		  console.log(' returning');   
-		  return;
-	  }	
-*/
+
+function Get_Vailidation(pk){
+	pk.parm = {};
+	pk.valid ={};	
+	if (qq_static_stash) {
+		//console.log("qq_static_stash      :",qq_static_stash   );
+		//console.log("qq_static_stash table:",qq_static_stash.TablesIndex['t'+pk.t]   );		
+		if (qq_static_stash.TablesIndex['t'+pk.t]) {
+			//console.log("qq_static_stash field:",qq_static_stash.TablesIndex['t'+pk.t][pk.f]   );
+			if (qq_static_stash.TablesIndex['t'+pk.t][pk.f]) {
+				pk.parm = qq_static_stash.TablesIndex['t'+pk.t][pk.f];
+				var validator_name = qq_static_stash.TablesIndex['t'+pk.t][pk.f].validator;
+				pk.valid  = qq_static_stash.Validators[validator_name];
+				//console.log("qq_static_stash Validators :",pk   );				
+			}
+		}
+	}
 }
+
+function check_validity(Cell,el) {
+	var isValid = true;
+	var msg="";
+	var pk = Cell.pk;
+	Get_Vailidation(pk);
+	
+	//console.log("check_validity check  :",[Cell.valu]); 
+    console.log("check_validity with   :",pk); 
+	//console.log("check_validity pattern:",pk.valid.pattern); 
+	if (pk.valid.pattern) {
+		//console.log("check_validity pattern :",pk.valid.pattern);
+		var isValid2 = new RegExp(pk.valid.pattern).test(Cell.valu);		
+		//console.log("check_validity isValid2 :",isValid2); 		
+		isValid = isValid  && isValid2;
+		msg=pk.valid.fails;
+	}
+	
+
+	  console.log(' isValid:',isValid,msg);   
+
+	  let validationshown  = el.parentNode.getElementsByClassName('validationshown');	  
+	  let validationhidden = el.parentNode.getElementsByClassName('validationhidden');
+	  console.log(' isValid xxx:',validationshown,validationhidden); 
+	  if (validationshown && validationshown.length) {
+		  validationshown[0].innerText = msg;
+		  validationshown[0].className = isValid?'validationhidden':'validationshown';		    
+	  }else if (validationhidden && validationhidden.length) {
+		  validationhidden[0].innerText = msg;  
+		  validationhidden[0].className = isValid?'validationhidden':'validationshown';		  
+	  }	  
+	  
+	  return isValid;
+
+}
+
+var button_delay_timeout = null;
+const button_delay = function (e) {
+	//console.log('button_delay :', e);
+	clearTimeout(button_delay_timeout);
+	button_delay_timeout = setTimeout(function () {
+        //console.log('button_delay done:', e);
+		let Cell=FindCell(e);
+		check_validity(Cell,Cell.el);
+    }, 700);
+	
+}
+
+
 function zxf(e) {	
 	let Cell=FindCell(e); //get a new object for the element
 	check_validity(Cell,Cell.el);	
 	var r=Cell.el.dataset.touched;
-	console.log("zxf(el) :",r); 
-	Cell.el.dataset.touched = 1;
-	
+	var el=Cell.el;
+	delete Cell.el;
+  
+    console.log("zxf Cell:",Cell);  
+    console.log("zxf el:",el);
+	//console.log("zxf el:",el); 
+	//Cell.el.dataset.touched = 1;	
+	el.onkeyup =  button_delay;	
 }
+
 function zxd(e,pkf,pko) { //delta
 var r;
-
+  var isValid = true;
   if (pko!==undefined) pkf=String(+pkf + (+pko));
   var Cell=FindCell(e); //get a new object for the element
   Cell.pkf = pkf;
@@ -301,33 +354,33 @@ var r;
   //console.log("zxd :",Cell,el);  
   console.log("zxd Cell:",Cell);  
   console.log("zxd el:",el); 
-  console.log("zxd el.pattern:",el.pattern);
-  console.log("zxd el.data-pattern2:",el.getAttribute("data-pattern2"));
-  console.log("zxd el.min:",el.min);
+  //console.log("zxd el.pattern:",el.pattern);
+  //console.log("zxd el.data-pattern2:",el.getAttribute("data-pattern2"));
+  //console.log("zxd el.min:",el.min);
   if (Cell.typ=="change")  {
-	  check_validity(Cell,el);
+	  isValid = check_validity(Cell,el);
   }
   
   if (el.type=="checkbox")  zxd_checkbox(Cell,el); //returns updates in Cell
   zx_delta(Cell);
   zxdelta_increment();
 
- var autosave=$( el ).attr("data-autosave");
- var save=truish(autosave);
- console.log("zxd autosave :",autosave,' saveing:',save);  
- if (autosave=="push") {
-         //alert("pushing data");
-         var savecell={typ:"click",cid:Cell.cid,pkf:"-1"};
-         zx_delta(savecell);
-         return false;
-     } else if (save)
-     {
-     var savecell={typ:"click",cid:Cell.cid,pkf:"0"};
-     //console.log("autosave:",savecell);
-     zx_delta(savecell);
-     return false;
-     }
-   
+  if (isValid) {
+	var autosave=$( el ).attr("data-autosave");
+	var save=truish(autosave);
+	console.log("zxd autosave :",autosave,' saveing:',save);  
+	if (autosave=="push") {
+			//alert("pushing data");
+			var savecell={typ:"click",cid:Cell.cid,pkf:"-1"};
+			zx_delta(savecell);
+			return false;
+		} else if (save) {
+		    var savecell={typ:"click",cid:Cell.cid,pkf:"0"};
+		    //console.log("autosave:",savecell);
+		    zx_delta(savecell);
+		    return false;
+		}
+    }
 return;
 }
 
@@ -675,5 +728,7 @@ $(document).keydown(function(e) {
   if (e.shiftKey) { enterKey() } else { enterKey() }
 });
 }
+
+console.log("zxDeltaScriptFile version V153"); 
 
 //eof

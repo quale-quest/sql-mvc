@@ -465,12 +465,28 @@ var render_from_fullstash = function (cx,html) {
 
 
 var update_in_mem_template = function (page_id,mtHash, text) {	
-		var ht = Hogan.Template; //local variable used in script eval is evaluating
-		var t = require('socketstream').tmpl; //local variable used in script eval is evaluating
-		var sc = text; //local variable used in script eval is evaluating
+		var ht = Hogan.Template; //this local variable is used in the script eval is evaluating
+		var t = require('socketstream').tmpl; //this local variable is used in the script eval is evaluating
+		var sc = text; //this local variable is used in the script eval is evaluating
+		//console.log("update_in_mem_template  eval:",sc);
 		eval(sc); //this creates the hogan script - it does not do the rendering
         qq_tmpl_cache[page_id]=mtHash;
 	}
+	
+var static_stash_postfix='-static_stash';	
+var render_now = function (cx,ss,qq_page_id,msg) {
+	//console.log(msg,static_stash);
+	var tmpl = ss.tmpl[qq_page_id];
+	
+	qq_static_stash = ss.tmpl[qq_page_id+static_stash_postfix];
+	if ((qq_static_stash)&&(qq_static_stash.Data)) {
+		$.extend(true, cx.obj.Data,qq_static_stash.Data);		
+	}
+	
+	var htmlx = tmpl.render(cx.obj.Data);
+    render_from_fullstash(cx,htmlx); 	
+}
+
 var process_new_data = function (cx) {
 	//console.log("Static",o.Datasets[oi].Static,cx.Static );
 
@@ -495,27 +511,28 @@ var process_new_data = function (cx) {
              
             var tmpl = ss.tmpl[qq_page_id];
             var in_mem_hash = qq_tmpl_cache[qq_page_id];
+			
+			//console.log("qq_stache.cid tmpl :", qq_page_id);
+			//console.log("qq_stache.cid tmpl :", qq_page_id,ss.tmpl);
 
             if (tmpl && !in_mem_hash) {
-                //there is a template with no record of live loading - so it is used as it - template is in app.js 
-                console.log("template loaded from app.js :");
-                render_from_fullstash(cx,tmpl.render(cx.obj.Data)); 
+                //there is a template with no record of live loading - so it is used as it - template is in app.js 				                
+				render_now(cx,ss,qq_page_id,"template loaded from app.js :");				
             } else {                
                 if (in_mem_hash===cx.obj.mtHash)
                     { //the in mem template is up to date
-                        console.log("template loaded in memory cache :");
-                        render_from_fullstash(cx,tmpl.render(cx.obj.Data)); 
+						render_now(cx,ss,qq_page_id,"template loaded in memory cache :");
                     } else {
                         //the in mem template does not exist or is out dated
-                      
+                        var ls_prefix = 'qq-tmpl_';
                         //check the localStorage
-                        in_mem_hash = localStorage.getItem("qq-tmpl_hash-"+qq_page_id);
+                        in_mem_hash = localStorage.getItem(ls_prefix+"hash-"+qq_page_id);
                         if (in_mem_hash===cx.obj.mtHash) {
                             console.log("template loaded in local storage cache :");
-                            var text = localStorage.getItem("qq-tmpl_html-"+qq_page_id);  
+                            var text = localStorage.getItem(ls_prefix+"html-"+qq_page_id);  
                             update_in_mem_template(qq_page_id,cx.obj.mtHash,text); 
-                            tmpl = ss.tmpl[qq_page_id];                            
-                            render_from_fullstash(cx,tmpl.render(cx.obj.Data));                             
+                            
+							render_now(cx,ss,qq_page_id,"template loaded in localStorage :");                            
                         } else {
                             //get from the CDN    
                             
@@ -526,15 +543,13 @@ var process_new_data = function (cx) {
                             var jqxhr =  $.get( qq_page_id_path, function(text) {
                                     //console.log("got template :",text);
                                     console.log("template loaded from CDN :");
-                                    update_in_mem_template(qq_page_id,cx.obj.mtHash,text);
-                                    tmpl = ss.tmpl[qq_page_id];   
-                                    var htmlx = tmpl.render(cx.obj.Data);
-                                    //console.log("template loaded from CDN :",htmlx);
-                                    render_from_fullstash(cx,htmlx); 
+									
+                                    update_in_mem_template(qq_page_id,cx.obj.mtHash,text);                                    
+									render_now(cx,ss,qq_page_id,"template loaded from jqxhr :");                            									
                                     
                                     //write storage object also
-                                    localStorage.setItem("qq-tmpl_html-"+qq_page_id,text); 
-                                    localStorage.setItem("qq-tmpl_hash-"+qq_page_id,cx.obj.mtHash);  //presume the latest one has the hash rerequire                      
+                                    localStorage.setItem(ls_prefix+"html-"+qq_page_id,text); 
+                                    localStorage.setItem(ls_prefix+"hash-"+qq_page_id,cx.obj.mtHash);  //presume the latest one has the hash rerequire                      
                                     
                                     })                        
                                     .fail(function() {
@@ -723,6 +738,9 @@ ss.event.on('newMessage', function (message) {
 var DeltaList = {};
 exports.delta = function (cell) {
 	console.log("server-typ-container-pk-f-v ", cell);
+	
+	delete  cell.pk;
+	
 	cell.id = '"'+cell.cid+'-'+cell.pkf+'"';
 	DeltaList[cell.id] = cell;
 	//DeltaList.push(cell);

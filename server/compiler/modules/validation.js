@@ -2,10 +2,10 @@
 /*
 validation plugin
  */
-
+var deepcopy = require('deepcopy');
 
 exports.module_name='validation.js';
-exports.tags=[{name:"validator"}];
+exports.tags=[{name:"validator",man_page:"Specifies the validation required for either a field or a form."}];
 
 
 exports.tag_validator = function (zx, o) {
@@ -13,8 +13,24 @@ exports.tag_validator = function (zx, o) {
 	//console.log('tag_validator:',o);
 	//console.log('tag_validator math:',o.math);
 	//console.log('tag_validator math a:',o.math.array);
-	var v = {};
+	console.log('tag_validator pattern:',o.name,o.pattern);
+	
+	var v = deepcopy(o);
 	v.name = zx.gets(o.name);
+	delete v.srcinfo;
+	delete v.tag;
+	delete v.json_parse;
+	delete v.body;
+	delete v.dialect_active;
+	delete v.object_ended_at;
+	delete v.q;
+	delete v.nonkeyd;
+	delete v.and_if;
+	delete v.debug;
+	delete v.quale_context;
+	
+
+	/*
 	v.check = zx.gets(o.check);
 	v.nullok = zx.gets(o.nullok);
 	v.math = zx.gets(o.math);
@@ -31,11 +47,12 @@ exports.tag_validator = function (zx, o) {
 	v.length = zx.geta(o.length);
 	v.range = zx.geta(o.range);
 	v.sub_validators = zx.geta(o.valid);
+	*/
 		
 	zx.validators.named[v.name] =v;
 	
 	//console.log('\r\ntag_validator math:',v);
-	
+	zx.static_stash.Validators[v.name] = v;
 	
 };
 
@@ -46,6 +63,7 @@ exports.done_pass = function (/*zx, line_objects*/
 
 exports.start_pass = function (zx /*, line_objects*/
 ) {
+	zx.static_stash.Validators={}; 
 	var name;
 
 	for (name in zx.validators.named) {

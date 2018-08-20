@@ -6,14 +6,15 @@ os = require('os');
 var fs = require('fs');
 var plugins = require('../../client/code/app/plugins.js');
 var fileutils = require('../../server/lib/fileutils.js');
+var deepcopy = require('deepcopy');
 
 //var ss = require('socketstream');
 var Hogan = require('ss-hogan/client.js');
 var HoganC = require('ss-hogan/node_modules/hogan.js/lib/compiler.js');
 var winston = require('winston');
+var extend = require('node.extend');
 
-
-var qq_tmpl_cache =  [];
+var qq_tmpl_cache =  {};
 var sst =  {};
 var ht = Hogan.Template;
 
@@ -117,6 +118,24 @@ exports.render_inject = function (page,html_inp,html_inject,LoadedInstance,cx) {
     //render_from_fullstash(cx,html); 
 }
 
+var static_stash_postfix='-static_stash';	
+var render_now = function (cx,sst,page_id,cb,msg) {	
+	//console.log(msg,static_stash);	
+	var tmpl = sst[page_id];
+	var qq_static_stash = deepcopy(sst[page_id+static_stash_postfix]);
+	//console.log("qq_static_stash :",qq_static_stash);
+	if (qq_static_stash.Data) {
+		extend(true, cx.obj[0].Data,qq_static_stash.Data);		
+	}
+	delete qq_static_stash.Data;
+	var inits =  '\r\n<script type="text/javascript" language="javascript">\r\n qq_static_stash=' 
+				+ JSON.stringify(qq_static_stash,null,4)
+				+';\r\n</script>\r\n';
+	//console.log("render_now inits :",inits);			
+	var htmlx = inits + tmpl.render(cx.obj[0].Data);
+    render_from_fullstash(cx,htmlx,cb); 	//   render_from_fullstash(cx,tmpl.render(cx.obj[0].Data),cb); 
+}
+
 exports.render = function (switchPage,target,qq_page_id,jsonstring,template_filename,cb) {    
     var mtHash=0;
     var cx={};
@@ -137,25 +156,21 @@ exports.render = function (switchPage,target,qq_page_id,jsonstring,template_file
 
             if (tmpl && !in_mem_hash) {
                 //there is a template with no record of live loading - so it is used as it - template is in app.js 
-                console.log("template loaded from app.js :");
-                render_from_fullstash(cx,tmpl.render(cx.obj[0].Data),cb); 
+                console.log("template loaded from app.js :"); 
+				render_now(cx,sst,page_id,cb,"template loaded from app.js:");  
             } else {                
                 if ((in_mem_hash===cx.obj.mtHash)&&(in_mem_hash))
                     { //the in mem template is up to date
                         console.log("template loaded in memory cache :");
-                        render_from_fullstash(cx,tmpl.render(cx.obj[0].Data),cb); 
+						render_now(cx,sst,page_id,cb,"template loaded in memory cache :");
                     } else {
-                        //the in mem template does not exist or is out dated
-                      
+                        //the in mem template does not exist or is out dated                      
                         var fn='./database/files' + qq_page_id + ".html.js";
-                        //console.log("template loading :",fn);
-                        
+                        //console.log("template loading :",fn);                        
                         var text = fs.readFileSync(fn).toString();
                         update_in_mem_template(page_id,cx.obj.mtHash,text); 
-                        tmpl = sst[page_id];  
-                        //console.log("template loaded :",page_id,sst,tmpl);                        
-                        render_from_fullstash(cx,tmpl.render(cx.obj[0].Data),cb); 
-                        //console.log("render_from_fullstash done :",fn);
+						//console.log("sst_static_stash readFile:",Object.keys(sst));
+						render_now(cx,sst,page_id,cb,"template loaded from jqxhr :"); 
                     }
             }
         } catch (e) {        

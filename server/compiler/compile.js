@@ -532,7 +532,10 @@ var get_model_files = function (zx, path) {
 }
 
 var seq_page = function (zx) {
-
+	
+    zx.static_stash={};
+	zx.static_stash.Data={}; 
+	
     //List_Pages(zx,'wip page list:');       
     console.warn('\n\n\n=============================================================================Page ', zx.pages[zx.pgi].name);	
 	//console.warn('Checking Z process.exit(2); ');process.exit(2);
@@ -540,7 +543,7 @@ var seq_page = function (zx) {
 	//console.warn('Checking A process.exit(2); ');process.exit(2);
     zx.eachplugin(zx, "start_page", zx.pages[zx.pgi]);
 	zx.eachplugin(zx, "init", zx.line_objects); //to be deprecated
-        
+
 	//console.warn('Checking process.exit(2); ');process.exit(2);
 	
 	//var fn = zx.dbg.calcfilelocation(zx,zx.pages[zx.pgi])+zx.app_extn
@@ -743,11 +746,13 @@ var seq_page = function (zx) {
             }
                 
             var so=hogan.compile(zx.mtscript, {asString: true}) ;  
-            
+            var static_stash = JSON.stringify(zx.static_stash,null,4);
+			fs.writeFileSync(ofn + '.static', static_stash); // this will be read in later by the server for server side validation
             
             so = "(function(){var ht=Hogan.Template,sst=require('socketstream').tmpl;" 
-                 +'sst[\'' + zx.main_page_name.substring(2).replace(/[\/\\]/g, "-") + '\']=new ht(' + so + ');'
-                 +'}).call(this);';    
+                +"\r\nsst['" + zx.main_page_name.substring(2).replace(/[\/\\]/g, "-") + "']=new ht(" + so + ");"
+				+"\r\nsst['" + zx.main_page_name.substring(2).replace(/[\/\\]/g, "-") + "-static_stash']=\r\n"+static_stash+""
+                +"\r\n;}).call(this);";    
             
             //console.log('Wrote template - ' + so);    
 
