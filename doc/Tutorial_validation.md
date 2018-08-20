@@ -315,24 +315,51 @@ https://itnext.io/https-medium-com-joshstudley-form-field-validation-with-html-a
 
 # Implementation strategy
 
+## math funtions
+
+F(abs_table_nr,abs_record_nr,abs_field_nr)
+F(relative_record,abs_field_nr)
+F(abs_field_nr)
+F  - current field
+Fq("stored_procedure(...)")				-- make query to server stored procedure, starting with ZZ$Public_xxxxxxx
+
+sum(abs_table_nr,abs_field_nr)
+length()
+
+## Class
+.validates  - a class on all fields that should be validated on save - used to iterate over validation fields
+
+
+-------------------------------------------------------
+
+# Implementation strategy
+
+implement the validator definition & storage
+
+Simple UI - partly done
+
+implement the validator evaluation with simple field validation  with mathjs / regex etc
+
+
+
 update stash - display stash
 
-Fake the UI - partly done
-
-Evaluate with mathjs 
-
-Aggregates over stash
+implement the validator evaluation with form validation onto updated stash
 
 
-implement Aggregate classes - consider client side codec's
 
-implement Update Aggregate targets
+Implement Units of Measure with mathjs 
 
-implement the validator definition & storage 
+Refnine Real UI for validation, assistance and units of measure
 
-implement the validator evaluation
 
-Real UI
+add Aggregates over stash
+
+
+
+xxx implement Aggregate classes - consider client side codec's
+
+xxx implement Update Aggregate targets
 
 
 $('.box').css('opacity', '0.2');

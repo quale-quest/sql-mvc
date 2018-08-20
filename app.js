@@ -173,7 +173,7 @@ ss.http.route('/', function (req, res) {
 				console.log("first page load ... with server-side rendering, params:",params);
 				ServerProcess.produce_login(req, res, ss,rambase, '', params.user,params.password,
 				function (switchPage,target,scriptnamed,jsonstring){
-                    console.log("severside_render:",switchPage,jsonstring);
+                    //console.log("severside_render:",switchPage,jsonstring);
                     severside_render.render(switchPage,target,scriptnamed,jsonstring,"client/views/app.html",
                         function (cx,html_inject){
 							//console.log("severside_render html_inject");
