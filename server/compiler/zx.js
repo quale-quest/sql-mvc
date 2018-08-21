@@ -237,7 +237,11 @@ exports.geta = function (val) {
 				
 	return [val];	
 };
-
+exports.getArrayOrUndefined = function (val) {
+ var v = exports.geta(val);
+ if (v.length==0) return undefined;
+ return v;
+}
 
 exports.getA = function (val) {
 	if (val === undefined)

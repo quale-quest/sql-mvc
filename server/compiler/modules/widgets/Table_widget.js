@@ -701,10 +701,15 @@ var zxTable = exports.zxTable = function (cx) {
 	html += table_content(cx); //Should push direct to div
 	
 	//validation	
-	console.log('\n\nexports.zxTable:',cx.table);
-	var T={validator:cx.table.validator};
+	//console.log('\n\nexports.zxTable:',cx.table);
+	
+	
+	var T={validator:zx.geta(cx.table.validator)};
+	if (T.validator.length<1) delete T.validator;
 	zx.forFields(cx.fields, function (field, key) {
-		if (field.f.validator||field.f.List) {
+		field.f.validator = zx.geta(field.f.validator);
+		if (field.f.validator.length<1) delete field.f.validator;
+		if (field.f.validator||field.f.List) {			
 			var F={
 				//i:field.f.indx,
 				//n:field.f.name,

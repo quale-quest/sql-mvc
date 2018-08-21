@@ -28,6 +28,9 @@ exports.tag_validator = function (zx, o) {
 	delete v.and_if;
 	delete v.debug;
 	delete v.quale_context;
+	v.length  = zx.getArrayOrUndefined(o.length);
+	v.range   = zx.getArrayOrUndefined(o.range);
+	v.sub_validators = zx.getArrayOrUndefined(o.valid);	
 	
 
 	/*
@@ -44,9 +47,7 @@ exports.tag_validator = function (zx, o) {
 	v.placeholder = zx.gets(o.placeholder);
 	v.hint = zx.gets(o.hint);
 	
-	v.length = zx.geta(o.length);
-	v.range = zx.geta(o.range);
-	v.sub_validators = zx.geta(o.valid);
+
 	*/
 		
 	zx.validators.named[v.name] =v;

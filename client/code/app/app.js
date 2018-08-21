@@ -60,7 +60,7 @@ ss.event.on('updateDiv', function (div, message) {
 });
 
 // Listen out for newData events coming from the server
-qq_stache = {}; //global
+qq_stache = qq_stache||{}; //global created in server side render also, so don't overwrite
 qq_tmpl_cache ={};
 
 // Private functions
@@ -480,7 +480,8 @@ var render_now = function (cx,ss,qq_page_id,msg) {
 	
 	qq_static_stash = ss.tmpl[qq_page_id+static_stash_postfix];
 	if ((qq_static_stash)&&(qq_static_stash.Data)) {
-		$.extend(true, cx.obj.Data,qq_static_stash.Data);		
+		$.extend(true, cx.obj.Data,qq_static_stash.Data);
+		$.extend(true, qq_stache[cx.obj.Data.cid],qq_static_stash.Data);
 	}
 	
 	var htmlx = tmpl.render(cx.obj.Data);
