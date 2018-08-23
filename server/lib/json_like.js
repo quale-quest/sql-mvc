@@ -135,7 +135,9 @@ Semicolon = 59, //;
 Newline = 10,
 SingleQuote = 39,
 DoubleQuote = 34,
-BackTick = 34,
+BackTick = 96,
+BackSlash = 92,
+ForwardSlash = 47,
 OpenBrace = 123, //  {
 CloseBrace = 125,
 OpenBracket = 40, //  (
@@ -166,6 +168,11 @@ var closing_for = function (c) {
 	if (c === SingleQuote)
 		return SingleQuote; //'
 
+};
+
+
+var isRegex = function (chr) {
+	return (chr === ForwardSlash);
 };
 
 var isQoute = function (chr) {
@@ -223,17 +230,12 @@ var parse3 = function (text, extra_mode_par) {
 	parse3count++;
 	if (debug)
 		console.log('parse3 start with : length=', text.length, '"' + text + '"');
-	var parse_quoted_string_old_method = function () {
-		var p = str.indexOf(str.charAt(right), right + 1);
-		if (debug)
-			console.log('parse3 parse_quoted_string :', left, right, p);
-		if (p < 0)
-			p = str.length;
-		right = p;
-	};
+
 	var parse_quoted_string = function () {
 		var localescaped = false;
 		var quotechar = str.charAt(right);
+		var regx = (quotechar==='/');
+		if (debug) console.log('parse3 regx=', quotechar, ForwardSlash,regx);	
 		var out = '';
 		++right;
 		for (; right < str.length; ++right) //-1 is to remove a space at the end of the string added as a terminator
@@ -243,9 +245,12 @@ var parse3 = function (text, extra_mode_par) {
 				out += chr;
 				localescaped = false;
 			} else {
-				if (chr === "\\") {
+				if (debug) console.log('parse3 chr=', chr, regx,out);	
+				if ( (chr === "\\") && !regx) {
+					if (debug) console.log('parse3 sl=', chr, regx,out);
 					localescaped = true;
 				} else {
+					if (debug) console.log('parse3 z=', chr, regx,out);
 					if (chr === quotechar)
 						return out;
 					out += chr;
@@ -521,7 +526,7 @@ var parse3 = function (text, extra_mode_par) {
 
 				}
 
-				if (nonSpaceCount <= 1 && isQoute(chr)) { // a quote at the start of ...
+				if (nonSpaceCount <= 1 && (isQoute(chr)||isRegex(chr)) ) { // a quote at the start of ...
 					//mark1 from above also continues here
 					//start of a string with a quote
 					left = right + 1;
@@ -817,7 +822,13 @@ test(reference, "Simple values  00c", "{obj:1}");
 		obj : "sub)"
 	};
 	test(reference, "Simple obj 90a", "(obj'sub)"); //this would be invalid   ==  "obj": "sub)"
-
+    test(reference, "Simple obj 90a", "(obj'sub)");
+	
+	
+	reference = {
+		obj : "abc\\def"
+	};	
+	test(reference, "Simple obj 90a", "(obj:  /abc\\def/  )");
 
 	console.log('Pass json_like unit_test');
 }
