@@ -244,3 +244,7 @@ undefined
 ##master
 
 undefined
+
+##validator
+
+Specifies the validation required for either a field or a form.

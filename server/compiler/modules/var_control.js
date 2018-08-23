@@ -173,7 +173,7 @@ exports.start_pass = function (zx /*, line_objects*/
 	zx.variables.AnonymousIndex = 0;
 
 	for (name in zx.variables.named) {
-		zx.variables.named[name.toLowerCase()].assign_count = 0;
+		zx.variables.named[name].assign_count = 0;
 		//zx.variables.named[name.toLowerCase()]].varused=true;
 	}
 

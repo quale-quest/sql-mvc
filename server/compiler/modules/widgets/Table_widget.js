@@ -512,6 +512,17 @@ exports.tag_form = function (zx, o) {
 	exec_query(zx, o, "Table");
 };
 
+exports.List_use = function (zx, name) {
+	if (name) {
+		if (zx.static_stash.ListIndex[name])
+			zx.static_stash.ListIndex[name].assign_count += 1;
+	} else {
+		//zx.error.log_syntax_warning(zx, 'Static List missing/unknown:'+name, '', '');	
+	}	
+}
+
+
+
 exports.tag_list = function (zx, o) {
 	//JS object of key:values output by name  into the fullstash structure
 	//console.log('tag_list:',o);
@@ -525,6 +536,7 @@ exports.tag_list = function (zx, o) {
 			delete values.array;
 		//console.log('tag_list:',name,JSON.stringify(values) );
 		zx.static_stash.Data[name] = values;
+		zx.static_stash.ListIndex[name] ={assign_count:0};
 		return;
 	}
 
@@ -556,9 +568,11 @@ exports.init = function (zx) {
 	//validates and translates v2 tag contents to .divin input
 	//console.warn('init table_widget:');
 
-	zx.TableContexts = {};
+	zx.TableContexts = {};	
 	zx.softcodecs = {};
 	zx.static_stash.TablesIndex ={};
+	zx.static_stash.ListIndex ={};
+	
 };
 var esc = function (txt) {
 	if (txt==undefined) return ' undefined ';
@@ -700,16 +714,17 @@ var zxTable = exports.zxTable = function (cx) {
 	//Divine-table_content
 	html += table_content(cx); //Should push direct to div
 	
-	//validation	
+	//create validation record for cleint
 	//console.log('\n\nexports.zxTable:',cx.table);
-	
-	
+	//console.log('StyleTemplate : ',ihs,esc(StyleTemplate));
 	var T={validator:zx.geta(cx.table.validator)};
 	if (T.validator.length<1) delete T.validator;
 	zx.forFields(cx.fields, function (field, key) {
 		field.f.validator = zx.geta(field.f.validator);
 		if (field.f.validator.length<1) delete field.f.validator;
-		if (field.f.validator||field.f.List) {			
+		if (field.f.validator||field.f.List) {
+			zx.validation.use(zx, field.f.validator);
+			exports.List_use(zx, field.f.List);
 			var F={
 				//i:field.f.indx,
 				//n:field.f.name,

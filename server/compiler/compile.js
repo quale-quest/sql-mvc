@@ -533,9 +533,6 @@ var get_model_files = function (zx, path) {
 
 var seq_page = function (zx) {
 	
-    zx.static_stash={};
-	zx.static_stash.Data={}; 
-	
     //List_Pages(zx,'wip page list:');       
     console.warn('\n\n\n=============================================================================Page ', zx.pages[zx.pgi].name);	
 	//console.warn('Checking Z process.exit(2); ');process.exit(2);
@@ -745,8 +742,10 @@ var seq_page = function (zx) {
             
             }
                 
-            var so=hogan.compile(zx.mtscript, {asString: true}) ;  
-            var static_stash = JSON.stringify(zx.static_stash,null,4);
+            var so=hogan.compile(zx.mtscript, {asString: true});  
+		
+            var static_stash = JSON.stringify(zx.validation.make_stash_object(zx),null,4);
+
 			fs.writeFileSync(ofn + '.static', static_stash); // this will be read in later by the server for server side validation
             
             so = "(function(){var ht=Hogan.Template,sst=require('socketstream').tmpl;" 

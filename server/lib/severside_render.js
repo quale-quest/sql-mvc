@@ -124,6 +124,11 @@ var render_now = function (cx,sst,page_id,cb,msg) {
 	var tmpl = sst[page_id];
 	var qq_static_stash = deepcopy(sst[page_id+static_stash_postfix]);
 	//console.log("qq_static_stash :",qq_static_stash);
+	var qq_static_stash_Data = sst[page_id+static_stash_postfix].Data;
+	if (qq_static_stash_Data) {
+		extend(true, cx.obj[0].Data,qq_static_stash_Data);		
+		//extend(true, qq_stache[cx.obj[0].Data.cid],qq_static_stash_Data);
+	}		
 	delete qq_static_stash.Data;
 	var inits =  '\r\n<script type="text/javascript" language="javascript">'
 				+'\r\n qq_static_stash=' + JSON.stringify(qq_static_stash,null,4) + ';'
@@ -131,11 +136,6 @@ var render_now = function (cx,sst,page_id,cb,msg) {
 				+';\r\n</script>\r\n';
 	//console.log("render_now inits :",inits);			
 	
-	var qq_static_stash_Data = deepcopy(sst[page_id+static_stash_postfix]).Data;
-	if (qq_static_stash_Data) {
-		extend(true, cx.obj[0].Data,qq_static_stash_Data);		
-		//extend(true, qq_stache[cx.obj[0].Data.cid],qq_static_stash_Data);
-	}	
 	
 	var htmlx = inits + tmpl.render(cx.obj[0].Data);
     render_from_fullstash(cx,htmlx,cb); 	//   render_from_fullstash(cx,tmpl.render(cx.obj[0].Data),cb); 

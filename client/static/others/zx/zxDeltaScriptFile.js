@@ -176,6 +176,7 @@ function FindCell(e,level)
 
 	var els = el.id.match( /(.+)-(.+)-(.+)/ )||[];
 	console.log("FindCell els:",els);
+	//console.trace("FindCell els:");
     var pki = els[2]||'';
 	var pkt = pki.slice(-100,-7);	
 	var pko = els[3]||'';
@@ -291,7 +292,6 @@ function math_eval(str,unit) {
 				//console.log('coder unit err:', err.message  );
 				//console.log('coder catch:',u.units[0].unit.name  );
 
-
 				try {
 						r = math.number(u, u.units[0].unit.name );
 						return {val:r,display:str,error:err.message};
@@ -299,10 +299,7 @@ function math_eval(str,unit) {
 					} catch (errx) { //expecting : Units do not match
 						//console.log('coder catch2:',errx  );		
 					}			
-				
-
 			}
-				
 		}
 		
 
@@ -374,44 +371,47 @@ function check_validator(validator,Cell,pk) {
 			res.isValid =   (frm.val <= val.val) && ( val.val <= upto.val);			
 			general_fail_msg = "Must be in range " +frm.display + " to " +upto.display  ;
 		}
+		if (validator.match){
+			res.isValid = qq_stache[Cell.cid]['t'+pk.t][+pk.i][validator.match]==Cell.valu;
+			general_fail_msg = "Inputs must match" ;
+		}
 		if (validator.math){
 //			res.isValid = new RegExp(validator.pattern).test(Cell.valu);
 			
 			//console.log("check_validator math cid :",Cell.cid);
 			//console.log("check_validator math st  :",qq_stache[Cell.cid]);			
 			//validator.math="f(2)";
-			validator.math="x()";
+			//validator.math="x()";
 			//validator.math="sum(1,17)";
-			console.log("check_validator math     :",validator.math);			
+			//console.log("check_validator math     :",validator.math);			
 			if (typeof math_scope === "undefined")	{
-				console.log("check_validator create new math_scope :");
+				//console.log("check_validator create new math_scope :");
 				math_scope={};
-				math_scope.length = function (s) {return s.toString().length;}
+				math_scope.length = function (s) {if (!s) return 0; return s.toString().length;}
 				math_scope.eval   = function (s) {return math.eval(s ,math_scope);}				
-				math_scope.t      = function () {/*console.log("math_scope :",Cell.valu);*/return Cell.valu;}
+				math_scope.input  = function () {return Cell.valu;}
 				math_scope.x      = function (fld) {console.log("math_scope x:",math_scope.data['t'+pk.t][+pk.i][+pk.f]);return math_scope.data['t'+pk.t][+pk.i][+pk.f];}
 				math_scope.f      = function (fld) {return math_scope.data['t'+pk.t][+pk.i][+fld];}
 				math_scope.fr     = function (fld,rec) {return math_scope.data['t'+pk.t][+pk.i + +rec][+fld];}
 				math_scope.frt    = function (fld,rec,tbl) {return math_scope.data['t'+tbl][+rec][+fld];}
 				math_scope.sum    = function (fld,tbl) {var sum=0;for(var rec=0;rec<math_scope.data['t'+tbl].length;rec++) {sum+= math_scope.data['t'+tbl][+rec][+fld];}return sum;}
-				math_scope.count  = function (fld,tbl) {var count=0;for(var rec=0;rec<math_scope.data['t'+tbl].length;rec++) {count+=1;}return count;}
+				math_scope.count  = function (tbl) {return math_scope.data['t'+tbl].length;}
 				//math_scope.call = function (s) {...} //ZZ$Public stored procedure or server side js proc	
 				math_scope.cid=-1;
 			}
 			if (math_scope.cid!=Cell.cid) {
-				    console.log("check_validator updated math_scope :");
+				    //console.log("check_validator updated math_scope :");
 					math_scope.data	 = qq_stache[Cell.cid];
 					math_scope.cid=Cell.cid;					
 				} else {
-				    console.log("check_validator used cached math_scope :");					
+				    //console.log("check_validator used cached math_scope :");					
 			}	
 			res.isValid = math.eval(validator.math,math_scope);			 
-			console.log("check_validator math.eval :",res);
+			//console.log("check_validator math.eval :",res);
+			console.log("check_validator res.isValid :",validator.math,'  ',res.isValid);
 			//if (!debug)	general_fail_msg = 'must be a valid value';		
 		}		
-		
-		
-		
+
 		
 		if (!res.msg && !res.isValid) {
 			res.msg = general_fail_msg ;
@@ -458,7 +458,17 @@ function check_validity(Cell,el) {
 	});
 	//console.log("pk validator_name xxx :",isValid ,Tested);
 	if (!Tested) isValid = true;
-	console.log('check_validity result:',isValid,msg);   
+	//console.log('check_validity result:',isValid,msg);
+	//console.log('check_validity pk   :',[Cell.cid,'t'+pk.t,+pk.i,+pk.f]);
+	//console.log('check_validity watch:',isValid,qq_stache[Cell.cid]['t'+pk.t][+pk.i]);	
+	if (isValid) {
+		try {
+			qq_stache[Cell.cid]['t'+pk.t][+pk.i][+pk.f+1] = Cell.valu;
+		}catch(e){
+			console.log('check_validity catch:',e,[Cell.cid,'t'+pk.t,+pk.i,+pk.f]);
+		}
+	}
+	console.log('check_validity watch:',isValid,qq_stache[Cell.cid]['t'+pk.t][+pk.i]);
 
 	let validationshown  = el.parentNode.getElementsByClassName('validationshown');	  
 	let validationhidden = el.parentNode.getElementsByClassName('validationhidden');
@@ -664,7 +674,7 @@ function FillList(e,SelListName)
   Cell.pkf = 0;
   //console.log("FillList Cell:",Cell);    
   
-  console.log("SelList info:",SelListName,Cell.cid,qq_stache);
+  //console.log("SelList info:",SelListName,Cell.cid,qq_stache);
   //console.log("SelList:",qq_stache[Cell.cid][SelListName]);
   //console.log("SelList:",qq_stache[Cell.cid]);
   if (!qq_stache[Cell.cid]) { //dropdown list not available on first page render
@@ -679,8 +689,10 @@ function FillList(e,SelListName)
   
   var toSel = el;//document.getElementById(toName);
   if (toSel.length>1) return; //cant handle multi select yet
+  if (!SelList) return; //missing List in stache
+  
   var sidx=toSel.selectedIndex;  
-   console.log("SelList sidx:",sidx,SelList.length,SelList);
+  console.log("SelList sidx:",sidx,SelList.length,SelList);
   if (sidx===undefined) return;
   
   var cval=toSel.options[sidx].value;

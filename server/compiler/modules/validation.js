@@ -13,7 +13,7 @@ exports.tag_validator = function (zx, o) {
 	//console.log('tag_validator:',o);
 	//console.log('tag_validator math:',o.math);
 	//console.log('tag_validator math a:',o.math.array);
-	console.log('tag_validator pattern:',o.name,o.pattern);
+	//console.log('tag_validator pattern:',o.name,o.pattern);
 	
 	var v = deepcopy(o);
 	v.name = zx.gets(o.name);
@@ -31,68 +31,73 @@ exports.tag_validator = function (zx, o) {
 	v.length  = zx.getArrayOrUndefined(o.length);
 	v.range   = zx.getArrayOrUndefined(o.range);
 	v.sub_validators = zx.getArrayOrUndefined(o.valid);	
-	
-
-	/*
-	v.check = zx.gets(o.check);
-	v.nullok = zx.gets(o.nullok);
-	v.math = zx.gets(o.math);
-	v.pattern = zx.gets(o.pattern); //JS-REGEX
-	v.similar = zx.gets(o.similar); //SQL-REGEX
-	v.jsscript = zx.gets(o.jsscript);
-	v.sqlscript = zx.gets(o.sqlscript);
-	v.fails = zx.gets(o.fails);
-	v.pass = zx.gets(o.pass);
-	v.blank = zx.gets(o.blank);
-	v.placeholder = zx.gets(o.placeholder);
-	v.hint = zx.gets(o.hint);
-	
-
-	*/
 		
+	v.assign_count = 0;
 	zx.validators.named[v.name] =v;
 	
 	//console.log('\r\ntag_validator math:',v);
-	zx.static_stash.Validators[v.name] = v;
-	
+	zx.static_stash.Validators[v.name] = v;	
 };
 
-exports.done_pass = function (/*zx, line_objects*/
-) {
+exports.use = function (zx, name) {	
+	if (name) {
+		if (zx.static_stash.Validators[name]) {
+			//console.log('Validators.use:',name,zx.static_stash.Validators);
+			zx.static_stash.Validators[name].assign_count += 1;
+		} else {
+			console.log('Validators missing/unknown:',name);
+			zx.error.log_syntax_warning(zx, 'Validators missing/unknown:'+name, '', '');				
+		}
+	}	
+}
 
+exports.make_stash_object = function (zx) {
+    var data={};
+	data.Validators={};
+	for (var name in zx.validators.named) {
+		//console.log('Validators make_stash_object:',name,zx.validators.named[name].assign_count);
+		if (zx.validators.named[name].assign_count>0) {
+			data.Validators[name]=deepcopy(zx.static_stash.Validators[name]);
+			delete data.Validators[name].assign_count;
+		}
+	}
+	
+	data.TablesIndex=deepcopy(zx.static_stash.TablesIndex);
+	data.Data={};
+	//console.log('Validators make_stash_object Data:',name,zx.static_stash.Data);	
+	//console.log('Validators make_stash_object ListIndex:',name,zx.static_stash.ListIndex);
+	for (var name in zx.static_stash.ListIndex) {
+		if (zx.static_stash.ListIndex[name].assign_count>0) {
+			data.Data[name]=zx.static_stash.Data[name];
+		}
+	}
+	return data;
+};
+
+exports.done_pass = function (zx) {
+	for (var name in zx.validators.named) {
+		//console.log('Validators done_pass:',name,zx.validators.named[name].assign_count);
+	}
 };
 
 exports.start_pass = function (zx /*, line_objects*/
 ) {
 	zx.static_stash.Validators={}; 
-	var name;
-
-	for (name in zx.validators.named) {
-		//zx.validators.named[name.toLowerCase()].assign_count = 0;
-		//zx.variables.named[name.toLowerCase()]].varused=true;
+	for (var name in zx.validators.named) {
+		zx.validators.named[name].assign_count = 0;
 	}
-
-	//console.log('check variables: ',zx.variables);
-//	for (name in zx.validators.required)
-//		zx.validators.required[name].done = false;
-
 };
 
-exports.start_item = function (zx, line_obj) {
-
+exports.start_page = function (zx, line_obj) {
+    zx.static_stash={};
+	zx.static_stash.Data={}; 
 };
-
-exports.done_item = function (/*zx, line_obj*/
-) {};
 
 exports.init = function (zx) {
 	zx.validators = {};
 	zx.validators.named = {};
 };
 
-exports.done = function (/*zx, o*/
-) {
-};
 
 exports.unit_test = function (zx) {
 

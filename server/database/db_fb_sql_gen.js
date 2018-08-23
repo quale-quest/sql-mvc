@@ -922,8 +922,9 @@ exports.link_from_table = function (zx,cx, fld_obj) {
 		
 	//console.log('link_from_table links: ',links,fld_obj.cf[0] );
 	fld_obj.postback = links;
-	fld_obj.tfidOffset = zx.tfidOffset;
-	zx.tfidOffset += 1;
+	//fld_obj.tfidOffset = zx.tfidOffset;
+	//zx.tfidOffset += 1;
+	fld_obj.tfidOffset = fld_obj.indx;
 	return fld_obj.tfidOffset;
 };
 
@@ -1020,10 +1021,10 @@ exports.edit_from_table = function (zx, cx, fld_obj) {
 				
 		
 	
-        
 	fld_obj.postback = links;
-	fld_obj.tfidOffset = zx.tfidOffset;
-	zx.tfidOffset += 1;
+	//fld_obj.tfidOffset = zx.tfidOffset;
+	//zx.tfidOffset += 1;
+	fld_obj.tfidOffset = fld_obj.indx;
 	return fld_obj.tfidOffset;
 };
 
