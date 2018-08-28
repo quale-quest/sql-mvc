@@ -448,6 +448,19 @@ init_from_fullstash_internal = function (Target) {
 				, 1000)
 			}
 		window.onbeforeunload = exports.ClosingBrowser;	
+		
+		$( "input" ).focusout(function(e) {
+			//console.log("focusout:",e);
+			let Cell=FindCell(e);
+			if (!check_validity(Cell,Cell.el).isValid) {
+				if (hold_focus_at) 
+					{
+						//console.log("focusout HOLD:");
+						hold_focus_at.focus();
+					} //else console.log("focusout NO HOLD:");	
+			} //else console.log("focusout Valid");	
+			
+		});
 }
 
 var render_from_fullstash = function (cx,html) {

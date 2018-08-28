@@ -10,6 +10,7 @@ var refresh=false;
 var SubmitWindowRef;
 var SubmitWindowRefreshCount;
 var deltacount=0;
+var deltawipcount=0;
 
 
 
@@ -175,7 +176,7 @@ function FindCell(e,level)
     var typ=e.type;	
 
 	var els = el.id.match( /(.+)-(.+)-(.+)/ )||[];
-	console.log("FindCell els:",els);
+	//console.log("FindCell els:",els);
 	//console.trace("FindCell els:");
     var pki = els[2]||'';
 	var pkt = pki.slice(-100,-7);	
@@ -254,15 +255,22 @@ function stripQ(val) {
 
 function truish(input) { 
  var val=stripQ(input);
- console.log("truish :",input,val,val.substring(0,1));
+ //console.log("truish :",input,val,val.substring(0,1));
  return (val!==undefined)&&(val!=0)&&(val!='')&&(val.substr(0,1).toLowerCase()!='n')&&(val.substr(0,1).toLowerCase()!='f')&&(val!='0');
 }
 
 
+function zxdeltawip(ok) { 
+deltawipcount=ok?1:0;
+$('#deltacounter1').text(deltacount+deltawipcount);
+$('#deltacounter2').text(deltacount+deltawipcount);
+}
+
 function zxdelta_increment() { 
 deltacount=deltacount+1;
-$('#deltacounter1').text(deltacount);
-$('#deltacounter2').text(deltacount);
+deltawipcount=0;
+$('#deltacounter1').text(deltacount+deltawipcount);
+$('#deltacounter2').text(deltacount+deltawipcount);
 }
 
 
@@ -317,7 +325,7 @@ function math_eval(str,unit) {
 	return {val:0 ,display:str,error:'unknown error'};
 }
 
-function Get_Vailidation(pk){
+function Get_Validation(pk){
 	//pk.parm = {};
 	pk.validators =[];	
 	if (qq_static_stash) {
@@ -337,14 +345,49 @@ function Get_Vailidation(pk){
 	}
 }
 
-function check_validator(validator,Cell,pk) {
+function check_math(validator_math,Cell,pk,validator_rec){			
+	//console.log("check_math Cell.valu :",Cell.valu);
+	if (typeof math_scope === "undefined")	{
+		//console.log("check_validator create new math_scope :");
+		math_scope={}; //global
+		math_scope.debug   = function (s) {console.log("math_scope debug:",s); return s;}				
+		math_scope.length = function (s) {if (!s) return 0; return s.toString().length;}
+		math_scope.eval   = function (s) {return math.eval(s ,math_scope);}				
+		math_scope.input  = function () {return math_scope.Cell_valu;}
+		
+		math_scope.p      = function (par) {/*console.log("math_scope p:",math_scope.validator_rec[+par]);*/ return math_scope.validator_rec[+par];}
+		
+		math_scope.x      = function () {console.log("math_scope x:",math_scope.data['t'+pk.t][+pk.i][+pk.f]);return math_scope.data['t'+pk.t][+pk.i][+pk.f];}
+		
+		math_scope.f      = function (fld) {return math_scope.data['t'+pk.t][+pk.i][+fld];}
+		math_scope.fr     = function (fld,rec) {return math_scope.data['t'+pk.t][+pk.i + +rec][+fld];}
+		
+		math_scope.frt    = function (fld,rec,tbl) {return math_scope.data['t'+tbl][+rec][+fld];}
+		math_scope.sum    = function (fld,tbl) {var sum=0;for(var rec=0;rec<math_scope.data['t'+tbl].length;rec++) {sum+= math_scope.data['t'+tbl][+rec][+fld];}return sum;}
+		math_scope.count  = function (tbl) {return math_scope.data['t'+tbl].length;}
+		//math_scope.call = function (s) {...} //ZZ$Public stored procedure or server side js proc	
+		math_scope.cid=-1;
+	}
+	if (math_scope.cid!=Cell.cid) {
+			//console.log("check_validator updated math_scope :");
+			math_scope.data	 = qq_stache[Cell.cid];
+			math_scope.cid=Cell.cid;					
+							
+		} else {
+			//console.log("check_validator used cached math_scope :");					
+	}
+	math_scope.validator_rec = validator_rec;
+	math_scope.Cell_valu=Cell.valu;	
+	return math.eval(validator_math,math_scope);	
+}			
+
+function check_validator(validator,Cell,pk,validator_rec) {
 	var res={isValid:true};	
-	console.log("check_validator value :",Cell.valu,' validator: ',validator);
+	//console.log("check_validator value :",Cell.valu,' validator: ',validator);
 	var general_fail_msg="";
 	//console.log("check_validator validator.length :",validator.length);
-	
-	
-	//console.log("check_validator value keys:",qq_stache);//.keys());
+	//console.log("check_validator value keys:",qq_stache);//.keys());	
+	//console.log("check_validator validator.nullok:",validator.nullok);
 	
 	try {
 		res.msg = validator.fails;
@@ -352,10 +395,20 @@ function check_validator(validator,Cell,pk) {
 			res.isValid = new RegExp(validator.pattern).test(Cell.valu);
 			general_fail_msg = "Must be valid input";
 		}
+		if (validator.match){
+			let field = check_math(validator.match,Cell,pk,validator_rec);
+			//console.log("check_validity match   :",validator.match , field);
+			let wth	= qq_stache[Cell.cid][field[0]][+pk.i][field[1]+1];			
+			res.isValid = (wth==Cell.valu);
+			//console.log("check_validity match input ",Cell.valu," == ",wth," : ",res.isValid); 
+			general_fail_msg = "Inputs must match" ;
+		}		
 		if (validator.length){
-			console.log("check_validity length   :",+validator.length[0] , Cell.valu.length , +validator.length[1]); 
-			res.isValid =   (+validator.length[0] <= Cell.valu.length) && (  Cell.valu.length <=+validator.length[1]);
-			general_fail_msg = "Must be " + validator.length[0] + " to " + validator.length[1] +  "characters long" ;
+			var low  = +check_math(validator.length[0],Cell,pk,validator_rec);
+			var high = +check_math(validator.length[1],Cell,pk,validator_rec);			
+			//console.log("check_validity length   :",low , Cell.valu.length , high); 
+			res.isValid =   (low <= Cell.valu.length) && (  Cell.valu.length <=high);
+			general_fail_msg = "Must be " + low + " to " + high +  "characters long" ;
 		}	
 		if (validator.range){
 			var val = math_eval(Cell.valu,validator.uom);
@@ -371,47 +424,26 @@ function check_validator(validator,Cell,pk) {
 			res.isValid =   (frm.val <= val.val) && ( val.val <= upto.val);			
 			general_fail_msg = "Must be in range " +frm.display + " to " +upto.display  ;
 		}
-		if (validator.match){
-			res.isValid = qq_stache[Cell.cid]['t'+pk.t][+pk.i][validator.match]==Cell.valu;
-			general_fail_msg = "Inputs must match" ;
-		}
+
 		if (validator.math){
-//			res.isValid = new RegExp(validator.pattern).test(Cell.valu);
-			
-			//console.log("check_validator math cid :",Cell.cid);
-			//console.log("check_validator math st  :",qq_stache[Cell.cid]);			
-			//validator.math="f(2)";
-			//validator.math="x()";
-			//validator.math="sum(1,17)";
-			//console.log("check_validator math     :",validator.math);			
-			if (typeof math_scope === "undefined")	{
-				//console.log("check_validator create new math_scope :");
-				math_scope={};
-				math_scope.length = function (s) {if (!s) return 0; return s.toString().length;}
-				math_scope.eval   = function (s) {return math.eval(s ,math_scope);}				
-				math_scope.input  = function () {return Cell.valu;}
-				math_scope.x      = function (fld) {console.log("math_scope x:",math_scope.data['t'+pk.t][+pk.i][+pk.f]);return math_scope.data['t'+pk.t][+pk.i][+pk.f];}
-				math_scope.f      = function (fld) {return math_scope.data['t'+pk.t][+pk.i][+fld];}
-				math_scope.fr     = function (fld,rec) {return math_scope.data['t'+pk.t][+pk.i + +rec][+fld];}
-				math_scope.frt    = function (fld,rec,tbl) {return math_scope.data['t'+tbl][+rec][+fld];}
-				math_scope.sum    = function (fld,tbl) {var sum=0;for(var rec=0;rec<math_scope.data['t'+tbl].length;rec++) {sum+= math_scope.data['t'+tbl][+rec][+fld];}return sum;}
-				math_scope.count  = function (tbl) {return math_scope.data['t'+tbl].length;}
-				//math_scope.call = function (s) {...} //ZZ$Public stored procedure or server side js proc	
-				math_scope.cid=-1;
-			}
-			if (math_scope.cid!=Cell.cid) {
-				    //console.log("check_validator updated math_scope :");
-					math_scope.data	 = qq_stache[Cell.cid];
-					math_scope.cid=Cell.cid;					
-				} else {
-				    //console.log("check_validator used cached math_scope :");					
-			}	
-			res.isValid = math.eval(validator.math,math_scope);			 
+			res.isValid = check_math(validator.math,Cell,pk,validator_rec);
 			//console.log("check_validator math.eval :",res);
-			console.log("check_validator res.isValid :",validator.math,'  ',res.isValid);
+			//console.log("check_validator res.isValid :",validator.math,'  ',res.isValid);
 			//if (!debug)	general_fail_msg = 'must be a valid value';		
 		}		
 
+		if (validator.nullok) {
+			if (Cell.valu=="") {
+				res.isValid = true;
+				res.msg = "";
+				general_fail_msg ="";
+			} else {
+				if (!res.isValid) {				
+				res.msg = res.msg  + " or may be blank";
+				}
+			}
+
+		}
 		
 		if (!res.msg && !res.isValid) {
 			res.msg = general_fail_msg ;
@@ -428,27 +460,29 @@ function check_validator(validator,Cell,pk) {
 
 function check_validity(Cell,el) {
 	var isValid = false;
+	var block_at_field = false;
 	var Tested = false;
 	var msg="";
 	var pk = Cell.pk;
-	Get_Vailidation(pk);
+	Get_Validation(pk);
 	
-	console.log("check_validity check  :",[Cell.valu]); 
-    console.log("check_validity with   :",pk); 
-	console.log("check_validity pk.validators:",pk.validators); 
+	//console.log("check_validity check  :",[Cell.valu]); 
+    //console.log("check_validity with   :",pk); 
+	//console.log("check_validity pk.validators:",pk.validators); 
 	
 	
 	//any of the validators may be true
-	if (pk.validators) pk.validators.forEach(function(validator_name) { 
+	if (pk.validators) pk.validators.forEach(function(validator_rec) { 
+		var validator_name=validator_rec[0];
 		//console.log("pk validator_name forEach :",validator_name,isValid ,Tested);
 		var validator  = qq_static_stash.Validators[validator_name];			
 		//console.log("pk validator_name :",validator_name,validator);
 		if (validator) {
-			//console.log("check_validity pattern :",pk.valid.pattern);
-			//let isValid2 = new RegExp(validator.pattern).test(Cell.valu);	
-			let isValid2 = check_validator(validator,Cell,pk);
-			//console.log("check_validity isValid2 :",isValid2);
+		    //console.log("pk validator_name :",validator_name,validator);			
+			let isValid2 = check_validator(validator,Cell,pk,validator_rec);
+			block_at_field|=(validator.block=='field');
 			isValid |= isValid2.isValid;
+			console.log("check_validity isValid2 :",isValid2,'final : ',isValid,' block_at_field:',block_at_field);
 			if (!isValid2.isValid) {
 				if (msg!="") msg = msg + " or "  ;
 				msg = msg + isValid2.msg;
@@ -458,17 +492,16 @@ function check_validity(Cell,el) {
 	});
 	//console.log("pk validator_name xxx :",isValid ,Tested);
 	if (!Tested) isValid = true;
+	if (isValid) block_at_field = false;
+	
 	//console.log('check_validity result:',isValid,msg);
 	//console.log('check_validity pk   :',[Cell.cid,'t'+pk.t,+pk.i,+pk.f]);
-	//console.log('check_validity watch:',isValid,qq_stache[Cell.cid]['t'+pk.t][+pk.i]);	
-	if (isValid) {
-		try {
-			qq_stache[Cell.cid]['t'+pk.t][+pk.i][+pk.f+1] = Cell.valu;
-		}catch(e){
-			console.log('check_validity catch:',e,[Cell.cid,'t'+pk.t,+pk.i,+pk.f]);
-		}
-	}
-	console.log('check_validity watch:',isValid,qq_stache[Cell.cid]['t'+pk.t][+pk.i]);
+	//console.log('check_validity watch:',isValid,qq_stache[Cell.cid]['t'+pk.t][+pk.i]);
+	var originalvalue = qq_stache[Cell.cid]['t'+pk.t][+pk.i][+pk.f+1];
+	//console.log('check_validity delta:',originalvalue,Cell.valu,originalvalue== Cell.valu);
+	if (originalvalue== Cell.valu) zxdeltawip(false); else zxdeltawip(isValid);
+	
+	//console.log('check_validity watch:',isValid,qq_stache[Cell.cid]['t'+pk.t][+pk.i]);
 
 	let validationshown  = el.parentNode.getElementsByClassName('validationshown');	  
 	let validationhidden = el.parentNode.getElementsByClassName('validationhidden');
@@ -480,8 +513,8 @@ function check_validity(Cell,el) {
 		  validationhidden[0].innerText = msg;  
 		  validationhidden[0].className = isValid?'validationhidden':'validationshown';		  
 	}	  
-	  
-	return isValid;
+	if (isValid) hold_focus_at = null;  
+	return {isValid:isValid,block_at_field:block_at_field};
 
 }
 
@@ -489,9 +522,9 @@ var button_delay_timeout = null;
 const button_delay = function (e) {
 	//console.log('button_delay :', e);
 	clearTimeout(button_delay_timeout);
-	button_delay_timeout = setTimeout(function () {
-        //console.log('button_delay done:', e);
+	button_delay_timeout = setTimeout(function () {        
 		let Cell=FindCell(e);
+		//console.log('button_delay done:', Cell.valu);
 		check_validity(Cell,Cell.el);
     }, 700);
 	
@@ -505,51 +538,75 @@ function zxf(e) {
 	var el=Cell.el;
 	delete Cell.el;
   
-    console.log("zxf Cell:",Cell);  
-    console.log("zxf el:",el);
+    //console.log("zxf Cell:",Cell);  
+    //console.log("zxf el:",el);
 	//console.log("zxf el:",el); 
 	//Cell.el.dataset.touched = 1;	
 	el.onkeyup =  button_delay;	
 }
-
+var hold_focus_at = null;
 function zxd(e,pkf,pko) { //delta
 var r;
+  //console.log("zxd start:"); 
+  
   var isValid = true;
   if (pko!==undefined) pkf=String(+pkf + (+pko));
   var Cell=FindCell(e); //get a new object for the element
   Cell.pkf = pkf;
+  var pk=Cell.pk;
   var el=Cell.el;
   delete Cell.el;
   //console.log("zxd :",Cell,el);  
   console.log("zxd Cell:",Cell);  
   console.log("zxd el:",el); 
+  //console.log("zxd pk:",pk); 
   //console.log("zxd el.pattern:",el.pattern);
   //console.log("zxd el.data-pattern2:",el.getAttribute("data-pattern2"));
   //console.log("zxd el.min:",el.min);
-  if (Cell.typ=="change")  {
-	  isValid = check_validity(Cell,el);
-  }
   
   if (el.type=="checkbox")  zxd_checkbox(Cell,el); //returns updates in Cell
-  zx_delta(Cell);
-  zxdelta_increment();
+  var originalvalue = qq_stache[Cell.cid]['t'+pk.t][+pk.i][+pk.f+1];
+  if (originalvalue== Cell.valu) {
+      zxdeltawip(false);
+	  console.log("zxd unchanged:");	
+	  return;
+  }
+  if (Cell.typ=="change")  {
+	  resValid = check_validity(Cell,el);  
+	  if (resValid.block_at_field) 
+	  {
+		  if (!resValid.isValid) {
+			console.log("zxd keeping in focus:");
+			hold_focus_at = el;
+			el.focus();
+			return;
+		  }
+		  else
+			hold_focus_at = null;
+	  } 
+	  //console.log("zxd making changes:");		
+  
+	  qq_stache[Cell.cid]['t'+pk.t][+pk.i][+pk.f+1] = Cell.valu;
+	  zx_delta(Cell);
+	  zxdelta_increment();
 
-  if (isValid) {
-	var autosave=$( el ).attr("data-autosave");
-	var save=truish(autosave);
-	console.log("zxd autosave :",autosave,' saveing:',save);  
-	if (autosave=="push") {
-			//alert("pushing data");
-			var savecell={typ:"click",cid:Cell.cid,pkf:"-1"};
-			zx_delta(savecell);
-			return false;
-		} else if (save) {
-		    var savecell={typ:"click",cid:Cell.cid,pkf:"0"};
-		    //console.log("autosave:",savecell);
-		    zx_delta(savecell);
-		    return false;
-		}
-    }
+	  if (resValid.isValid) {
+		var autosave=$( el ).attr("data-autosave");
+		var save=truish(autosave);
+		console.log("zxd autosave :",autosave,' saveing:',save);  
+		if (autosave=="push") {
+				//alert("pushing data");
+				var savecell={typ:"click",cid:Cell.cid,pkf:"-1"};
+				zx_delta(savecell);
+				return false;
+			} else if (save) {
+			    var savecell={typ:"click",cid:Cell.cid,pkf:"0"};
+			    //console.log("autosave:",savecell);
+			    zx_delta(savecell);
+			    return false;
+			}
+	    }
+  }
 return;
 }
 
@@ -692,7 +749,7 @@ function FillList(e,SelListName)
   if (!SelList) return; //missing List in stache
   
   var sidx=toSel.selectedIndex;  
-  console.log("SelList sidx:",sidx,SelList.length,SelList);
+  //console.log("SelList sidx:",sidx,SelList.length,SelList);
   if (sidx===undefined) return;
   
   var cval=toSel.options[sidx].value;

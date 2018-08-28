@@ -129,8 +129,7 @@ var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx,
 	tcx.query_original = o.q.query;
 	tcx.query = o.q.query; //thats it!!!
 
-	var table_alias = cx.table.from;
-	if (cx.table.alias) table_alias=cx.table.alias;
+	if (!cx.table.alias) cx.table.alias=cx.table.from;
 
 	//console.log('done - QICC style query',tcx.query);
 
@@ -299,6 +298,7 @@ var formulatemodel = exports.formulatemodel = function (zx, cx, o) {
 	//else
 	formulatemodel_quale(zx, cx, tcx, o);
     //console.log("\r\n tcx.query A:"+tcx.query,"\r\n\r\n\r\n");
+	tcx.alias = cx.table.alias;
 	cx.fields = tcx.fields;
 	cx.query = zx.dbu.sql_make_compatable(zx,tcx.query);
 	//console.log("\r\ncx.query B:"+tcx.query);
@@ -574,6 +574,17 @@ exports.init = function (zx) {
 	zx.static_stash.ListIndex ={};
 	
 };
+
+exports.GetTableByAlias = function (zx,cx,Alias) {
+	//validates and translates v2 tag contents to .divin input
+	if ('this'== Alias) return cx.tid;
+	for (var key in zx.TableContexts) {
+		//console.warn('TableContexts:',[zx.TableContexts[key].alias,Alias]);
+		if (zx.TableContexts[key].alias == Alias) return zx.TableContexts[key];
+	};
+	return null;
+};
+
 var esc = function (txt) {
 	if (txt==undefined) return ' undefined ';
 return txt.replace(/{/g,'{ ').replace(/}/g,' }').replace(/</g,' &lt ').replace(/>/g,' &gt ');
@@ -716,14 +727,23 @@ var zxTable = exports.zxTable = function (cx) {
 	
 	//create validation record for cleint
 	//console.log('\n\nexports.zxTable:',cx.table);
-	//console.log('StyleTemplate : ',ihs,esc(StyleTemplate));
-	var T={validator:zx.geta(cx.table.validator)};
-	if (T.validator.length<1) delete T.validator;
+	//console.log('StyleTemplate : ',ihs,esc(StyleTemplate));	
+	//var T={validator:zx.geta(cx.table.validator)};
+	var T={};
+	if (zx.pass>4)	{
+		T.validator = zx.validation.reformat(zx,cx.table.validator,cx);
+		if (T.validator===null) delete T.validator;
+		if (T.validator&&(T.validator.length<1)) delete T.validator;
+	}	
+	
+	
 	zx.forFields(cx.fields, function (field, key) {
-		field.f.validator = zx.geta(field.f.validator);
-		if (field.f.validator.length<1) delete field.f.validator;
+		if (zx.pass>4)	{
+			field.f.validator = zx.validation.reformat(zx,field.f.validator,cx);
+			if (field.f.validator===null) delete field.f.validator;
+			if (field.f.validator&&(field.f.validator.length<1)) delete field.f.validator;
+		}
 		if (field.f.validator||field.f.List) {
-			zx.validation.use(zx, field.f.validator);
 			exports.List_use(zx, field.f.List);
 			var F={
 				//i:field.f.indx,
