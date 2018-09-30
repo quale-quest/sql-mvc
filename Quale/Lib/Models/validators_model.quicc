@@ -1,0 +1,142 @@
+<#
+
+rem naming this file *_model fails the naming convention as this file does not contain a model 
+
+
+
+rem Form validator switches to control  how the field validators affect the UI
+validator{
+	name:"None",
+	block:none
+	}	
+validator{
+	name:"BlockStatus",
+	block:BlockStatus
+	}		
+validator{
+	name:"BlockForm",
+	block:BlockForm,
+	fails:"Please check the fields for correct input."
+	}	
+validator{
+	name:"BlockField",
+	block:BlockField
+	}	
+validator{
+	name:"Suggest",
+	block:Suggest
+	}
+
+	
+	
+rem Field validator switches to change how field validators affect the UI	
+validator{
+	name:"Suggest",
+	block:Suggest
+	}		
+validator{
+	name:"Advise",
+	block:Advise
+	}	
+validator{
+	name:"Demand",
+	block:inherit
+	}	
+
+
+rem Modified inputs
+validator{
+	name:"AllowBlank",
+	check:form,
+	math:"length(input())==0",
+	fails:"may be blank"
+	}
+validator{
+	name:"Blank",
+	check:form,
+	math:"length(input())==0",
+	fails:"may be blank"
+	}
+validator{
+	name:"AllowUnchanged",
+	AllowUnchanged
+	}
+validator{
+	name:"MustFix",
+	MustFix,
+	fails:"You must correct the input to continue."
+	}	
+
+	
+rem Generic Common Validators	
+validator{name:"SMS",pattern:"^\\+*[0-9_]{4,15}$",
+	fails:"must be a valid phone number"}
+
+validator{name:"Email",
+	pattern:/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+	fails:"must be a valid email address"
+	helps:"a valid email must contain an @ symbol and a period"
+	}
+	
+validator{name:"StrongPassword",
+	pattern:"^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})",
+	fails:"must be a strong password"
+	helps:"a strong password must contain at least one lower-case, upper-case, numeric and special character and must be eight characters or longer."
+	}
+	
+validator{name:"MediumPassword", 
+	pattern:"^(((?=.*[a-z])(?=.*[A-Z]))|((?=.*[a-z])(?=.*[0-9]))|((?=.*[A-Z])(?=.*[0-9])))(?=.{6,})",
+	fails:"must be at least a medium strong password"
+	helps:"a medium strong password must contain at least one lower-case, upper-case and numeric character and must be six characters or longer"
+	}
+
+validator{name:"WeakPassword", 
+	pattern:"^(?=.{6,})",
+	fails:"must be at least a weak password"
+	helps:"a weak password must be six characters or longer"
+	}
+
+
+validator{
+	name:"LoginName",
+	length:[6,8],
+	AllowBlank,
+	AllowUnchanged,
+	fails:"User name must be 5 to 8 characters."
+	}
+
+validator{name:"UserName", 
+	pattern:"^(?=.{6,})",
+	fails:"must be at least six characters or longer"}
+
+validator{name:"Name",
+	math:"length(input())>=6",
+	fails:"Name must be at least 6 chars long"}
+
+
+validator{
+	name:"MatchingInput",
+	match:"p(1)",
+	AllowUnchanged,
+	fails:"Inputs must match."
+	}
+	
+	
+validator{name:"CompetantAge",
+	uom:"years",
+	range:[18,99],
+	fails:"You must be 18 or older"}
+	
+
+validator{name:"Discount",
+	math:"input()<0.1*sum(Items)",
+	fails:"Must be a Maximum of 10% discount",
+	hint:"Discount of up to 10% of value"}
+		
+
+
+	
+
+	
+#>
+

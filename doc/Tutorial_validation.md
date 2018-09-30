@@ -1,5 +1,15 @@
 # UX Validation (&& Assistance)
 TODO:
+Plan tutorial
+	General concepts - possibly move to another file
+	Quale concepts
+	Using predefined validators in tables
+	Defining your own simple validators
+	Defining more complex validators
+	Platfrom implementation and upgrading
+	
+	
+	
 -------------------------------------------------------
 # Validation
 
@@ -34,6 +44,12 @@ to avoid hacking attempts. The validation is as implementation independent as po
 -- Notice however practically some advance validations may require custom code or settings for the server and the client side. For example JS Regex and SQL Similar use different regex syntax, so we may have to specify both.
 
 -- Notice currently it only implements Client side validation - server side must still be implemented
+
+-------------------------------------------------------
+W3C  understanding of how to create accessible rich internet applications.
+https://www.w3.org/TR/wai-aria-practices-1.1/   
+
+Todo more study...
 
 -------------------------------------------------------
 # Mechanism
@@ -135,19 +151,62 @@ Blocking
 		alerts as “Validation Summary” at the top on submit or while editing.	
 	
 
-## Blocking type
+## Field Blocking type
 	Blocking is how validation affects the user interface
-	Check:
+	block:
 		None	-	simply highlight the field error - no blocking -Default
-		Warn	-	Warn 	aggressively warn about the field error - no blocking
-		From	-	block the user from saving or leaving the form - can navigate between fields
-		Field	-	prevent the user leaving the field - the field will not update to the database
+		message -	aggressively warn about the field error - no blocking - currently equivalent to none
+		status  - 	prevents the status to change from editing to active
+		warn	-	warn the user when saving or leaving the form- still saving
+		form	-	block the user from saving or leaving the form - can navigate between fields - 
+		field	-	prevent the user leaving the field - the field will not update to the database
 		
-	..	
-	Check:From 	
+
+
+
+	Field blocking disables the form navigation and submit. - clicking nav links should warn that invalid changes would be lost.
+	Form blocking, when the user presses save, a pop-up warns it cannot be saved until errors are fixed.
+				- alternative disable the save button
+	Warn	when the user presses save, a pop-up warns of the errors but still allows the save .
+	
+	
+validation conceptual settings: soft/temporal/strict/hard
+	Form:
+			Hard - block fields
+			BlockForm - Strict - block form
+			temporal - keep changes in tempry storage
+			soft - keep changes in db, but flag record as invalid
+	Field:
+			Suggest	- does not fail the form - Give warning
+			Advise	- does not fail the form - Give strong warning
+			Demand  - inherit according to Form Blocking ..this should be the default 
+			
+			
+
+
+
+
+
+-the problem with temporal storage is the pkref for a field will change for the same record,
+	so the tempory changes has to be storded in the database, then for each query has to issue another query to get the temp chage calues
+	ideally we want this to be kept at the client not the server
+		- that means we should use a hash of the record pk instead of the pk_ref
+
+	
+
+
+
+
 	
 	
 	
+	
+	
+	
+	
+## Status/Error update on editing	
+	A form function that will update a hidden status field if the form saves with no errors
+	A hidden error text field that  will write any validations fail messages to the record.
 	
 	
 	
@@ -176,31 +235,37 @@ Blocking
 -------------------------------------------------------
 # Syntax
 
+unchangedok / MustChange   is a flag at either field or table level that allows it unchanged and still save or exit the reocrd without "aborting" the edit
+
 Declaration
 validator{
-	name:""VALIDATORNAME",
+	name:"VALIDATORNAME",
 		nullok,  																		-- indicates null is acceptable
+		unchangedok,																	-- dont block if unchanged
+		block:field 																	-- 
 		pattern:"JS-REGEX" ,
-		similar:"SQL-REGEX",
+		
 		math:""  - expression using mathjs and stash field available - 
-		jsscript:CDV_CHECK,
-		sqlscript:CDV_CHECK,
 		length:[5,20]																	-- or length_min length_max  size_min	
-		range:[3,99]
-		min:1,max:140 		-- range
+		range:[3,99]		
+		
+		fails:"The email address must be valid",
+		
+		xxx similar:"SQL-REGEX",
+		xxx jsscript:CDV_CHECK,
+		xxx sqlscript:CDV_CHECK,
 		--use math expression:"((Aggregate(Balance) + Aggregate(values)) > Aggregate(Limit))",		-- should be a boolean evaluation
 		--use math expression:"(VALIDATORNAME & VALIDATORNAME | VALIDATORNAME)",					-- should be a boolean evaluation		
-		And:",,"																		-- ListOf other VALIDATORNAME's  could use & in expression
-		??? Or:",,"																			-- ListOf other VALIDATORNAME's  could use || in expression
-		Assign:"max=Aggregate(Limit)-Aggregate(Balance)-Aggregate(values)" 				-- Updates the element max whenever the Aggregate change
-		Aggregate:AggregateName															-- the result is shared by this name
+		xxx And:",,"																		-- ListOf other VALIDATORNAME's  could use & in expression
+		xxx ??? Or:",,"																			-- ListOf other VALIDATORNAME's  could use || in expression
+		xxx Assign:"max=Aggregate(Limit)-Aggregate(Balance)-Aggregate(values)" 				-- Updates the element max whenever the Aggregate change
+		xxx Aggregate:AggregateName															-- the result is shared by this name
+		        
+		xxx pass:"The email address is valid",
 		
-        fails:"The email address must be valid",
-		pass:"The email address is valid",
-		
-		blank:"Valid email",
-		placeholder:"Enter valid Email",
-		hint:"..."
+		xxx blank:"Valid email",
+		xxx placeholder:"Enter valid Email",
+		xxx hint:"..."
 		}
 		
 
@@ -317,6 +382,17 @@ https://itnext.io/https-medium-com-joshstudley-form-field-validation-with-html-a
 
 ## math funtions
 
+
+input()      	: changed value for field under test
+x()      	: original value for field under test
+f(fld)      : value of another field in same record
+fr(fld,rec) :
+frt(fld,rec,tbl):
+sum(fld,tbl) : 
+count(tbl) 
+p(indx)  : table/Field name passed as parameter 
+
+
 F(abs_table_nr,abs_record_nr,abs_field_nr)
 F(relative_record,abs_field_nr)
 F(abs_field_nr)
@@ -329,7 +405,28 @@ length()
 ## Class
 .validates  - a class on all fields that should be validated on save - used to iterate over validation fields
 
+## Table and field referances in validators
+Validators can access other fields of tables on the same page,
+Each table can have a alias name that is used to refreance the table in code or validators.
+We use a alias name as several quries may be from the same table or tables may be used multiple times.
+...consider renaming the alies as query_name or similar
+the tablealias.fieldname fromat can be used directly in the validator or may be used inderectly by
+passing it/them as a paramater, the validator can then refer the field as p(n).
 
+
+
+
+-------------------------------------------------------
+Examples:
+	
+validator{name:"RegionalCompetentAge",
+	uom:"years",
+	range:[f(p(1)),99],
+	fails:"You must be of competent age in your country."}	
+	
+--AGE,          --:{Action:Edit,validator:{RegionalCompetentAge:{preftable.CompetentAge}}}
+
+Verify_password,--:{Action:Edit,validator:[MatchingInput:{.PASSWD}]}
 -------------------------------------------------------
 
 # Implementation strategy

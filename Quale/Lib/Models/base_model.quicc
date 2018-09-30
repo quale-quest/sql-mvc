@@ -8,8 +8,7 @@
 --:{regex:"regex:/integer/i",Default_length:"10",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} 
 --:{regex:"regex:/SHORT_NAME/i",Default_length:"20",length:"regex:/(\\d+)/",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} 
 
---:{validator:"SMS",pattern:"^\+[0-9_]{1,15}$",pass:"The sms number must be a valid phone number "}
-
+	
 --:{class:"pk",Action:View,Type:Hide,PrimaryKey:true,fb_trigger:true}
 --:{class:"existing_pk",Action:View,Type:Hide,PrimaryKey:true,fb_trigger:false}
 --:{class:"fk",Action:Link,Type:Link}
@@ -71,38 +70,46 @@ CREATE TABLE user_table_name                         --:{as:"Table"}
   Last_NAME SHORT_NAME,	                         	 --:{as:"text",title:"Last Name"}  
   Gender SHORT_NAME,                            	 --:{as:"text",title:"Gender"}  
   
+ 
+  
   Status Integer default 0,							 --:{}  
   
   photo 	     VARCHAR(100),						 --:{as:image}
   photo_filename VARCHAR(100),	    				 --:{as:image_filename}  
   
   user_name_field SHORT_NAME,                        --:{as:"text",title:"Login Name"}  
-  user_password_field Z$T_PASSWORD,			  		 --:{as:"text",title:"Password"}  
-  FB_LINK VARCHAR(320) DEFAULT '',					 --:{as:"text",title:"Facebook timeline"}  
-  FB_updated_time TIMESTAMP DEFAULT 'now',			 --:{as:"text",title:"FB_UPDATED"} 
+  user_password_field Z$T_PASSWORD,			  		 --:{as:"text",title:"Password"} 
+  Verify_password  Z$T_PASSWORD,			  		 --:{as:"text",title:"Verify password"} 
+
   INVITED_BY FK,									 --:{as:"text",title:"Invited by"}  
   SITE_ID    FK,									 --:{as:"text",title:"Currently visiting"}  
   
   
   Country    FK,									 --:{as:"text",title:"Currently visiting"}  
   
-  timezone	 VARCHAR(20),							 --:{as:"text"}  
-  user_landing_page VARCHAR(80) DEFAULT 'Home/Guest',     --:{as:"text"}  
+  Time_Zone	 VARCHAR(20),							 --:{as:"text"}  
+  user_landing_page VARCHAR(80) DEFAULT 'Home/Guest',--:{as:"text"}  
   user_keys_field VARCHAR(250),						 --:{as:"text",title:"Key list"}  
   LANGUAGE fk,										 --:{as:"text",title:"Language"}  
   GP_INPUT VARCHAR(250),  						  	 --:{Type:"Hide"}
 
-  OWNER FK,
-  ACTIVATION_DATE TIMESTAMP DEFAULT 'now',
-  EXPIRY_DATE TIMESTAMP DEFAULT MAXDATE,
-  FLAGS VARCHAR(20),
-  SKILL_LIST VARCHAR(250),
-  FORCE_CHANGE_ON TIMESTAMP,
-  TEAM FK,
-  IMAGE FK,
-  MOBILE_NUMBER Z$PHONE_NUMBER,						--:{as:"text",title:"Password"}  
-  EMAIL Z$EMAIL,									--:{as:"text",title:"Password"}  
-  IM VARCHAR(200)									--:{as:"text",title:"Password"}  
+  OWNER FK,											--:{as:"fk"} 
+  ACTIVATION_DATE TIMESTAMP DEFAULT 'now',			--:{as:"datestamp"} 
+  EXPIRY_DATE TIMESTAMP DEFAULT MAXDATE,			--:{as:"datestamp"} 
+  FLAGS VARCHAR(20),								--:{as:"text"}
+  SKILL_LIST VARCHAR(250),							--:{as:"text"}
+  FORCE_CHANGE_ON TIMESTAMP,						--:{as:"timestamp"} 
+  TEAM FK,											--:{as:"fk"} 
+  IMAGE FK,											--:{as:"fk"} 
+  
+  Date_Of_Birth TIMESTAMP, 							--:{as:"datestamp"} 
+
+
+  FB_LINK VARCHAR(320) DEFAULT '',					--:{as:"text",title:"Facebook timeline"}  
+  FB_updated_time TIMESTAMP DEFAULT 'now',			--:{as:"text",title:"FB_UPDATED"}   
+  MOBILE_NUMBER Z$PHONE_NUMBER,						--:{as:"text",title:"Mobile Number"}  
+  EMAIL Z$EMAIL,									--:{as:"text",title:"Email"}  
+  IM VARCHAR(200)									--:{as:"text",title:"IM Address"}  
   
 );
 CREATE INDEX IDX_ME1 ON user_table_name (user_pk_field);

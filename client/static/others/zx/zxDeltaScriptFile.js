@@ -172,6 +172,7 @@ function FindCell(e,level)
     else if (e.srcElement) el = e.srcElement;
 	else el = e;  
     var valu='';
+	if (e.value) valu=e.value;
 	if (e.target) if (e.target.value) valu=e.target.value;
     var typ=e.type;	
 
@@ -328,18 +329,20 @@ function math_eval(str,unit) {
 function Get_Validation(pk){
 	//pk.parm = {};
 	pk.validators =[];	
+	pk.table_validators =[];	
 	if (qq_static_stash) {
-		//console.log("qq_static_stash      :",qq_static_stash   );
-		//console.log("qq_static_stash table:",pk.f,qq_static_stash.TablesIndex['t'+pk.t]   );		
-		if (qq_static_stash.TablesIndex['t'+pk.t]) {
+		//console.log("qq_static_stash      :",qq_static_stash   );		
+		var table_pointer = qq_static_stash.TablesIndex['t'+pk.t];
+		//console.log("qq_static_stash table:",pk.f,table_pointer   );		
+		if (table_pointer) {
 			//console.log("qq_static_stash field:",qq_static_stash.TablesIndex['t'+pk.t][pk.f]   );
-			if (qq_static_stash.TablesIndex['t'+pk.t][pk.f]) {
-				//pk.parm = qq_static_stash.TablesIndex['t'+pk.t][pk.f];
-				var validator_name = qq_static_stash.TablesIndex['t'+pk.t][pk.f].validator;
-				//console.log("qq_static_stash validator_name :",validator_name   );	
-				pk.validators  = validator_name;
-				//pk.valid  = qq_static_stash.Validators[validator_name];
-				//console.log("qq_static_stash Validators :",pk   );				
+			//console.log("qq_static_stash validator:",pk.f,table_pointer['validator']   );		
+			if (table_pointer['validator']) {
+				pk.table_validators  = table_pointer['validator']||[];
+			}
+
+			if (table_pointer[pk.f]) {
+				pk.validators = table_pointer[pk.f].validator;
 			}
 		}
 	}
@@ -381,29 +384,62 @@ function check_math(validator_math,Cell,pk,validator_rec){
 	return math.eval(validator_math,math_scope);	
 }			
 
-function check_validator(validator,Cell,pk,validator_rec) {
-	var res={isValid:true};	
+function check_blocking(pk,pk_validators,Cell, level) {
+	var r={
+		block_at_field : false,
+		block_at_form : false,
+	};
+	//any of the validators may be true
+	if (pk_validators) pk_validators.forEach(function(validator_rec) { 
+		var validator_name=validator_rec[0];
+		var validator  = qq_static_stash.Validators[validator_name];			
+		//console.log("check_blocking :",validator_name,validator);
+		if (validator) {
+            if ((level==0) && 
+				 ((validator.block=='inherit')||(validator.block==undefined))
+				) 
+			{
+				let r2 = check_blocking(pk,pk.table_validators,Cell, 1);
+				r.block_at_field|=r2.block_at_field;
+				r.block_at_form |=r2.block_at_form;
+			}
+			r.block_at_field|=(validator.block=='BlockField');
+			r.block_at_form |=(validator.block=='BlockForm');
+		}
+	});
+	return r;
+}
+
+function check_validator(validator_name,validator,Cell,pk,validator_rec) {
+	var res={isValid:null};	
 	//console.log("check_validator value :",Cell.valu,' validator: ',validator);
 	var general_fail_msg="";
 	//console.log("check_validator validator.length :",validator.length);
 	//console.log("check_validator value keys:",qq_stache);//.keys());	
-	//console.log("check_validator validator.nullok:",validator.nullok);
-	
+	//console.log("check_validator validator.AllowBlank:",validator.AllowBlank);
+	res.validator_name = validator_name;
+	res.Cell_valu = Cell.valu;
 	try {
 		res.msg = validator.fails;
+		res.helps = validator.helps;
+		//console.log("check_validator helps:",res.msg,res.helps);
 		if (validator.pattern){
+			res.pattern = validator.pattern;
 			res.isValid = new RegExp(validator.pattern).test(Cell.valu);
 			general_fail_msg = "Must be valid input";
+			console.log("check_validity pattern ",Cell.valu," : ",res.isValid); 
 		}
 		if (validator.match){
+			res.match = validator.match;
 			let field = check_math(validator.match,Cell,pk,validator_rec);
 			//console.log("check_validity match   :",validator.match , field);
 			let wth	= qq_stache[Cell.cid][field[0]][+pk.i][field[1]+1];			
 			res.isValid = (wth==Cell.valu);
-			//console.log("check_validity match input ",Cell.valu," == ",wth," : ",res.isValid); 
+			console.log("check_validity match input ",Cell.valu," == ",wth," : ",res.isValid); 
 			general_fail_msg = "Inputs must match" ;
 		}		
 		if (validator.length){
+			res.length = validator.length;
 			var low  = +check_math(validator.length[0],Cell,pk,validator_rec);
 			var high = +check_math(validator.length[1],Cell,pk,validator_rec);			
 			//console.log("check_validity length   :",low , Cell.valu.length , high); 
@@ -411,6 +447,7 @@ function check_validator(validator,Cell,pk,validator_rec) {
 			general_fail_msg = "Must be " + low + " to " + high +  "characters long" ;
 		}	
 		if (validator.range){
+			res.range = validator.range;
 			var val = math_eval(Cell.valu,validator.uom);
 			//console.log("check_validity range   :",+validator.range[0] , val , +validator.range[1]); 
 			if (val.error)  {
@@ -426,25 +463,22 @@ function check_validator(validator,Cell,pk,validator_rec) {
 		}
 
 		if (validator.math){
+			res.math = validator.math;
 			res.isValid = check_math(validator.math,Cell,pk,validator_rec);
 			//console.log("check_validator math.eval :",res);
 			//console.log("check_validator res.isValid :",validator.math,'  ',res.isValid);
 			//if (!debug)	general_fail_msg = 'must be a valid value';		
 		}		
 
-		if (validator.nullok) {
-			if (Cell.valu=="") {
-				res.isValid = true;
-				res.msg = "";
-				general_fail_msg ="";
-			} else {
-				if (!res.isValid) {				
-				res.msg = res.msg  + " or may be blank";
-				}
-			}
-
-		}
 		
+		if (validator.AllowUnchanged) {
+			res.AllowUnchanged = validator.AllowUnchanged;
+			//can accept unchanged inputs even if they are invalid
+			if (Cell.valu==math_scope.data['t'+pk.t][+pk.i][+pk.f]) {
+				res.isUnchangedAndAllowedToBeUnchanged = true;
+			}
+		}
+
 		if (!res.msg && !res.isValid) {
 			res.msg = general_fail_msg ;
 		}		
@@ -453,69 +487,110 @@ function check_validator(validator,Cell,pk,validator_rec) {
 		res.isValid = false;
 		res.msg = JSON.stringify(e);
 		console.log("check_validator catch :",res.msg,e); 
-		
 	}
+	if (res.isValid==null) res.isValid=false; //was not tested so should not be or'ed to the result
 	return res;
 }
 
-function check_validity(Cell,el) {
-	var isValid = false;
-	var block_at_field = false;
-	var Tested = false;
-	var msg="";
-	var pk = Cell.pk;
-	Get_Validation(pk);
+
+
+
+
+
+
+function check_validity_array(pk,pk_validators,Cell) {
+	var r={
+		isValid : false,
+		isUnchangedOrValid : false,
+		msg:"",
+		helps:"", 
+		Tested:false
+	};
+	var dbg=[];
+	let r1 = check_blocking(pk,pk_validators,Cell, 0);
+	r.block_at_field = r1.block_at_field;
+	r.block_at_form  = r1.block_at_form;
+	//console.log("check_blocking ar:",pk_validators,r1);
 	
 	//console.log("check_validity check  :",[Cell.valu]); 
     //console.log("check_validity with   :",pk); 
-	//console.log("check_validity pk.validators:",pk.validators); 
-	
+	//console.log("check_validity pk.validators:",pk_validators); 
+	//console.log("check_validity pk.table_validators:",pk.table_validators); 
 	
 	//any of the validators may be true
-	if (pk.validators) pk.validators.forEach(function(validator_rec) { 
+	if (pk_validators) pk_validators.forEach(function(validator_rec) { 
 		var validator_name=validator_rec[0];
-		//console.log("pk validator_name forEach :",validator_name,isValid ,Tested);
+		//console.log("pk validator_name forEach :",validator_name,r.isValid ,r.Tested);
 		var validator  = qq_static_stash.Validators[validator_name];			
 		//console.log("pk validator_name :",validator_name,validator);
 		if (validator) {
-		    //console.log("pk validator_name :",validator_name,validator);			
-			let isValid2 = check_validator(validator,Cell,pk,validator_rec);
-			block_at_field|=(validator.block=='field');
-			isValid |= isValid2.isValid;
-			console.log("check_validity isValid2 :",isValid2,'final : ',isValid,' block_at_field:',block_at_field);
-			if (!isValid2.isValid) {
-				if (msg!="") msg = msg + " or "  ;
-				msg = msg + isValid2.msg;
+			let val_result = check_validator(validator_name,validator,Cell,pk,validator_rec);
+			//console.log("pk validator_name :",validator_name,validator,r.isValid,val_result.isValid);
+			dbg.push(val_result);
+			r.isValid |= val_result.isValid;
+			r.isUnchangedOrValid |=  val_result.isValid||val_result.isUnchangedAndAllowedToBeUnchanged;
+			if (!val_result.isValid) {
+				if (val_result.msg) {
+					if (r.msg!="") r.msg = r.msg + " or "  ;
+					r.msg = r.msg + val_result.msg;
+					}
+				
+				if (val_result.helps) {
+					console.log("pk validator_name helps :",[val_result.helps,r.helps]);
+					if (r.helps!="") r.helps = r.helps + " or "  ;
+					r.helps = r.helps + val_result.helps;
+					}
+				
 			}			
 		}
-		Tested = true;
+		r.Tested = true;
 	});
-	//console.log("pk validator_name xxx :",isValid ,Tested);
-	if (!Tested) isValid = true;
-	if (isValid) block_at_field = false;
-	
-	//console.log('check_validity result:',isValid,msg);
-	//console.log('check_validity pk   :',[Cell.cid,'t'+pk.t,+pk.i,+pk.f]);
-	//console.log('check_validity watch:',isValid,qq_stache[Cell.cid]['t'+pk.t][+pk.i]);
+	//console.log("pk validator_name xxx :",isValid ,r.Tested);
+	if (!r.Tested) r.isValid = true;
+	//if (r.isValid) r.block_at_field = false;
+	console.log("check_validity_array :",dbg,r);//pk_validators
+	return r;
+}
+
+function hashCode2(str){
+	var hash = 0;
+	if (str.length == 0) return hash;
+	for (i = 0; i < str.length; i++) {
+		char = str.charCodeAt(i);		
+		hash = ((hash<<5)-hash)+char;		
+		hash = hash & hash; // Convert to 32bit integer
+	}
+	return hash;
+}
+
+function check_validity(Cell,el) {
+	var pk = Cell.pk;
+	Get_Validation(pk);
+	//console.log("check_validity check  :",[Cell.valu]); 
+	//any of the validators may be true
+	var r= check_validity_array(pk,pk.validators,Cell);
 	var originalvalue = qq_stache[Cell.cid]['t'+pk.t][+pk.i][+pk.f+1];
-	//console.log('check_validity delta:',originalvalue,Cell.valu,originalvalue== Cell.valu);
-	if (originalvalue== Cell.valu) zxdeltawip(false); else zxdeltawip(isValid);
+	if (originalvalue== Cell.valu) zxdeltawip(false); else zxdeltawip(r.isValid);
+	let validations  = el.parentNode.getElementsByClassName('validationshown');
+	if (!(validations && validations.length)) {
+		validations = el.parentNode.getElementsByClassName('validationhidden');
+	}
+	if (r.helps) r.msg = r.msg + " [...Help]"	
+	if (r.helps=="") r.helps = r.msg;
+	let s1 = '$("#container-n").notify("create", "sticky",{ title:"Help:",text:"'+r.helps+'"},{ })';
+	let innerHTML = "<span onclick='"+s1+"'>"+r.msg+'</span>';
+    let hideshow = r.isValid?'validationhidden':'validationshown';
+	let hash=hashCode2(hideshow + innerHTML);
+	if (validations && validations.length) {
+		if (validations[0].getAttribute('data-err-hash') != hash) {
+			validations[0].setAttribute('data-err-hash',hash);
+			validations[0].innerHTML =innerHTML;
+			validations[0].className = hideshow; //must be set last as it is a live list			
+			}
+	}
 	
-	//console.log('check_validity watch:',isValid,qq_stache[Cell.cid]['t'+pk.t][+pk.i]);
-
-	let validationshown  = el.parentNode.getElementsByClassName('validationshown');	  
-	let validationhidden = el.parentNode.getElementsByClassName('validationhidden');
-	//console.log(' isValid xxx:',validationshown,validationhidden); 
-	if (validationshown && validationshown.length) {
-		  validationshown[0].innerText = msg;
-		  validationshown[0].className = isValid?'validationhidden':'validationshown';		    
-	}else if (validationhidden && validationhidden.length) {
-		  validationhidden[0].innerText = msg;  
-		  validationhidden[0].className = isValid?'validationhidden':'validationshown';		  
-	}	  
-	if (isValid) hold_focus_at = null;  
-	return {isValid:isValid,block_at_field:block_at_field};
-
+	if (r.isValid) hold_focus_at = null;  //global 
+	return r;
 }
 
 var button_delay_timeout = null;
@@ -537,11 +612,6 @@ function zxf(e) {
 	var r=Cell.el.dataset.touched;
 	var el=Cell.el;
 	delete Cell.el;
-  
-    //console.log("zxf Cell:",Cell);  
-    //console.log("zxf el:",el);
-	//console.log("zxf el:",el); 
-	//Cell.el.dataset.touched = 1;	
 	el.onkeyup =  button_delay;	
 }
 var hold_focus_at = null;
@@ -611,16 +681,41 @@ return;
 }
 
 
-function zxnav(e,pkf,pko,level) {
-  //alert(pkf+pko);   
-  if (e.stopPropagation) e.stopPropagation();  
+function zxsave(e,pkf,pko,level) {
   if (pko!==undefined) pkf=String(+pkf + (+pko));
-  var Cell=FindCell(e,level); //zxnav
+  var Cell=FindCell(e,level); //zxsave
   Cell.pkf = pkf;
   delete Cell.el;
-  console.log("zxnav:",Cell);
+  console.log("zxsave:",Cell);
   zx_delta(Cell);
   return false;
+}
+
+function zxnav(e,pkf,pko,level) {
+	if (1) {
+	var validator_ele = document.getElementsByClassName('validator');
+	for (var i = 0; i < validator_ele.length; ++i) {
+		var e = validator_ele[i];
+		let Cell=FindCell(e);//zxnav
+		var pk=Cell.pk;
+		var el=Cell.el;
+		console.log("zxnav el:",[i,e.target,e,Cell,el]); 		
+		
+		var resValid = check_validity(Cell,el);  
+		console.log("zxnav[i] result:",e.title,resValid);	
+	}
+	return;
+	}
+
+  if (e.stopPropagation) e.stopPropagation();  
+  if (hold_focus_at) {
+	  if (confirm("You cannot save a critical invalid field!,\n save the other valid fields and continue ?")) {
+			zxsave(e,pkf,pko,level);
+		} else {			
+		}
+  } else zxsave(e,pkf,pko,level);
+  
+
 
 }
 

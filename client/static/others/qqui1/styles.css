@@ -1401,7 +1401,7 @@ label.fldTitle,legend.fldTitle,legend.choiceFld {
 }
 
 .validationhidden {
-	padding: 0 30px 0 50px;
+	padding: 0 0px 0 0px;
 	color: #999;
 	max-height: 0;
 	transition: 0.28s;
@@ -1410,7 +1410,7 @@ label.fldTitle,legend.fldTitle,legend.choiceFld {
 	font-style: italic;
 }
 .validationshown {
-	padding: 0 30px 0 50px;
+	padding: 0 0px 0 0px;
 	color: #999;
 	transition: 0.28s;
 	overflow: hidden;
