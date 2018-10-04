@@ -129,6 +129,7 @@ var formulatemodel_quale = exports.formulatemodel_quale = function (zx, cx, tcx,
 	tcx.query_original = o.q.query;
 	tcx.query = o.q.query; //thats it!!!
 
+	//console.log('\n\nformulatemodel_quale cx.Fields:',o.q.Fields);
 	if (!cx.table.alias) cx.table.alias=cx.table.from;
 
 	//console.log('done - QICC style query',tcx.query);
@@ -386,8 +387,11 @@ var exec_query = function (zx, o, QueryType) {
 	cx.tid_name = cx.tid;
 	if ((QueryType === "List") || (QueryType === "Dict")) {
 		cx.tid_name = zx.gets(o.name);
+		if ((cx.tid_name=="")&&(o.q)) {
+			if (o.q.Table) cx.tid_name = zx.gets(o.q.Table.alias);			
+		}
 	}
-	//console.log('cx.table.tablestyle:');
+	//console.log('exec_query tid_name:',cx.tid_name);
 	cx.CurrentTableInheritStyle = "";
 	//console.log('formulatemodel:');
 
@@ -539,7 +543,7 @@ exports.tag_list = function (zx, o) {
 		zx.static_stash.ListIndex[name] ={assign_count:0};
 		return;
 	}
-
+	
 	var DictionaryTableName = 'Z$DICTIONARY';//TODO get the DictionaryTableName from the config file
 	if (zx.gets(o.from) === "")
 		o.from = DictionaryTableName;
@@ -548,7 +552,7 @@ exports.tag_list = function (zx, o) {
 	if ((zx.gets(o.select) === ""))
 		o.select = "Ref,Name"; //TODO get this field names from a  config file per table
 	if ((zx.gets(o.from) === DictionaryTableName) && (zx.gets(o.where) === ""))
-		o.where = "Context='" + zx.sql_escapetoString(zx.gets(o.name)) + "'";
+		o.where = "Context='" + zx.sql_escapetoString(zx.gets(o.name)) + "'  order by indx";
 	o.MakeList = 1;
 
 	exec_query(zx, o, "Dict");

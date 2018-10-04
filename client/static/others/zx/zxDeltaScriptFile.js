@@ -249,12 +249,15 @@ function zxd_checkbox(Cell,el) {
 
 function stripQ(val) { 
     if (val===undefined) return "";
+	if (typeof val === 'number') return val;
 	if ((val.substring(0,2)=='\\"')&&(val.slice(-2)=='\\"')) return val.slice(2,-2); 
     if ((val.substring(0,1)=='"')&&(val.slice(-1)=='"')) return val.slice(1,-1); 
      return val;	
 }
 
 function truish(input) { 
+ //console.log("truish a:",input);
+ if (typeof input === 'number') return input;
  var val=stripQ(input);
  //console.log("truish :",input,val,val.substring(0,1));
  return (val!==undefined)&&(val!=0)&&(val!='')&&(val.substr(0,1).toLowerCase()!='n')&&(val.substr(0,1).toLowerCase()!='f')&&(val!='0');
@@ -360,10 +363,12 @@ function check_math(validator_math,Cell,pk,validator_rec){
 		
 		math_scope.p      = function (par) {/*console.log("math_scope p:",math_scope.validator_rec[+par]);*/ return math_scope.validator_rec[+par];}
 		
-		math_scope.x      = function () {console.log("math_scope x:",math_scope.data['t'+pk.t][+pk.i][+pk.f]);return math_scope.data['t'+pk.t][+pk.i][+pk.f];}
-		
-		math_scope.f      = function (fld) {return math_scope.data['t'+pk.t][+pk.i][+fld];}
-		math_scope.fr     = function (fld,rec) {return math_scope.data['t'+pk.t][+pk.i + +rec][+fld];}
+		math_scope.x      = function () {//console.log("math_scope x:",[math_scope.data['t'+math_scope.pk.t][+math_scope.pk.i][+math_scope.pk.f+1],math_scope.pk]);
+										 return math_scope.data['t'+math_scope.pk.t][+math_scope.pk.i][+math_scope.pk.f+1];
+										}
+																													 
+		math_scope.f      = function (fld) {return math_scope.data['t'+math_scope.pk.t][+math_scope.pk.i][+fld];}
+		math_scope.fr     = function (fld,rec) {return math_scope.data['t'+math_scope.pk.t][+math_scope.pk.i + +rec][+fld];}
 		
 		math_scope.frt    = function (fld,rec,tbl) {return math_scope.data['t'+tbl][+rec][+fld];}
 		math_scope.sum    = function (fld,tbl) {var sum=0;for(var rec=0;rec<math_scope.data['t'+tbl].length;rec++) {sum+= math_scope.data['t'+tbl][+rec][+fld];}return sum;}
@@ -381,6 +386,7 @@ function check_math(validator_math,Cell,pk,validator_rec){
 	}
 	math_scope.validator_rec = validator_rec;
 	math_scope.Cell_valu=Cell.valu;	
+	math_scope.pk=pk;
 	return math.eval(validator_math,math_scope);	
 }			
 
@@ -388,6 +394,7 @@ function check_blocking(pk,pk_validators,Cell, level) {
 	var r={
 		block_at_field : false,
 		block_at_form : false,
+		AllowUnchanged : false
 	};
 	//any of the validators may be true
 	if (pk_validators) pk_validators.forEach(function(validator_rec) { 
@@ -402,15 +409,17 @@ function check_blocking(pk,pk_validators,Cell, level) {
 				let r2 = check_blocking(pk,pk.table_validators,Cell, 1);
 				r.block_at_field|=r2.block_at_field;
 				r.block_at_form |=r2.block_at_form;
+				r.AllowUnchanged |=truish(r2.AllowUnchanged);
 			}
-			r.block_at_field|=(validator.block=='BlockField');
-			r.block_at_form |=(validator.block=='BlockForm');
+			r.block_at_field |=(validator.block=='BlockField');
+			r.block_at_form  |=(validator.block=='BlockForm');
+			r.AllowUnchanged |=truish(validator.AllowUnchanged);
 		}
 	});
 	return r;
 }
 
-function check_validator(validator_name,validator,Cell,pk,validator_rec) {
+function check_validator(validator_name,validator,Cell,pk,validator_rec,block) {
 	var res={isValid:null};	
 	//console.log("check_validator value :",Cell.valu,' validator: ',validator);
 	var general_fail_msg="";
@@ -470,13 +479,20 @@ function check_validator(validator_name,validator,Cell,pk,validator_rec) {
 			//if (!debug)	general_fail_msg = 'must be a valid value';		
 		}		
 
-		
-		if (validator.AllowUnchanged) {
-			res.AllowUnchanged = validator.AllowUnchanged;
+		if (!block.AllowUnchanged) console.log("validator.AllowUnchanged FALSE:",validator_name,block);	
+		if (validator.AllowUnchanged||block.AllowUnchanged) {
+			res.AllowUnchanged = validator.AllowUnchanged||block.AllowUnchanged;
 			//can accept unchanged inputs even if they are invalid
-			if (Cell.valu==math_scope.data['t'+pk.t][+pk.i][+pk.f]) {
+			//if (typeof math_scope === "undefined")	{
+				
+			//console.log("validator.AllowUnchanged b4:",[Cell.valu,Cell,pk,validator_rec]);				
+			let field = check_math("x()",Cell,pk,validator_rec);
+			//console.log("validator.AllowUnchanged :",[field,Cell.valu,Cell,pk,validator_rec]);			
+			
+			if (Cell.valu==field) {
 				res.isUnchangedAndAllowedToBeUnchanged = true;
 			}
+			//console.log("validator.AllowUnchanged after:",res);				
 		}
 
 		if (!res.msg && !res.isValid) {
@@ -507,10 +523,12 @@ function check_validity_array(pk,pk_validators,Cell) {
 		Tested:false
 	};
 	var dbg=[];
-	let r1 = check_blocking(pk,pk_validators,Cell, 0);
-	r.block_at_field = r1.block_at_field;
-	r.block_at_form  = r1.block_at_form;
-	//console.log("check_blocking ar:",pk_validators,r1);
+	let block = check_blocking(pk,pk_validators,Cell, 0);
+	r.block_at_field = block.block_at_field;
+	r.block_at_form  = block.block_at_form;
+	r.AllowUnchanged = block.AllowUnchanged;
+	//console.log("check_validity_array r:",r);
+	//console.log("check_blocking ar:",pk_validators,block);
 	
 	//console.log("check_validity check  :",[Cell.valu]); 
     //console.log("check_validity with   :",pk); 
@@ -524,15 +542,16 @@ function check_validity_array(pk,pk_validators,Cell) {
 		var validator  = qq_static_stash.Validators[validator_name];			
 		//console.log("pk validator_name :",validator_name,validator);
 		if (validator) {
-			let val_result = check_validator(validator_name,validator,Cell,pk,validator_rec);
+			let val_result = check_validator(validator_name,validator,Cell,pk,validator_rec,block);
 			//console.log("pk validator_name :",validator_name,validator,r.isValid,val_result.isValid);
 			dbg.push(val_result);
 			r.isValid |= val_result.isValid;
 			r.isUnchangedOrValid |=  val_result.isValid||val_result.isUnchangedAndAllowedToBeUnchanged;
+			//console.log("check_validity_array isUnchangedOrValid :",[validator_name,r.isUnchangedOrValid,val_result.isValid,val_result.isUnchangedAndAllowedToBeUnchanged]);
 			if (!val_result.isValid) {
 				if (val_result.msg) {
 					if (r.msg!="") r.msg = r.msg + " or "  ;
-					r.msg = r.msg + val_result.msg;
+					r.msg = r.msg + val_result.msg + " " +val_result.isUnchangedAndAllowedToBeUnchanged;
 					}
 				
 				if (val_result.helps) {
@@ -546,7 +565,10 @@ function check_validity_array(pk,pk_validators,Cell) {
 		r.Tested = true;
 	});
 	//console.log("pk validator_name xxx :",isValid ,r.Tested);
-	if (!r.Tested) r.isValid = true;
+	if (!r.Tested) {
+		r.isValid = true;
+		r.isUnchangedOrValid=true;
+		}
 	//if (r.isValid) r.block_at_field = false;
 	console.log("check_validity_array :",dbg,r);//pk_validators
 	return r;
@@ -563,33 +585,37 @@ function hashCode2(str){
 	return hash;
 }
 
-function check_validity(Cell,el) {
+function check_validity(Cell,el,check_only) {
 	var pk = Cell.pk;
 	Get_Validation(pk);
 	//console.log("check_validity check  :",[Cell.valu]); 
 	//any of the validators may be true
 	var r= check_validity_array(pk,pk.validators,Cell);
-	var originalvalue = qq_stache[Cell.cid]['t'+pk.t][+pk.i][+pk.f+1];
-	if (originalvalue== Cell.valu) zxdeltawip(false); else zxdeltawip(r.isValid);
-	let validations  = el.parentNode.getElementsByClassName('validationshown');
-	if (!(validations && validations.length)) {
-		validations = el.parentNode.getElementsByClassName('validationhidden');
-	}
-	if (r.helps) r.msg = r.msg + " [...Help]"	
-	if (r.helps=="") r.helps = r.msg;
-	let s1 = '$("#container-n").notify("create", "sticky",{ title:"Help:",text:"'+r.helps+'"},{ })';
-	let innerHTML = "<span onclick='"+s1+"'>"+r.msg+'</span>';
-    let hideshow = r.isValid?'validationhidden':'validationshown';
-	let hash=hashCode2(hideshow + innerHTML);
-	if (validations && validations.length) {
-		if (validations[0].getAttribute('data-err-hash') != hash) {
-			validations[0].setAttribute('data-err-hash',hash);
-			validations[0].innerHTML =innerHTML;
-			validations[0].className = hideshow; //must be set last as it is a live list			
-			}
+	
+	if (!check_only) {
+		var originalvalue = qq_stache[Cell.cid]['t'+pk.t][+pk.i][+pk.f+1];
+		if (originalvalue== Cell.valu) zxdeltawip(false); else zxdeltawip(r.isValid);
+
+		if (r.helps) r.msg = r.msg + " [...Help]"	
+		if (r.helps=="") r.helps = r.msg;
+		let s1 = '$("#container-n").notify("create", "sticky",{ title:"Help:",text:"'+r.helps+'"},{ })';
+		let innerHTML = "<span onclick='"+s1+"'>"+r.msg+'</span>';
+		let hideshow = r.isValid?'validationhidden':'validationshown';
+		let hash=hashCode2(hideshow + innerHTML);
+
+		let validations  = el.parentNode.getElementsByClassName('validationshown');
+		if (!(validations && validations.length)) validations = el.parentNode.getElementsByClassName('validationhidden');
+
+		if (validations && validations.length) {
+			if (validations[0].getAttribute('data-err-hash') != hash) {
+				validations[0].setAttribute('data-err-hash',hash);
+				validations[0].innerHTML =innerHTML;
+				validations[0].className = hideshow; //must be set last as it is a live list			
+				}
+		}
 	}
 	
-	if (r.isValid) hold_focus_at = null;  //global 
+	//
 	return r;
 }
 
@@ -600,19 +626,22 @@ const button_delay = function (e) {
 	button_delay_timeout = setTimeout(function () {        
 		let Cell=FindCell(e);
 		//console.log('button_delay done:', Cell.valu);
-		check_validity(Cell,Cell.el);
+		check_validity(Cell,Cell.el,false);
+		if (r.isValid) hold_focus_at = null;  //global 
     }, 700);
 	
 }
 
 
-function zxf(e) {	
+function zxf(e) {
+/*	
 	let Cell=FindCell(e); //get a new object for the element
-	check_validity(Cell,Cell.el);	
+	check_validity(Cell,Cell.el,false);	
 	var r=Cell.el.dataset.touched;
 	var el=Cell.el;
 	delete Cell.el;
 	el.onkeyup =  button_delay;	
+*/	
 }
 var hold_focus_at = null;
 function zxd(e,pkf,pko) { //delta
@@ -642,7 +671,7 @@ var r;
 	  return;
   }
   if (Cell.typ=="change")  {
-	  resValid = check_validity(Cell,el);  
+	  resValid = check_validity(Cell,el,false);  
 	  if (resValid.block_at_field) 
 	  {
 		  if (!resValid.isValid) {
@@ -691,32 +720,46 @@ function zxsave(e,pkf,pko,level) {
   return false;
 }
 
-function zxnav(e,pkf,pko,level) {
-	if (1) {
+function validate_form(check_only) {
+	var r={
+		isValid : true,
+		block_at_form : false,
+		isUnchangedOrValid : true
+	}
+	
 	var validator_ele = document.getElementsByClassName('validator');
 	for (var i = 0; i < validator_ele.length; ++i) {
-		var e = validator_ele[i];
-		let Cell=FindCell(e);//zxnav
+		var ve = validator_ele[i];
+		let Cell=FindCell(ve);//zxnav
 		var pk=Cell.pk;
 		var el=Cell.el;
-		console.log("zxnav el:",[i,e.target,e,Cell,el]); 		
-		
-		var resValid = check_validity(Cell,el);  
-		console.log("zxnav[i] result:",e.title,resValid);	
-	}
-	return;
-	}
+		var resValid = check_validity(Cell,el,check_only);  
+		console.log("zxnav[i] result:",ve.title,resValid,r.isValid,r.isUnchangedOrValid);
+		r.isValid &= resValid.isValid;
+		r.isUnchangedOrValid &= resValid.isUnchangedOrValid;
+		r.block_at_form |= resValid.block_at_form;		
+	}		
+	return r;
+}
 
-  if (e.stopPropagation) e.stopPropagation();  
-  if (hold_focus_at) {
-	  if (confirm("You cannot save a critical invalid field!,\n save the other valid fields and continue ?")) {
-			zxsave(e,pkf,pko,level);
-		} else {			
+function zxnav(e,pkf,pko,level) {
+	if (e.stopPropagation) e.stopPropagation();  
+	
+	if (hold_focus_at) {
+	    if (!confirm("You cannot save a invalid field!,\n save the other valid fields and continue ?")) {
+			return;
 		}
-  } else zxsave(e,pkf,pko,level);
-  
+	}
 
+	var r = validate_form(true);
+	if (r.block_at_form && !r.isUnchangedOrValid) {
+		validate_form(false);
+		$("#container-n").notify("create", "sticky",{ title:"Warn:",text:"You must fix the errors before you can save!"},{ });
+		return;
+	}
 
+    
+	zxsave(e,pkf,pko,level);
 }
 
 function zxmodalclose() {

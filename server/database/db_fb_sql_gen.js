@@ -1094,13 +1094,13 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 		recordseperator = "\n    "+  zx.config.db.sql_set_prefix +zx.config.db.sql_preload_fieldname +"=', ';";
 		cend = zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + sqlconcat(zx,"", zx.config.db.var_actaul+"res", "']'" ) + ";";
 	}
-	if (QueryType === "List") {
+	if (QueryType === "List") {		
 		open = zx.config.db.sql_set_prefix +"tfid=" + zx.sql.cidi * zx.sql.cidti_factor + ";"+
 		  zx.config.db.sql_set_prefix + zx.config.db.sql_preload_fieldname + "=' '; "+zx.config.db.sql_set_prefix + zx.config.db.sql_concat_res+"', ``" + cx.tid_name + "``:['"+zx.config.db.sql_concat_postfix+";\n";
 
 		sql =  zx.config.db.sql_set_prefix +zx.config.db.sql_concat_rowcontent +"="+
-			    zx.config.db.sql_concat_prefix+ zx.config.db.var_actaul+ zx.config.db.sql_preload_fieldname + zx.config.db.sql_concat_seperator +"'[``'"+zx.config.db.sql_concat_seperator +
-				zx.config.db.var_actaul+"tfid"+ zx.config.db.sql_concat_seperator +"'``";
+			    zx.config.db.sql_concat_prefix+ zx.config.db.var_actaul+ zx.config.db.sql_preload_fieldname + zx.config.db.sql_concat_seperator +
+				"'[";
 
 		firstseperator = '';
 		secondseperator = ",";
@@ -1110,8 +1110,9 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 		cend = zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + sqlconcat(zx,"", zx.config.db.var_actaul+"res", "']'" ) + ";";
 	}
 	if (QueryType === "Dict") {		
+	    //console.log('\n\n table_make_script Dict:');
 		open = zx.config.db.sql_set_prefix +"tfid=" + zx.sql.cidi * zx.sql.cidti_factor + ";\n"+
-		                zx.config.db.sql_set_prefix + zx.config.db.sql_preload_fieldname + "=' '; "+zx.config.db.sql_set_prefix + zx.config.db.sql_concat_res+"',  ``" + cx.tid_name + "``:{'"+sql_concat_postfix+";";
+		                zx.config.db.sql_set_prefix + zx.config.db.sql_preload_fieldname + "=' '; "+zx.config.db.sql_set_prefix + zx.config.db.sql_concat_res+"',  ``" + cx.tid_name + "``:{'"+zx.config.db.sql_concat_postfix+";";
 		sql = "\n    "+ zx.config.db.sql_set_prefix + zx.config.db.sql_concat_rowcontent   + "="+zx.config.db.sql_set_prefix + zx.config.db.var_actaul + zx.config.db.sql_preload_fieldname +" "+ zx.config.db.sql_concat_seperator +" '";
 		if (fields.length < 3) { //name:value
 			firstseperator = '';
@@ -1129,7 +1130,7 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 		    cend = zx.config.db.sql_set_prefix + zx.config.db.sql_concat_set + sqlconcat(zx,"", "res", "'}'" ) + ";";
 		}
 	}
-
+	
 	fields.forEach(function (widget, i) {
 		//console.log('fields.forEach:',widget);
 		if (i > 0) {
