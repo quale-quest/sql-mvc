@@ -449,6 +449,9 @@ init_from_fullstash_internal = function (Target) {
 			}
 		window.onbeforeunload = exports.ClosingBrowser;	
 		
+		Validate_On_Page_Load();
+		
+		
 		$( "input" ).focusout(function(e) {
 			//console.log("focusout:",e);
 			let Cell=FindCell(e);

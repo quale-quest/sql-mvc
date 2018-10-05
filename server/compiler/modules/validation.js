@@ -129,7 +129,7 @@ var resolve_table_and_field_names = function (zx,fields,cx) {
 
 exports.reformat = function (zx,validator,cx) {
 	var res=[]; var v;
-	console.log('\r\n\r\nreformat validator:',validator);
+	//console.log('\r\n\r\nreformat validator:',validator);
 	if (zx.pass<5) return validator;
 	if (!validator) return null;
 

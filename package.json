@@ -1,6 +1,6 @@
 {
   "name": "sql-mvc",
-  "version": "0.0.158",
+  "version": "0.0.159",
   "description": "Paradigm inversion-write web applications in SQL instead of JavaScript",
   "main": "./app.js",
   "scripts": {

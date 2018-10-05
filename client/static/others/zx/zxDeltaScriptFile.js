@@ -12,7 +12,7 @@ var SubmitWindowRefreshCount;
 var deltacount=0;
 var deltawipcount=0;
 
-
+var Show_error_on_open=1; //make this a user preference
 
 
 function SubmitChanges(by) {
@@ -551,7 +551,7 @@ function check_validity_array(pk,pk_validators,Cell) {
 			if (!val_result.isValid) {
 				if (val_result.msg) {
 					if (r.msg!="") r.msg = r.msg + " or "  ;
-					r.msg = r.msg + val_result.msg + " " +val_result.isUnchangedAndAllowedToBeUnchanged;
+					r.msg = r.msg + val_result.msg /*+  " " +val_result.isUnchangedAndAllowedToBeUnchanged*/;
 					}
 				
 				if (val_result.helps) {
@@ -740,6 +740,11 @@ function validate_form(check_only) {
 		r.block_at_form |= resValid.block_at_form;		
 	}		
 	return r;
+}
+
+function Validate_On_Page_Load() {
+	if (Show_error_on_open) //must get from user preferences
+		validate_form(false);
 }
 
 function zxnav(e,pkf,pko,level) {
