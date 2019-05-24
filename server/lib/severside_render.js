@@ -93,6 +93,8 @@ exports.render_inject = function (page,html_inp,html_inject,LoadedInstance,cx) {
 				+"qq_page_id = '"+cx.obj[0].Stash+"';\r\n"
 				+"qq_cid = '"+cx.obj[0].Data.cid+"';\r\n"
 				+"qq_session ='"+cx.obj[0].Session+"';\r\n"
+				+"if (typeof qq_static_stash=='undefined') qq_static_stash={};\r\n"
+				+"if (typeof qq_stache=='undefined') qq_stache={};\r\n"
 				+'</script>\r\n';
     
     var container_start = 'id="maincontainer">';

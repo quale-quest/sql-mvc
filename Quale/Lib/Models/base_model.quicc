@@ -115,6 +115,13 @@ CREATE TABLE user_table_name                         --:{as:"Table"}
 CREATE INDEX IDX_ME1 ON user_table_name (user_pk_field);
 CREATE INDEX IDX_ME4 ON user_table_name (user_name_field);
 
+CREATE TABLE USER_PREFERENCES                        --:{as:"Table"} 
+(
+  ID PK, 			                                 --:{as:"pk"}
+  User_ID FK,										 --:{as:"fk"}
+  Show_error_on_open     INTEGER,			         --:{as:"ticked"}  
+  Unit_of_measure FK								 --:{as:"fk"}
+);
 
 CREATE TABLE Z$CONTEXT
 (
@@ -203,6 +210,7 @@ INSERT INTO Z$INSERTREF (NON_MATCH, INSERT_REF) VALUES ('NON_MATCH_1', '1');
 INSERT INTO Z$INSERTREF (NON_MATCH, INSERT_REF) VALUES ('NON_MATCH_2', '2');
 INSERT INTO Z$INSERTREF (NON_MATCH, INSERT_REF) VALUES ('NON_MATCH_3', '3');
 
+/* at the moment this does not update old data - means we cannot switch from normal to SelfServe without editing the database */
 INSERT MATCHING user_name_field;
 INSERT INTO user_table_name (owner,user_landing_page,user_display_field,user_name_field,user_password_field,status) values (1,'Home/SelfServe','SelfServe','SelfServe','SelfServe',<%#run.selfmanage%>10<%/run.selfmanage%><%^run.selfmanage%>0<%/run.selfmanage%>);
 INSERT INTO user_table_name (owner,user_landing_page,user_display_field,user_name_field,user_password_field,status) values (1,'<%run.Guest_Landingpage%>','Guest','guest','gu35t',<%#run.login_first%>0<%/run.login_first%><%^run.login_first%>10<%/run.login_first%>);

@@ -1,11 +1,12 @@
-<#divcontainer(type:Plain , DivoutName:maincontainer)#>
+<#divcontainer(type:Login , DivoutName:maincontainer)#>
 <#view
 master(user_table_name)
 notify(style=Heading) Create Login
+rem id: operator.id  and session.id
 
 ifquery ( ($select count(*) from Z$USER u where u.INVITED_BY=session.id and (OCTET_LENGTH(u.EMAIL)<4 or (u.EMAIL NOT CONTAINING '@')) $)>0 ) 
-notify (style=Heading) Invalid email.
-
+notify (style=Heading) Invalid email. ($select count(*) from Z$USER u where u.INVITED_BY=session.id and (OCTET_LENGTH(u.EMAIL)<4 or (u.EMAIL NOT CONTAINING '@')) $).
+	
 button(glymph:"bended-arrow-right-b" from=user_table_name where="INVITED_BY=session.id" form=RegisterNewUser title:"Try Again")  
 
 elsequery 
@@ -19,12 +20,13 @@ button(glymph:"bended-arrow-right-b" from=user_table_name where="INVITED_BY=sess
 elsequery 
 
 form()
-	Select  --:{Title:"Manage existing users",from:user_table_name}
+	Select  --:{Title:"Manage existing users",from:user_table_name,validator:[BlockForm]}
 	first 1
 	NAME,     		--:{Action:Edit,Title:Display_Name}	
-	LOGIN_NAME,     --:{Action:Edit}	
-	PASSWD,  		--:{Action:Edit}
-	MOBILE_NUMBER,  --:{Action:Edit}
+	LOGIN_NAME,     --:{Action:Edit,validator:[LoginName]}	
+	PASSWD,  		--:{Action:Edit,validator:[MediumPassword]}
+	Verify_password,--:{Action:Edit,validator:[MatchingInput:{.PASSWD}]}
+	MOBILE_NUMBER,  --:{Action:Edit,validator:[SMS]}
 	user_pk_field	    --:{as:"pk",Type:"Hide"}
 	From user_table_name 
 	where INVITED_BY=session.id

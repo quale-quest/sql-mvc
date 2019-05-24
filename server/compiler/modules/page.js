@@ -290,6 +290,7 @@ exports.ParseStringsToObjects = function (zx, body, objtype,debuglevel,crCount,f
 					var Statement = Statements[is].statement;
 					var sourcestr = compound_statement;
 					//console.log('ParseFileToObject b:',Statement,line_obj);
+					//console.log('ParseFileToObject b1:',Statement);
 					var line_obj = {};
 					//var splits = Statement.match(/[:=]*\s*(\w+)\s*([\w\W]*)/);
 					var splits = Statement.match(/[:=]*\s*(\w+)\s*([\(\{\[])?([\w\W]*)/);
@@ -324,7 +325,7 @@ exports.ParseStringsToObjects = function (zx, body, objtype,debuglevel,crCount,f
 						line_obj.srcinfo.main_page_name = zx.main_page_name;
 						line_obj.srcinfo.file_stack = zx.file_stack.slice(0);
 						line_obj.srcinfo.filename = filename;
-						line_obj.srcinfo.source = sourcestr;
+						line_obj.srcinfo.source = "@326: "  + is + " :" + Statement ;//sourcestr;
 						line_obj.srcinfo.start_line = crCount;
 						line_obj.srcinfo.start_col = col;
 						line_obj.srcinfo.current_tag_index = 0;
@@ -603,9 +604,9 @@ exports.RecurseParseFileToObject = function (zx, filename) {
 				var LayoutOpen   = zx.divcontainer + 'LayoutOpen';
 				var LayoutClose  = zx.divcontainer + 'LayoutClose';				
 				if (zx.UIsl[LayoutOpen]==undefined) 
-					zx.error.log_noQuale_warning(zx, "divcontainer("+LayoutOpen+") not defined in divcontainer.quicc", "divcontainer", o);
+					zx.error.log_noQuale_warning(zx, "divcontainer("+LayoutOpen+") not defined in divcontainer.quicc", "divcontainer", obj[i]);
 				if (zx.UIsl[LayoutClose]==undefined) 
-					zx.error.log_noQuale_warning(zx, "divcontainer("+LayoutClose+") not defined in divcontainer.quicc", "divcontainer", o);				
+					zx.error.log_noQuale_warning(zx, "divcontainer("+LayoutClose+") not defined in divcontainer.quicc", "divcontainer", obj[i]);				
 				Layout = LayoutOpen;
 			} else {				
 				if (zx.gets(obj[i].DivoutName)!="")

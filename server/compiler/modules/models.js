@@ -49,8 +49,8 @@ exports.tag_model = function (zx, line_obj) {
 		//console.log('remove leading lines  B :', line_obj.body.substring(0,20));
 		//var query=line_obj.q.query.trim();
 		//console.log('tag_model:',query,line_obj );
-		var query = line_obj.body; //.trim();
-		zx.db_update.Prepare_DDL(zx, null, query, line_obj)
+		var query = line_obj.body; //.trim();		
+		line_obj.srcinfo.ModelBlocks = deepcopy(zx.db_update.Prepare_DDL(zx, null, query, line_obj));
 
 		//       console.log('tag_model:',query);//,line_obj );
 		// console.log('tag_model quale:',line_obj.q.quale_context,zx.q.contexts[line_obj.q.quale_context]  );

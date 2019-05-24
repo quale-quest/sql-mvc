@@ -18,6 +18,7 @@
 				<a href="#" id="RegisterNewUser" title="Register/Sign up" style="text-decoration: underline;" 
 					onclick="sendLogin('SelfServe', 'SelfServe','RegisterNewUser');return false;"><span class="icon-block-black create-write-b"></span>Register/Sign up</a>
 				</li>
+				<#Menu (icon="icon-block-black locked-tw-b" from=user_table_name where="user_pk_field=Operator.user_pk_field" form=SelfServe/RegisterNewUser title="RegisterNewUserXXX" style=UserBar)#>
 				</ul>
 				<div class="admin-thumb">
 					<img src="../../images/qqui1/user-thumb1.png" alt="user" width="50" height="50">

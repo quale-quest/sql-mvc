@@ -333,8 +333,10 @@ function Get_Validation(pk){
 	//pk.parm = {};
 	pk.validators =[];	
 	pk.table_validators =[];	
-	if (qq_static_stash) {
+	if (qq_static_stash && pk.t) {
 		//console.log("qq_static_stash      :",qq_static_stash   );		
+		//console.log("Get_Validation:",/*typeof*/ (qq_static_stash.TablesIndex)   );	
+		//console.log("Get_Validation:",qq_static_stash   );	
 		var table_pointer = qq_static_stash.TablesIndex['t'+pk.t];
 		//console.log("qq_static_stash table:",pk.f,table_pointer   );		
 		if (table_pointer) {
@@ -393,7 +395,8 @@ function check_math(validator_math,Cell,pk,validator_rec){
 function check_blocking(pk,pk_validators,Cell, level) {
 	var r={
 		block_at_field : false,
-		block_at_form : false,
+		block_at_form  : false, 		
+		warn_at_form   : false,
 		AllowUnchanged : false
 	};
 	//any of the validators may be true
@@ -409,10 +412,12 @@ function check_blocking(pk,pk_validators,Cell, level) {
 				let r2 = check_blocking(pk,pk.table_validators,Cell, 1);
 				r.block_at_field|=r2.block_at_field;
 				r.block_at_form |=r2.block_at_form;
+				r.warn_at_form  |=r2.warn_at_form;
 				r.AllowUnchanged |=truish(r2.AllowUnchanged);
 			}
 			r.block_at_field |=(validator.block=='BlockField');
 			r.block_at_form  |=(validator.block=='BlockForm');
+			r.warn_at_form   |=(validator.block=='WarnForm');
 			r.AllowUnchanged |=truish(validator.AllowUnchanged);
 		}
 	});
@@ -526,6 +531,7 @@ function check_validity_array(pk,pk_validators,Cell) {
 	let block = check_blocking(pk,pk_validators,Cell, 0);
 	r.block_at_field = block.block_at_field;
 	r.block_at_form  = block.block_at_form;
+	r.warn_at_form   = block.warn_at_form;
 	r.AllowUnchanged = block.AllowUnchanged;
 	//console.log("check_validity_array r:",r);
 	//console.log("check_blocking ar:",pk_validators,block);
@@ -591,8 +597,7 @@ function check_validity(Cell,el,check_only) {
 	//console.log("check_validity check  :",[Cell.valu]); 
 	//any of the validators may be true
 	var r= check_validity_array(pk,pk.validators,Cell);
-	
-	if (!check_only) {
+	if (!check_only && pk.t) {
 		var originalvalue = qq_stache[Cell.cid]['t'+pk.t][+pk.i][+pk.f+1];
 		if (originalvalue== Cell.valu) zxdeltawip(false); else zxdeltawip(r.isValid);
 
@@ -724,6 +729,7 @@ function validate_form(check_only) {
 	var r={
 		isValid : true,
 		block_at_form : false,
+		warn_at_form  : false,
 		isUnchangedOrValid : true
 	}
 	
@@ -738,6 +744,7 @@ function validate_form(check_only) {
 		r.isValid &= resValid.isValid;
 		r.isUnchangedOrValid &= resValid.isUnchangedOrValid;
 		r.block_at_form |= resValid.block_at_form;		
+		r.warn_at_form  |= resValid.warn_at_form;		
 	}		
 	return r;
 }
@@ -749,21 +756,30 @@ function Validate_On_Page_Load() {
 
 function zxnav(e,pkf,pko,level) {
 	if (e.stopPropagation) e.stopPropagation();  
+
+	var r = validate_form(true);	
+	console.log('zxnav :' ,r);
 	
-	if (hold_focus_at) {
-	    if (!confirm("You cannot save a invalid field!,\n save the other valid fields and continue ?")) {
+	if (hold_focus_at) { //block a field 
+		alert("You cannot proceed with invalid inputs,\n Please correct them.");
+		return;
+		/*if (!confirm("You cannot save a invalid field!,\n save the other valid fields and continue ?")) {return;}*/			
+	}	
+	
+	if (!r.isUnchangedOrValid) {
+		if (r.warn_at_form) {
+			validate_form(false);
+			if (!confirm("You should not proceed with invalid inputs. \n Proceed anyway?")) {return;}
+			$("#container-n").notify("create", "sticky",{ title:"Warn:",text:"You must fix the errors before you can save!"},{ });
+			return;
+		}
+
+		if (r.block_at_form) {
+			validate_form(false);
+			$("#container-n").notify("create", "sticky",{ title:"Warn:",text:"You must fix the errors before you can save!"},{ });
 			return;
 		}
 	}
-
-	var r = validate_form(true);
-	if (r.block_at_form && !r.isUnchangedOrValid) {
-		validate_form(false);
-		$("#container-n").notify("create", "sticky",{ title:"Warn:",text:"You must fix the errors before you can save!"},{ });
-		return;
-	}
-
-    
 	zxsave(e,pkf,pko,level);
 }
 

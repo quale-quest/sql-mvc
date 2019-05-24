@@ -11,6 +11,7 @@ var json_like = require("../lib/json_like"); //relocate to ./libs/
 var extend = require('node.extend');
 var fse = require('fs-extra');
 var deepcopy = require('deepcopy');
+var winston = require('winston');
 //var mv = require('node-mv');
 
 // giving server side progress acorss AJAX is trouble some, so we rather use rpc's
@@ -154,8 +155,8 @@ exports.ajax_upload_with_rpc_feedback = function (req, res) {
 								console.log('js if cx.dbref.conf.async :', cx.dbref.conf.async);
 								var quale = json_like.parse(cx.r.CODE);
 								//todo add exception handing here test like: var quale = json_like.parse(cx.r.CODEX);
-								console.log('js to check on what type of upload :', quale);
-								if (!quale) winston.error('Upload failed as quale is null')
+								console.log('js to check on what type of upload (no exit) :', quale);
+								if (!quale) winston.warn('Upload failed as quale is null')
 								var fileinfo = {};
 								if (quale.Target) { //destination defined in the project config,json
 									fileinfo = deepcopy(cx.dbref.conf.async[quale.Target]);

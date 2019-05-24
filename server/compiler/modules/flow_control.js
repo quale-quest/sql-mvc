@@ -225,7 +225,7 @@ exports.tag_sqlcomment = function (zx, o) {
 	//console.log(o.nonkeyd.trim());
 	
 	//zx.dbg.emit_comment(zx,'+++++++++++++++++++++++++++++++++++++++++');	
-    zx.dbg.emit_comment(zx,o.nonkeyd.trim());	
+    zx.dbg.emit_comment(zx,(o.nonkeyd||"").trim());	
 }
 
 exports.tag_ifquery = exports.tag_ifblock = function (zx, o) {

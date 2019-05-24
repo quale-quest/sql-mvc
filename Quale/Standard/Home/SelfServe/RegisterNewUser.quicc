@@ -1,4 +1,4 @@
-<#divcontainer(type:Plain , DivoutName:maincontainer)#>
+<#divcontainer(type:Login , DivoutName:maincontainer)#>
 <#
 master(user_table_name)
 
@@ -6,21 +6,22 @@ master(user_table_name)
 
 <#
 script
-UPDATE OR INSERT INTO user_table_name (NAME,LOGIN_NAME,OWNER,INVITED_BY,LANDING_PAGE) VALUES ('Your Display Name','Login Name' ,operator.id, session.id,'<%run.SelfCreate_Landingpage%>') matching (INVITED_BY) ;
+UPDATE OR INSERT INTO user_table_name (OWNER,INVITED_BY,LANDING_PAGE) VALUES (operator.id, session.id,'<%run.SelfCreate_Landingpage%>') matching (INVITED_BY) ;
 
 #>
 
 <#view
 
 
-notify(style=Heading) Create Login
+notify(style=BigBold1) Create Login
+notify id: operator.id  and session.id
 
 
 form()
-	Select  --:{Title:"Manage existing users",from:user_table_name}
+	Select  --:{Title:"Manage existing users",from:user_table_name,validator:[BlockForm]}
 	first 1
 	
-	EMAIL,          --:{Action:Edit}
+	EMAIL,          --:{Action:Edit,validator:{Email,AllowBlank,BlockField}}
 	
 	user_pk_field	    --:{as:"pk",Type:"Hide"}
 	From user_table_name 

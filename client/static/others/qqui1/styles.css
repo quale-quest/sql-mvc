@@ -66,6 +66,35 @@ h6 {
 	/* 18px */ margin-top:0em;
 	margin-bottom: 1.2857em;
 }
+.BigBold1 {
+	font-size:1.5em;
+	/* 24px */ line-height:1.5em;
+	/* 36px */ margin-top:0em;
+	margin-bottom:0.75em;
+	font-weight: 800;
+}
+/*------------TableContainer.quicc--------------*/
+.centerdiv {
+    width:100%; 
+	text-align:center;
+	display:inline-block;
+}
+.DataWrap {
+	 text-align:center;
+	 display:inline-block;
+}
+.FormDataWrap {
+	 text-align:center;
+	 display:inline-block;
+}
+.DTDataWrap {
+	 text-align:center;
+	 display:inline-block;
+}
+.MultiformDataWrap {
+	margin:4px 8px 4px 8px;
+}
+
 /*------------ROUNDED BORDER--------------*/
 .top-round {
 	border-top-left-radius:5px;
@@ -235,6 +264,9 @@ input[disabled] {
 }
 .login-box {
 	background:url(/images/qqui1/dark-pattern.jpg) repeat;
+	padding-bottom: 12px;
+	padding-left:  10px;
+    padding-right: 10px;  
 }
 .login-box ul {
 	padding:10px 15px;

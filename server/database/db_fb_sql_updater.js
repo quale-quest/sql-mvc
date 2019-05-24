@@ -213,7 +213,8 @@ function dll_blocks_seperate_term(inputs, src_obj) { //splits the input into blo
 					o += countLines(ms[1]);
 					var block = {
 						t : ';',
-						q : ms[2] + ';\n\n',
+						indx:indx,
+						q : ms[2] + ';\n\n',						
 						src : {
 							l : l,
 							o : o,
@@ -494,7 +495,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 	var newfield,defs;
 	
 	//console.log('CREATE_TABLE ',Table);
-	//console.log('Table ',Table,' fields:',fields );	
+	//console.log('\r\n\r\n\r\n-------------------------------:','Table ',Table,' fields:',fields ,'\r\n\r\n\r\n-------------------------------');	
 	
 	
 
@@ -503,6 +504,11 @@ var CREATE_TABLE = function (zx, qrystr) {
 	
 	fields.forEach(function (field) {
 		field = field.trim();
+		var original_input_field = field;
+		
+		if (field.length>180) {
+		//	zx.error.log_model_warning(zx, "Field definition seems very long - typical of a brace syntax error :" , field, zx.line_obj);		
+		}
 		
 		//console.log('\r\n-------------------------------: fields:\r\n>',field,'<');
 		if ((field !== ")" && field !== ";")) {
@@ -573,6 +579,16 @@ var CREATE_TABLE = function (zx, qrystr) {
 					defs[2] = fake_domain.type;
 					if (fake_domain.set==1) {
 					}
+				}
+			} else {
+				//console.log('none matched ([`\w$]+)\s+([()\w$]+) ',field, ' in ' ,original_input_field);
+				if (field.length>80) {
+					zx.error.log_model_warning(zx, "Field definition seems very long - typical of a brace syntax error :" , field, zx.line_obj);
+				} else {
+					//console.log('none matched ',fields);
+					zx.error.log_model_warning(zx, "none matched ([`\w$]+)\s+([()\w$]+) - typical of an earlier brace syntax error :" , field, zx.line_obj);
+					//throw new Error("Syntax error");
+					//...some syntax error
 				}
 			}
 			
@@ -890,8 +906,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 	var blocks = dll_blocks_seperate_term(inputs, line_obj);
 	exports.input_audit.push(JSON.stringify(blocks, null, 4)); //.start_line + ' ' + line_obj.filename);
 
-	//exports.show_DDL(zx,"Creating",blocks);
-
+	//exports.show_DDL(zx,"Creating",blocks);	
 	for (var ixx = 0, max = blocks.length; ixx < max; ixx += 1) {	
 	    bi=ixx;
 		block=blocks[bi];
@@ -902,6 +917,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 		if (block.method !== "DECLARE_PROCEDURE") //src line already set
 			block.src.LineNr = LineNr;
 		block.src.BlockNr = BlockNr;
+		block.src.ModelBlocksNr=bi;
 
 		//console.log('blocks.forEach  :', LineNr, bi);
 		//if (verbosity > 2)
@@ -1260,6 +1276,7 @@ exports.Prepare_DDL = function (zx, filename, inputsx, line_obj) {
 	//exports.show_DDL(zx,"Adding",blocks);
 	exports.blocks = exports.blocks.concat(blocks);
 	//process.exit(2);
+	return blocks;
 };
 
 exports.show_DDL = function (zx, msg, blocks) {

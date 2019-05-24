@@ -1,4 +1,4 @@
-<#divcontainer(type:Plain , DivoutName:maincontainer)#>
+<#divcontainer(type:Login , DivoutName:maincontainer)#>
 <#view
 master(user_table_name)
 script set session.invalid='0';
@@ -25,17 +25,36 @@ button(glymph:"bended-arrow-right-b" from=user_table_name where="INVITED_BY=sess
 elsequery	
 notify (style=Heading) User Create Successful
 
-script
+<%#run.cookie_guest%>
+notify run.cookie_guest operator.id
+<%/run.cookie_guest%>
+
+<%^run.cookie_guest%>
+notify not run.cookie_guest operator.id
+<%/run.cookie_guest%>
+
 
 <%#run.cookie_guest%>
+ifquery ( ($SELECT count(*) FROM user_table_name where user_pk_field=operator.id and user_name_field='SelfServe'  $)>0 )  
+script
+UPDATE user_table_name set Status=10 where INVITED_BY=session.id;
+endquery	
+
+ifquery ( ($SELECT count(*) FROM user_table_name where user_pk_field=operator.id and user_name_field='SelfServe'  $)=0 )
+script
 UPDATE user_table_name set 
-	user_display_field   =(select user_display_field  from user_table_name where INVITED_BY=session.id),
-	user_name_field      =(select user_name_field     from user_table_name where INVITED_BY=session.id),
-	user_password_field  =(select user_password_field from user_table_name where INVITED_BY=session.id),
-	MOBILE_NUMBER        =(select MOBILE_NUMBER       from user_table_name where INVITED_BY=session.id),
-	user_landing_page    =(select user_landing_page   from user_table_name where INVITED_BY=session.id),
-	EMAIL                =(select EMAIL               from user_table_name where INVITED_BY=session.id) 
-where user_pk_field=operator.id
+			user_display_field   =(select user_display_field  from user_table_name where INVITED_BY=session.id),
+			user_name_field      =(select user_name_field     from user_table_name where INVITED_BY=session.id),
+			user_password_field  =(select user_password_field from user_table_name where INVITED_BY=session.id),
+			MOBILE_NUMBER        =(select MOBILE_NUMBER       from user_table_name where INVITED_BY=session.id),
+			user_landing_page    =(select user_landing_page   from user_table_name where INVITED_BY=session.id),
+			EMAIL                =(select EMAIL               from user_table_name where INVITED_BY=session.id) 
+		where user_pk_field=operator.id;
+script
+DELETE FROM user_table_name where INVITED_BY=session.id;	
+
+endquery	
+
 <%/run.cookie_guest%>
 
 <%^run.cookie_guest%>

@@ -21,3 +21,10 @@ Login options in config.json/run:
 	"Sysadmin_Password":"PasswordGen" - make sure sysadmin in demo installs don't come with a fixed public password
 				
 	
+#Defaulting to recommended default user management
+	cookie_guest:true
+	login_first:false
+	"selfmanage" :true,
+	
+
+

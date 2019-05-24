@@ -173,6 +173,11 @@ function dataprocess(ss,par,newdata,cb) { //should only process after transactio
 			switchPage = '#PAGE_1';			 
 			//console.log('db - logged_out message for :',(ss.publish && ss.publish.socketId));
 		} 
+		let No_script_named = 'No script named :'; 
+		if (par.infos.substr(0,No_script_named.length) ===No_script_named ) {
+			//show some kind of error 
+			console.log("======================== "+par.infos);
+		}
 		
 
 		
@@ -279,6 +284,9 @@ function connect_and_produce_div_sub_fbsql(ss,par,ErrorText, err,cb)  {
 								par.infos=String(result[0].INFO||''); 	
 								console.log('transaction.commited \r\n   NEW_CONTEXT_ID:',par.NEW_CONTEXT_ID,'\r\n   SCRIPTNAMED:',par.SCRIPTNAMED,
 								'\r\n   infos:',par.infos,'\r\n   newdata:',newdata);
+								if (par.infos==='invaliduser') {
+									console.log('\r\n\r\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!:',par.infos);
+								}
 								//console.log('transaction B');
 								par.error_str = par.infos.substring(0,9);
 								par.error_code = par.infos.substring(10,20).trim();

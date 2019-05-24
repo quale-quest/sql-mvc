@@ -97,6 +97,30 @@ exports.log_syntax_warning = function (zx, text, Quale, source_line_obj) {
 	console.trace(err);
 	exports.error_log.push(err);
 };
+
+
+
+exports.log_model_warning = function (zx, text, Quale, source_line_obj) {
+	var err={
+		endpoint : "model_syntax_warning",
+		at : text,
+		Quale : Quale,
+		//source : source_line_obj
+		source : {}
+	};
+	
+	
+	
+	if (source_line_obj.src_obj.srcinfo.ModelBlocks) {
+		err.source.body = source_line_obj.src_obj.srcinfo.ModelBlocks[source_line_obj.ModelBlocksNr].q
+		
+		//console.log(source_line_obj.src_obj.srcinfo.ModelBlocks[source_line_obj.ModelBlocksNr].indx,' : ',source_line_obj.src_obj.srcinfo.ModelBlocks[source_line_obj.ModelBlocksNr].q);
+	}
+
+	console.trace(err);
+	
+	//process.exit(2);
+};
 //=============================================================================fail
 exports.log_validation_fail = function (zx, text, script, validation_obj) {
 	var errtxt = print_error(zx, validation_obj);
@@ -150,7 +174,7 @@ exports.caught_exception = function (zx,e,msg) {
 		console.log("\r\n\r\n!!!!!!!!!!\r\n");
 		console.error(e);
         if (msg.length>100) msg = zx.show_longstring(msg);
-		console.log("Unknown Compiler Exception from "+msg+" !!!!!!!!!:", e);
+		console.log("Unknown Compiler Exception from "+msg+" !!!!!!!!!:", e);		
         console.log("Track  :",e.stack);
         //console.trace("COMPILER STACK TRACE - as from catch location:");
         

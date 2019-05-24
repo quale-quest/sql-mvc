@@ -50,7 +50,7 @@
     "first": 300,
 	"run": {
 				"login_first":false,
-				"cookie_guest":false,
+				"cookie_guest":true,
 				"selfmanage" :true,				
 				
 				"Guest_Landingpage":"Home/Guest",				

@@ -2,12 +2,12 @@
 <html>
 <head>
 <meta charset="utf-8">
-<link rel="shortcut icon" type="image/ico" href="<%branding.favicon%>">
+<link rel="shortcut icon" type="image/ico" href="/favicon.ico">
 <meta name="viewport" content="initial-scale=1.0, maximum-scale=2.0">
 
 
 
-<title><%branding.app_short_title%></title>
+<title>SQL-MVC</title>
 <style type="text/css">
 body {
 	margin:0;
@@ -25,7 +25,7 @@ body {
 <link rel="stylesheet" href="/others/qqui1/emoji/emoji.css" type="text/css" />
 <link rel="stylesheet" href="/others/qqui1/timepicker/jquery-ui-timepicker-addon.css" type="text/css" />
 <link rel="stylesheet" href="/others/qqui1/CSSTree/CSSTree.css"  type="text/css">
-<%style_link_inject_point%>
+
 <style type="text/css" class="init"></style>
 
 <style type="text/css">
@@ -45,25 +45,16 @@ padding: 0.0em 0.5em 0.0em 1.7em;
 <script src="/others/qqui1/uniform/jquery.uniform.min.js"></script>
 <script src="/others/qqui1/DataTables/media/js/jquery.dataTables.min.js"></script>
 <script src="/others/qqui1/emoji/emoji.js"></script>	    
-<%script_link_inject_point%>	
+	
 <script type="text/javascript" language="javascript" src="/others/zx/zxDeltaScriptFile.js"></script>	
 <script type="text/javascript" language="javascript" src="/others/zx/zxUploader.js"></script>	
 <script type="text/javascript" language="javascript" class="init">
 
 
-var myFaceBookAppID='<%branding.FaceBookAppID%>';
+var myFaceBookAppID='';
 var auto_login_facebook_on_return=false;
 var zx_active_page='NONE'; 
 
-<%#run.login_first%>
-zx_active_page='#PAGE_1';
-console.log("zx_active_page :",zx_active_page );
-
-first_page_rendered=false;
-LoadedInstance='';
-first_page_container="#maincontainer";
-console.log("first_page_rendered:",first_page_rendered);
-<%/run.login_first%>  
   
 </script>
 <SocketStream/>
@@ -103,10 +94,10 @@ window.location.href = "ie.html";
 <div id="login-wrapper">
 	<div id="login-header" class="top-round">
 		<div class="login-left">
-			<span class="icon-wrap-lb-less"><span class="icon-block-black key-tw-b"></span><%branding.menu_short_title%></span>
+			<span class="icon-wrap-lb-less"><span class="icon-block-black key-tw-b"></span>SQL-MVC</span>
 		</div>
 		<div class="login-right">
-			<a href="#" title="<%branding.menu_short_title%>"><img src="<%branding.menu_image%>" width="55" height="55" alt="<%branding.menu_short_title%>"></a>
+			<a href="#" title="SQL-MVC"><img src="images/Green_strawberryIconAlpha.png" width="55" height="55" alt="SQL-MVC"></a>
 		</div>
 	</div>
 	<div class="login-box bottom-round">		
@@ -125,10 +116,8 @@ window.location.href = "ie.html";
 				<li style="display: none;"><span id="status"></span></li>				
 			</ul>		
 		</form>
-		<%#run.selfmanage%>
 		<a href="#" id="RegisterNewUser" title="Register New User" style="color:white;margin-left:15px;text-decoration: underline;">Register as a new user</a>
 		<a href="#" id="ForgotPassword"  title="Forgot Password?"  style="color:white;margin-right:17px;text-decoration: underline;float: right;">Forgot password?</a>
-		<%/run.selfmanage%>
 
 
 
@@ -139,7 +128,7 @@ window.location.href = "ie.html";
 <div id="footer-wrap">
 	<div id="footer">
 		<div class="login-footer-container">
-			 <%branding.copyright_title%>
+			 &amp;copy; 2003 ... QualeQuest - All rights reserved
 		</div>
 	</div>
 </div>
@@ -163,15 +152,15 @@ window.location.href = "ie.html";
 <div id="login-wrapper">
 	<div id="login-header" class="top-round">
 		<div class="login-left">
-			<span class="icon-wrap-lb-less"><span class="icon-block-black key-tw-b"></span><%branding.menu_short_title%></span>
+			<span class="icon-wrap-lb-less"><span class="icon-block-black key-tw-b"></span>SQL-MVC</span>
 		</div>
 		<div class="login-right">
-			<a href="#" title="<%branding.menu_short_title%>"><img src="<%branding.menu_image%>" width="55" height="55" alt="<%branding.menu_short_title%>"></a>
+			<a href="#" title="SQL-MVC"><img src="images/Green_strawberryIconAlpha.png" width="55" height="55" alt="SQL-MVC"></a>
 		</div>
 	</div>
 	<div class="login-box bottom-round">	
 		<div align="center">	
-		<b><BR>Welcome to <%branding.app_short_title%><BR>
+		<b><BR>Welcome to SQL-MVC<BR>
 		<BR>	
 		Please wait while the application contacts the server..
 		<BR><BR><BR>
@@ -182,7 +171,7 @@ window.location.href = "ie.html";
 <div id="footer-wrap">
 	<div id="footer">
 		<div class="login-footer-container">
-			 <%branding.copyright_title%>
+			 &amp;copy; 2003 ... QualeQuest - All rights reserved
 		</div>
 	</div>
 </div>
@@ -201,10 +190,10 @@ window.location.href = "ie.html";
 <div id="login-wrapper">
 	<div id="login-header" class="top-round">
 		<div class="login-left">
-			<span class="icon-wrap-lb-less"><span class="icon-block-black key-tw-b"></span><%branding.menu_short_title%></span>
+			<span class="icon-wrap-lb-less"><span class="icon-block-black key-tw-b"></span>SQL-MVC</span>
 		</div>
 		<div class="login-right">
-			<a href="#" title="<%branding.menu_short_title%>"><img src="<%branding.menu_image%>" width="55" height="55" alt="<%branding.menu_short_title%>"></a>
+			<a href="#" title="SQL-MVC"><img src="images/Green_strawberryIconAlpha.png" width="55" height="55" alt="SQL-MVC"></a>
 		</div>
 	</div>
 	<div class="login-box bottom-round">	
@@ -220,7 +209,7 @@ window.location.href = "ie.html";
  
 </div><!--PAGE_4 -->	
 
-<%page_inject_point%>
+
 
 <script type="text/javascript" language="javascript">
    console.log("LoadedInstance:",LoadedInstance);
@@ -338,6 +327,6 @@ window.location.href = "ie.html";
 
 
 </script>
-<%script_run_inline_inject_point%>
+
 </body>
 </html>
