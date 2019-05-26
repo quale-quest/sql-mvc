@@ -179,18 +179,18 @@ function FindCell(e,level)
 	var els = el.id.match( /(.+)-(.+)-(.+)/ )||[];
 	//console.log("FindCell els:",els);
 	//console.trace("FindCell els:");
-    var pki = els[2]||'';
-	var pkt = pki.slice(-100,-7);	
+    var pkrv = els[2]||'';
+	var pkt = pkrv.slice(-100,-7);	
 	var pko = els[3]||'';
-	var pkio = +pki + +pko;
-	var pki = pki.slice(-7);	
+	var pkio = +pkrv + +pko;
+	var pki = pkrv.slice(-7);	
     var Parent=el;
     var row=-1;
     var cel=-1;
     var dir=0;
     var cid_id=-1;
     //console.log("Parent ",Parent.tagName,Parent);
-
+		
     //this currently only looks for txy , but we may have other containers such as div or other text, we here we dont have xy but just x
 	level=+(level||'0');
 	//console.log("FindCell req:",level);
@@ -210,8 +210,36 @@ function FindCell(e,level)
       Parent=Parent.parentNode; 
       //console.log("Parent ",Parent.tagName,Parent.attributes.cid,Parent);
       }
+	  
+	//console.log("FindCell cid_id ",[pkt,cid_id,typeof qq_stache[cid_id]]);	
+	var pkri=0;
+	if (pkt!="") {
+		if (qq_stache[cid_id]!==undefined)	{
+			if (!qq_stache[cid_id]['index_t'+pkt]) {
+				//make an index
+				var TableArray = qq_stache[cid_id]['t'+pkt];
+				//console.log("FindCell TableArray ",[pkt,typeof TableArray]);	
+				if (typeof TableArray == "undefined") {
+					//console.log("FindCell TableArray NULL: ",qq_stache[cid_id]);	
+				}
+				var tai = {};
+				//console.log("FindCell Make Index ",[]);
+				for (i=0;i<TableArray.length;i++)
+				{
+					//console.log("FindCell Make Index i ",i,TableArray[i][0]);
+					tai[TableArray[i][0]] = i;
+				}
+				//console.log("FindCell Made Index ",tai);
+				qq_stache[cid_id]['index_t'+pkt]=tai;
+			}
+		}
+		pkri=qq_stache[cid_id]['index_t'+pkt][pkrv];
+	}	
+	//console.log("FindCell result ",pkrv,pkri);	
+	//console.log("FindCell qq_stache ", qq_stache[cid_id]['t'+pkt]);	
+	  
 	//console.log("qq_static_stash:",qq_static_stash);	
-    var o = {typ:typ,cid:cid_id,valu:valu,el:el,pk:{t:pkt,i:pki,f:pko,tif:pkio}};  
+    var o = {typ:typ,cid:cid_id,valu:valu,el:el,pk:{t:pkt,i:pki,f:pko,tif:pkio,ri:pkri }};  
     //console.log("client-typ-container-pk-f-v",typ,cid_id,String(pkf),valu,o);  
     return o;
 }
@@ -365,12 +393,12 @@ function check_math(validator_math,Cell,pk,validator_rec){
 		
 		math_scope.p      = function (par) {/*console.log("math_scope p:",math_scope.validator_rec[+par]);*/ return math_scope.validator_rec[+par];}
 		
-		math_scope.x      = function () {//console.log("math_scope x:",[math_scope.data['t'+math_scope.pk.t][+math_scope.pk.i][+math_scope.pk.f+1],math_scope.pk]);
-										 return math_scope.data['t'+math_scope.pk.t][+math_scope.pk.i][+math_scope.pk.f+1];
+		math_scope.x      = function () {//console.log("math_scope x:",[math_scope.data['t'+math_scope.pk.t][+math_scope.pk.ri][+math_scope.pk.f+1],math_scope.pk]);
+										 return math_scope.data['t'+math_scope.pk.t][+math_scope.pk.ri][+math_scope.pk.f+1];
 										}
 																													 
-		math_scope.f      = function (fld) {return math_scope.data['t'+math_scope.pk.t][+math_scope.pk.i][+fld];}
-		math_scope.fr     = function (fld,rec) {return math_scope.data['t'+math_scope.pk.t][+math_scope.pk.i + +rec][+fld];}
+		math_scope.f      = function (fld) {return math_scope.data['t'+math_scope.pk.t][+math_scope.pk.ri][+fld];}
+		math_scope.fr     = function (fld,rec) {return math_scope.data['t'+math_scope.pk.t][+math_scope.pk.ri + +rec][+fld];}
 		
 		math_scope.frt    = function (fld,rec,tbl) {return math_scope.data['t'+tbl][+rec][+fld];}
 		math_scope.sum    = function (fld,tbl) {var sum=0;for(var rec=0;rec<math_scope.data['t'+tbl].length;rec++) {sum+= math_scope.data['t'+tbl][+rec][+fld];}return sum;}
@@ -447,7 +475,7 @@ function check_validator(validator_name,validator,Cell,pk,validator_rec,block) {
 			res.match = validator.match;
 			let field = check_math(validator.match,Cell,pk,validator_rec);
 			//console.log("check_validity match   :",validator.match , field);
-			let wth	= qq_stache[Cell.cid][field[0]][+pk.i][field[1]+1];			
+			let wth	= qq_stache[Cell.cid][field[0]][+pk.ri][field[1]+1];			
 			res.isValid = (wth==Cell.valu);
 			console.log("check_validity match input ",Cell.valu," == ",wth," : ",res.isValid); 
 			general_fail_msg = "Inputs must match" ;
@@ -594,11 +622,13 @@ function hashCode2(str){
 function check_validity(Cell,el,check_only) {
 	var pk = Cell.pk;
 	Get_Validation(pk);
-	//console.log("check_validity check  :",[Cell.valu]); 
+	console.log("check_validity check  :",[Cell.valu]); 
 	//any of the validators may be true
+	//console.log("zxd pk:",pk);
 	var r= check_validity_array(pk,pk.validators,Cell);
 	if (!check_only && pk.t) {
-		var originalvalue = qq_stache[Cell.cid]['t'+pk.t][+pk.i][+pk.f+1];
+		
+		var originalvalue = qq_stache[Cell.cid]['t'+pk.t][+pk.ri][+pk.f+1];
 		if (originalvalue== Cell.valu) zxdeltawip(false); else zxdeltawip(r.isValid);
 
 		if (r.helps) r.msg = r.msg + " [...Help]"	
@@ -669,7 +699,7 @@ var r;
   //console.log("zxd el.min:",el.min);
   
   if (el.type=="checkbox")  zxd_checkbox(Cell,el); //returns updates in Cell
-  var originalvalue = qq_stache[Cell.cid]['t'+pk.t][+pk.i][+pk.f+1];
+  var originalvalue = qq_stache[Cell.cid]['t'+pk.t][+pk.ri][+pk.f+1];
   if (originalvalue== Cell.valu) {
       zxdeltawip(false);
 	  console.log("zxd unchanged:");	
@@ -690,7 +720,7 @@ var r;
 	  } 
 	  //console.log("zxd making changes:");		
   
-	  qq_stache[Cell.cid]['t'+pk.t][+pk.i][+pk.f+1] = Cell.valu;
+	  qq_stache[Cell.cid]['t'+pk.t][+pk.ri][+pk.f+1] = Cell.valu;
 	  zx_delta(Cell);
 	  zxdelta_increment();
 
@@ -734,11 +764,14 @@ function validate_form(check_only) {
 	}
 	
 	var validator_ele = document.getElementsByClassName('validator');
+	//console.log("validate_form length:",validator_ele.length);
 	for (var i = 0; i < validator_ele.length; ++i) {
 		var ve = validator_ele[i];
 		let Cell=FindCell(ve);//zxnav
 		var pk=Cell.pk;
 		var el=Cell.el;
+		//console.log("validate_form i:",i);
+		//console.log("validate_form pk:",pk);
 		var resValid = check_validity(Cell,el,check_only);  
 		console.log("zxnav[i] result:",ve.title,resValid,r.isValid,r.isUnchangedOrValid);
 		r.isValid &= resValid.isValid;

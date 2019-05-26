@@ -10,11 +10,11 @@ Select  --:{Title:"",from:"GALLERY",tablestyle:"Gallery"}
 NAME    --:{Type:"Hide"}
 ,BLOB_ID --:{}
 From GALLERY 
-where blob_id is not null and status=''
+where blob_id is not null and status='' and IMAGE_TYPE='Gallery'
 
 Container                                                               (style=Tab tab=Maintenance)
 
-   
+
 
 table
 Select  --:{Title:"Make new records",from:"GALLERY",tablestyle:"Todo"}
@@ -23,7 +23,7 @@ NAME,   --:{Action:Edit,"placeholder":"What needs to be done (tab to save)"}
 REF	    --:{}
 ,BLOB_ID --:{width:48}
 From GALLERY 
-where blob_id is not null and status<>'3'
+where blob_id is not null and status<>'3' and IMAGE_TYPE='Gallery'
 
 #>
 
@@ -32,13 +32,13 @@ where blob_id is not null and status<>'3'
 NextContainer( rem="----------------------------------------------------------" tab=NewPictures)
 
 script
---{if:"(select count(ref) from GALLERY where  blob_id is null)=0" }
-SQL INSERT INTO GALLERY (NAME, OWNER, STATUS)
-VALUES ('New', operator.id,  '');
+--{if:"(select count(ref) from GALLERY where  blob_id is null  and IMAGE_TYPE='Gallery')=0" }
+SQL INSERT INTO GALLERY (NAME, OWNER, STATUS,IMAGE_TYPE)
+VALUES ('New', operator.id,  '','Gallery');
 		
   
 table
---{if:"(select count(ref) from GALLERY where  blob_id is null)=0" }
+--{if:"(select count(ref) from GALLERY where  blob_id is null and IMAGE_TYPE='Gallery')=0" }
 Select  --:{Title:"Make new records",from:"GALLERY",autoinsert:"top",tablestyle:"Todo"}
 STATUS, --:{Action:"Edit",debug:0,autosave:yes}
 NAME,   --:{Action:"Edit","placeholder":"What needs to be done (tab to save)","autosave":yes}
@@ -53,16 +53,16 @@ NAME,   --:{Action:"Edit",title:"Name for picture"}
 STATUS, --:{Action:"Edit",title:"Don't show this picture"}
 REF	    --:{Action:"View",Type:"Hide"}
 From GALLERY 
-where blob_id is null
+where blob_id is null and IMAGE_TYPE='Gallery'
 
 
 table
 Select  --:{Title:"pictures",from:"GALLERY",tablestyle:"Upload"}
 first 1
+BLOB_ID, --:{Action:Edit}
 REF	    --:{}
-,BLOB_ID --:{Action:Edit}
 From GALLERY 
-where blob_id is null
+where blob_id is null and IMAGE_TYPE='Gallery'
 
 
 NextContainer (rem="----------------------------------------------------------" tab=Source_Code)

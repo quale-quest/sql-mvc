@@ -1084,7 +1084,7 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 		       zx.config.db.sql_set_prefix + zx.config.db.sql_concat_res+"', ``" + cx.tid_name + "``:['"+zx.config.db.sql_concat_postfix+";\n";
 
 		sql =  zx.config.db.sql_set_prefix + zx.config.db.sql_concat_rowcontent + "="+
-			    zx.config.db.sql_concat_prefix+ zx.config.db.var_actaul+ zx.config.db.sql_preload_fieldname + zx.config.db.sql_concat_seperator +"'[``'"+zx.config.db.sql_concat_seperator +
+			    zx.config.db.sql_concat_prefix+ zx.config.db.var_actaul+ zx.config.db.sql_preload_fieldname + 				zx.config.db.sql_concat_seperator +"'[``'"+zx.config.db.sql_concat_seperator +
 				zx.config.db.var_actaul+"tfid"+ zx.config.db.sql_concat_seperator +"'``";
 			   
 		firstseperator = ',';
@@ -1131,6 +1131,8 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 		}
 	}
 	
+	//sql is the code for building the string concat of the json object
+	//postbacks is the sql code that inserts the references for updates into the darabse
 	fields.forEach(function (widget, i) {
 		//console.log('fields.forEach:',widget);
 		if (i > 0) {
@@ -1155,10 +1157,12 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
             sql += comma + "'"+zx.config.db.sql_concat_seperator+exports.F_F2J(zx, line_obj,"SUBSTRING("+zx.config.db.var_actaul+"f" + i + substrformat +")")
 		                 +  zx.config.db.sql_concat_seperator + "'";
 
+		//console.log('fields.postback ',[i,widget.postback]);
 		if (widget.postback !== undefined) {
 			postfields++;
 			postbacks += '\n  ' + widget.postback;
-
+		} else {
+			postbacks += '\n  tfid=:tfid+1;';
 		}
 
 		if ((widget.f !== undefined) && (widget.f.softcodec !== undefined)) {
@@ -1184,6 +1188,9 @@ exports.table_make_script = function (zx, cx, line_obj, QueryType) {
 		//    look at alternativies - validate when updating bey rerunning that query?
 	});
 
+	//console.log('table_make_script fields.forEach:',sql);
+	//console.log('table_make_script postbacks:',postbacks);
+	
 	if ((QueryType === "Dict") && (fields.length === 1)) {
 		//name:""
 		sql += comma + "[]";

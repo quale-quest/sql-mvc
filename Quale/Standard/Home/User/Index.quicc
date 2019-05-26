@@ -21,14 +21,14 @@ form()
 script
 --{if:"(select count(ref) from GALLERY where OWNER=operator.id and IMAGE_TYPE='Selfi')=0" }
 SQL INSERT INTO GALLERY (NAME, OWNER, STATUS,IMAGE_TYPE)
-                 VALUES ('', operator.id,  'Selfi','Selfi');
+                 VALUES ('', operator.id,  '','Selfi');
 
 			 
 table
 Select  --:{Title:"pictures",from:"GALLERY",tablestyle:"Nontable"}
 first 1
+BLOB_ID, --:{as:signaturepad,Action:Edit}
 REF	    --:{}
-,BLOB_ID --:{as:signaturepad,Action:Edit}
 From GALLERY 
 where OWNER=operator.id and IMAGE_TYPE='Selfi'
 
@@ -36,8 +36,8 @@ where OWNER=operator.id and IMAGE_TYPE='Selfi'
 
 table
 Select  --:{Title:"Make new records",from:"GALLERY",tablestyle:"Todo"}
+BLOB_ID, --:{width:300}
 REF	    --:{}
-,BLOB_ID --:{width:300}
 From GALLERY 
 where OWNER=operator.id and IMAGE_TYPE='Selfi'
   				 
