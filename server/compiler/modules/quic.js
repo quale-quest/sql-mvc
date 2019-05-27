@@ -123,7 +123,9 @@ exports.parse = function (zx, line_obj, str, tag,Quale_eval) {
 
 			str = str.substr(0, tagindex) + str.substr(end_s);
 			parse_from = tagindex;
-			//console.log('Quic parse :',linestart,tagindex,quickinput,quics,tag,opener);
+			//console.log('Quic parse :',linestart,tagindex,quickinput,quics,tag,opener,Quale_eval);
+			//if quickinput contains pk then debug
+			
 			if (opener === '--:{'  && Quale_eval)
 				try {
 					exports.Quic_eval(zx, line_obj, quickinput, quics, tag, opener);
@@ -451,6 +453,7 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
 				if (zx.q.contexts[quale.context] === undefined)
 					zx.q.contexts[quale.context] = {};
 				if (quale.name !== undefined) {
+					//console.log('Quale setting model fields :', quale.context, '.', quale.name, ':', quale);
 					if (quale.debug||exports.debug) {
 						console.log('Quale setting model fields :', quale.context, '.', quale.name, ':', quale);
 					}
@@ -465,6 +468,11 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
                     }
 
 				} else {
+					
+					if (quale.as!='Table') {
+						console.log('Quale name not found for field (Check regex for type):', quale.context, ':', quale);
+						//process.exit(2);
+					}
 					if (quale.debug||exports.debug) {
 						console.log('Quale setting model table :', quale.context, ':', quale);
 					}
@@ -512,7 +520,8 @@ exports.Quic_eval = function (zx, line_obj, quickinput, quics, tag) {
                 
              var qr =zx.q.ths.Fields[quale.indx];                
             if (qr.fb_trigger) {
-                //console.log('Quic_eval fb_trigger found :',qr);  
+				//this is when the table is used in a table or view ??
+                //console.log('IGNORING : Quic_eval fb_trigger found :',qr);  
                 //zx.sql.triggers.push({Table:qr.table,Field:qr.name});        
             }
             

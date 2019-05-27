@@ -6,8 +6,14 @@
 --:{regex:"regex:/timestamp/i",Default_length:"20",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} 
 --:{regex:"regex:/float/i",Default_length:"10",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} 
 --:{regex:"regex:/integer/i",Default_length:"10",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} 
---:{regex:"regex:/SHORT_NAME/i",Default_length:"20",length:"regex:/(\\d+)/",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} 
 
+--:{regex:"regex:/PK/i",Default_length:"32",name:"regex:/(\\w+)/",Type:"Text",Action:"Hide"} 
+--:{regex:"regex:/FK/i",Default_length:"32",name:"regex:/(\\w+)/",Type:"Text",Action:"Hide"} 
+--:{regex:"regex:/SHORT_NAME/i",Default_length:"20",length:"regex:/(\\d+)/",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} 
+--:{regex:"regex:/LONG_NAME/i",Default_length:"40",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} 
+--:{regex:"regex:/Z\\$T_PASSWORD/i",Default_length:"20",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} 
+--:{regex:"regex:/Z\\$PHONE_NUMBER/i",Default_length:"20",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} 
+--:{regex:"regex:/Z\\$EMAIL/i",Default_length:"30",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} 
 	
 --:{class:"pk",Action:View,Type:Hide,PrimaryKey:true,fb_trigger:true}
 --:{class:"existing_pk",Action:View,Type:Hide,PrimaryKey:true,fb_trigger:false}
@@ -139,7 +145,7 @@ CREATE INDEX IDX_Z$CONTEXT1 ON Z$CONTEXT (PK);
 
 CREATE TABLE Z$DICTIONARY			--:{as:"Table"} 
 (
-  REF VARCHAR(20),					--:{as:"pk"}
+  REF PK,					--:{as:"pk"}
   COY VARCHAR(20),					--:{as:"fk"} 
   NAME VARCHAR(40),					--:{as:"text"}
   CONTEXT VARCHAR(20),				--:{as:"text"}
@@ -215,6 +221,7 @@ INSERT MATCHING user_name_field;
 INSERT INTO user_table_name (owner,user_landing_page,user_display_field,user_name_field,user_password_field,status) values (1,'Home/SelfServe','SelfServe','SelfServe','SelfServe',<%#run.selfmanage%>10<%/run.selfmanage%><%^run.selfmanage%>0<%/run.selfmanage%>);
 INSERT INTO user_table_name (owner,user_landing_page,user_display_field,user_name_field,user_password_field,status) values (1,'<%run.Guest_Landingpage%>','Guest','guest','gu35t',<%#run.login_first%>0<%/run.login_first%><%^run.login_first%>10<%/run.login_first%>);
 INSERT INTO user_table_name (owner,user_landing_page,user_display_field,user_name_field,user_password_field,status) values (1,'Home/SysAdmin','sysadmin','sysadmin','<%run.Sysadmin_Password%>',10);
+
 
 #>
 

@@ -6,13 +6,13 @@ master(user_table_name)
 list{
     "name": "LANDING_PAGE",
     "values": {
+		"Home/Sysadmin": "Home/Sysadmin",
+		"Home/SelfServe":"Home/SelfServe",
         "Home/Guest": "Home/Guest",
-		"Home/User": "Home/User",
+		"Home/User": "Home/User",		
 		"Home/Manager": "Home/Manager",
-		"Home/Sysadmin": "Home/Sysadmin"
     }
 }
-
 
 
 form()

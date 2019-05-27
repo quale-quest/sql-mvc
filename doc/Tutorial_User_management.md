@@ -27,4 +27,13 @@ Login options in config.json/run:
 	"selfmanage" :true,
 	
 
+#Shortcut to login to a specific page
+
+either in production or very useful in debugging	
+
+examples
+	http://192.168.177.128:3000/user=sysadmin&password=OTwrg2JZgtaAg730
+
+	
+	
 
