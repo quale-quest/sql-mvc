@@ -1,5 +1,14 @@
 "use strict";
 /* qq utilities - for server side */
+var deepcopy = require('deepcopy');
+
+
+exports.cxwithoutzx= function (cx) {
+	var out = deepcopy
+	var out = deepcopy(cx);
+	delete out.zx;
+	return out;
+}
 
 exports.intersect_safe_sorted = function (a, b) { //http://stackoverflow.com/questions/1885557/simplest-code-for-array-intersection-in-javascript
 	var ai = 0,

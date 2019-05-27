@@ -834,14 +834,16 @@ exports.link_from = function (zx, line_obj) {
 
 var check_pointer = function (zx,cx,fld_obj) {
         
+	//console.log('check_pointer a:',fld_obj.cf[0].pointer);	
     if (fld_obj.cf[0].pointer===undefined)
     {
-
-        zx.error.log_SQL_fail (zx, "no primary key for edit ","You must select(and mark) the primary key as part of the query, in order to edit a field in the table", fld_obj, zx.line_obj);
-        throw zx.error.known_error;
+		//console.log('check_pointer aa:',fld_obj.cf[0].pointer);	
+		var errtxt = "You must select(and mark) the primary key as part of the query, in order to edit a field in the table";	
+        zx.error.log_SQL_fail (zx, "no primary key for edit ",errtxt, fld_obj, zx.line_obj);
+        throw new Error("known error - " +errtxt);//throw zx.error.known_error;
     }
 	var pointerfieldindex = fld_obj.cf[0].pointer;
-	//console.log('pointerfieldindex a:',fld_obj.cf[0].pointer,cx.fields[ pointerfieldindex ]);
+	//console.log('check_pointer a:',fld_obj.cf[0].pointer,cx.fields[ pointerfieldindex ]);
 	var pointerfields = cx.fields[pointerfieldindex].name;
 	//console.log('=================================\n',pointerfields );
 	var pkname = pointerfields.split(' ')[0];
@@ -901,7 +903,7 @@ exports.link_from_table = function (zx,cx, fld_obj) {
 	{
 
 	    zx.error.log_SQL_fail (zx, "no primary key for link","You must select(and mark) the primary key as part of the query, in order to make a link on the table", fld_obj, zx.line_obj)
-	    throw zx.error.known_error;
+	    throw new Error("known error - no primary key for link"); //throw zx.error.known_error;
 	}
 
     var pkname = check_pointer(zx,cx,fld_obj);	

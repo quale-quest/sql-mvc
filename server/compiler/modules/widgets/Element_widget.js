@@ -114,7 +114,7 @@ var getFieldStyle = function (cx, SubStyle, Type, Class, Action, Key,FT) {
 			zx.error.log_noStyle_warning(zx, "WarnNoClassUsingGenericFieldStyle: 1:", Generic + " instead of Style:" + Style + " SubStyle:" + SubStyle + " Type:" + Type + " Class:" + Class + " Action:" + Action + " Key:" + Key + " ==" + Style + SubStyle + Type + Class + Action + Key, zx.line_obj);
 		}
 	}
-	//console.log('getFieldStyle: ',Style,"ss:",SubStyle,"t:",Type,"c:",Class,"a:",Action,'k:',Key,'Result:',Result);
+	//console.log('getFieldStyle 20190527117: ',Style,"ss:",SubStyle,"t:",Type,"c:",Class,"a:",Action,'k:',Key,'Result:',Result);
 	if (Result.substring(0, 8) === 'inherit:') {
 		var inheritedFrom = Try.Key;
 		Try.tried.push("InheritingFrom:"+inheritedFrom);
@@ -126,7 +126,7 @@ var getFieldStyle = function (cx, SubStyle, Type, Class, Action, Key,FT) {
 		}
 
 	}
-	//console.log('getFieldStyle: ', Style, "ss:", SubStyle, "t:", Type, "c:", Class, "a:", Action, 'k:', Key, 'Result:', Result);
+	//console.log('getFieldStyle 20190527129: ', Style, "ss:", SubStyle, "t:", Type, "c:", Class, "a:", Action, 'k:', Key, 'Result:', Result);
 	if (Result === undefined) {
 		zx.error.log_noStyle_warning(zx, "no style info at all: 99:");
 		//    process.exit(2);
@@ -144,7 +144,7 @@ var getFieldStyle = function (cx, SubStyle, Type, Class, Action, Key,FT) {
 	cx.fieldDebug[QFull]['search'] = Full;
 	
 	Result = zx.process_tags(Result, 'repack(', ')', 0, function (value) {
-    //console.log('repacking process_tags a: ', value);
+        //console.log('repacking process_tags a 20190527148: ', value);
 		var a = value.split(',') || [value];
 		var r = '"o":1'; //object dimention
         //show=1;
@@ -154,9 +154,15 @@ var getFieldStyle = function (cx, SubStyle, Type, Class, Action, Key,FT) {
                  
 		});
         //console.log('repacking process_tags: ', r);
+	//if (r==undefined) console.log('getFieldStyle failed r: Style:', Style, " SubStyle:", SubStyle, " Type:", Type, " Class:", Class, " Action:", Action, ' Key:', Key, ' Result:', Result);
+		
         return r;
 	});
     //if (show) console.log('repacking process_tags result: ', Result);
+	
+	
+	if (Result==undefined) 
+		 console.log('getFieldStyle failed: Style:', Style, " SubStyle:", SubStyle, " Type:", Type, " Class:", Class, " Action:", Action, ' Key:', Key, ' Result:', Result);
 
 	return (Result);
 };
@@ -195,10 +201,16 @@ var fieldSubItem = function (cx, FT) {
 		{ //edit
 			//console.log('fieldSubItem B: ',cx.pop,FT);
 			//this kills the table  cx.tid=1111;
-
+			try {
 			cx.QryOffset = zx.dbg.edit_from_table(zx, cx, FT);
-
+			} catch (e) {		
+				console.log('e.stack 112235210 :',e);
+				process.exit(2);
+			}		
+			//console.log('fieldSubItem B0: ',cx.pop,FT);
+			
 			tt = getFieldStyle(cx, FT.cf[0].substyle, FT.cf[0].Type, "Field", FT.cf[0].Action, "Main",FT);
+			//console.log('fieldSubItem B1: ', tt);
 			if (tt !== '') {
 
 				//template = hogan.compile(tt);
@@ -219,7 +231,7 @@ var fieldSubItem = function (cx, FT) {
 		}
 
 	} catch (e) {
-		console.log('fieldSubItem 120818: ', FieldHtml, tt, FT);
+		//console.log('fieldSubItem 120818: ', {"FieldHtml":FieldHtml,"tt":tt,"cx":cx.zx.cxwithoutzx(cx), "FT":FT});
         console.log('e.stack 112235 :',e.stack);
 		zx.error.caught_exception(zx, e, " fragment -120818, : " + tt);
 		throw new Error("local known error");
