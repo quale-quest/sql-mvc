@@ -1279,7 +1279,7 @@ exports.start_pass = function (zx /*, line_objects*/
     if (zx.fb25block)  { 	
 		zx.sql.testhead =
 		"\n\n\nset term #;\n" +
-		"EXECUTE BLOCK RETURNS  (cid  integer,info varchar(200), res blob SUB_TYPE 1)AS \n" +
+		"EXECUTE BLOCK RETURNS  (cid  integer,info varchar(260), res blob SUB_TYPE 1)AS \n" +
 		"declare pki integer=12345678;\n" +
 		"declare pkf integer=12345678;\n" +
 		"declare Z$SESSIONID varchar(40)='12345678';\n"+
@@ -1328,7 +1328,7 @@ exports.start_pass = function (zx /*, line_objects*/
 		"  @cid INTEGER,\n"+	//new cid	
 		"  @operator$ref varchar(41),\n"+	
 		"  \n"+
-		"  @info varchar(200) OUT,\n"+
+		"  @info varchar(260) OUT,\n"+
 		"  @res VARCHAR(MAX) OUT\n"+
 
 		") AS \r\nBEGIN\r\n" +
@@ -1386,7 +1386,7 @@ exports.start_pass = function (zx /*, line_objects*/
 		emitdeclare(zx, 0, exports.emit_var_def(decl.name),decl.db_type,"''");
 	}
 	for (var i = 0; i < zx.sql.max_f; i++) {
-		emitdeclare(zx, 0, "f" + i,"varchar(200)","''");
+		emitdeclare(zx, 0, "f" + i,"varchar(260)","''");
 	}
 
 	if (zx.fb25)  emit(zx, 0, "BEGIN", "");

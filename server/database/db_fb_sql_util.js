@@ -279,12 +279,12 @@ exports.validate_script = function (zx, name, script) {
 	var querys;
 
 	if (zx.fb25) {
-		querys = 'EXECUTE BLOCK RETURNS  (cid integer,info varchar(200),res blob SUB_TYPE 1)AS '+
+		querys = 'EXECUTE BLOCK RETURNS  (cid integer,info varchar(260),res blob SUB_TYPE 1)AS '+
 			     'declare pki integer=0;declare pkf integer=0;declare z$sessionid varchar(40)=\'\';declare operator$ref  varchar(41)=\'\';' + script;
 	} else if (zx.mysql57) {
 		querys =
 			"\r\n\r\n\r\nDELIMITER  $$\r\nDROP PROCEDURE IF EXISTS execute_test $$\r\n" +
-			"CREATE PROCEDURE execute_test (cid  integer,info varchar(200), res TEXT)\r\nBEGIN\r\n" +
+			"CREATE PROCEDURE execute_test (cid  integer,info varchar(260), res TEXT)\r\nBEGIN\r\n" +
 			"declare pki integer default 0;\r\n" +
 			"declare pkf integer default 0;\r\n" +
 			"declare  operator$ref varchar(41) default '';\r\n" +
@@ -398,7 +398,7 @@ exports.write_script = function (zx, real, spi, name, mtHash, script, code) {
 	script = script.replace('Z$$integer', FN_HASH);
 	
     if (zx.conf.db.dialect=="fb25") {
-		var call_script = "EXECUTE BLOCK RETURNS  (info varchar(200),res blob SUB_TYPE 1,SCRIPTNAMED varchar(200))AS begin EXECUTE procedure "+FN_HASH+" ";
+		var call_script = "EXECUTE BLOCK RETURNS  (info varchar(260),res blob SUB_TYPE 1,SCRIPTNAMED varchar(260))AS begin EXECUTE procedure "+FN_HASH+" ";
 
 		exports.fetch_query_result(zx, connection, "create_script_async fb25 UPDATE", 
 			"UPDATE OR INSERT INTO Z$SP (PK,TSTAMP,FILE_NAME,SCRIPT,CODE,MT_HASH,FN_HASH)VALUES (?,'now',?,?,?,?,?) MATCHING (PK) ",
