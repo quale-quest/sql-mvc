@@ -821,13 +821,28 @@ exports.link_from = function (zx, line_obj) {
 	//if (line_obj.pass) // a way to pass extra parameters - not implemented - future should be done by variables
 	//    links+= "\n--pass singleton link  TODO "+JSON.stringify(line_obj);// + fld_obj.pass.Divout;//:cid,:tfid,
 	//PAGE_PARAMS = PAGE_PARAMS + exports.build_variable_pass_all(zx,line_obj,line_obj.cf[0].pass, zx.sql.cidi,'lft123737X');
+	
+	
 	emit(zx, line_obj, PAGE_PARAMS);
-	var links = "INSERT INTO Z$PK_CACHE(MASTER, INDX, FIELD_NAME, VALU,TARGET,QUERY, PAGE_PARAMS)" +
-		"VALUES ("+vr(zx,"cid") + "," + zx.sql.cidi + ",'click'," + fb_AsString(from) + ", " + 
-        fb_AsString(zx.Current_main_page_name.replace(/\\/g, "/")) + ", " + 
-		wherex + ", " +           /*+" "+ zx.gets(line_obj.nonkeyd)..check above TODO note*/		
-		zx.config.db.var_actaul+"param_array "   /*PAGE_PARAMS  */ + " "+		
-		");  ";		
+	if (line_obj.wheremasterid) {
+		var links = "INSERT INTO Z$PK_CACHE(MASTER, INDX, FIELD_NAME, VALU,Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS)" +
+			"VALUES ("+vr(zx,"cid") + "," + zx.sql.cidi + ",'clickpk'," +
+			fb_AsString(from) + ", " +  //VALU
+			fb_AsString(line_obj.wheremasterid)+ ", " + //Pk_Field_Name
+			fb_AsString(zx.Current_main_page_name.replace(/\\/g, "/")) + ", " +  //target
+			zx.config.db.var_actaul+"master_id, " +           			
+			zx.config.db.var_actaul+"param_array " +  
+			");  ";		
+		
+	} else {
+		var links = "INSERT INTO Z$PK_CACHE(MASTER, INDX, FIELD_NAME, VALU,TARGET,QUERY, PAGE_PARAMS)" +
+			"VALUES ("+vr(zx,"cid") + "," + zx.sql.cidi + ",'click'," +
+			fb_AsString(from) + ", " +  //VALU
+			fb_AsString(zx.Current_main_page_name.replace(/\\/g, "/")) + ", " +  //target
+			wherex + ", " +           /*+" "+ zx.gets(line_obj.nonkeyd)..check above TODO note*/		//QUERY
+			zx.config.db.var_actaul+"param_array "   /*PAGE_PARAMS  */ + " "+		
+			");  ";		
+	}
 	emit(zx, line_obj, links);
 	return zx.sql.cidi;
 };
@@ -910,7 +925,8 @@ exports.link_from_table = function (zx,cx, fld_obj) {
 	
 	var PAGE_PARAMS = run_procedure_from(zx, fld_obj.cf[0],'tfid','link_from_table');
 	PAGE_PARAMS = PAGE_PARAMS + exports.build_variable_pass_all(zx,fld_obj,fld_obj.cf[0].pass,'tfid','lft123737x')	
-                
+
+				
 	//console.log('link_from_table links: PAGE_PARAMS:',PAGE_PARAMS,' pass: ' ,fld_obj.cf[0].pass);		
 	var links = PAGE_PARAMS + "\r\n INSERT INTO Z$PK_CACHE(MASTER, INDX, FIELD_NAME, VALU,Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS)" +
 		"VALUES ("+

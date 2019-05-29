@@ -14,7 +14,14 @@ The four functions are augmented by styles for different situations like
 	* Button
 	* Icon
 
+Button links can either be on a where clause or on the master_id record as passed
+	wheremasterid="ID" 	
+Example:
+	button () --{title:"Create new" glymph:"pencil-b" from=TODO_MVC wheremasterid="ID" form=popup_Edit_TODO_MVC}
+	sql UPDATE OR INSERT INTO TODO_MVC (OWNER,NAME,STATUS,PARENT_ID) VALUES ( operator.id, 'New','', master.ID ) matching (OWNER,NAME) ;
+	select first 1 ID from TODO_MVC where owner=operator.id and name='New' into :master_id;
 
+	
 Elements are defined in quicc files  Fields.quicc, Actions.quicc etc.
 	element(name)
 		MoustacheCode
