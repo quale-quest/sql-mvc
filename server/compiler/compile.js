@@ -323,6 +323,9 @@ var AddDependedFilesToBeCompiled = function (zx,fn) {
 		zx.db_update = require('../database/db_fb_sql_updater.js');
 		zx.plugins.push(zx.db_update);
 
+		zx.db_fb_replicator = require('../database/db_fb_replicator.js');
+		zx.plugins.push(zx.db_fb_replicator);		
+		
 		zx.template_control = require('./modules/template_control.js');
 		zx.plugins.push(zx.template_control);
 

@@ -1,0 +1,34 @@
+
+<#:model()
+
+CREATE GENERATOR ZR$LOG_ID;
+SET GENERATOR ZR$LOG_ID TO 1;
+CREATE GENERATOR ZR$LOG_GENERATION;
+SET GENERATOR ZR$LOG_GENERATION TO 1;
+
+
+
+CREATE TABLE ZR$LOG
+(
+  ID Bigint NOT NULL PRIMARY KEY,
+  GEN Bigint,
+  SHARD  Varchar(32),
+  USR Varchar(32) DEFAULT current_user,
+  TS Timestamp DEFAULT current_timestamp,
+  TID Integer DEFAULT current_transaction,
+  JSON Varchar(8000)
+);
+
+
+
+
+#>
+
+
+
+
+
+
+
+
+

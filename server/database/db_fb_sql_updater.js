@@ -468,6 +468,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 	var cx = {
 		zx : zx
 	};
+	var reconstructfields=[];
 	var qryout='';
 	var CREATE_GLOBAL_TEMPORARY_TABLE =0;
 	var barestr = comment_suppress(qrystr); 
@@ -483,7 +484,7 @@ var CREATE_TABLE = function (zx, qrystr) {
 		return "";
 	} 
 	barestr = Table[3];
-    //onsole.log('Table re:', Table, barestr,' >',qrystr,'[',Table);
+    //console.log('Table re:', Table, barestr,' >',qrystr,'[',Table);
 	Table = Table[1];
 
 	
@@ -716,45 +717,47 @@ var CREATE_TABLE = function (zx, qrystr) {
 					if (FFD[4])
 						console.log('WARN: Cannot update "NOT NULL" property for :', Table + '.' + FieldName);
 					
-						if (zx.mssql12) {
-							//TODO
-							console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX mssql12 ignoring default attr :', Default,":");
-						} else {					
+					reconstructfields.push({"FieldName":FieldName,"FieldType":FieldType});					
+					//console.log('Table FieldName:', Table,'>',FieldName,'<');
 					
 					
-                    	
-					cx.expect = zx.dbu.sqltype(zx,/unsuccessful metadata update/,/ER_DUP_FIELDNAME/,/is specified more than once/);
-					if (zx.fb25) { 
-						exec_qry(cx, "ALTER TABLE " + Table + " alter " + FieldName + " TYPE " + FieldType+"; "); 
-					} else if (zx.mysql57) { 
-						exec_qry(cx, "ALTER TABLE " + Table + " MODIFY " + FieldName + "  " + FieldType+"; ");
-					} else 
-						throw new Error("dialect code missing");
-					
-					//console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Default:', Default,":");
-					if (Default !== "") {
-                        //console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Table fields FFD Default:', Table,' . ',FieldName,Default);
-                        
-                        cx.expect = /unsuccessful metadata update/; 
-						if (zx.fb25) {
-							exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " set DEFAULT " + Default+"; ");
-						} else if (zx.mysql57) {
-							exec_qry(cx, "ALTER TABLE " + Table + "   MODIFY column  " + FieldName + "  " + FieldType + " DEFAULT " + Default+"; ");
-						}  else throw new Error("dialect code missing"); 
-                        //exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " set " + Default);
-						// updating the default before commit seems a problem ... this should be moved to phase 2
-						//caused an error in carlton update ->    exec_qry("update "+Table +" set " + FieldName + "="+Default+" where " +FieldName + " is null ")
+					if (zx.mssql12) {
+						//TODO
+						console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX mssql12 ignoring default attr :', Default,":");
 					} else {
-                        //console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Table fields FFD        :', Table,' . ',FieldName);// FFD);
 
-						cx.expect = /unsuccessful metadata update/;
-						if (zx.fb25) {  
-							exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " DROP DEFAULT "+"; ");
-						} else if (zx.mysql57)  {
-							exec_qry(cx,  "ALTER TABLE " + Table + "   alter column  " + FieldName + " DROP DEFAULT "+"; ");
-						}  else throw new Error("dialect code missing"); 
-                        
-					}
+						cx.expect = zx.dbu.sqltype(zx,/unsuccessful metadata update/,/ER_DUP_FIELDNAME/,/is specified more than once/);
+						if (zx.fb25) { 
+							exec_qry(cx, "ALTER TABLE " + Table + " alter " + FieldName + " TYPE " + FieldType+"; "); 
+						} else if (zx.mysql57) { 
+							exec_qry(cx, "ALTER TABLE " + Table + " MODIFY " + FieldName + "  " + FieldType+"; ");
+						} else 
+							throw new Error("dialect code missing");
+						
+						//console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Default:', Default,":");
+						if (Default !== "") {
+							//console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Table fields FFD Default:', Table,' . ',FieldName,Default);
+							
+							cx.expect = /unsuccessful metadata update/; 
+							if (zx.fb25) {
+								exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " set DEFAULT " + Default+"; ");
+							} else if (zx.mysql57) {
+								exec_qry(cx, "ALTER TABLE " + Table + "   MODIFY column  " + FieldName + "  " + FieldType + " DEFAULT " + Default+"; ");
+							}  else throw new Error("dialect code missing"); 
+							//exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " set " + Default);
+							// updating the default before commit seems a problem ... this should be moved to phase 2
+							//caused an error in carlton update ->    exec_qry("update "+Table +" set " + FieldName + "="+Default+" where " +FieldName + " is null ")
+						} else {
+							//console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Table fields FFD        :', Table,' . ',FieldName);// FFD);
+
+							cx.expect = /unsuccessful metadata update/;
+							if (zx.fb25) {  
+								exec_qry(cx, "ALTER TABLE " + Table + " Alter " + FieldName + " DROP DEFAULT "+"; ");
+							} else if (zx.mysql57)  {
+								exec_qry(cx,  "ALTER TABLE " + Table + "   alter column  " + FieldName + " DROP DEFAULT "+"; ");
+							}  else throw new Error("dialect code missing"); 
+							
+						}
 					}
 				}                                            
 
@@ -765,6 +768,8 @@ var CREATE_TABLE = function (zx, qrystr) {
 								var FieldName = FFD[1];
 								//console.log('\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  Field default not found :', field,FFD);
 								//should be dropping
+								
+								reconstructfields.push({"FieldName":FieldName,"FieldType": FFD[2]});					
 
 								cx.expect = /unsuccessful metadata update/;
 								if (zx.fb25) {
@@ -787,10 +792,10 @@ var CREATE_TABLE = function (zx, qrystr) {
 						exec_qry(cx, "ALTER TABLE " + Table + " ALTER " + FieldName + " POSITION " + FieldNumber+"; ");						
                     }
 			
-            }
+            }			
 		}
 	});
-	
+	zx.db_fb_replicator.MakeReplicationCode(zx, {"Table":Table,"Fields":reconstructfields });
 	}
 
 	return "";
