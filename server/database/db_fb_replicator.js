@@ -104,10 +104,10 @@ var MakeReplication_Meta = function (zx, model,Typ,shard,oldnew) {
 	return "'{'"+F_F2JV(zx,'f',"'"+Typ+"'")+
 		         "','"+F_F2JV(zx,'t',"'"+model.Table+"'")+
 		         "','"+F_F2JV(zx,'id',oldnew+model.Fields[0].FieldName)+
-		         "','"+F_F2JV(zx,'s',":DID")	+
+		         //"','"+F_F2JV(zx,'s',":DID")	+
+				 "','"+F_F2JV(zx,'s',":REAL_CURRENT_TRANSACTION")	+
 		         //"','"+F_F2JV(zx,'s',shard)	+				 
-		         '\',"d":{\'||';
-	
+		         '\',"d":{\'||';	
 }
 
 var MakeReplication_UpdateTrigger = function (zx, model,insert_or_update) {
