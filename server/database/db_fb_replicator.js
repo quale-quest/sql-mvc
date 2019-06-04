@@ -27,8 +27,6 @@ Function
 		UPDATE ACCOUNT SET SHARD = 'xxx' WHERE PROJECT_ID='xxx' ;		
 		UPDATE SCRIPT  SET SHARD = 'xxx' WHERE PROJECT_ID='xxx' ;		
 		
-		
-		
 	Issues "CURRENT_TRANSACTION - Because this value is stored on the database header page, it will be reset after a database restore."
 			can be fixed with GET_REAL_CURRENT_TRANSACTION code	
 
@@ -42,13 +40,15 @@ Function
 			- we dont delete older records in a shard because a new cleint can connect at anytime
 			
 	Client
+		
+	
 		select shard from rest:PROJECT where PROJECT.ID = 'myProject' into new_shard
 		if (new_shard<>download_shard) {
 			//the shard has changed ....
 			download_TID = 0;			
 			download_shard=new_shard;
 		}
-		select from rest:ZR$LOG where SHARD=download_shard and TID>=download_TID
+		select from rest:ZR$LOG where SHARD=download_shard and TID>download_TID
 			if 0 records and no errors or UPTODATE
 				if Active_shard <> download_shard then flag_app to reload asap
 				Active_shard = download_shard;
@@ -72,7 +72,7 @@ var existingscript={};
 var CRLF="\r\n";
 
 var GET_REAL_CURRENT_TRANSACTION = 
-CRLF + "		REAL_CURRENT_TRANSACTION = rdb$get_context('USER_SESSION', 'REAL_CURRENT_TRANSACTION');"+
+CRLF + "		REAL_CURRENT_TRANSACTION = rdb$get_context('USER_TRANSACTION', 'REAL_CURRENT_TRANSACTION');"+
 CRLF + "		if (REAL_CURRENT_TRANSACTION is not distinct from null) then begin"+
 			
 CRLF + "			if (CURRENT_TRANSACTION < gen_id(ZR$LAST_CURRENT_TRANSACTION,0) ) then"+
@@ -80,7 +80,7 @@ CRLF + "				REAL_CURRENT_TRANSACTION = gen_id(ZR$MIN_CURRENT_TRANSACTION,gen_id(
 			
 CRLF + "			REAL_CURRENT_TRANSACTION = GEN_ID(ZR$LAST_CURRENT_TRANSACTION, CURRENT_TRANSACTION - GEN_ID(ZR$LAST_CURRENT_TRANSACTION, 0 ) );"+
 CRLF + "			REAL_CURRENT_TRANSACTION = gen_id(ZR$MIN_CURRENT_TRANSACTION,0) + CURRENT_TRANSACTION;"+
-CRLF + "			rdb$set_context('USER_SESSION', 'REAL_CURRENT_TRANSACTION', REAL_CURRENT_TRANSACTION);"+
+CRLF + "			rdb$set_context('USER_TRANSACTION', 'REAL_CURRENT_TRANSACTION', REAL_CURRENT_TRANSACTION);"+
 CRLF + "		end    ";
 		
 
