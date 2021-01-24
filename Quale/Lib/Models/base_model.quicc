@@ -1,19 +1,33 @@
 
 <#:model()
 
---:{regex:"regex:/create\\s+table/i",rl_context:"regex:/create\\s+table\\s+([\\w_$]+)/i"}
---:{regex:"regex:/varchar/i",Default_length:"20",length:"regex:/(\\d+)/",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} --comment
---:{regex:"regex:/timestamp/i",Default_length:"20",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} 
---:{regex:"regex:/float/i",Default_length:"10",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} 
---:{regex:"regex:/integer/i",Default_length:"10",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} 
+--:{regex:"regex:/\\bcreate\\s+table\\b/i",rl_context:"regex:/create\\s+table\\s+([\\w_$]+)/i"}
 
---:{regex:"regex:/PK/i",Default_length:"32",name:"regex:/(\\w+)/",Type:"Text",Action:"Hide"} 
---:{regex:"regex:/FK/i",Default_length:"32",name:"regex:/(\\w+)/",Type:"Text",Action:"Hide"} 
---:{regex:"regex:/SHORT_NAME/i",Default_length:"20",length:"regex:/(\\d+)/",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} 
---:{regex:"regex:/LONG_NAME/i",Default_length:"40",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} 
---:{regex:"regex:/Z\\$T_PASSWORD/i",Default_length:"20",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} 
---:{regex:"regex:/Z\\$PHONE_NUMBER/i",Default_length:"20",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} 
---:{regex:"regex:/Z\\$EMAIL/i",Default_length:"30",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} 
+--:{regex:"regex:/\\bvarchar\\b/i",Default_length:"20",length:"regex:/(\\d+)/",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} --comment
+--:{regex:"regex:/\\bcharacter\\b/i",Default_length:"20",length:"regex:/(\\d+)/",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"}
+--:{regex:"regex:/\\bblob\\b/i",Default_length:"20",length:"regex:/(\\d+)/",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"}
+
+--:{regex:"regex:/\\btimestamp\\b/i",Default_length:"20",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} 
+--:{regex:"regex:/\\btime\\b/i",Default_length:"20",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} 
+--:{regex:"regex:/\\bdate\\b/i",Default_length:"20",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} 
+
+--:{regex:"regex:/\\bsmallint\\b/i",Default_length:"5",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} 
+--:{regex:"regex:/\\binteger\\b/i",Default_length:"11",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} 
+--:{regex:"regex:/\\bbigint\\b/i",Default_length:"20",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} 
+
+
+--:{regex:"regex:/\\bfloat\\b/i",Default_length:"10",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} 
+--:{regex:"regex:/\\bdouble\\s+precision\\b/i",Default_length:"20",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} 
+--:{regex:"regex:/\\bnumeric\\b/i",Default_length:"18",length:"regex:/(\\d+)/",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} 
+
+--:{regex:"regex:/\\bPK\\b/i",Default_length:"32",name:"regex:/(\\w+)/",Type:"Text",Action:"Hide"} 
+--:{regex:"regex:/\\bFK\\b/i",Default_length:"32",name:"regex:/(\\w+)/",Type:"Text",Action:"Hide"} 
+--:{regex:"regex:/\\bSHORT_NAME\\b/i",Default_length:"20",length:"regex:/(\\d+)/",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} 
+--:{regex:"regex:/\\bLONG_NAME\\b/i",Default_length:"40",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} 
+--:{regex:"regex:/\\bZ\\$T_PASSWORD\\b/i",Default_length:"20",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} 
+--:{regex:"regex:/\\bZ\\$PHONE_NUMBER\\b/i",Default_length:"20",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} 
+--:{regex:"regex:/\\bZ\\$EMAIL\\b/i",Default_length:"30",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} 
+--:{regex:"regex:/\\bMONEY\\b/i",Default_length:"10",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} 
 	
 --:{class:"pk",Action:View,Type:Hide,PrimaryKey:true,fb_trigger:true}
 --:{class:"existing_pk",Action:View,Type:Hide,PrimaryKey:true,fb_trigger:false}
@@ -39,6 +53,9 @@ CREATE DOMAIN PK
  CREATE DOMAIN FK
  AS VARCHAR(32);
  
+CREATE DOMAIN MONEY
+ AS DECIMAL(18, 5)
+ DEFAULT 0.0;
 
  
 CREATE DOMAIN SHORT_NAME
@@ -76,9 +93,9 @@ CREATE TABLE user_table_name                         --:{as:"Table"}
   Last_NAME SHORT_NAME,	                         	 --:{as:"text",title:"Last Name"}  
   Gender SHORT_NAME,                            	 --:{as:"text",title:"Gender"}  
   
- 
   
   Status Integer default 0,							 --:{}  
+  TYP    VARCHAR(10),	                       		 --:{as:"text",title:"TYP"}  
   
   photo 	     VARCHAR(100),						 --:{as:image}
   photo_filename VARCHAR(100),	    				 --:{as:image_filename}  
@@ -91,15 +108,16 @@ CREATE TABLE user_table_name                         --:{as:"Table"}
   SITE_ID    FK,									 --:{as:"text",title:"Currently visiting"}  
   
   
-  Country    FK,									 --:{as:"text",title:"Currently visiting"}  
-  
+  Country    FK,									 --:{as:"text",title:"Currently visiting"}    
   Time_Zone	 VARCHAR(20),							 --:{as:"text"}  
+  LANGUAGE fk,										 --:{as:"text",title:"Language"}  
+  
   user_landing_page VARCHAR(80) DEFAULT 'Home/Guest',--:{as:"text"}  
   user_keys_field VARCHAR(250),						 --:{as:"text",title:"Key list"}  
-  LANGUAGE fk,										 --:{as:"text",title:"Language"}  
   GP_INPUT VARCHAR(250),  						  	 --:{Type:"Hide"}
 
-  OWNER FK,											--:{as:"fk"} 
+  OWNER FK,											--:{as:"fk"}   
+  CREATE_STAMP TIMESTAMP DEFAULT 'now',				--:{as:"datestamp"} 
   ACTIVATION_DATE TIMESTAMP DEFAULT 'now',			--:{as:"datestamp"} 
   EXPIRY_DATE TIMESTAMP DEFAULT MAXDATE,			--:{as:"datestamp"} 
   FLAGS VARCHAR(20),								--:{as:"text"}
@@ -115,7 +133,10 @@ CREATE TABLE user_table_name                         --:{as:"Table"}
   FB_updated_time TIMESTAMP DEFAULT 'now',			--:{as:"text",title:"FB_UPDATED"}   
   MOBILE_NUMBER Z$PHONE_NUMBER,						--:{as:"text",title:"Mobile Number"}  
   EMAIL Z$EMAIL,									--:{as:"text",title:"Email"}  
-  IM VARCHAR(200)									--:{as:"text",title:"IM Address"}  
+  IM VARCHAR(200),									--:{as:"text",title:"IM Address"}  
+  TOS FK,											--:{as:ticked,title:"Accepted Terms of service"}  
+  
+  JSON    VARCHAR(2000)								--:{as:"text",title:"Extra settings"}  
   
 );
 CREATE INDEX IDX_ME1 ON user_table_name (user_pk_field);

@@ -136,14 +136,19 @@ exports.log_validation_fail = function (zx, text, script, validation_obj) {
 	fs.writeFileSync(zx.error_file_name, script); //for easy debugging - when this file reloads it means there was an error
 };
 exports.log_SQL_fail = function (zx, text,fulltext, Quale, source_line_obj) {
-	exports.error_log.push({
+	//var errtxt = print_error(zx, source_line_obj);
+	var obj = {
 		endpoint : "SQL Logic error",
         priority : 100,
 		at : text,
         correction:fulltext,
 		Quale : Quale,        
 		source : source_line_obj
-	});
+	};
+	exports.error_log.push(obj);
+	
+	fs.writeFileSync(zx.error_file_name, JSON.stringify(obj, null, 4));
+	
 };
 //=========================================================================General stuff
 exports.write_unknown = function (zx, err) {

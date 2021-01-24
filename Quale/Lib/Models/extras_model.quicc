@@ -9,7 +9,14 @@ list{
         "": "ifblank:Yes"
     }
 }
-
+list{
+    "name": "NoYes",
+    "values": {
+        "0": "No",
+        "1": "Yes",
+        "": "ifblank:No"
+    }
+}
 
 list{
     "name": "Gender",

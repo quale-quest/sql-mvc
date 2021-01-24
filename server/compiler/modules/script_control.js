@@ -108,13 +108,7 @@ var script_into = function (zx, line_obj, r) {
 			params = params.replace(/::/g, zx.config.db.var_actaul);
 			complex = true;
 		}
-		/*                    if (params.indexOf('#overridemastertable#')>0){
-		//special keyword //perform this as a execute statement query
-		if (zx.overridemastertable !== undefined)
-		params = params.replace(/#overridemastertable#/g,zx.overridemastertable);
-		else params = params.replace(/#overridemastertable#/g,":-overridemastertable");
-		complex=true;
-		}*/
+
 
 		//zx.dbg.emit(zx, line_obj, "--p3 ='" + vars + "'", "select into statement");
 		//console.log('TextWithEmbededExpressions tag_script i',params,vars);
@@ -245,11 +239,15 @@ var script_end = function (zx, line_obj, r) {
 zx.dbg.emit(zx, line_obj, r.tag.open, "script_as_is:" + r.tag.open);
 };*/
 
-var script_dooverridemastertable = function (zx, line_obj /*, r*/
-) {
-	//zx.overridemastertable='xxxx';
+var script_dooverridemastertable = function (zx, line_obj ) {
+
 	if (zx.overridemastertable !== undefined)
 		zx.dbg.emit(zx, line_obj, "overridemastertable='" + zx.overridemastertable + "';", "script_dooverridemastertable");
+
+	//incomplete code to specify ok as part of master 
+	//if (zx.overridemasterpk !== undefined)
+	//	zx.dbg.emit(zx, line_obj, "overridemasterpk='" + zx.overridemasterpk + "';", "script_dooverridemastertable");
+	
 };
 
 var script_overridemastertable = function (zx, line_obj, r) {
@@ -490,9 +488,22 @@ exports.ExtractFirstScript = function (o, r, debugmsg) {
 
 exports.tag_master = function (zx, o) {
     if (zx.pass!==1) return;
-    if (!o.table) o.table=o.array[0];
+	var table = o.table;
+    if (!table) table=o.array[0];
+	table =  table.split('.');
+	
+	if (table.length<1) {
+		console.log('-------------------------tag_master not specified : {'+ s+ '}\n', o, r);
+        zx.error.log_syntax_warning(zx, "tag_master not specified :" , s, zx.line_obj);		
+	}
+	
+	o.table = table[0];
+	if (table.length>1) o.pk = table[0];
+	
     if (!o.table) return;
     zx.overridemastertable = o.table;    
+	zx.overridemasterpk    = o.pk;
+
 }
 
 exports.tag_script = function (zx, line_obj) {

@@ -61,6 +61,8 @@ exports.tag_html = function (zx, line_obj) {
 	if (line_obj.html.indexOf("<script") >= 0) {
 		if (zx.pass === 1) {
 			console.warn('Script found in template - this might not execute in DOM - rather use <#jscript tag : in file:', line_obj.filename);
+			if (line_obj.filename===undefined)
+				console.warn('Script found in template - this might not execute in DOM - rather use <#jscript tag : in file:', line_obj);
 			zx.error.log_compile_warning(zx, "Script found in template - this might not execute in DOM - rather use <#jscript tag :", "" , line_obj);
 		}
 	}

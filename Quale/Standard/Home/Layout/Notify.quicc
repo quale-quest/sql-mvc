@@ -33,13 +33,5 @@
 		</p>
 	</div>
 </div>
-<script type="text/javascript" language="javascript">								
-	//$(function(){
-		// initialize widget on a container, passing in all the defaults.
-		// the defaults will apply to any notification created within this
-		// container, but can be overwritten on notification-by-notification
-		// basis.
-		$container = $("#container-n").notify();
-  //  }		
-</script>	
+	
 <!-- end container to hold notifications, and default templates -->

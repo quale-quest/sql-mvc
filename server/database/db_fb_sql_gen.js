@@ -816,6 +816,10 @@ exports.link_from = function (zx, line_obj) {
 	if (from === undefined)
 		from = '';
 	
+	var from_pk = zx.gets(line_obj.pk);
+	if ((from_pk === undefined) || (from_pk === ''))
+		from_pk = 'ID'; //lookup pk for from table
+	
 	var PAGE_PARAMS = run_procedure_from(zx, line_obj, zx.sql.cidi,"link_from");
 
 	//if (line_obj.pass) // a way to pass extra parameters - not implemented - future should be done by variables
@@ -835,9 +839,10 @@ exports.link_from = function (zx, line_obj) {
 			");  ";		
 		
 	} else {
-		var links = "INSERT INTO Z$PK_CACHE(MASTER, INDX, FIELD_NAME, VALU,TARGET,QUERY, PAGE_PARAMS)" +
+		var links = "INSERT INTO Z$PK_CACHE(MASTER, INDX, FIELD_NAME, VALU,Pk_Field_Name,TARGET,QUERY, PAGE_PARAMS)" +
 			"VALUES ("+vr(zx,"cid") + "," + zx.sql.cidi + ",'click'," +
 			fb_AsString(from) + ", " +  //VALU
+			fb_AsString(from_pk) + ", " +  //Pk_Field_Name			
 			fb_AsString(zx.Current_main_page_name.replace(/\\/g, "/")) + ", " +  //target
 			wherex + ", " +           /*+" "+ zx.gets(line_obj.nonkeyd)..check above TODO note*/		//QUERY
 			zx.config.db.var_actaul+"param_array "   /*PAGE_PARAMS  */ + " "+		
@@ -849,9 +854,21 @@ exports.link_from = function (zx, line_obj) {
 
 var check_pointer = function (zx,cx,fld_obj) {
         
+
+    if (fld_obj.cf[0].pointer===undefined)    {
+		//if pointer not specified then search for pk
+		//console.log('=================================\n',cx.fields );		
+		zx.forFields(cx.fields, function (field, key) {
+			//console.log('====\n',field );
+			//if (field.f.as==='pk') fld_obj.cf[0].pointer=field.indx;				
+		});				
+	}
+		
+		
 	//console.log('check_pointer a:',fld_obj.cf[0].pointer);	
     if (fld_obj.cf[0].pointer===undefined)
     {
+		
 		//console.log('check_pointer aa:',fld_obj.cf[0].pointer);	
 		var errtxt = "You must select(and mark) the primary key as part of the query, in order to edit a field in the table";	
         zx.error.log_SQL_fail (zx, "no primary key for edit ",errtxt, fld_obj, zx.line_obj);

@@ -156,7 +156,9 @@ exports.load_config = function (root_folder, Application) {
     var config = {},next_config = {};
     while (fileContents!=="") {
         try {
-			fileContents = fileContents.replace('PasswordGen',crypto.randomBytes(12).toString('base64'));
+			//console.log("fileContents 159 :", fileContents);
+			fileContents = fileContents.replace('PasswordGen',crypto.randomBytes(12).toString('base64').replace("/","A").replace("+","A"));
+			//console.log("fileContents 161 :", fileContents);
             next_config = JSON.parse(fileContents);
         } catch (e) {
             console.log("WARN Error parsing config.quicc 175908 :", e, 'string:',fileContents);
