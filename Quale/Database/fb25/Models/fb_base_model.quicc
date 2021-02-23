@@ -134,6 +134,7 @@ RETURNS (
 	currentpage varchar(100) ,	
 	page_params varchar(1000),
 	NEW_CONTEXT_ID INTEGER,
+	NEW_ITEM_ID INTEGER,
     o_ref    varchar(40)
     )
 AS
@@ -160,7 +161,7 @@ DECLARE VARIABLE Openstr   varchar(1000);
 
 BEGIN
 	currentpage='';
-	page_params='';
+	page_params='';    
 
     /*post updates - and check for username passwds*/    
     bp=1;    
@@ -168,7 +169,7 @@ BEGIN
     while (c<1000) do 
       BEGIN
           c=c+1;
-          bt=SUBSTRING (UPDATES FROM bp FOR 1);   
+          bt=SUBSTRING (UPDATES FROM bp FOR 1);
           /*info=SUBSTRING (UPDATES FROM bp FOR 1); suspend; */
           if (bt>='a') THEN 
               BEGIN /*small case are short fields*/
@@ -269,7 +270,7 @@ BEGIN
 				  info='saved';
 				  suspend; 					
 				  exit;
-				end		
+				end                
 
             /*get the old page, and context info, to refresh page */                
 			SELECT first 1 r.OPERATOR_REF,r.PAGE FROM Z$CONTEXT r where r.pk=:PRIOR_CONTEXT_ID and r.SESSION_REF=:SESSION_ID into :o_ref,:val;		
@@ -279,11 +280,29 @@ BEGIN
 					SELECT first 1 a.target,COALESCE(a.PAGE_PARAMS,'')||:page_params FROM Z$PK_CACHE a 
 					WHERE a.MASTER = :PRIOR_CONTEXT_ID AND a.INDX = :PRIOR_ITEM_ID into :val,:page_params;              
 					if (val<>'') then currentpage=val;
-				end	
+				end
+
+			-- INSERT INTO DBG ( SOURCE, DATA1, DATA2 ,DATA3, DATA4  )VALUES ('runsub151-1',:PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID,:page_params, :O_REF);													
+		
+		    --refresh page
+			if (PRIOR_ITEM_ID=0) then
+			    begin
+				    SELECT r.LINKED_FROM_CID, r.LINKED_FROM_INDX FROM Z$CONTEXT r where r.pk=:PRIOR_CONTEXT_ID and r.id=:SESSION_ID into :PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID;
+					SELECT a.target,COALESCE(a.PAGE_PARAMS,'')||:page_params FROM Z$PK_CACHE a WHERE a.MASTER = :PRIOR_CONTEXT_ID AND a.INDX = :PRIOR_ITEM_ID into :val,:page_params;              				    
+					if (val<>'') then currentpage=val;
+					--INSERT INTO DBG ( SOURCE, DATA1, DATA2 ,DATA3, DATA4  )VALUES ('runsub151-2',:PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID,:page_params, :O_REF);									
+					NEW_CONTEXT_ID  = PRIOR_CONTEXT_ID;
+					NEW_ITEM_ID = PRIOR_ITEM_ID;
+					-- INSERT INTO DBG ( SOURCE, DATA1, DATA2 ,DATA3, DATA4 )VALUES ('runsub151-2',:PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID,:page_params, :O_REF);									
+  				  suspend; 					
+				  exit;
+				end
+			
+					
         END
     
     if (usern<>'') THEN
-        begin  
+        begin
 			/*allow them to login even if expired,  the dashboard gives information that they have expired...*/
 			/*if null then select the guest user */
 			/* user_guest_name , unknown_user */
@@ -321,6 +340,9 @@ BEGIN
     INSERT INTO Z$CONTEXT (PK,     TSTAMP, OPERATOR_REF, ID,          SESSION_REF,  PAGE,        LINKED_FROM_CID,  LINKED_FROM_INDX) 
 	       VALUES (:NEW_CONTEXT_ID,'now',  :o_ref,       :SESSION_ID, :SESSION_ID,  :currentpage, :PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID );
 	-- info=:usern||'&'||:passw||'&'||:currentpage||'&'||:NEW_CONTEXT_ID||'&'||'&';  suspend;				
+
+ 	-- INSERT INTO DBG ( SOURCE, DATA1, DATA2 ,DATA3, DATA4--, DATA5  )VALUES ('runsub151-999',:PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID,:page_params, :O_REF);													
+	
 	suspend;     
           
 END^
@@ -356,10 +378,13 @@ DECLARE VARIABLE page_params  varchar(1000)='';  -- retrieved from the database 
 
 BEGIN
 
-
-	SELECT first 1 INFO,currentpage,page_params,NEW_CONTEXT_ID,o_ref FROM Z$RUN_SUB(:SESSIONID, :PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID, :UPDATES) p 
-			into :INFO,:SCRIPTNAMED,:page_params,:NEW_CONTEXT_ID,:o_ref  ;
+ 	-- INSERT INTO DBG ( SOURCE, DATA1, DATA2 ,DATA3, DATA4--, DATA5  )VALUES ('run23',:PUBLIC_PARAMETERS,:SESSIONID,:PRIOR_CONTEXT_ID, :PRIOR_ITEM_ID);	
+  
+	SELECT first 1 INFO,currentpage,page_params,NEW_CONTEXT_ID,NEW_ITEM_ID,o_ref FROM Z$RUN_SUB(:SESSIONID, :PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID, :UPDATES) p 
+			into :INFO,:SCRIPTNAMED,:page_params,:NEW_CONTEXT_ID,:PRIOR_ITEM_ID,:o_ref  ;
 			
+ 	-- INSERT INTO DBG ( SOURCE, DATA1, DATA2 ,DATA3, DATA4, DATA5  )VALUES ('run28',:page_params,:SCRIPTNAMED,:INFO, :NEW_CONTEXT_ID,:O_REF);	
+  			
 	if 	(page_params!='') then	
 		begin
 		    EXECUTE STATEMENT page_params;
