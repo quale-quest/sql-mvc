@@ -160,6 +160,7 @@ DECLARE VARIABLE script    BLOB SUB_TYPE 1;
 DECLARE VARIABLE Openstr   varchar(1000);
 
 BEGIN
+	NEW_ITEM_ID = PRIOR_ITEM_ID;
 	currentpage='';
 	page_params='';    
 
