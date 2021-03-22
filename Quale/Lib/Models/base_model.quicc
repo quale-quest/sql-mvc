@@ -222,14 +222,46 @@ CREATE INDEX IDX_Z$SP1 ON Z$SP (PK);
 CREATE INDEX IDX_Z$SP2 ON Z$SP (FILE_NAME);
 
 
-CREATE TABLE Z$VARIABLES
+
+#>
+<#model
+
+CREATE TABLE Z$VARIABLES				--:{as:"Table"}
 (
-  REF VARCHAR(80),
-  VALU VARCHAR(256),
-  STAMP TIMESTAMP DEFAULT 'now',
-  EXPIRE TIMESTAMP
+  REF VARCHAR(80),						--:{as:pk}
+  VALU VARCHAR(256) DEFAULT '',			--:{as:"text",title:"value"} 
+  STAMP TIMESTAMP DEFAULT 'now',		--:{as:"text"} 
+  EXPIRE TIMESTAMP						--:{as:"text"} 
 );
 CREATE INDEX IDX_ZVARIABLES1 ON Z$VARIABLES (REF);
+
+#>
+
+
+<#model
+
+CREATE TABLE DBG						--:{as:"Table"}
+(
+  ID PK,								--:{as:pk}
+  PID FK,								--:{as:"text"} 
+  STAMP Timestamp DEFAULT 'now',		--:{as:"text"} 
+  SOURCE Varchar(100),					--:{as:"text"} 
+  DATA1 Varchar(4000),					--:{as:"text"} 
+  DATA2 Varchar(2000),					--:{as:"text"} 
+  DATA3 Varchar(2000),					--:{as:"text"} 
+  DATA4 Varchar(2000),					--:{as:"text"} 
+  DATA5 Varchar(500),					--:{as:"text"} 
+  DATA6 Varchar(500),					--:{as:"text"} 
+  DATA7 Varchar(500),					--:{as:"text"} 
+  DATA8 Varchar(500),					--:{as:"text"} 
+  DATA9 Varchar(500),					--:{as:"text"} 
+  DATA10 Varchar(500)					--:{as:"text"} 
+);
+CREATE INDEX IDX_DBG ON DBG (ID);
+
+#>
+
+<#model
 
 /******************* RECORDS ******************/
 INSERT MATCHING NON_MATCH;
