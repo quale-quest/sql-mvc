@@ -1156,7 +1156,20 @@ $(document).keydown(function(e) {
 });
 }
 
-console.log("zxDeltaScriptFile version V154"); 
+
+function printDiv(divName){
+	var printContents = document.getElementById(divName).innerHTML;
+	var originalContents = document.body.innerHTML;
+
+	document.body.innerHTML = printContents;
+
+	window.print();
+
+	document.body.innerHTML = originalContents;
+
+}
+	
+console.log("zxDeltaScriptFile version V155"); 
 
 //eof
 

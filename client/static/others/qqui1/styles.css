@@ -5154,3 +5154,24 @@ blockquote {
 	text-align:right;
 }
 }
+
+/*-----------Printing-----------
+https://gist.github.com/andrewlimaza/490a69417d9fe2df3f668195a7661605
+*/
+
+.printme {
+	display: none;
+}
+@media print {
+	.no-printme  {
+		display: none;
+	}
+	.printme  {
+		display: block;
+	}
+}
+
+
+
+
+
