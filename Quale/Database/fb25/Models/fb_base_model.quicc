@@ -123,18 +123,18 @@ SELECT info,currentpage,page_params,NEW_CONTEXT_ID FROM Z$RUN_SUB ('SESSION1', 0
 
 
 */
-CREATE OR ALTER PROCEDURE Z$RUN_SUB (
+CREATE or ALTER PROCEDURE Z$RUN_SUB (
     SESSION_ID VARCHAR(40),
-    PRIOR_CONTEXT_ID INTEGER, 
-    PRIOR_ITEM_ID INTEGER,	 
-    UPDATES BLOB SUB_TYPE 1 
-    )
+    PASS_CONTEXT_ID INTEGER,
+    PASS_ITEM_ID INTEGER,
+    UPDATES BLOB SUB_TYPE 1 )
 RETURNS (
     INFO VARCHAR(1000),
 	currentpage varchar(100) ,	
 	page_params varchar(1000),
 	NEW_CONTEXT_ID INTEGER,
-	NEW_ITEM_ID INTEGER,
+    PRIOR_CONTEXT_ID INTEGER,
+    PRIOR_ITEM_ID INTEGER, 
     o_ref    varchar(40)
     )
 AS
@@ -159,8 +159,9 @@ DECLARE VARIABLE pk        integer;
 DECLARE VARIABLE script    BLOB SUB_TYPE 1; 
 DECLARE VARIABLE Openstr   varchar(1000);
 
-BEGIN
-	NEW_ITEM_ID = PRIOR_ITEM_ID;
+BEGIN    
+    PRIOR_CONTEXT_ID = PASS_CONTEXT_ID;
+	PRIOR_ITEM_ID = PASS_ITEM_ID;
 	currentpage='';
 	page_params='';    
 
@@ -247,10 +248,11 @@ BEGIN
                                 END
                             --info=:script;  suspend;    
                             EXECUTE STATEMENT(script)(pk_val); 
-                            update Z$PK_CACHE a set new_value=null,a.NEW_VALUE_SET=null WHERE a.MASTER = :update_cid;
+                            
                             --trigger based validations will emit erors into a log that can be fed back to the user
                             
-                        end  
+                        end 
+						update Z$PK_CACHE a set new_value=null,a.NEW_VALUE_SET=null WHERE a.MASTER = :update_cid; 
                      END       
             else if (bt='r') THEN /*parameter value from first load Openstr=name*/
                      BEGIN					 					
@@ -276,6 +278,18 @@ BEGIN
             /*get the old page, and context info, to refresh page */                
 			SELECT first 1 r.OPERATOR_REF,r.PAGE FROM Z$CONTEXT r where r.pk=:PRIOR_CONTEXT_ID and r.SESSION_REF=:SESSION_ID into :o_ref,:val;		
 			if (currentpage='') then currentpage=val;
+			
+		    --refresh page - save(above) and 'press' the prior link that braught me here
+		    --INSERT INTO DBG ( SOURCE, DATA1, DATA2 ,DATA3, DATA4  )VALUES ('runsub161',:PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID,:page_params, :O_REF);									
+			if (PRIOR_ITEM_ID=0) then
+			    begin
+				    SELECT r.LINKED_FROM_CID, r.LINKED_FROM_INDX FROM Z$CONTEXT r where r.pk=:PRIOR_CONTEXT_ID and r.id=:SESSION_ID into :PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID;
+					--SELECT a.target,COALESCE(a.PAGE_PARAMS,'')||:page_params FROM Z$PK_CACHE a WHERE a.MASTER = :PRIOR_CONTEXT_ID AND a.INDX = :PRIOR_ITEM_ID into :val,:page_params;              				    
+					--if (val<>'') then currentpage=val;					
+					--INSERT INTO DBG ( SOURCE, DATA1, DATA2 ,DATA3, DATA4 )VALUES ('runsub164',:PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID,:page_params, :O_REF);									
+				end			
+			
+			
 			if (PRIOR_ITEM_ID<>0) then
 			    begin
 					SELECT first 1 a.target,COALESCE(a.PAGE_PARAMS,'')||:page_params FROM Z$PK_CACHE a 
@@ -283,23 +297,10 @@ BEGIN
 					if (val<>'') then currentpage=val;
 				end
 
-			-- INSERT INTO DBG ( SOURCE, DATA1, DATA2 ,DATA3, DATA4  )VALUES ('runsub151-1',:PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID,:page_params, :O_REF);													
+			--INSERT INTO DBG ( SOURCE, DATA1, DATA2 ,DATA3, DATA4  )VALUES ('runsub151-1',:PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID,:page_params, :currentpage);													
 		
-		    --refresh page
-			if (PRIOR_ITEM_ID=0) then
-			    begin
-				    SELECT r.LINKED_FROM_CID, r.LINKED_FROM_INDX FROM Z$CONTEXT r where r.pk=:PRIOR_CONTEXT_ID and r.id=:SESSION_ID into :PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID;
-					SELECT a.target,COALESCE(a.PAGE_PARAMS,'')||:page_params FROM Z$PK_CACHE a WHERE a.MASTER = :PRIOR_CONTEXT_ID AND a.INDX = :PRIOR_ITEM_ID into :val,:page_params;              				    
-					if (val<>'') then currentpage=val;
-					--INSERT INTO DBG ( SOURCE, DATA1, DATA2 ,DATA3, DATA4  )VALUES ('runsub151-2',:PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID,:page_params, :O_REF);									
-					NEW_CONTEXT_ID  = PRIOR_CONTEXT_ID;
-					NEW_ITEM_ID = PRIOR_ITEM_ID;
-					-- INSERT INTO DBG ( SOURCE, DATA1, DATA2 ,DATA3, DATA4 )VALUES ('runsub151-2',:PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID,:page_params, :O_REF);									
-  				  suspend; 					
-				  exit;
-				end
+
 			
-					
         END
     
     if (usern<>'') THEN
@@ -379,12 +380,12 @@ DECLARE VARIABLE page_params  varchar(1000)='';  -- retrieved from the database 
 
 BEGIN
 
- 	-- INSERT INTO DBG ( SOURCE, DATA1, DATA2 ,DATA3, DATA4--, DATA5  )VALUES ('run23',:PUBLIC_PARAMETERS,:SESSIONID,:PRIOR_CONTEXT_ID, :PRIOR_ITEM_ID);	
+ 	 --INSERT INTO DBG ( SOURCE, DATA1, DATA2 ,DATA3, DATA4, DATA5  )VALUES ('run23',:PUBLIC_PARAMETERS,:SESSIONID,'',:PRIOR_CONTEXT_ID, :PRIOR_ITEM_ID);	
   
-	SELECT first 1 INFO,currentpage,page_params,NEW_CONTEXT_ID,NEW_ITEM_ID,o_ref FROM Z$RUN_SUB(:SESSIONID, :PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID, :UPDATES) p 
-			into :INFO,:SCRIPTNAMED,:page_params,:NEW_CONTEXT_ID,:PRIOR_ITEM_ID,:o_ref  ;
+	SELECT first 1 INFO,currentpage,page_params,NEW_CONTEXT_ID, PRIOR_CONTEXT_ID,PRIOR_ITEM_ID, o_ref FROM Z$RUN_SUB(:SESSIONID, :PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID, :UPDATES) p 
+			into :INFO,:SCRIPTNAMED,:page_params,:NEW_CONTEXT_ID,:PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID,:o_ref  ;
 			
- 	-- INSERT INTO DBG ( SOURCE, DATA1, DATA2 ,DATA3, DATA4, DATA5  )VALUES ('run28',:page_params,:SCRIPTNAMED,:INFO, :NEW_CONTEXT_ID,:O_REF);	
+ 	 --INSERT INTO DBG ( SOURCE, DATA1, DATA2 ,DATA3, DATA4, DATA5  )VALUES ('run28',:page_params,:SCRIPTNAMED,:NEW_CONTEXT_ID, :PRIOR_CONTEXT_ID, :PRIOR_ITEM_ID);	
   			
 	if 	(page_params!='') then	
 		begin
@@ -413,8 +414,11 @@ BEGIN
     CloseStr = ' ('''||:SESSIONID||''','||PRIOR_CONTEXT_ID||','||PRIOR_ITEM_ID||','||NEW_CONTEXT_ID||','||o_ref||') RETURNING_VALUES  :info,:res,:SCRIPTNAMED;suspend; end;';
     
 	
+	--INSERT INTO DBG ( SOURCE, DATA1, DATA2 ,DATA3, DATA4, DATA5, DATA6  )VALUES ('run53',:CloseStr, :SESSIONID,:PRIOR_CONTEXT_ID,:PRIOR_ITEM_ID, :NEW_CONTEXT_ID,:O_REF);	
+	
     --TODO also match language and coy custom files  
     SELECT first 1 pk,q.SCRIPT||:CloseStr FROM Z$SP q where file_name=:SCRIPTNAMED into :current_page_pk,:script ;
+    --INSERT INTO DBG ( SOURCE, DATA1, DATA2 --,DATA3, DATA4, DATA5, DATA6  )	 ) VALUES ('run64',:script, :current_page_pk);	
     if (script is null) then /*back home or direct to an 404 error page ..?*/   
       begin                 
         SELECT first 1 pk,q.SCRIPT||:CloseStr FROM Z$SP q where 
