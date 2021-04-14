@@ -145,7 +145,16 @@ var init_client_plugin = function (obj) {
 					return ta[0];
 				};
 			};
-            
+			obj.Data.codec_num82 = function () {
+				return function () {					
+					try { 
+						let f = parseFloat(this[0]);
+						return  f.toFixed(2);
+					} catch (e) { 
+						return this[0];
+					}
+				};
+			};            
 }
 
 exports.name= 'base_plugins'; 
@@ -160,8 +169,9 @@ exports.init_client_plugin_mt_functions = function (obj,ss_tmpl) {
     obj.upload = precompiled.Data.upload;
     obj.codec_date = precompiled.Data.codec_date;
     obj.codec_stamp = precompiled.Data.codec_stamp;
-	//fill_data_InjectPoint
+	obj.codec_num82 = precompiled.Data.codec_num82;
 	
+	//fill_data_InjectPoint	
 }  
 
 

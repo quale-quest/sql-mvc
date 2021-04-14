@@ -27,7 +27,7 @@
 --:{regex:"regex:/\\bZ\\$T_PASSWORD\\b/i",Default_length:"20",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} 
 --:{regex:"regex:/\\bZ\\$PHONE_NUMBER\\b/i",Default_length:"20",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} 
 --:{regex:"regex:/\\bZ\\$EMAIL\\b/i",Default_length:"30",name:"regex:/(\\w+)/",Type:"Text",Action:"View"} 
---:{regex:"regex:/\\bMONEY\\b/i",Default_length:"10",name:"regex:/([\\w_$]+)/",Type:"Text",Action:"View"} 
+--:{regex:"regex:/\\bMONEY\\b/i",Default_length:"10",name:"regex:/([\\w_$]+)/",Type:"Text",substyle:Num82,Action:"View"} 
 	
 --:{class:"pk",Action:View,Type:Hide,PrimaryKey:true,fb_trigger:true}
 --:{class:"existing_pk",Action:View,Type:Hide,PrimaryKey:true,fb_trigger:false}
@@ -192,8 +192,8 @@ CREATE TABLE Z$PK_CACHE
   FIELD_NAME VARCHAR(40),
   VALU VARCHAR(1000),
   POST_PROCEDURE  VARCHAR(40),  -- Used by the uploader - later can also be used for validation
-  TARGET VARCHAR(1000),
-  QUERY VARCHAR(1000),
+  TARGET VARCHAR(100),
+  QUERY VARCHAR(100),
   BODY VARCHAR(1000),
   PAGE_PARAMS VARCHAR(1000),
   PK_FIELD_NAME VARCHAR(40),
@@ -237,29 +237,6 @@ CREATE INDEX IDX_ZVARIABLES1 ON Z$VARIABLES (REF);
 
 #>
 
-
-<#model
-
-CREATE TABLE DBG						--:{as:"Table"}
-(
-  ID PK,								--:{as:pk}
-  PID FK,								--:{as:"text"} 
-  STAMP Timestamp DEFAULT 'now',		--:{as:"text"} 
-  SOURCE Varchar(100),					--:{as:"text"} 
-  DATA1 Varchar(4000),					--:{as:"text"} 
-  DATA2 Varchar(2000),					--:{as:"text"} 
-  DATA3 Varchar(2000),					--:{as:"text"} 
-  DATA4 Varchar(2000),					--:{as:"text"} 
-  DATA5 Varchar(500),					--:{as:"text"} 
-  DATA6 Varchar(500),					--:{as:"text"} 
-  DATA7 Varchar(500),					--:{as:"text"} 
-  DATA8 Varchar(500),					--:{as:"text"} 
-  DATA9 Varchar(500),					--:{as:"text"} 
-  DATA10 Varchar(500)					--:{as:"text"} 
-);
-CREATE INDEX IDX_DBG ON DBG (ID);
-
-#>
 
 <#model
 
